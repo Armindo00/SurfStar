@@ -277,13 +277,24 @@ function mapAthleteRow(row: {
 }
 
 export async function cloudFetchAthletes(coachId: string): Promise<Athlete[]> {
-  const { data, error } = await getSupabase()
+  const supabase = getSupabase()
+  let { data, error } = await supabase
     .from('athletes')
     .select('id, coach_id, name, share_settings')
     .eq('coach_id', coachId)
     .order('created_at', { ascending: true })
 
-  if (error || !data) return []
+  if (error) {
+    const fallback = await supabase
+      .from('athletes')
+      .select('id, coach_id, name')
+      .eq('coach_id', coachId)
+      .order('created_at', { ascending: true })
+    if (fallback.error || !fallback.data) return []
+    return fallback.data.map((row) => mapAthleteRow(row))
+  }
+
+  if (!data) return []
   return data.map((row) => mapAthleteRow(row))
 }
 
@@ -291,14 +302,26 @@ export async function cloudFetchAthleteById(
   coachId: string,
   athleteId: string,
 ): Promise<Athlete | null> {
-  const { data, error } = await getSupabase()
+  const supabase = getSupabase()
+  let { data, error } = await supabase
     .from('athletes')
     .select('id, coach_id, name, share_settings')
     .eq('coach_id', coachId)
     .eq('id', athleteId)
     .maybeSingle()
 
-  if (error || !data) return null
+  if (error) {
+    const fallback = await supabase
+      .from('athletes')
+      .select('id, coach_id, name')
+      .eq('coach_id', coachId)
+      .eq('id', athleteId)
+      .maybeSingle()
+    if (fallback.error || !fallback.data) return null
+    return mapAthleteRow(fallback.data)
+  }
+
+  if (!data) return null
   return mapAthleteRow(data)
 }
 

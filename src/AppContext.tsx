@@ -236,7 +236,7 @@ async function upgradeStudentPassword(student: StudentAccount, password: string)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const cloudMode = isCloudEnabled()
-  const [authReady, setAuthReady] = useState(!cloudMode)
+  const [authReady, setAuthReady] = useState(true)
   const [auth, setAuth] = useState<AuthSession | null>(() =>
     cloudMode ? null : authStore.getSession(),
   )
@@ -305,36 +305,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    ;(async () => {
-      const session = await cloudGetSession()
-      if (session && mounted) {
-        setAuth(session)
-        await applySessionData(session)
-        setView(session.role === 'atleta' ? 'athlete-portal' : 'coach-home')
-      }
+    void (async () => {
+      try {
+        unsub = await cloudOnAuthChange((next) => {
+          if (!mounted) return
+          setAuth(next)
+          if (next) {
+            setTimeout(() => {
+              void applySessionData(next).then(() => {
+                if (mounted) {
+                  setView(next.role === 'atleta' ? 'athlete-portal' : 'coach-home')
+                }
+              })
+            }, 0)
+          } else {
+            setAthletes([])
+            setStudents([])
+            setSpots([])
+            setConditions([])
+            setTrainingSessions([])
+            setActiveSessionId(null)
+            setActiveWaveId(null)
+            setActiveHeatId(null)
+            setActiveAthleteId(null)
+          }
+        })
 
-      unsub = await cloudOnAuthChange((next) => {
-        setAuth(next)
-        if (next) {
-          setTimeout(() => {
-            void applySessionData(next).then(() => {
-              setView(next.role === 'atleta' ? 'athlete-portal' : 'coach-home')
-            })
-          }, 0)
-        } else {
-          setAthletes([])
-          setStudents([])
-          setSpots([])
-          setConditions([])
-          setTrainingSessions([])
-          setActiveSessionId(null)
-          setActiveWaveId(null)
-          setActiveHeatId(null)
-          setActiveAthleteId(null)
+        // Avoid Supabase auth deadlock: listener first, then getSession.
+        await new Promise((resolve) => setTimeout(resolve, 0))
+        const session = await cloudGetSession()
+        if (session && mounted) {
+          setAuth(session)
+          void applySessionData(session).then(() => {
+            if (mounted) {
+              setView(session.role === 'atleta' ? 'athlete-portal' : 'coach-home')
+            }
+          })
         }
-      })
-
-      if (mounted) setAuthReady(true)
+      } catch (error) {
+        console.error('SurfStar cloud init failed', error)
+      } finally {
+        if (mounted) setAuthReady(true)
+      }
     })()
 
     return () => {
