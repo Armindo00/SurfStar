@@ -82,9 +82,7 @@ export async function cloudGetSession(): Promise<AuthSession | null> {
   const supabase = getSupabase()
   const { data } = await supabase.auth.getSession()
   if (!data.session?.user) return null
-  const user = data.session.user
-  const session = await profileToAuthSession(user.id, user.email ?? '', user)
-  return session ?? authSessionFromAuthUser(user)
+  return authSessionFromAuthUser(data.session.user)
 }
 
 export async function cloudOnAuthChange(
@@ -93,16 +91,11 @@ export async function cloudOnAuthChange(
   const supabase = getSupabase()
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
     setTimeout(() => {
-      void (async () => {
-        if (!session?.user) {
-          cb(null)
-          return
-        }
-        const authSession =
-          (await profileToAuthSession(session.user.id, session.user.email ?? '', session.user)) ??
-          authSessionFromAuthUser(session.user)
-        cb(authSession)
-      })()
+      if (!session?.user) {
+        cb(null)
+        return
+      }
+      cb(authSessionFromAuthUser(session.user))
     }, 0)
   })
   return () => data.subscription.unsubscribe()
@@ -168,16 +161,16 @@ async function profileToAuthSession(
   return null
 }
 
-async function buildAuthSessionFromUser(
+function buildAuthSessionFromUser(
   user: {
     id: string
     email?: string | null
     user_metadata?: Record<string, unknown>
   },
   fallbackEmail: string,
-): Promise<AuthSession> {
-  const session = await profileToAuthSession(user.id, user.email ?? fallbackEmail, user)
-  return session ?? authSessionFromAuthUser(user)
+): AuthSession {
+  void ensureUserProfile(user)
+  return authSessionFromAuthUser(user)
 }
 
 export type CloudAuthResult =
@@ -214,7 +207,7 @@ export async function cloudRegisterCoach(
   }
 
   if (data.session?.user) {
-    const session = await buildAuthSessionFromUser(data.session.user, normalized)
+    const session = buildAuthSessionFromUser(data.session.user, normalized)
     return { ok: true, session }
   }
 
@@ -232,7 +225,7 @@ export async function cloudRegisterCoach(
     return { ok: false, error: 'Account created but sign in failed. Try Sign in.' }
   }
 
-  const session = await buildAuthSessionFromUser(signInData.user, normalized)
+  const session = buildAuthSessionFromUser(signInData.user, normalized)
   return { ok: true, session }
 }
 
@@ -261,7 +254,7 @@ export async function cloudLogin(
 
   if (!data.user) return { ok: false, error: 'Sign in failed. Try again.' }
 
-  const session = await buildAuthSessionFromUser(data.user, normalized)
+  const session = buildAuthSessionFromUser(data.user, normalized)
   return { ok: true, session }
 }
 

@@ -365,8 +365,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const result = await cloudLogin(email, password)
         if (!result.ok) return result
         setAuth(result.session)
-        await applyCloudSessionData(result.session)
         setView('coach-home')
+        void applyCloudSessionData(result.session).catch((err) => {
+          console.error('Failed to load coach data after sign in', err)
+        })
         return { ok: true as const }
       }
 
@@ -407,8 +409,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const result = await cloudLogin(email, password)
         if (!result.ok) return result
         setAuth(result.session)
-        await applyCloudSessionData(result.session)
         setView('athlete-portal')
+        void applyCloudSessionData(result.session).catch((err) => {
+          console.error('Failed to load athlete data after sign in', err)
+        })
         return { ok: true as const }
       }
 
@@ -451,8 +455,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const result = await cloudRegisterCoach(name, email, password)
         if (!result.ok) return result
         setAuth(result.session)
-        await applyCloudSessionData(result.session)
         setView('coach-home')
+        void applyCloudSessionData(result.session).catch((err) => {
+          console.error('Failed to load coach data after registration', err)
+        })
         return { ok: true as const }
       }
 

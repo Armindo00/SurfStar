@@ -27,21 +27,26 @@ export function LoginView() {
     setError('')
     setBusy(true)
     try {
+      const trimmedEmail = email.trim()
+
       if (tab === 'treinador' && coachMode === 'register') {
         if (password !== passwordConfirm) {
           setError('Passwords do not match.')
           return
         }
-        const result = await registerCoach(name, email, password)
+        const result = await registerCoach(name, trimmedEmail, password)
         if (!result.ok) setError(result.error)
         return
       }
 
       const result =
         tab === 'treinador'
-          ? await loginAsCoach(email, password)
-          : await loginAsStudent(email, password)
+          ? await loginAsCoach(trimmedEmail, password)
+          : await loginAsStudent(trimmedEmail, password)
       if (!result.ok) setError(result.error ?? 'Sign in failed.')
+    } catch (err) {
+      console.error('Login submit failed', err)
+      setError(err instanceof Error ? err.message : 'Sign in failed. Check your connection and try again.')
     } finally {
       setBusy(false)
     }
@@ -101,7 +106,7 @@ export function LoginView() {
                 resetCoachRegister()
               }}
             >
-              Sign in
+              Log in
             </button>
             <button
               type="button"
