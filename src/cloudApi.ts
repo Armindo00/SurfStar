@@ -137,38 +137,11 @@ async function ensureUserProfile(user: {
   return { ok: true }
 }
 
-async function profileToAuthSession(
-  userId: string,
-  fallbackEmail: string,
-  authUser?: {
-    id: string
-    email?: string | null
-    user_metadata?: Record<string, unknown>
-  },
-): Promise<AuthSession | null> {
-  if (authUser) {
-    void ensureUserProfile(authUser)
-  }
-
-  let profile = await fetchProfileRow(userId)
-  if (!profile && authUser) {
-    await new Promise((r) => setTimeout(r, 250))
-    profile = await fetchProfileRow(userId)
-  }
-
-  if (profile) return mapProfileRow(profile, fallbackEmail)
-  if (authUser) return authSessionFromAuthUser(authUser)
-  return null
-}
-
-function buildAuthSessionFromUser(
-  user: {
-    id: string
-    email?: string | null
-    user_metadata?: Record<string, unknown>
-  },
-  fallbackEmail: string,
-): AuthSession {
+function buildAuthSessionFromUser(user: {
+  id: string
+  email?: string | null
+  user_metadata?: Record<string, unknown>
+}): AuthSession {
   void ensureUserProfile(user)
   return authSessionFromAuthUser(user)
 }
@@ -207,7 +180,7 @@ export async function cloudRegisterCoach(
   }
 
   if (data.session?.user) {
-    const session = buildAuthSessionFromUser(data.session.user, normalized)
+    const session = buildAuthSessionFromUser(data.session.user)
     return { ok: true, session }
   }
 
@@ -225,7 +198,7 @@ export async function cloudRegisterCoach(
     return { ok: false, error: 'Account created but sign in failed. Try Sign in.' }
   }
 
-  const session = buildAuthSessionFromUser(signInData.user, normalized)
+  const session = buildAuthSessionFromUser(signInData.user)
   return { ok: true, session }
 }
 
@@ -254,7 +227,7 @@ export async function cloudLogin(
 
   if (!data.user) return { ok: false, error: 'Sign in failed. Try again.' }
 
-  const session = buildAuthSessionFromUser(data.user, normalized)
+  const session = buildAuthSessionFromUser(data.user)
   return { ok: true, session }
 }
 
