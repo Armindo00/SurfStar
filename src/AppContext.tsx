@@ -280,6 +280,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [auth, cloudMode],
   )
 
+  const applyCloudSessionData = useCallback(async (session: AuthSession) => {
+    if (session.role === 'treinador') {
+      const data = await cloudLoadCoachData(session.coachId)
+      setAthletes(data.athletes)
+      setStudents(data.students)
+      setSpots(data.spots)
+      setConditions(data.conditions)
+      setTrainingSessions(data.trainingSessions)
+      setDraft((d) => ({ ...d, spotId: data.spots[0]?.id ?? d.spotId }))
+      return
+    }
+
+    const data = await cloudLoadAthleteData(session.coachId, session.athleteId)
+    setAthletes(data.athlete ? [data.athlete] : [])
+    setSpots(data.spots)
+    setTrainingSessions(data.trainingSessions)
+  }, [])
+
   useEffect(() => {
     if (!cloudMode) return
 
@@ -287,22 +305,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let unsub: (() => void) | undefined
 
     const applySessionData = async (session: AuthSession) => {
-      if (session.role === 'treinador') {
-        const data = await cloudLoadCoachData(session.coachId)
-        if (!mounted) return
-        setAthletes(data.athletes)
-        setStudents(data.students)
-        setSpots(data.spots)
-        setConditions(data.conditions)
-        setTrainingSessions(data.trainingSessions)
-        setDraft((d) => ({ ...d, spotId: data.spots[0]?.id ?? d.spotId }))
-      } else {
-        const data = await cloudLoadAthleteData(session.coachId, session.athleteId)
-        if (!mounted) return
-        setAthletes(data.athlete ? [data.athlete] : [])
-        setSpots(data.spots)
-        setTrainingSessions(data.trainingSessions)
-      }
+      if (!mounted) return
+      await applyCloudSessionData(session)
     }
 
     void (async () => {
@@ -353,18 +357,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       mounted = false
       unsub?.()
     }
-  }, [cloudMode])
+  }, [cloudMode, applyCloudSessionData])
 
   const loginAsCoach = useCallback(
     async (email: string, password: string) => {
       if (cloudMode) {
         const result = await cloudLogin(email, password)
-        if (result.ok) {
-          const session = await cloudGetSession()
-          if (session) setAuth(session)
-          setView('coach-home')
-        }
-        return result
+        if (!result.ok) return result
+        setAuth(result.session)
+        await applyCloudSessionData(result.session)
+        setView('coach-home')
+        return { ok: true as const }
       }
 
       const normalized = normalizeEmail(email)
@@ -395,19 +398,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setView('coach-home')
     return { ok: true }
   },
-    [cloudMode],
+    [applyCloudSessionData, cloudMode],
   )
 
   const loginAsStudent = useCallback(
     async (email: string, password: string) => {
       if (cloudMode) {
         const result = await cloudLogin(email, password)
-        if (result.ok) {
-          const session = await cloudGetSession()
-          if (session) setAuth(session)
-          setView('athlete-portal')
-        }
-        return result
+        if (!result.ok) return result
+        setAuth(result.session)
+        await applyCloudSessionData(result.session)
+        setView('athlete-portal')
+        return { ok: true as const }
       }
 
       const normalized = normalizeEmail(email)
@@ -440,12 +442,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setView('athlete-portal')
     return { ok: true }
   },
-    [cloudMode],
+    [applyCloudSessionData, cloudMode],
   )
 
   const registerCoach = useCallback(
     async (name: string, email: string, password: string) => {
-      if (cloudMode) return cloudRegisterCoach(name, email, password)
+      if (cloudMode) {
+        const result = await cloudRegisterCoach(name, email, password)
+        if (!result.ok) return result
+        setAuth(result.session)
+        await applyCloudSessionData(result.session)
+        setView('coach-home')
+        return { ok: true as const }
+      }
 
       const trimmedName = name.trim()
       const normalized = normalizeEmail(email)
@@ -477,7 +486,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setView('coach-home')
       return { ok: true as const }
     },
-    [cloudMode],
+    [applyCloudSessionData, cloudMode],
   )
 
   const logout = useCallback(async () => {

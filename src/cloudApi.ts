@@ -154,7 +154,7 @@ async function profileToAuthSession(
   },
 ): Promise<AuthSession | null> {
   if (authUser) {
-    await ensureUserProfile(authUser)
+    void ensureUserProfile(authUser)
   }
 
   let profile = await fetchProfileRow(userId)
@@ -168,11 +168,27 @@ async function profileToAuthSession(
   return null
 }
 
+async function buildAuthSessionFromUser(
+  user: {
+    id: string
+    email?: string | null
+    user_metadata?: Record<string, unknown>
+  },
+  fallbackEmail: string,
+): Promise<AuthSession> {
+  const session = await profileToAuthSession(user.id, user.email ?? fallbackEmail, user)
+  return session ?? authSessionFromAuthUser(user)
+}
+
+export type CloudAuthResult =
+  | { ok: true; session: AuthSession }
+  | { ok: false; error: string }
+
 export async function cloudRegisterCoach(
   name: string,
   email: string,
   password: string,
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<CloudAuthResult> {
   const trimmedName = name.trim()
   const normalized = normalizeEmail(email)
   if (!trimmedName) return { ok: false, error: 'Enter your name.' }
@@ -192,35 +208,38 @@ export async function cloudRegisterCoach(
   if (error) {
     const msg = error.message.toLowerCase()
     if (msg.includes('already registered') || msg.includes('already been registered')) {
-      const login = await cloudLogin(normalized, password)
-      if (login.ok) return { ok: true }
-      return {
-        ok: false,
-        error:
-          'This email is already registered. Use Sign in with the correct password. If you forgot it, reset in Supabase → Authentication → Users.',
-      }
+      return cloudLogin(normalized, password)
     }
     return { ok: false, error: error.message }
   }
-  if (!data.session) {
-    const { error: loginError } = await supabase.auth.signInWithPassword({
-      email: normalized,
-      password,
-    })
-    if (loginError) {
-      return {
-        ok: false,
-        error: 'Account created. Try Sign in with the same email and password.',
-      }
+
+  if (data.session?.user) {
+    const session = await buildAuthSessionFromUser(data.session.user, normalized)
+    return { ok: true, session }
+  }
+
+  const { data: signInData, error: loginError } = await supabase.auth.signInWithPassword({
+    email: normalized,
+    password,
+  })
+  if (loginError) {
+    return {
+      ok: false,
+      error: 'Account created. Try Sign in with the same email and password.',
     }
   }
-  return { ok: true }
+  if (!signInData.user) {
+    return { ok: false, error: 'Account created but sign in failed. Try Sign in.' }
+  }
+
+  const session = await buildAuthSessionFromUser(signInData.user, normalized)
+  return { ok: true, session }
 }
 
 export async function cloudLogin(
   email: string,
   password: string,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<CloudAuthResult> {
   const supabase = getSupabase()
   const normalized = normalizeEmail(email)
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -242,20 +261,8 @@ export async function cloudLogin(
 
   if (!data.user) return { ok: false, error: 'Sign in failed. Try again.' }
 
-  const ensured = await ensureUserProfile(data.user)
-  if (!ensured.ok) {
-    return {
-      ok: false,
-      error: ensured.error ?? 'Could not load profile.',
-    }
-  }
-
-  let session = await profileToAuthSession(data.user.id, data.user.email ?? normalized, data.user)
-  if (!session) {
-    session = authSessionFromAuthUser(data.user)
-  }
-
-  return { ok: true }
+  const session = await buildAuthSessionFromUser(data.user, normalized)
+  return { ok: true, session }
 }
 
 export async function cloudLogout(): Promise<void> {
