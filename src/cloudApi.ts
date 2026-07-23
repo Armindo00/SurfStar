@@ -18,25 +18,6 @@ type ProfileRow = {
   athlete_id: string | null
 }
 
-function mapProfileRow(row: ProfileRow, fallbackEmail: string): AuthSession | null {
-  if (row.role === 'treinador') {
-    return {
-      role: 'treinador',
-      coachId: row.id,
-      name: row.name,
-      email: row.email || fallbackEmail,
-    }
-  }
-  if (!row.coach_id || !row.athlete_id) return null
-  return {
-    role: 'atleta',
-    coachId: row.coach_id,
-    athleteId: row.athlete_id,
-    name: row.name,
-    email: row.email || fallbackEmail,
-  }
-}
-
 function authSessionFromAuthUser(user: {
   id: string
   email?: string | null
