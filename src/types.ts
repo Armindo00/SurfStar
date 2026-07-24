@@ -35,20 +35,31 @@ export type AthleteShareSettings = {
 }
 
 export const DEFAULT_ATHLETE_SHARE_SETTINGS: AthleteShareSettings = {
-  technicalStats: false,
-  comboStats: false,
-  sessionHistory: false,
-  heatDetails: false,
+  technicalStats: true,
+  comboStats: true,
+  sessionHistory: true,
+  heatDetails: true,
 }
 
 export function normalizeAthleteShareSettings(
   raw?: Partial<AthleteShareSettings> | null,
 ): AthleteShareSettings {
+  const hasAnyKey =
+    raw &&
+    ('technicalStats' in raw ||
+      'comboStats' in raw ||
+      'sessionHistory' in raw ||
+      'heatDetails' in raw)
+
+  if (!hasAnyKey) {
+    return { ...DEFAULT_ATHLETE_SHARE_SETTINGS }
+  }
+
   return {
-    technicalStats: raw?.technicalStats ?? false,
-    comboStats: raw?.comboStats ?? false,
-    sessionHistory: raw?.sessionHistory ?? false,
-    heatDetails: raw?.heatDetails ?? false,
+    technicalStats: raw?.technicalStats ?? DEFAULT_ATHLETE_SHARE_SETTINGS.technicalStats,
+    comboStats: raw?.comboStats ?? DEFAULT_ATHLETE_SHARE_SETTINGS.comboStats,
+    sessionHistory: raw?.sessionHistory ?? DEFAULT_ATHLETE_SHARE_SETTINGS.sessionHistory,
+    heatDetails: raw?.heatDetails ?? DEFAULT_ATHLETE_SHARE_SETTINGS.heatDetails,
   }
 }
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { useApp } from '../AppContext'
 import {
@@ -40,10 +40,22 @@ function formatSessionDate(iso: string) {
 }
 
 export function AthletePortal() {
-  const { auth, trainingSessions, athleteLinks, getSpot, logout, respondToPairing, revokePairing } =
+  const { auth, trainingSessions, athleteLinks, getSpot, logout, respondToPairing, revokePairing, refreshPairingData } =
     useApp()
   const [pairingBusy, setPairingBusy] = useState<string | null>(null)
   const [pairingError, setPairingError] = useState('')
+
+  useEffect(() => {
+    void refreshPairingData()
+  }, [refreshPairingData])
+
+  useEffect(() => {
+    const onFocus = () => {
+      void refreshPairingData()
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [refreshPairingData])
 
   const isAthlete = auth?.role === 'atleta'
   const athleteId = isAthlete ? auth.athleteId : ''

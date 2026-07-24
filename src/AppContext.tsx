@@ -421,7 +421,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setAthletes(data.athlete ? [data.athlete] : [])
     setAthleteLinks(data.links)
     setCoachLinks([])
-    setTrainingSessions(data.trainingSessions)
+    setTrainingSessions(data.trainingSessions.filter((s) => Boolean(s.endedAt)))
     setSpots([])
   }, [])
 
@@ -542,7 +542,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const data = await cloudLoadAthleteData(auth.athleteId)
         setAthletes(data.athlete ? [data.athlete] : [])
         setAthleteLinks(data.links)
-        setTrainingSessions(data.trainingSessions)
+        setTrainingSessions(data.trainingSessions.filter((s) => Boolean(s.endedAt)))
       }
       return
     }
@@ -870,10 +870,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [cloudMode, setPublicView])
 
   const persistSessions = useCallback(
-    (next: TrainingSession[]) => {
-      setTrainingSessions(next)
-      if (cloudMode) syncSessionsToCloud(next)
-      else store.saveTrainingSessions(next)
+    (nextOrUpdater: TrainingSession[] | ((prev: TrainingSession[]) => TrainingSession[])) => {
+      setTrainingSessions((prev) => {
+        const next = typeof nextOrUpdater === 'function' ? nextOrUpdater(prev) : nextOrUpdater
+        if (cloudMode) syncSessionsToCloud(next)
+        else store.saveTrainingSessions(next)
+        return next
+      })
     },
     [cloudMode, syncSessionsToCloud],
   )
@@ -898,11 +901,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateSession = useCallback(
     (sessionId: string, updater: (session: TrainingSession) => TrainingSession) => {
-      persistSessions(
-        trainingSessions.map((s) => (s.id === sessionId ? updater(s) : s)),
-      )
+      persistSessions((prev) => prev.map((s) => (s.id === sessionId ? updater(s) : s)))
     },
-    [persistSessions, trainingSessions],
+    [persistSessions],
   )
 
   const requestPairingByCode = useCallback(
@@ -1044,7 +1045,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const normalized = normalizeAthleteShareSettings(shareSettings)
 
       if (cloudMode) {
-        void cloudUpdateLinkShareSettings(linkId, normalized).then(() => refreshPairingData())
+        void cloudUpdateLinkShareSettings(linkId, normalized).then((result) => {
+          if (!result.ok) {
+            showToast(result.error, 'error')
+            return
+          }
+          void refreshPairingData()
+        })
         return
       }
 
@@ -1056,7 +1063,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
       setAthletes(buildCoachAthletesFromLinks(nextPairings, store.getAthletes()))
     },
-    [auth, cloudMode, refreshPairingData],
+    [auth, cloudMode, refreshPairingData, showToast],
   )
 
   const setAthleteBlocked = useCallback(
@@ -1244,14 +1251,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const getAthlete = useCallback(
     (id: string) => {
-      const athlete = athletes.find((a) => a.id === id)
+      const athlete =
+        athletes.find((a) => a.id === id) ?? coachAthletes.find((a) => a.id === id)
       if (!athlete) return undefined
       return {
         ...athlete,
         shareSettings: normalizeAthleteShareSettings(athlete.shareSettings),
       }
     },
-    [athletes],
+    [athletes, coachAthletes],
   )
   const getSpot = useCallback((id: string) => spots.find((s) => s.id === id), [spots])
 
@@ -1347,13 +1355,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       endedAt: null,
       coachNotes: null,
     }
-    persistSessions([session, ...trainingSessions])
+    persistSessions((prev) => [session, ...prev])
     setActiveSessionId(session.id)
     setActiveAthleteId(draft.athleteIds[0] ?? null)
     setActiveWaveId(null)
     setActiveHeatId(initialHeat?.id ?? null)
     setView(viewForMode(draft.mode))
-  }, [auth, draft, persistSessions, showToast, spots, subscription?.planId, trainingSessions])
+  }, [auth, draft, persistSessions, showToast, spots, subscription?.planId])
 
   const openEndSessionSheet = useCallback(() => {
     setEndSessionSheetOpen(true)
@@ -1403,14 +1411,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const cancelActiveSession = useCallback(() => {
     if (!activeSessionId) return
-    persistSessions(trainingSessions.filter((s) => s.id !== activeSessionId))
+    persistSessions((prev) => prev.filter((s) => s.id !== activeSessionId))
     setActiveWaveId(null)
     setActiveHeatId(null)
     setActiveSessionId(null)
     setActiveAthleteId(null)
     resetDraft()
     setView('coach-home')
-  }, [activeSessionId, persistSessions, resetDraft, trainingSessions])
+  }, [activeSessionId, persistSessions, resetDraft])
 
   const discardEmptyOpenWave = useCallback(
     (sessionId: string, waveId: string | null) => {

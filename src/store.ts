@@ -49,22 +49,23 @@ function load(): Persisted {
     const raw = localStorage.getItem(KEY)
     if (!raw) return seed()
     const parsed = JSON.parse(raw) as Persisted
+    const spots = parsed.spots?.length ? parsed.spots : createDefaultSpots()
+    const conditions = parsed.conditions?.length ? parsed.conditions : createDefaultConditions()
     return {
       coaches: (parsed.coaches ?? []).map((c) => normalizeCoach(c as CoachAccount & { password?: string })),
       students: (parsed.students ?? []).map((s) => normalizeStudent(s as StudentAccount & { password?: string })),
       athletes: parsed.athletes ?? [],
       pairings: parsed.pairings ?? [],
-      spots: parsed.spots?.length ? parsed.spots : createDefaultSpots(),
-      conditions: parsed.conditions?.length ? parsed.conditions : createDefaultConditions(),
-      trainingSessions: (parsed.trainingSessions ?? []).map(migrateSession),
+      spots,
+      conditions,
+      trainingSessions: (parsed.trainingSessions ?? []).map((s) => migrateSession(s, spots)),
     }
   } catch {
     return seed()
   }
 }
 
-function migrateSession(s: TrainingSession): TrainingSession {
-  const spots = load().spots
+function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession {
   const spotName =
     s.spotName?.trim() ||
     spots.find((spot) => spot.id === s.spotId)?.name?.trim() ||

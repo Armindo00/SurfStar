@@ -49,7 +49,10 @@ export function loadAthleteSessionsLocal(
     links.filter((l) => l.status === 'active' && !l.blocked).map((l) => l.coachId),
   )
   return sessions.filter(
-    (s) => activeCoachIds.has(s.coachId) && s.athleteIds.includes(athleteId),
+    (s) =>
+      activeCoachIds.has(s.coachId) &&
+      Boolean(s.endedAt) &&
+      s.athleteIds.includes(athleteId),
   )
 }
 
