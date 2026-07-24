@@ -17,13 +17,13 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     name: 'Starter',
     priceMonthly: 19,
     currency: 'EUR',
-    tagline: 'Para treinadores individuais',
+    tagline: 'For individual coaches',
     maxAthletes: 5,
     features: [
-      'Até 5 atletas',
-      'Treino técnico e combos',
-      'Histórico de sessões',
-      'Gestão de spots',
+      'Up to 5 athletes',
+      'Technical training & combos',
+      'Session history',
+      'Spot management',
     ],
   },
   {
@@ -31,15 +31,15 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     name: 'Team',
     priceMonthly: 39,
     currency: 'EUR',
-    tagline: 'Para equipas e escolas',
+    tagline: 'For teams and surf schools',
     maxAthletes: 20,
     highlighted: true,
     features: [
-      'Até 20 atletas',
-      'Tudo do Starter',
-      'Team analytics (6 meses)',
-      'Pairing multi-treinador',
-      'Partilha de stats com atletas',
+      'Up to 20 athletes',
+      'Everything in Starter',
+      'Team analytics (6 months)',
+      'Multi-coach pairing',
+      'Share stats with athletes',
     ],
   },
   {
@@ -47,14 +47,14 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     name: 'Club',
     priceMonthly: 79,
     currency: 'EUR',
-    tagline: 'Para clubes e academias',
+    tagline: 'For clubs and academies',
     maxAthletes: null,
     features: [
-      'Atletas ilimitados',
-      'Tudo do Team',
-      'Heats e campeonato',
-      'Análise de mar',
-      'Suporte prioritário',
+      'Unlimited athletes',
+      'Everything in Team',
+      'Heats & championship',
+      'Sea analysis',
+      'Priority support',
     ],
   },
 ]
@@ -66,7 +66,7 @@ export function getPlan(planId: PlanId): SubscriptionPlan {
 }
 
 export function formatPlanPrice(plan: SubscriptionPlan): string {
-  return new Intl.NumberFormat('pt-PT', {
+  return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: plan.currency,
     maximumFractionDigits: 0,

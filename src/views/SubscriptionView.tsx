@@ -30,7 +30,7 @@ export function SubscriptionView() {
     setPwdError('')
     setPwdSuccess('')
     if (password !== passwordConfirm) {
-      setPwdError('As passwords não coincidem.')
+      setPwdError('Passwords do not match.')
       return
     }
     setPwdBusy(true)
@@ -42,7 +42,7 @@ export function SubscriptionView() {
       }
       setPassword('')
       setPasswordConfirm('')
-      setPwdSuccess('Password actualizada.')
+      setPwdSuccess('Password updated.')
     } finally {
       setPwdBusy(false)
     }
@@ -50,21 +50,21 @@ export function SubscriptionView() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Conta & subscrição" onBack={() => setView('coach-home')} />
+      <ScreenHeader title="Account & subscription" onBack={() => setView('coach-home')} />
 
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Plano actual</h2>
+        <h2 className="stats-panel__title">Current plan</h2>
         {plan ? (
           <>
             <p className="stats-panel__plan-name">
-              <strong>{plan.name}</strong> — {formatPlanPrice(plan)}/mês
+              <strong>{plan.name}</strong> — {formatPlanPrice(plan)}/mo
             </p>
             <p className="muted">{plan.tagline}</p>
-            <p className="muted">{athleteLimitMessage(plan.id)} · {activeCount} atletas activos</p>
+            <p className="muted">{athleteLimitMessage(plan.id)} · {activeCount} active athletes</p>
             {subscription?.currentPeriodEnd ? (
               <p className="muted">
-                Renovação:{' '}
-                {new Date(subscription.currentPeriodEnd).toLocaleDateString('pt-PT', {
+                Renews:{' '}
+                {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', {
                   day: '2-digit',
                   month: 'long',
                   year: 'numeric',
@@ -74,28 +74,28 @@ export function SubscriptionView() {
             <div className="stats-panel__actions">
               {billingPortal ? (
                 <a className="btn btn--gold btn--block" href={billingPortal} target="_blank" rel="noreferrer">
-                  Gerir subscrição (Stripe)
+                  Manage subscription (Stripe)
                 </a>
               ) : (
-                <p className="muted">Para mudar de pack, configura o Stripe Customer Portal ou contacta o suporte.</p>
+                <p className="muted">To change plans, configure the Stripe Customer Portal or contact support.</p>
               )}
               {cloudMode ? (
                 <button type="button" className="btn btn--ghost btn--block" onClick={() => void refreshSubscription()}>
-                  Actualizar estado
+                  Refresh status
                 </button>
               ) : null}
             </div>
           </>
         ) : (
-          <p className="muted">Sem subscrição activa.</p>
+          <p className="muted">No active subscription.</p>
         )}
       </div>
 
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Alterar password</h2>
+        <h2 className="stats-panel__title">Change password</h2>
         <form className="form-pro" onSubmit={(e) => void submitPassword(e)}>
           <label className="field field--pro">
-            <span>Nova password</span>
+            <span>New password</span>
             <input
               type="password"
               minLength={MIN_PASSWORD_LENGTH}
@@ -105,7 +105,7 @@ export function SubscriptionView() {
             />
           </label>
           <label className="field field--pro">
-            <span>Confirmar password</span>
+            <span>Confirm password</span>
             <input
               type="password"
               minLength={MIN_PASSWORD_LENGTH}
@@ -117,7 +117,7 @@ export function SubscriptionView() {
           {pwdError ? <p className="login-error">{pwdError}</p> : null}
           {pwdSuccess ? <p className="login-success">{pwdSuccess}</p> : null}
           <button type="submit" className="btn btn--primary btn--block" disabled={pwdBusy}>
-            {pwdBusy ? 'A guardar…' : 'Guardar password'}
+            {pwdBusy ? 'Saving…' : 'Save password'}
           </button>
         </form>
       </div>

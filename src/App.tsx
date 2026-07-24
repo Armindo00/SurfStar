@@ -27,6 +27,7 @@ import { TrainingSessionsView } from './views/TrainingSessionsView'
 import { TrainingSessionView } from './views/TrainingSessionView'
 import { isForgotPasswordPath } from './routing'
 import './App.css'
+import './app-theme.css'
 
 function AppHeader() {
   const { auth, logout, role } = useApp()
@@ -37,13 +38,13 @@ function AppHeader() {
       <div className="app-brandbar__brand">
         <AppLogo size="sm" />
         <div>
-          <small>{role === 'treinador' ? 'Treinador' : 'Atleta'}</small>
+          <small>{role === 'treinador' ? 'Coach' : 'Athlete'}</small>
         </div>
       </div>
       <div className="app-brandbar__user">
         <span className="app-brandbar__name">{auth.name}</span>
         <button type="button" className="btn btn--ghost btn--small" onClick={logout}>
-          Sair
+          Sign out
         </button>
       </div>
     </header>
@@ -57,7 +58,7 @@ function Shell() {
     return (
       <div className="login-page">
         <div className="login-card">
-          <p className="muted">A carregar SurfStar…</p>
+          <p className="muted">Loading SurfStar…</p>
         </div>
       </div>
     )

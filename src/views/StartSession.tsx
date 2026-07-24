@@ -25,7 +25,7 @@ export function StartSession() {
   const showHeatDuration = draft.mode === 'heats' || draft.mode === 'campeonato'
   const isSeaAnalysis = draft.mode === 'sea-analysis'
 
-  const startedLabel = new Date().toLocaleString('pt-PT', {
+  const startedLabel = new Date().toLocaleString('en-GB', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -35,12 +35,12 @@ export function StartSession() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Nova sessão" onBack={() => setView('coach-home')} />
+      <ScreenHeader title="New session" onBack={() => setView('coach-home')} />
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Configurar sessão</h2>
-        <p className="muted stats-panel__sub">Escolhe o tipo de treino antes de entrar na água.</p>
+        <h2 className="stats-panel__title">Session setup</h2>
+        <p className="muted stats-panel__sub">Choose the training type before you hit the water.</p>
 
-        <p className="field-label">Tipo de treino</p>
+        <p className="field-label">Training type</p>
         <div className="chip-row chip-row--pro chip-row--modes">
           {modes.map((mode) => (
             <button
@@ -56,19 +56,19 @@ export function StartSession() {
 
         {lockedModes.length > 0 ? (
           <p className="plan-lock-note muted">
-            {lockedModes.map((m) => TRAINING_MODE_LABELS[m]).join(', ')} — disponível no pack Club.
+            {lockedModes.map((m) => TRAINING_MODE_LABELS[m]).join(', ')} — available on Club plan.
           </p>
         ) : null}
 
         {isSeaAnalysis ? (
           <p className="muted stats-panel__sub">
-            Janela fixa de <strong>30 minutos</strong> · Pico 1 e Pico 2 · sem atletas.
+            Fixed <strong>30 minute</strong> observation window · Peak 1 & Peak 2 · no athletes required.
           </p>
         ) : null}
 
         {showHeatDuration ? (
           <>
-            <p className="field-label">Duração do heat</p>
+            <p className="field-label">Heat length</p>
             <div className="chip-row chip-row--pro">
               {HEAT_DURATIONS.map((d) => (
                 <button
@@ -97,9 +97,9 @@ export function StartSession() {
           </label>
 
           <label className="field field--pro">
-            <span>Condições</span>
+            <span>Sea conditions</span>
             <select value={draft.condition} onChange={(e) => setDraftCondition(e.target.value)}>
-              <option value="">Seleccionar…</option>
+              <option value="">Select…</option>
               {conditions.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -109,7 +109,7 @@ export function StartSession() {
           </label>
 
           <label className="field field--pro">
-            <span>Hora</span>
+            <span>Session time</span>
             <input type="text" readOnly value={startedLabel} className="input-readonly" />
           </label>
         </div>
@@ -120,7 +120,7 @@ export function StartSession() {
           disabled={!draft.condition || modes.length === 0}
           onClick={() => setView('select-athletes')}
         >
-          Continuar
+          Continue
         </button>
       </div>
     </div>

@@ -111,7 +111,7 @@ export function ManageAthletes() {
     <div className="ss-flow">
       <ScreenHeader title="Athletes & pairing" onBack={() => setView('coach-home')} />
       <p className="plan-limit-banner muted">
-        {athleteLimitMessage(planId)} · {activeCount} activos · {pendingLinks.length} pendentes
+        {athleteLimitMessage(planId)} · {activeCount} active · {pendingLinks.length} pending
       </p>
       <div className="ss-card">
         <p className="muted stats-panel__sub">

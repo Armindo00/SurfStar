@@ -39,19 +39,19 @@ export function canAddAthlete(planId: PlanId, activeAthleteCount: number): boole
 
 export function athleteLimitMessage(planId: PlanId): string {
   const max = getMaxAthletes(planId)
-  if (max === null) return 'Atletas ilimitados'
-  return `Até ${max} atletas no pack ${getPlan(planId).name}`
+  if (max === null) return 'Unlimited athletes'
+  return `Up to ${max} athletes on ${getPlan(planId).name}`
 }
 
 export function planUpgradeHint(planId: PlanId, feature: 'analytics' | 'heats' | 'sea' | 'athletes'): string {
   if (feature === 'analytics' && !canAccessTeamAnalytics(planId)) {
-    return 'Disponível a partir do pack Team.'
+    return 'Available on Team plan and above.'
   }
   if ((feature === 'heats' || feature === 'sea') && planId !== 'club') {
-    return 'Disponível no pack Club.'
+    return 'Available on Club plan.'
   }
   if (feature === 'athletes' && planId === 'starter') {
-    return 'Faz upgrade para Team (20 atletas) ou Club (ilimitado).'
+    return 'Upgrade to Team (20 athletes) or Club (unlimited).'
   }
-  return 'Faz upgrade de pack para desbloquear.'
+  return 'Upgrade your plan to unlock this feature.'
 }

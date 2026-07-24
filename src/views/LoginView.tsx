@@ -83,7 +83,7 @@ export function LoginView() {
     <div className="login-page">
       <div className="login-card">
         <button type="button" className="login-back" onClick={openLanding}>
-          ← Voltar ao início
+          ← Back to home
         </button>
 
         <div className="login-brand">
@@ -96,9 +96,9 @@ export function LoginView() {
 
         {selectedPlan ? (
           <div className="login-plan-banner">
-            <span>Pack escolhido</span>
+            <span>Selected plan</span>
             <strong>
-              {selectedPlan.name} · {formatPlanPrice(selectedPlan)}/mês
+              {selectedPlan.name} · {formatPlanPrice(selectedPlan)}/mo
             </strong>
           </div>
         ) : null}
@@ -210,7 +210,7 @@ export function LoginView() {
           {error && <p className="login-error">{error}</p>}
           {!isRegister && cloudMode ? (
             <button type="button" className="login-forgot btn btn--ghost btn--block" onClick={openForgotPassword}>
-              Esqueci a password
+              Forgot password
             </button>
           ) : null}
           <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={busy}>
@@ -219,7 +219,7 @@ export function LoginView() {
               : isRegister
                 ? tab === 'treinador'
                   ? selectedPlan
-                    ? `Criar conta · ${selectedPlan.name}`
+                    ? `Create account · ${selectedPlan.name}`
                     : 'Create coach account'
                   : 'Create athlete account'
                 : 'Sign in'}
@@ -231,11 +231,10 @@ export function LoginView() {
           {tab === 'treinador' ? (
             <>
               <p>
-                <strong>Coach:</strong> escolhe um pack, cria conta e ativa a subscrição para gerir atletas e
-                treinos.
+                <strong>Coach:</strong> pick a plan, create an account, and activate your subscription to manage athletes and sessions.
               </p>
               <p>
-                <strong>Athlete:</strong> muda para o separador Athlete — entrada grátis com código de pairing.
+                <strong>Athlete:</strong> switch to the Athlete tab — free access with a pairing code.
               </p>
             </>
           ) : (

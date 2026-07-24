@@ -73,7 +73,7 @@ export function CheckoutView() {
       window.open(url, '_blank', 'noopener,noreferrer')
       setAwaitingPayment(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível iniciar o checkout.')
+      setError(err instanceof Error ? err.message : 'Could not start checkout.')
     } finally {
       setBusy(false)
     }
@@ -83,38 +83,38 @@ export function CheckoutView() {
     <div className="checkout-page">
       <div className="checkout-card">
         <button type="button" className="checkout-back" onClick={openLanding}>
-          ← Voltar
+          ← Back
         </button>
 
         <div className="checkout-brand">
           <AppLogo size="lg" />
           <div>
-            <h1>Ativar subscrição</h1>
-            <p className="muted">Olá {auth?.name ?? 'treinador'} — confirma o teu pack para entrar.</p>
+            <h1>Activate subscription</h1>
+            <p className="muted">Hi {auth?.name ?? 'coach'} — confirm your plan to enter the app.</p>
           </div>
         </div>
 
         <div className="checkout-summary">
           <div>
-            <span className="checkout-summary__label">Pack escolhido</span>
+            <span className="checkout-summary__label">Selected plan</span>
             <strong>{plan.name}</strong>
             <p className="muted">{plan.tagline}</p>
           </div>
           <div className="checkout-summary__price">
             <strong>{formatPlanPrice(plan)}</strong>
-            <span>/ mês</span>
+            <span>/ month</span>
           </div>
         </div>
 
         <label className="field field--login">
-          <span>Alterar pack</span>
+          <span>Change plan</span>
           <select
             value={planId}
             onChange={(e) => selectPlan(e.target.value as PlanId, { goToLogin: false })}
           >
             {SUBSCRIPTION_PLANS.map((item) => (
               <option key={item.id} value={item.id}>
-                {item.name} — {formatPlanPrice(item)}/mês
+                {item.name} — {formatPlanPrice(item)}/mo
               </option>
             ))}
           </select>
@@ -130,30 +130,30 @@ export function CheckoutView() {
 
         {isPending || awaitingPayment ? (
           <div className="checkout-pending">
-            <p className="checkout-pending__title">A aguardar confirmação de pagamento…</p>
+            <p className="checkout-pending__title">Waiting for payment confirmation…</p>
             <p className="muted">
-              Completa o pagamento na janela Stripe. A conta activa-se automaticamente em segundos.
+              Complete payment in the Stripe window. Your account activates automatically within seconds.
             </p>
             <button type="button" className="btn btn--secondary btn--block" onClick={() => void refreshSubscription()} disabled={busy}>
-              Verificar agora
+              Check now
             </button>
           </div>
         ) : (
           <button type="button" className="btn btn--gold btn--block btn--lg" onClick={() => void handlePay()} disabled={busy}>
-            {busy ? 'A processar…' : stripeLink ? 'Pagar com Stripe' : `Activar ${plan.name}`}
+            {busy ? 'Processing…' : stripeLink ? 'Pay with Stripe' : `Activate ${plan.name}`}
           </button>
         )}
 
         <p className="checkout-note muted">
           {stripeLink
-            ? 'Pagamento seguro via Stripe. Cancela quando quiseres no portal de billing.'
+            ? 'Secure payment via Stripe. Cancel anytime from the billing portal.'
             : cloudMode
-              ? 'Sem Stripe configurado — activação directa (modo demo activo no Supabase).'
-              : 'Modo local: a subscrição fica guardada neste dispositivo.'}
+              ? 'No Stripe configured — direct activation (demo mode on Supabase).'
+              : 'Local mode: subscription is stored on this device.'}
         </p>
 
         <button type="button" className="btn btn--ghost btn--block" onClick={logout}>
-          Terminar sessão
+          Sign out
         </button>
       </div>
     </div>

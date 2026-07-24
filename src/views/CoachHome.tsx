@@ -4,20 +4,20 @@ import { formatPlanPrice, getPlan } from '../plans'
 
 export function CoachHome() {
   const { auth, subscription, setView, beginDraftSession, logout } = useApp()
-  const name = auth?.role === 'treinador' ? auth.name : 'Treinador'
+  const name = auth?.role === 'treinador' ? auth.name : 'Coach'
   const plan = subscription ? getPlan(subscription.planId) : null
 
   return (
     <div className="dashboard">
       <header className="dashboard__hero">
-        <p className="dashboard__hello">Olá,</p>
+        <p className="dashboard__hello">Hello,</p>
         <h1 className="dashboard__name">{name}</h1>
         {plan ? (
           <p className="dashboard__plan muted">
-            Pack {plan.name} · {formatPlanPrice(plan)}/mês · {athleteLimitMessage(plan.id)}
+            {plan.name} plan · {formatPlanPrice(plan)}/mo · {athleteLimitMessage(plan.id)}
           </p>
         ) : (
-          <p className="muted">Painel SurfStar</p>
+          <p className="muted">SurfStar coach dashboard</p>
         )}
       </header>
 
@@ -26,14 +26,14 @@ export function CoachHome() {
           ▶
         </span>
         <span>
-          <strong>Nova sessão</strong>
-          <small>Técnico, combos, heats, mar</small>
+          <strong>New session</strong>
+          <small>Technical, combos, heats, sea analysis</small>
         </span>
       </button>
 
       <nav className="action-list">
         <button type="button" className="action-list__item" onClick={() => setView('training-sessions')}>
-          <span>Sessões anteriores</span>
+          <span>Past sessions</span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('analytics')}>
@@ -41,21 +41,21 @@ export function CoachHome() {
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('manage-athletes')}>
-          <span>Gerir atletas</span>
+          <span>Manage athletes</span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('manage-spots')}>
-          <span>Spots & condições</span>
+          <span>Spots & conditions</span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('subscription')}>
-          <span>Conta & subscrição</span>
+          <span>Account & subscription</span>
           <span aria-hidden="true">›</span>
         </button>
       </nav>
 
       <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>
-        Sair
+        Sign out
       </button>
     </div>
   )

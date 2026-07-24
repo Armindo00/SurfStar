@@ -378,7 +378,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (next: TrainingSession[], session: AuthSession | null = auth) => {
       if (cloudMode && session?.role === 'treinador') {
         void cloudSaveTrainingSessions(session.coachId, next).then((result) => {
-          if (!result.ok) showToast(`Erro ao guardar sessões: ${result.error}`, 'error')
+          if (!result.ok) showToast(`Failed to save sessions: ${result.error}`, 'error')
         })
       }
     },
@@ -481,7 +481,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const requestPasswordReset = useCallback(
     async (email: string) => {
       if (!cloudMode) {
-        return { ok: false as const, error: 'Recuperação de password só disponível em modo cloud.' }
+        return { ok: false as const, error: 'Password reset is only available in cloud mode.' }
       }
       return cloudResetPassword(email)
     },
@@ -490,7 +490,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const startCheckout = useCallback(async () => {
     if (!auth || auth.role !== 'treinador') {
-      return { ok: false as const, error: 'Inicia sessão como treinador.' }
+        return { ok: false as const, error: 'Sign in as coach first.' }
     }
     const planId = selectedPlanId ?? subscription?.planId ?? 'team'
     try {
@@ -500,26 +500,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       return {
         ok: false as const,
-        error: err instanceof Error ? err.message : 'Não foi possível iniciar checkout.',
+        error: err instanceof Error ? err.message : 'Could not start checkout.',
       }
     }
   }, [auth, cloudMode, selectedPlanId, subscription?.planId])
 
   const activateDemoSubscription = useCallback(async () => {
     if (!auth || auth.role !== 'treinador') {
-      return { ok: false as const, error: 'Inicia sessão como treinador.' }
+        return { ok: false as const, error: 'Sign in as coach first.' }
     }
     const planId = selectedPlanId ?? subscription?.planId ?? 'team'
     try {
       const sub = await activateCoachSubscription(auth.coachId, planId, cloudMode)
       setSubscription(sub)
       setView('coach-home')
-      showToast('Subscrição activada.', 'success')
+      showToast('Subscription activated.', 'success')
       return { ok: true as const }
     } catch (err) {
       return {
         ok: false as const,
-        error: err instanceof Error ? err.message : 'Não foi possível activar.',
+        error: err instanceof Error ? err.message : 'Could not activate subscription.',
       }
     }
   }, [auth, cloudMode, selectedPlanId, subscription?.planId, showToast])
@@ -917,7 +917,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!canAddAthlete(planId, activeCount + pendingCount)) {
         return {
           ok: false,
-          error: `Limite de atletas do pack ${getPlan(planId).name} atingido. Faz upgrade para adicionar mais.`,
+          error: `Athlete limit reached on ${getPlan(planId).name}. Upgrade to add more.`,
         }
       }
 
@@ -1139,7 +1139,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const saveSpotsToCloud = useCallback(
     (coachId: string, next: SurfSpot[]) => {
       void cloudSaveSpots(coachId, next).then((result) => {
-        if (!result.ok) showToast(`Erro ao guardar spots: ${result.error}`, 'error')
+        if (!result.ok) showToast(`Failed to save spots: ${result.error}`, 'error')
       })
     },
     [showToast],
@@ -1148,7 +1148,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const saveConditionsToCloud = useCallback(
     (coachId: string, next: string[]) => {
       void cloudSaveConditions(coachId, next).then((result) => {
-        if (!result.ok) showToast(`Erro ao guardar condições: ${result.error}`, 'error')
+        if (!result.ok) showToast(`Failed to save conditions: ${result.error}`, 'error')
       })
     },
     [showToast],
@@ -1294,7 +1294,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         subscription &&
         !canAccessTeamAnalytics(subscription.planId)
       ) {
-        showToast('Team analytics requer pack Team ou Club.', 'error')
+        showToast('Team analytics requires Team or Club plan.', 'error')
         return
       }
       setView(next)
@@ -1319,7 +1319,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const planId = subscription?.planId ?? 'starter'
     if (!canUseTrainingMode(planId, draft.mode)) {
-      showToast('Este modo de treino não está incluído no teu pack.', 'error')
+      showToast('This training mode is not included in your plan.', 'error')
       return
     }
 

@@ -29,18 +29,18 @@ export function ForgotPasswordView() {
     <div className="login-page">
       <div className="login-card">
         <button type="button" className="login-back" onClick={openCoachLogin}>
-          ← Voltar
+          ← Back
         </button>
 
         <div className="login-brand">
           <AppLogo size="lg" />
-          <h1>Recuperar password</h1>
-          <p className="muted">Enviaremos um link para o teu email.</p>
+          <h1>Reset password</h1>
+          <p className="muted">We&apos;ll send a link to your email.</p>
         </div>
 
         {sent ? (
           <p className="login-success">
-            Se existir uma conta com esse email, receberás instruções para redefinir a password.
+            If an account exists with that email, you&apos;ll receive reset instructions shortly.
           </p>
         ) : (
           <form className="login-form" onSubmit={(e) => void submit(e)}>
@@ -56,7 +56,7 @@ export function ForgotPasswordView() {
             </label>
             {error ? <p className="login-error">{error}</p> : null}
             <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={busy}>
-              {busy ? 'A enviar…' : 'Enviar link'}
+              {busy ? 'Sending…' : 'Send reset link'}
             </button>
           </form>
         )}

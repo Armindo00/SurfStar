@@ -1,0 +1,421 @@
+/* SurfStar app theme — aligned with landing (navy + gold) */
+
+:root {
+  --landing-navy: #050b18;
+  --landing-navy-mid: #0a1628;
+  --landing-gold: #c9a962;
+  --landing-gold-light: #e8d5a3;
+  --landing-text: #f1f5f9;
+  --landing-muted: #94a3b8;
+
+  --ss-bg-top: #050b18;
+  --ss-bg-mid: #0a1628;
+  --ss-bg-bottom: #0c1f3d;
+  --ss-header: rgba(5, 11, 24, 0.95);
+  --ss-surface: transparent;
+  --ss-card: rgba(255, 255, 255, 0.06);
+  --ss-text: #f1f5f9;
+  --ss-muted: #94a3b8;
+  --ss-primary: #c9a962;
+  --ss-primary-dark: #b8943f;
+  --ss-hero: #e8d5a3;
+  --ss-border: rgba(255, 255, 255, 0.12);
+  --ss-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  color: var(--ss-text);
+}
+
+body {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201, 169, 98, 0.1), transparent),
+    linear-gradient(180deg, var(--landing-navy) 0%, var(--landing-navy-mid) 45%, #0c1f3d 100%);
+}
+
+.app-shell__inner {
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (min-width: 768px) {
+  .app-shell__inner {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    overflow: hidden;
+    background: rgba(5, 11, 24, 0.55);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  }
+}
+
+.app-brandbar {
+  background: rgba(5, 11, 24, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.app-brandbar__brand small {
+  color: var(--landing-muted);
+}
+
+.screen-header,
+.screen-header {
+  background: rgba(5, 11, 24, 0.92) !important;
+  color: var(--landing-text) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.screen-header__title {
+  color: var(--landing-text) !important;
+}
+
+.screen-header__back,
+.screen-header__help {
+  color: var(--landing-gold-light) !important;
+}
+
+.ss-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25) !important;
+  color: var(--landing-text);
+}
+
+.ss-card h2,
+.stats-panel__title,
+.page-title {
+  color: var(--landing-gold-light) !important;
+}
+
+.ss-flow {
+  color: var(--landing-text);
+}
+
+.login-page,
+.checkout-page {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201, 169, 98, 0.12), transparent),
+    linear-gradient(180deg, var(--landing-navy) 0%, var(--landing-navy-mid) 45%, #0c1f3d 100%) !important;
+}
+
+.login-card,
+.checkout-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(12px);
+  color: var(--landing-text);
+}
+
+.login-brand h1,
+.checkout-brand h1 {
+  color: var(--landing-text) !important;
+}
+
+.login-tabs {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.login-tabs__btn--on {
+  background: rgba(201, 169, 98, 0.2);
+  color: var(--landing-gold-light);
+}
+
+.field--login span,
+.field span {
+  color: var(--landing-muted);
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--landing-text);
+}
+
+.login-demo,
+.checkout-summary,
+.checkout-pending,
+.login-plan-banner {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--landing-muted);
+}
+
+.checkout-summary strong,
+.checkout-summary__price strong {
+  color: var(--landing-gold-light) !important;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, #dbbf6a 0%, #b8943f 100%) !important;
+  border-color: #b8943f !important;
+  color: #1a1204 !important;
+  font-weight: 700;
+}
+
+.btn--secondary {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: var(--landing-text) !important;
+}
+
+.btn {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--landing-text);
+}
+
+.dashboard__hello,
+.dashboard__name {
+  color: var(--landing-text);
+}
+
+.dashboard__plan {
+  color: var(--landing-muted);
+}
+
+.action-card--primary {
+  background: linear-gradient(135deg, rgba(201, 169, 98, 0.35), rgba(184, 148, 63, 0.25)) !important;
+  border: 1px solid rgba(201, 169, 98, 0.45) !important;
+  color: var(--landing-text) !important;
+}
+
+.action-card--primary small {
+  color: var(--landing-muted) !important;
+}
+
+.action-card__icon {
+  background: rgba(201, 169, 98, 0.25) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.action-list__item {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--landing-text) !important;
+}
+
+.action-list__item:hover {
+  border-color: rgba(201, 169, 98, 0.35) !important;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: var(--landing-muted) !important;
+}
+
+.chip--active {
+  background: rgba(201, 169, 98, 0.2) !important;
+  border-color: rgba(201, 169, 98, 0.45) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.kpi-card {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.kpi-card__label {
+  color: var(--landing-muted) !important;
+}
+
+.kpi-card__value {
+  color: var(--landing-gold-light) !important;
+}
+
+.stats-table th,
+.stats-table td,
+.rate-bar {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.input-readonly {
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--landing-muted);
+}
+
+.sheet,
+.modal-backdrop + .sheet {
+  background: #0a1628;
+  color: var(--landing-text);
+}
+
+.plan-limit-banner {
+  color: var(--landing-muted);
+}
+
+.muted {
+  color: var(--landing-muted) !important;
+}
+
+/* —— App shell: full navy + gold (matches landing) —— */
+
+.app-shell .ss-pick-item,
+.app-shell .ss-athlete-list li,
+.app-shell .ss-menu__item,
+.app-shell .stats-panel,
+.app-shell .wave-summary,
+.app-shell .wave-list li,
+.app-shell .athlete-tile,
+.app-shell .heat-card,
+.app-shell .sea-stats,
+.app-shell .sea-recommend,
+.app-shell .evolution-chart,
+.app-shell .pairing-card,
+.app-shell .history-row,
+.app-shell .session-card,
+.app-shell .spot-row,
+.app-shell .condition-row {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--landing-text) !important;
+}
+
+.app-shell .ss-pick-item--on,
+.app-shell .athlete-tile--selected {
+  background: rgba(201, 169, 98, 0.18) !important;
+  border-color: rgba(201, 169, 98, 0.45) !important;
+}
+
+.app-shell .ss-mini-stats,
+.app-shell .ss-mini-stats--bar,
+.app-shell .ss-tools,
+.app-shell .ss-tools__body {
+  background: rgba(0, 0, 0, 0.25) !important;
+  color: var(--landing-muted) !important;
+}
+
+.app-shell .ss-tools__toggle {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--landing-text) !important;
+}
+
+.app-shell .sheet,
+.app-shell .modal.sheet {
+  background: #0a1628 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--landing-text);
+}
+
+.app-shell .sheet__close {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--landing-text) !important;
+}
+
+.app-shell .sheet-divider {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .sheet__eyebrow {
+  color: var(--landing-gold) !important;
+}
+
+.app-shell .stats-table th {
+  color: var(--landing-muted) !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.app-shell .stats-table td {
+  color: var(--landing-text) !important;
+}
+
+.app-shell .rate-bar__fill {
+  background: linear-gradient(90deg, #b8943f, #dbbf6a) !important;
+}
+
+.app-shell .rate-bar__track {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.app-shell .btn--ghost {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .btn--danger {
+  background: rgba(220, 38, 38, 0.2) !important;
+  border-color: rgba(248, 113, 113, 0.45) !important;
+  color: #fecaca !important;
+}
+
+.app-shell .login-success {
+  color: #86efac !important;
+}
+
+.app-shell .login-error {
+  color: #fca5a5 !important;
+}
+
+.app-shell .page-title,
+.app-shell .stats-panel__title,
+.app-shell .sea-stats__title,
+.app-shell .sea-recommend__title {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .ss-wave-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: var(--landing-text) !important;
+}
+
+.app-shell .ss-wave-btn--dark {
+  background: rgba(201, 169, 98, 0.25) !important;
+  border-color: rgba(201, 169, 98, 0.5) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .ss-recording {
+  background: rgba(220, 38, 38, 0.15) !important;
+  color: #fecaca !important;
+}
+
+.app-shell .plan-limit-banner {
+  background: rgba(201, 169, 98, 0.12) !important;
+  border: 1px solid rgba(201, 169, 98, 0.35) !important;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+}
+
+.app-shell .paywall-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.modal-backdrop {
+  background: rgba(5, 11, 24, 0.82) !important;
+}
+
+.toast {
+  background: #0a1628 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: var(--landing-text) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+}
+
+.toast--success {
+  border-color: rgba(134, 239, 172, 0.4) !important;
+}
+
+.toast--error {
+  border-color: rgba(252, 165, 165, 0.4) !important;
+}
+
+.login-error {
+  color: #fca5a5 !important;
+}
+
+.login-success {
+  color: #86efac !important;
+}
+
+.login-forgot {
+  color: var(--landing-gold-light) !important;
+}
+
+.checkout-brand p,
+.login-brand p {
+  color: var(--landing-muted) !important;
+}

@@ -19,7 +19,7 @@ export function PackCard({ planId, selected, onSelect }: Props) {
             : 'pack-card'
       }
     >
-      {plan.highlighted ? <span className="pack-card__badge">Mais popular</span> : null}
+      {plan.highlighted ? <span className="pack-card__badge">Most popular</span> : null}
 
       <header className="pack-card__head">
         <h3 className="pack-card__name">{plan.name}</h3>
@@ -28,11 +28,11 @@ export function PackCard({ planId, selected, onSelect }: Props) {
 
       <p className="pack-card__price">
         <strong>{formatPlanPrice(plan)}</strong>
-        <span>/ mês</span>
+        <span>/ month</span>
       </p>
 
       <p className="pack-card__limit">
-        {plan.maxAthletes === null ? 'Atletas ilimitados' : `Até ${plan.maxAthletes} atletas`}
+        {plan.maxAthletes === null ? 'Unlimited athletes' : `Up to ${plan.maxAthletes} athletes`}
       </p>
 
       <ul className="pack-card__features">
@@ -49,7 +49,7 @@ export function PackCard({ planId, selected, onSelect }: Props) {
         className={plan.highlighted ? 'btn btn--gold btn--block' : 'btn btn--secondary btn--block'}
         onClick={() => onSelect(planId)}
       >
-        Escolher {plan.name}
+        Choose {plan.name}
       </button>
     </article>
   )

@@ -4,65 +4,65 @@ import { SUBSCRIPTION_PLANS } from '../plans'
 import { useApp } from '../AppContext'
 
 const TRUST_STATS = [
-  { value: '5 modos', label: 'Treino, combos, heats, mar e mais' },
-  { value: '100%', label: 'Stats separadas por atleta' },
-  { value: '6 meses', label: 'Evolução em team analytics' },
-  { value: 'Grátis', label: 'Entrada para atletas' },
+  { value: '5 modes', label: 'Training, combos, heats, sea & more' },
+  { value: '100%', label: 'Stats per athlete, never merged' },
+  { value: '6 months', label: 'Evolution in team analytics' },
+  { value: 'Free', label: 'Athlete accounts included' },
 ]
 
 const FEATURES = [
   {
     icon: '◎',
-    title: 'Registo onda a onda',
-    text: 'Treino técnico e combos com taxas de sucesso por manobra, nível e lado (frontside / backside).',
+    title: 'Wave-by-wave logging',
+    text: 'Technical training and combos with success rates by maneuver, level, and side (frontside / backside).',
   },
   {
     icon: '⇄',
-    title: 'Pairing multi-treinador',
-    text: 'Atletas criam conta, partilham código e aceitam cada treinador. Stats globais que os seguem.',
+    title: 'Multi-coach pairing',
+    text: 'Athletes create an account, share a code, and accept each coach. Global stats follow them everywhere.',
   },
   {
     icon: '◆',
-    title: 'Analytics profissional',
-    text: 'KPIs, evolução mensal, histórico de sessões e partilha controlada com cada atleta.',
+    title: 'Pro analytics',
+    text: 'KPIs, monthly evolution, session history, and controlled sharing with each athlete.',
   },
   {
     icon: '★',
-    title: 'Heats & campeonato',
-    text: 'Simula heats, regista interferências e acompanha resultados como num evento real.',
+    title: 'Heats & championship',
+    text: 'Simulate heats, log interferences, and track results like a real contest.',
   },
 ]
 
 const STEPS = [
   {
     step: '01',
-    title: 'Escolhe o teu pack',
-    text: 'Starter, Team ou Club — conforme o tamanho da tua escola ou clube.',
+    title: 'Pick your plan',
+    text: 'Starter, Team, or Club — based on your school or club size.',
   },
   {
     step: '02',
-    title: 'Cria conta de treinador',
-    text: 'Regista-te, ativa a subscrição e configura spots e condições de mar.',
+    title: 'Create a coach account',
+    text: 'Sign up, activate your subscription, and set up spots and sea conditions.',
   },
   {
     step: '03',
-    title: 'Liga a equipa e surf',
-    text: 'Convida atletas por código, regista sessões na praia e revê stats em segundos.',
+    title: 'Connect your team',
+    text: 'Invite athletes by code, log sessions at the beach, and review stats in seconds.',
   },
 ]
 
 const FAQ = [
   {
-    q: 'Os atletas pagam?',
-    a: 'Não. Apenas o treinador subscreve um pack. Atletas entram grátis com código de pairing.',
+    q: 'Do athletes pay?',
+    a: 'No. Only the coach subscribes. Athletes join free with a pairing code.',
   },
   {
-    q: 'Posso ter vários treinadores?',
-    a: 'Sim. Um atleta pode ligar-se a vários treinadores e controlar o que partilha com cada um.',
+    q: 'Can I have multiple coaches?',
+    a: 'Yes. An athlete can link to several coaches and control what they share with each one.',
   },
   {
-    q: 'Funciona no telemóvel?',
-    a: 'Sim. SurfStar foi desenhado para usar na praia — instala no ecrã inicial como app.',
+    q: 'Does it work on mobile?',
+    a: 'Yes. SurfStar is built for the beach — add it to your home screen as an app.',
   },
 ]
 
@@ -75,17 +75,17 @@ export function LandingView() {
         <a className="landing-nav__brand" href="#top">
           <AppLogo size="md" />
         </a>
-        <nav className="landing-nav__menu" aria-label="Secções">
-          <a href="#features">Funcionalidades</a>
-          <a href="#how">Como funciona</a>
-          <a href="#packs">Preços</a>
+        <nav className="landing-nav__menu" aria-label="Sections">
+          <a href="#features">Features</a>
+          <a href="#how">How it works</a>
+          <a href="#packs">Pricing</a>
         </nav>
         <div className="landing-nav__actions">
           <button type="button" className="btn btn--ghost btn--small landing-nav__link" onClick={openAthleteLogin}>
-            Sou atleta
+            I&apos;m an athlete
           </button>
           <button type="button" className="btn btn--gold btn--small" onClick={openCoachLogin}>
-            Entrar
+            Sign in
           </button>
         </div>
       </header>
@@ -95,25 +95,25 @@ export function LandingView() {
           <div className="landing-hero__copy">
             <p className="landing-eyebrow">Ride · Improve · Win</p>
             <h1>
-              A plataforma de estatística de surf para{' '}
-              <span className="landing-accent">treinadores exigentes</span>
+              Surf statistics for{' '}
+              <span className="landing-accent">coaches who demand more</span>
             </h1>
             <p className="landing-hero__lead">
-              Regista sessões, acompanha a evolução de cada atleta e gere equipas inteiras — tudo
-              numa app rápida, feita para a praia.
+              Log sessions, track every athlete&apos;s progress, and run entire teams — all in a fast app
+              built for the beach.
             </p>
             <div className="landing-hero__cta">
               <a className="btn btn--gold btn--lg" href="#packs">
-                Começar agora
+                Get started
               </a>
               <button type="button" className="btn btn--outline btn--lg" onClick={openAthleteLogin}>
-                Entrar como atleta
+                Sign in as athlete
               </button>
             </div>
             <ul className="landing-hero__checks">
-              <li>Sem cartão para explorar packs</li>
-              <li>Atletas incluídos grátis</li>
-              <li>Cancela quando quiseres</li>
+              <li>No card required to explore plans</li>
+              <li>Athletes included free</li>
+              <li>Cancel anytime</li>
             </ul>
           </div>
 
@@ -121,21 +121,21 @@ export function LandingView() {
             <div className="landing-showcase__glow" />
             <div className="landing-showcase__card">
               <header className="landing-showcase__head">
-                <span className="landing-showcase__pill">Sessão activa</span>
-                <strong>Carcavelos · Treino técnico</strong>
+                <span className="landing-showcase__pill">Active session</span>
+                <strong>Carcavelos · Technical training</strong>
               </header>
               <div className="landing-showcase__kpis">
                 <div>
                   <span>87%</span>
-                  <small>Sucesso</small>
+                  <small>Success</small>
                 </div>
                 <div>
                   <span>24</span>
-                  <small>Ondas</small>
+                  <small>Waves</small>
                 </div>
                 <div>
                   <span>3</span>
-                  <small>Atletas</small>
+                  <small>Athletes</small>
                 </div>
               </div>
               <div className="landing-showcase__bars">
@@ -156,7 +156,7 @@ export function LandingView() {
           </div>
         </section>
 
-        <section className="landing-trust" aria-label="Destaques">
+        <section className="landing-trust" aria-label="Highlights">
           {TRUST_STATS.map((item) => (
             <article key={item.value} className="landing-trust__item">
               <strong>{item.value}</strong>
@@ -167,11 +167,11 @@ export function LandingView() {
 
         <section className="landing-section" id="features">
           <div className="landing-section__head">
-            <p className="landing-eyebrow">Funcionalidades</p>
-            <h2>Tudo o que precisas para treinar com dados</h2>
+            <p className="landing-eyebrow">Features</p>
+            <h2>Everything you need to coach with data</h2>
             <p className="landing-section__sub">
-              Da primeira onda ao heat final — registo simples, estatísticas claras, zero confusão
-              entre atletas.
+              From the first wave to the final heat — simple logging, clear stats, zero confusion between
+              athletes.
             </p>
           </div>
           <div className="landing-features__grid">
@@ -189,8 +189,8 @@ export function LandingView() {
 
         <section className="landing-section landing-section--alt" id="how">
           <div className="landing-section__head">
-            <p className="landing-eyebrow">Como funciona</p>
-            <h2>Três passos para começar</h2>
+            <p className="landing-eyebrow">How it works</p>
+            <h2>Three steps to get started</h2>
           </div>
           <ol className="landing-steps">
             {STEPS.map((step) => (
@@ -207,10 +207,10 @@ export function LandingView() {
 
         <section className="landing-section" id="packs">
           <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">Preços</p>
-            <h2>Escolhe o pack ideal</h2>
+            <p className="landing-eyebrow">Pricing</p>
+            <h2>Choose the right plan</h2>
             <p className="landing-section__sub">
-              Subscrição mensal, sem fidelização. Pagamento seguro via Stripe.
+              Monthly subscription, no lock-in. Secure payment via Stripe.
             </p>
           </div>
           <div className="landing-pricing__grid">
@@ -223,7 +223,7 @@ export function LandingView() {
         <section className="landing-section landing-section--alt">
           <div className="landing-section__head">
             <p className="landing-eyebrow">FAQ</p>
-            <h2>Perguntas frequentes</h2>
+            <h2>Frequently asked questions</h2>
           </div>
           <div className="landing-faq">
             {FAQ.map((item) => (
@@ -237,11 +237,11 @@ export function LandingView() {
 
         <section className="landing-cta-band">
           <div>
-            <p className="landing-eyebrow landing-eyebrow--gold">Pronto para surfar com dados?</p>
-            <h2>Leva a tua equipa ao próximo nível</h2>
+            <p className="landing-eyebrow landing-eyebrow--gold">Ready to surf with data?</p>
+            <h2>Take your team to the next level</h2>
           </div>
           <a className="btn btn--gold btn--lg" href="#packs">
-            Ver packs
+            View plans
           </a>
         </section>
       </main>
@@ -249,13 +249,13 @@ export function LandingView() {
       <footer className="landing-footer">
         <div className="landing-footer__brand">
           <AppLogo size="sm" />
-          <p>Estatísticas de surf para treinadores e atletas.</p>
+          <p>Surf statistics for coaches and athletes.</p>
         </div>
         <div className="landing-footer__links">
-          <a href="#features">Funcionalidades</a>
-          <a href="#packs">Preços</a>
+          <a href="#features">Features</a>
+          <a href="#packs">Pricing</a>
           <button type="button" className="landing-footer__btn" onClick={openCoachLogin}>
-            Entrar
+            Sign in
           </button>
         </div>
         <p className="landing-footer__copy">© {new Date().getFullYear()} SurfStar</p>

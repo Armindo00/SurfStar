@@ -71,10 +71,10 @@ export function TeamAnalyticsView() {
       <div className="ss-flow">
         <ScreenHeader title="Team analytics" onBack={() => setView('coach-home')} />
         <div className="ss-card stats-panel">
-          <h2 className="stats-panel__title">Funcionalidade bloqueada</h2>
+          <h2 className="stats-panel__title">Feature locked</h2>
           <p className="muted">{planUpgradeHint(planId, 'analytics')}</p>
           <button type="button" className="btn btn--primary btn--block" onClick={() => setView('subscription')}>
-            Ver subscrição
+            View subscription
           </button>
         </div>
       </div>
