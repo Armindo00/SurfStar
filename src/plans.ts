@@ -14,7 +14,7 @@ export type SubscriptionPlan = {
 export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'starter',
-    name: 'Starter',
+    name: 'Soft',
     priceMonthly: 19,
     currency: 'EUR',
     tagline: 'For individual coaches',
@@ -28,7 +28,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   },
   {
     id: 'team',
-    name: 'Team',
+    name: 'Coach',
     priceMonthly: 39,
     currency: 'EUR',
     tagline: 'For teams and surf schools',
@@ -36,7 +36,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     highlighted: true,
     features: [
       'Up to 20 athletes',
-      'Everything in Starter',
+      'Everything in Soft',
       'Team analytics (6 months)',
       'Multi-coach pairing',
       'Share stats with athletes',
@@ -44,14 +44,14 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   },
   {
     id: 'club',
-    name: 'Club',
+    name: 'Coach Premium',
     priceMonthly: 79,
     currency: 'EUR',
     tagline: 'For clubs and academies',
     maxAthletes: null,
     features: [
       'Unlimited athletes',
-      'Everything in Team',
+      'Everything in Coach',
       'Heats & championship',
       'Sea analysis',
       'Priority support',

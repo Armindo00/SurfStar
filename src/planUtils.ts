@@ -45,13 +45,13 @@ export function athleteLimitMessage(planId: PlanId): string {
 
 export function planUpgradeHint(planId: PlanId, feature: 'analytics' | 'heats' | 'sea' | 'athletes'): string {
   if (feature === 'analytics' && !canAccessTeamAnalytics(planId)) {
-    return 'Available on Team plan and above.'
+    return 'Available on Coach plan and above.'
   }
   if ((feature === 'heats' || feature === 'sea') && planId !== 'club') {
-    return 'Available on Club plan.'
+    return 'Available on Coach Premium plan.'
   }
   if (feature === 'athletes' && planId === 'starter') {
-    return 'Upgrade to Team (20 athletes) or Club (unlimited).'
+    return 'Upgrade to Coach (20 athletes) or Coach Premium (unlimited).'
   }
   return 'Upgrade your plan to unlock this feature.'
 }

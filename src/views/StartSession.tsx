@@ -56,7 +56,7 @@ export function StartSession() {
 
         {lockedModes.length > 0 ? (
           <p className="plan-lock-note muted">
-            {lockedModes.map((m) => TRAINING_MODE_LABELS[m]).join(', ')} — available on Club plan.
+            {lockedModes.map((m) => TRAINING_MODE_LABELS[m]).join(', ')} — available on Coach Premium plan.
           </p>
         ) : null}
 

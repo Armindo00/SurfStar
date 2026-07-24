@@ -75,7 +75,7 @@ const STEPS = [
   {
     step: '01',
     title: 'Pick your plan',
-    text: 'Starter, Team, or Club — based on your school or club size.',
+    text: 'Soft, Coach, or Coach Premium — based on your school or club size.',
   },
   {
     step: '02',
@@ -229,7 +229,7 @@ export function LandingView() {
                 ))}
               </ul>
               <p className="landing-sea__badge">
-                <span className="landing-showcase__pill">Club plan</span>
+                <span className="landing-showcase__pill">Coach Premium</span>
                 Included with heats & championship modes
               </p>
             </div>
@@ -320,7 +320,7 @@ export function LandingView() {
           </div>
 
           <p className="landing-stats__plan muted">
-            <span className="landing-showcase__pill">Team plan</span>
+            <span className="landing-showcase__pill">Coach plan</span>
             Monthly evolution & team analytics · Live stats on every plan
           </p>
         </section>

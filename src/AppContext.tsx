@@ -1294,7 +1294,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         subscription &&
         !canAccessTeamAnalytics(subscription.planId)
       ) {
-        showToast('Team analytics requires Team or Club plan.', 'error')
+        showToast('Team analytics requires Coach or Coach Premium plan.', 'error')
         return
       }
       setView(next)
