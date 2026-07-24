@@ -11,6 +11,7 @@ import {
   filterAthleteSessionsGlobal,
 } from '../athleteStats'
 import { formatHeatTotal } from '../heatUtils'
+import { resolveSessionSpotName } from '../sessionHistoryUtils'
 import { LEVELS } from '../sessionStats'
 import {
   COMBO_LEVEL_LABELS,
@@ -435,7 +436,7 @@ export function AthletePortal() {
                 <div>
                   <strong>{TRAINING_MODE_LABELS[session.mode]}</strong>
                   <p className="muted">
-                    {getSpot(session.spotId)?.name ?? 'Spot'} · {session.condition} ·{' '}
+                    {resolveSessionSpotName(session, getSpot)} · {session.condition} ·{' '}
                     {formatSessionDate(session.endedAt ?? session.startedAt)}
                   </p>
                 </div>

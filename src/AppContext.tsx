@@ -349,7 +349,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAthleteLinks([])
       setSpots(data.spots)
       setConditions(data.conditions)
-      setTrainingSessions(data.trainingSessions)
+      setTrainingSessions(
+        data.trainingSessions.map((session) => ({
+          ...session,
+          spotName:
+            session.spotName?.trim() ||
+            data.spots.find((spot) => spot.id === session.spotId)?.name?.trim() ||
+            '',
+        })),
+      )
       setDraft((d) => ({ ...d, spotId: data.spots[0]?.id ?? d.spotId }))
       return
     }
@@ -1084,6 +1092,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       coachId: auth.coachId,
       mode: draft.mode,
       spotId: draft.spotId,
+      spotName: spots.find((spot) => spot.id === draft.spotId)?.name?.trim() ?? '',
       condition: draft.condition,
       startedAt: new Date().toISOString(),
       athleteIds: draft.athleteIds,
@@ -1103,7 +1112,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveWaveId(null)
     setActiveHeatId(initialHeat?.id ?? null)
     setView(viewForMode(draft.mode))
-  }, [auth, draft, persistSessions, trainingSessions])
+  }, [auth, draft, persistSessions, spots, trainingSessions])
 
   const openEndSessionSheet = useCallback(() => {
     setEndSessionSheetOpen(true)
@@ -1123,6 +1132,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...s,
         endedAt: new Date().toISOString(),
         coachNotes: trimmedNotes || null,
+        spotName:
+          s.spotName?.trim() ||
+          spots.find((spot) => spot.id === s.spotId)?.name?.trim() ||
+          '',
       }))
 
       setEndSessionSheetOpen(false)
@@ -1134,7 +1147,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setHistorySessionId(sessionId)
       setView('session-history-detail')
     },
-    [activeSessionId, resetDraft, updateSession],
+    [activeSessionId, resetDraft, spots, updateSession],
   )
 
   const openHistorySession = useCallback((sessionId: string) => {

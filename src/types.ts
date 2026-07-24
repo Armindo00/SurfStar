@@ -253,6 +253,8 @@ export type TrainingSession = {
   coachId: string
   mode: TrainingMode
   spotId: string
+  /** Snapshot at session start so history keeps the spot name */
+  spotName: string
   condition: string
   startedAt: string
   athleteIds: string[]

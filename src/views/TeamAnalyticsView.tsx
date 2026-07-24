@@ -8,7 +8,7 @@ import {
   buildAthleteHeatDetails,
   buildAthleteSessionSummaries,
 } from '../athleteStats'
-import { formatSessionDate } from '../sessionHistoryUtils'
+import { formatSessionDate, resolveSessionSpotName } from '../sessionHistoryUtils'
 import { LEVELS } from '../sessionStats'
 import {
   buildAthleteSixMonthAnalytics,
@@ -228,7 +228,7 @@ export function TeamAnalyticsView() {
                     <strong>{TRAINING_MODE_LABELS[session.mode]}</strong>
                     <small>
                       {formatSessionDate(session.endedAt ?? session.startedAt)} ·{' '}
-                      {getSpot(session.spotId)?.name ?? 'Spot'} · {session.condition || '—'}
+                      {resolveSessionSpotName(session, getSpot)} · {session.condition || '—'}
                     </small>
                   </div>
                   <span>{headline}</span>

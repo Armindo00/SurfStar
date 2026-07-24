@@ -446,7 +446,10 @@ export async function cloudFetchTrainingSessions(coachId: string): Promise<Train
     .order('updated_at', { ascending: false })
 
   if (error || !data) return []
-  return data.map((r: { payload: TrainingSession }) => r.payload)
+  return data.map((r: { payload: TrainingSession }) => ({
+    ...r.payload,
+    spotName: r.payload.spotName?.trim() ?? '',
+  }))
 }
 
 export async function cloudSaveTrainingSessions(

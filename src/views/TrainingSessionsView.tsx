@@ -5,6 +5,7 @@ import {
   buildCoachSessionHeadline,
   formatSessionDate,
   formatSessionDuration,
+  resolveSessionSpotName,
 } from '../sessionHistoryUtils'
 import { TRAINING_MODE_LABELS } from '../types'
 
@@ -36,7 +37,7 @@ export function TrainingSessionsView() {
       ) : (
         <ul className="history-list">
           {completedCoachSessions.map((session) => {
-            const spotName = getSpot(session.spotId)?.name ?? 'Unknown spot'
+            const spotName = resolveSessionSpotName(session, getSpot)
             const endedAt = session.endedAt ?? session.startedAt
 
             return (
@@ -50,7 +51,9 @@ export function TrainingSessionsView() {
                     <span className="history-card__mode">{TRAINING_MODE_LABELS[session.mode]}</span>
                     <span className="history-card__date">{formatSessionDate(endedAt)}</span>
                   </div>
-                  <strong className="history-card__headline">{buildCoachSessionHeadline(session)}</strong>
+                  <strong className="history-card__headline">
+                    {buildCoachSessionHeadline(session, getAthlete)}
+                  </strong>
                   <p className="history-card__meta">
                     {spotName} · {session.condition || 'No condition'}
                   </p>

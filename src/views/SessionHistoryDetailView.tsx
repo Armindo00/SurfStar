@@ -9,6 +9,7 @@ import {
   athleteNamesForSession,
   formatSessionDateTime,
   formatSessionDuration,
+  resolveSessionSpotName,
 } from '../sessionHistoryUtils'
 import { computeComboSessionStats, computeSessionStats, LEVELS } from '../sessionStats'
 import { heatIsFinished } from '../heatUtils'
@@ -30,8 +31,14 @@ function RateBar({ value }: { value: number }) {
   )
 }
 
-function TechnicalStatsBlock({ session }: { session: TrainingSession }) {
-  const stats = computeSessionStats(session, null)
+function TechnicalStatsBlock({
+  session,
+  athleteId,
+}: {
+  session: TrainingSession
+  athleteId: string
+}) {
+  const stats = computeSessionStats(session, athleteId)
 
   return (
     <>
@@ -79,8 +86,14 @@ function TechnicalStatsBlock({ session }: { session: TrainingSession }) {
   )
 }
 
-function ComboStatsBlock({ session }: { session: TrainingSession }) {
-  const stats = computeComboSessionStats(session, null)
+function ComboStatsBlock({
+  session,
+  athleteId,
+}: {
+  session: TrainingSession
+  athleteId: string
+}) {
+  const stats = computeComboSessionStats(session, athleteId)
 
   return (
     <>
@@ -141,7 +154,7 @@ export function SessionHistoryDetailView() {
     )
   }
 
-  const spotName = getSpot(historySession.spotId)?.name ?? 'Unknown spot'
+  const spotName = resolveSessionSpotName(historySession, getSpot)
   const finishedHeats = historySession.heats.filter(heatIsFinished)
 
   return (
@@ -168,8 +181,27 @@ export function SessionHistoryDetailView() {
         </div>
       ) : null}
 
-      {historySession.mode === 'tecnico' ? <TechnicalStatsBlock session={historySession} /> : null}
-      {historySession.mode === 'combos' ? <ComboStatsBlock session={historySession} /> : null}
+      {historySession.mode === 'tecnico'
+        ? historySession.athleteIds.map((athleteId) => (
+            <section key={athleteId} className="history-athlete-stats">
+              <h2 className="stats-page__meta">
+                Athlete: <strong>{getAthleteName(athleteId)}</strong>
+              </h2>
+              <TechnicalStatsBlock session={historySession} athleteId={athleteId} />
+            </section>
+          ))
+        : null}
+
+      {historySession.mode === 'combos'
+        ? historySession.athleteIds.map((athleteId) => (
+            <section key={athleteId} className="history-athlete-stats">
+              <h2 className="stats-page__meta">
+                Athlete: <strong>{getAthleteName(athleteId)}</strong>
+              </h2>
+              <ComboStatsBlock session={historySession} athleteId={athleteId} />
+            </section>
+          ))
+        : null}
 
       {historySession.mode === 'heats' || historySession.mode === 'campeonato' ? (
         finishedHeats.length === 0 ? (

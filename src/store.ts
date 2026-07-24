@@ -64,10 +64,17 @@ function load(): Persisted {
 }
 
 function migrateSession(s: TrainingSession): TrainingSession {
+  const spots = load().spots
+  const spotName =
+    s.spotName?.trim() ||
+    spots.find((spot) => spot.id === s.spotId)?.name?.trim() ||
+    ''
+
   return {
     ...s,
     coachId: s.coachId ?? '',
     mode: s.mode ?? 'tecnico',
+    spotName,
     comboEntries: s.comboEntries ?? [],
     heats: (s.heats ?? []).map((h) => ({
       ...h,

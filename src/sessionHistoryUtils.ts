@@ -4,7 +4,15 @@ import {
   computeSessionStats,
   computeWaveStats,
 } from './sessionStats'
-import type { TrainingSession } from './types'
+import type { SurfSpot, TrainingSession } from './types'
+
+export function resolveSessionSpotName(
+  session: Pick<TrainingSession, 'spotId' | 'spotName'>,
+  getSpot?: (id: string) => SurfSpot | undefined,
+): string {
+  if (session.spotName?.trim()) return session.spotName.trim()
+  return getSpot?.(session.spotId)?.name ?? 'Unknown spot'
+}
 
 export function filterCoachCompletedSessions(
   sessions: TrainingSession[],
@@ -44,17 +52,51 @@ export function formatSessionDuration(startedAt: string, endedAt: string | null)
   return remainder ? `${hours}h ${remainder}m` : `${hours}h`
 }
 
-export function buildCoachSessionHeadline(session: TrainingSession): string {
+function athleteStatHeadline(
+  session: TrainingSession,
+  athleteId: string,
+  getAthlete?: (id: string) => { name: string } | undefined,
+): string {
+  const name = getAthlete?.(athleteId)?.name ?? 'Athlete'
+
   if (session.mode === 'tecnico') {
-    const stats = computeSessionStats(session, null)
-    const waves = computeWaveStats(session, null)
-    return `${stats.overallSuccessRate}% success · ${waves.totalWaves} waves`
+    const stats = computeSessionStats(session, athleteId)
+    const waves = computeWaveStats(session, athleteId)
+    return `${name}: ${stats.overallSuccessRate}% · ${waves.totalWaves} waves`
   }
 
   if (session.mode === 'combos') {
-    const stats = computeComboSessionStats(session, null)
-    const waves = computeWaveStats(session, null)
-    return `${stats.overallSuccessRate}% combo success · ${waves.totalWaves} waves`
+    const stats = computeComboSessionStats(session, athleteId)
+    const waves = computeWaveStats(session, athleteId)
+    return `${name}: ${stats.overallSuccessRate}% · ${waves.totalWaves} waves`
+  }
+
+  return name
+}
+
+export function buildCoachSessionHeadline(
+  session: TrainingSession,
+  getAthlete?: (id: string) => { name: string } | undefined,
+): string {
+  if (session.mode === 'tecnico' || session.mode === 'combos') {
+    if (session.athleteIds.length === 0) return 'No athletes'
+
+    if (session.athleteIds.length === 1) {
+      const athleteId = session.athleteIds[0]!
+      if (session.mode === 'tecnico') {
+        const stats = computeSessionStats(session, athleteId)
+        const waves = computeWaveStats(session, athleteId)
+        return `${stats.overallSuccessRate}% success · ${waves.totalWaves} waves`
+      }
+
+      const stats = computeComboSessionStats(session, athleteId)
+      const waves = computeWaveStats(session, athleteId)
+      return `${stats.overallSuccessRate}% combo success · ${waves.totalWaves} waves`
+    }
+
+    return session.athleteIds
+      .map((athleteId) => athleteStatHeadline(session, athleteId, getAthlete))
+      .join(' · ')
   }
 
   if (session.mode === 'heats' || session.mode === 'campeonato') {

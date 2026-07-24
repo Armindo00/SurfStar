@@ -162,6 +162,7 @@ function mergeSessionsForStats(
     coachId: filtered[0]!.coachId,
     mode,
     spotId: '',
+    spotName: '',
     condition: '',
     startedAt: '',
     athleteIds: [athleteId],
