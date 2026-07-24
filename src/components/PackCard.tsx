@@ -1,4 +1,10 @@
-import { formatPlanPrice, getPlan, type PlanId } from '../plans'
+import {
+  formatPlanPrice,
+  getPlan,
+  PLAN_COMPARISON_FEATURES,
+  planHasComparisonFeature,
+  type PlanId,
+} from '../plans'
 
 type Props = {
   planId: PlanId
@@ -23,7 +29,6 @@ export function PackCard({ planId, selected, onSelect }: Props) {
 
       <header className="pack-card__head">
         <h3 className="pack-card__name">{plan.name}</h3>
-        <p className="pack-card__tagline">{plan.tagline}</p>
       </header>
 
       <p className="pack-card__price">
@@ -31,17 +36,21 @@ export function PackCard({ planId, selected, onSelect }: Props) {
         <span>/ month</span>
       </p>
 
-      <p className="pack-card__limit">
-        {plan.maxAthletes === null ? 'Unlimited athletes' : `Up to ${plan.maxAthletes} athletes`}
-      </p>
-
       <ul className="pack-card__features">
-        {plan.features.map((feature) => (
-          <li key={feature}>
-            <span className="pack-card__check" aria-hidden="true">✓</span>
-            {feature}
-          </li>
-        ))}
+        {PLAN_COMPARISON_FEATURES.map((feature) => {
+          const included = planHasComparisonFeature(planId, feature)
+          return (
+            <li
+              key={feature.label}
+              className={included ? 'pack-card__feature pack-card__feature--yes' : 'pack-card__feature pack-card__feature--no'}
+            >
+              <span className="pack-card__mark" aria-hidden="true">
+                {included ? '✓' : '✗'}
+              </span>
+              {feature.label}
+            </li>
+          )
+        })}
       </ul>
 
       <button

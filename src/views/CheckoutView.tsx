@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react'
-import { formatPlanPrice, getPlan, getStripePaymentLink, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
+import {
+  formatPlanPrice,
+  getIncludedFeatureLabels,
+  getPlan,
+  getStripePaymentLink,
+  SUBSCRIPTION_PLANS,
+  type PlanId,
+} from '../plans'
 import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
 import { buildStripeCheckoutUrl, isSubscriptionActive } from '../subscriptionApi'
@@ -98,7 +105,6 @@ export function CheckoutView() {
           <div>
             <span className="checkout-summary__label">Selected plan</span>
             <strong>{plan.name}</strong>
-            <p className="muted">{plan.tagline}</p>
           </div>
           <div className="checkout-summary__price">
             <strong>{formatPlanPrice(plan)}</strong>
@@ -121,7 +127,7 @@ export function CheckoutView() {
         </label>
 
         <ul className="checkout-features">
-          {plan.features.map((feature) => (
+          {getIncludedFeatureLabels(planId).map((feature) => (
             <li key={feature}>{feature}</li>
           ))}
         </ul>

@@ -5,59 +5,63 @@ export type SubscriptionPlan = {
   name: string
   priceMonthly: number
   currency: 'EUR'
-  tagline: string
   maxAthletes: number | null
-  features: string[]
   highlighted?: boolean
 }
+
+export type PlanComparisonFeature = {
+  label: string
+  includedIn: PlanId[]
+}
+
+/** Full feature matrix shown on every pricing card (green = included, red = not included). */
+export const PLAN_COMPARISON_FEATURES: PlanComparisonFeature[] = [
+  { label: 'Up to 5 athletes', includedIn: ['starter'] },
+  { label: 'Up to 20 athletes', includedIn: ['team'] },
+  { label: 'Unlimited athletes', includedIn: ['club'] },
+  { label: 'Technical training & combos', includedIn: ['starter', 'team', 'club'] },
+  { label: 'Session history', includedIn: ['starter', 'team', 'club'] },
+  { label: 'Spot management', includedIn: ['starter', 'team', 'club'] },
+  { label: 'Team analytics (6 months)', includedIn: ['team', 'club'] },
+  { label: 'Multi-coach pairing', includedIn: ['team', 'club'] },
+  { label: 'Share stats with athletes', includedIn: ['team', 'club'] },
+  { label: 'Heats & championship', includedIn: ['club'] },
+  { label: 'Sea analysis', includedIn: ['club'] },
+  { label: 'Priority support', includedIn: ['club'] },
+]
 
 export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'starter',
-    name: 'Soft',
+    name: 'Starter',
     priceMonthly: 19,
     currency: 'EUR',
-    tagline: 'For individual coaches',
     maxAthletes: 5,
-    features: [
-      'Up to 5 athletes',
-      'Technical training & combos',
-      'Session history',
-      'Spot management',
-    ],
   },
   {
     id: 'team',
     name: 'Coach',
     priceMonthly: 39,
     currency: 'EUR',
-    tagline: 'For teams and surf schools',
     maxAthletes: 20,
     highlighted: true,
-    features: [
-      'Up to 20 athletes',
-      'Everything in Soft',
-      'Team analytics (6 months)',
-      'Multi-coach pairing',
-      'Share stats with athletes',
-    ],
   },
   {
     id: 'club',
     name: 'Coach Premium',
     priceMonthly: 79,
     currency: 'EUR',
-    tagline: 'For clubs and academies',
     maxAthletes: null,
-    features: [
-      'Unlimited athletes',
-      'Everything in Coach',
-      'Heats & championship',
-      'Sea analysis',
-      'Priority support',
-    ],
   },
 ]
+
+export function planHasComparisonFeature(planId: PlanId, feature: PlanComparisonFeature): boolean {
+  return feature.includedIn.includes(planId)
+}
+
+export function getIncludedFeatureLabels(planId: PlanId): string[] {
+  return PLAN_COMPARISON_FEATURES.filter((f) => planHasComparisonFeature(planId, f)).map((f) => f.label)
+}
 
 export function getPlan(planId: PlanId): SubscriptionPlan {
   const plan = SUBSCRIPTION_PLANS.find((p) => p.id === planId)

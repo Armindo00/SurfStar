@@ -75,7 +75,7 @@ const STEPS = [
   {
     step: '01',
     title: 'Pick your plan',
-    text: 'Soft, Coach, or Coach Premium — based on your school or club size.',
+    text: 'Starter, Coach, or Coach Premium — pick the pack that fits your team.',
   },
   {
     step: '02',

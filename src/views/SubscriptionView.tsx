@@ -59,7 +59,6 @@ export function SubscriptionView() {
             <p className="stats-panel__plan-name">
               <strong>{plan.name}</strong> — {formatPlanPrice(plan)}/mo
             </p>
-            <p className="muted">{plan.tagline}</p>
             <p className="muted">{athleteLimitMessage(plan.id)} · {activeCount} active athletes</p>
             {subscription?.currentPeriodEnd ? (
               <p className="muted">

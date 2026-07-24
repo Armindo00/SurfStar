@@ -993,9 +993,14 @@ body {
   color: var(--on-light-subtle) !important;
 }
 
-.landing-page .pack-card__features,
-.landing-page .pack-card__features li {
-  color: #334155 !important;
+.landing-page .pack-card__feature--yes,
+.landing-page .pack-card__feature--yes .pack-card__mark {
+  color: #047857 !important;
+}
+
+.landing-page .pack-card__feature--no,
+.landing-page .pack-card__feature--no .pack-card__mark {
+  color: #b91c1c !important;
 }
 
 .landing-page .pack-card__limit {

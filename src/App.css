@@ -4516,19 +4516,43 @@ body {
   padding: 0;
   list-style: none;
   flex: 1;
-  color: #334155;
   font-size: 0.88rem;
   line-height: 1.55;
 }
 
-.pack-card__features li {
+.pack-card__feature {
   display: flex;
   gap: 0.5rem;
   align-items: flex-start;
 }
 
-.pack-card__features li + li {
+.pack-card__feature + .pack-card__feature {
   margin-top: 0.45rem;
+}
+
+.pack-card__feature--yes {
+  color: #047857;
+  font-weight: 600;
+}
+
+.pack-card__feature--no {
+  color: #b91c1c;
+  font-weight: 500;
+}
+
+.pack-card__mark {
+  font-weight: 800;
+  flex-shrink: 0;
+  width: 1rem;
+  text-align: center;
+}
+
+.pack-card__feature--yes .pack-card__mark {
+  color: #059669;
+}
+
+.pack-card__feature--no .pack-card__mark {
+  color: #dc2626;
 }
 
 .pack-card__check {
