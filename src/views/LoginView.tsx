@@ -16,6 +16,7 @@ export function LoginView() {
     loginTab,
     selectedPlanId,
     openLanding,
+    openForgotPassword,
   } = useApp()
   const [tab, setTab] = useState(loginTab)
   const [authMode, setAuthMode] = useState<AuthMode>(selectedPlanId ? 'register' : 'sign-in')
@@ -207,6 +208,11 @@ export function LoginView() {
           ) : null}
 
           {error && <p className="login-error">{error}</p>}
+          {!isRegister && cloudMode ? (
+            <button type="button" className="login-forgot btn btn--ghost btn--block" onClick={openForgotPassword}>
+              Esqueci a password
+            </button>
+          ) : null}
           <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={busy}>
             {busy
               ? 'Please wait…'

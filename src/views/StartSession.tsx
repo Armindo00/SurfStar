@@ -1,14 +1,16 @@
 import { useApp } from '../AppContext'
+import { canUseTrainingMode } from '../planUtils'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { HEAT_DURATIONS, TRAINING_MODE_LABELS, type TrainingMode } from '../types'
 
-const MODES: TrainingMode[] = ['tecnico', 'combos', 'heats', 'campeonato', 'sea-analysis']
+const ALL_MODES: TrainingMode[] = ['tecnico', 'combos', 'heats', 'campeonato', 'sea-analysis']
 
 export function StartSession() {
   const {
     draft,
     spots,
     conditions,
+    subscription,
     setDraftMode,
     setDraftSpot,
     setDraftCondition,
@@ -16,10 +18,14 @@ export function StartSession() {
     setView,
   } = useApp()
 
+  const planId = subscription?.planId ?? 'starter'
+  const modes = ALL_MODES.filter((mode) => canUseTrainingMode(planId, mode))
+  const lockedModes = ALL_MODES.filter((mode) => !canUseTrainingMode(planId, mode))
+
   const showHeatDuration = draft.mode === 'heats' || draft.mode === 'campeonato'
   const isSeaAnalysis = draft.mode === 'sea-analysis'
 
-  const startedLabel = new Date().toLocaleString('en-US', {
+  const startedLabel = new Date().toLocaleString('pt-PT', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -29,14 +35,14 @@ export function StartSession() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="New session" onBack={() => setView('coach-home')} />
+      <ScreenHeader title="Nova sessão" onBack={() => setView('coach-home')} />
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Session setup</h2>
-        <p className="muted stats-panel__sub">Before you hit the water — choose the training type.</p>
+        <h2 className="stats-panel__title">Configurar sessão</h2>
+        <p className="muted stats-panel__sub">Escolhe o tipo de treino antes de entrar na água.</p>
 
-        <p className="field-label">Training type</p>
+        <p className="field-label">Tipo de treino</p>
         <div className="chip-row chip-row--pro chip-row--modes">
-          {MODES.map((mode) => (
+          {modes.map((mode) => (
             <button
               key={mode}
               type="button"
@@ -48,15 +54,21 @@ export function StartSession() {
           ))}
         </div>
 
+        {lockedModes.length > 0 ? (
+          <p className="plan-lock-note muted">
+            {lockedModes.map((m) => TRAINING_MODE_LABELS[m]).join(', ')} — disponível no pack Club.
+          </p>
+        ) : null}
+
         {isSeaAnalysis ? (
           <p className="muted stats-panel__sub">
-            Fixed <strong>30 minute</strong> observation window · Peak 1 & Peak 2 · no athletes required.
+            Janela fixa de <strong>30 minutos</strong> · Pico 1 e Pico 2 · sem atletas.
           </p>
         ) : null}
 
         {showHeatDuration ? (
           <>
-            <p className="field-label">Heat length</p>
+            <p className="field-label">Duração do heat</p>
             <div className="chip-row chip-row--pro">
               {HEAT_DURATIONS.map((d) => (
                 <button
@@ -69,11 +81,6 @@ export function StartSession() {
                 </button>
               ))}
             </div>
-            <p className="muted stats-panel__sub">
-              {draft.mode === 'heats'
-                ? 'Single heat simulation — up to 4 surfers.'
-                : 'Default length for each new heat in the contest.'}
-            </p>
           </>
         ) : null}
 
@@ -90,9 +97,9 @@ export function StartSession() {
           </label>
 
           <label className="field field--pro">
-            <span>Sea conditions</span>
+            <span>Condições</span>
             <select value={draft.condition} onChange={(e) => setDraftCondition(e.target.value)}>
-              <option value="">Select…</option>
+              <option value="">Seleccionar…</option>
               {conditions.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -102,7 +109,7 @@ export function StartSession() {
           </label>
 
           <label className="field field--pro">
-            <span>Session time</span>
+            <span>Hora</span>
             <input type="text" readOnly value={startedLabel} className="input-readonly" />
           </label>
         </div>
@@ -110,10 +117,10 @@ export function StartSession() {
         <button
           type="button"
           className="btn btn--primary btn--block btn--lg"
-          disabled={!draft.condition}
+          disabled={!draft.condition || modes.length === 0}
           onClick={() => setView('select-athletes')}
         >
-          Continue
+          Continuar
         </button>
       </div>
     </div>

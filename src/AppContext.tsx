@@ -19,6 +19,7 @@ import {
   cloudOnAuthChange,
   cloudRegisterAthlete,
   cloudRegisterCoach,
+  cloudResetPassword,
   cloudSaveConditions,
   cloudSaveSpots,
   cloudSaveTrainingSessions,
@@ -78,12 +79,25 @@ import {
 } from './localPairing'
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
 import type { PlanId } from './plans'
+import { getPlan } from './plans'
+import {
+  canAccessTeamAnalytics,
+  canAddAthlete,
+  canUseTrainingMode,
+  getAllowedModes,
+} from './planUtils'
 import {
   activateCoachSubscription,
   fetchCoachSubscription,
   isSubscriptionActive,
+  startCoachCheckout,
   type CoachSubscription,
 } from './subscriptionApi'
+import { useToast } from './components/ToastProvider'
+import {
+  navigateToPublicView,
+  publicViewFromPath,
+} from './routing'
 
 type DraftSession = {
   mode: TrainingMode
@@ -106,6 +120,11 @@ type AppContextValue = {
   openLanding: () => void
   openCoachLogin: () => void
   openAthleteLogin: () => void
+  openForgotPassword: () => void
+  requestPasswordReset: (email: string) => Promise<{ ok: true } | { ok: false; error: string }>
+  startCheckout: () => Promise<{ ok: true } | { ok: false; error: string }>
+  activateDemoSubscription: () => Promise<{ ok: true } | { ok: false; error: string }>
+  refreshSubscription: () => Promise<void>
   completeCheckout: () => Promise<{ ok: true } | { ok: false; error: string }>
   loginAsCoach: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   loginAsStudent: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
@@ -296,12 +315,13 @@ async function upgradeStudentPassword(student: StudentAccount, password: string)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const cloudMode = isCloudEnabled()
+  const { showToast } = useToast()
   const [authReady, setAuthReady] = useState(true)
   const [auth, setAuth] = useState<AuthSession | null>(() =>
     cloudMode ? null : authStore.getSession(),
   )
   const role: UserRole = auth?.role ?? 'treinador'
-  const [publicView, setPublicView] = useState<PublicView>('landing')
+  const [publicView, setPublicViewState] = useState<PublicView>(() => publicViewFromPath(window.location.pathname))
   const [loginTab, setLoginTab] = useState<UserRole>('treinador')
   const [selectedPlanId, setSelectedPlanId] = useState<PlanId | null>(null)
   const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
@@ -357,11 +377,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const syncSessionsToCloud = useCallback(
     (next: TrainingSession[], session: AuthSession | null = auth) => {
       if (cloudMode && session?.role === 'treinador') {
-        void cloudSaveTrainingSessions(session.coachId, next)
+        void cloudSaveTrainingSessions(session.coachId, next).then((result) => {
+          if (!result.ok) showToast(`Erro ao guardar sessões: ${result.error}`, 'error')
+        })
       }
     },
-    [auth, cloudMode],
+    [auth, cloudMode, showToast],
   )
+
+  const setPublicView = useCallback((next: PublicView) => {
+    setPublicViewState(next)
+    navigateToPublicView(next)
+  }, [])
+
+  useEffect(() => {
+    const onPopState = () => setPublicViewState(publicViewFromPath(window.location.pathname))
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
 
   const applyCloudSessionData = useCallback(async (session: AuthSession) => {
     if (session.role === 'treinador') {
@@ -409,48 +442,91 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return isSubscriptionActive(subscription)
   }, [auth, subscription])
 
+  const refreshSubscription = useCallback(async () => {
+    if (!auth || auth.role !== 'treinador') return
+    const sub = await fetchCoachSubscription(auth.coachId, cloudMode)
+    setSubscription(sub)
+    if (isSubscriptionActive(sub)) {
+      setView('coach-home')
+    }
+  }, [auth, cloudMode])
+
   const selectPlan = useCallback((planId: PlanId, options?: { goToLogin?: boolean }) => {
     setSelectedPlanId(planId)
     setLoginTab('treinador')
     if (options?.goToLogin !== false) {
       setPublicView('login')
     }
-  }, [])
+  }, [setPublicView])
 
   const openLanding = useCallback(() => {
     setPublicView('landing')
-  }, [])
+  }, [setPublicView])
 
   const openCoachLogin = useCallback(() => {
     setLoginTab('treinador')
     setPublicView('login')
-  }, [])
+  }, [setPublicView])
 
   const openAthleteLogin = useCallback(() => {
     setLoginTab('atleta')
     setSelectedPlanId(null)
     setPublicView('login')
+  }, [setPublicView])
+
+  const openForgotPassword = useCallback(() => {
+    window.history.pushState({}, '', '/forgot-password')
   }, [])
 
-  const completeCheckout = useCallback(async () => {
+  const requestPasswordReset = useCallback(
+    async (email: string) => {
+      if (!cloudMode) {
+        return { ok: false as const, error: 'Recuperação de password só disponível em modo cloud.' }
+      }
+      return cloudResetPassword(email)
+    },
+    [cloudMode],
+  )
+
+  const startCheckout = useCallback(async () => {
     if (!auth || auth.role !== 'treinador') {
       return { ok: false as const, error: 'Inicia sessão como treinador.' }
     }
-
-    const planId = selectedPlanId ?? 'team'
-
+    const planId = selectedPlanId ?? subscription?.planId ?? 'team'
     try {
-      const sub = await activateCoachSubscription(auth.coachId, planId, cloudMode)
+      const sub = await startCoachCheckout(auth.coachId, planId, cloudMode)
       setSubscription(sub)
-      setView('coach-home')
       return { ok: true as const }
     } catch (err) {
       return {
         ok: false as const,
-        error: err instanceof Error ? err.message : 'Não foi possível ativar a subscrição.',
+        error: err instanceof Error ? err.message : 'Não foi possível iniciar checkout.',
       }
     }
-  }, [auth, cloudMode, selectedPlanId])
+  }, [auth, cloudMode, selectedPlanId, subscription?.planId])
+
+  const activateDemoSubscription = useCallback(async () => {
+    if (!auth || auth.role !== 'treinador') {
+      return { ok: false as const, error: 'Inicia sessão como treinador.' }
+    }
+    const planId = selectedPlanId ?? subscription?.planId ?? 'team'
+    try {
+      const sub = await activateCoachSubscription(auth.coachId, planId, cloudMode)
+      setSubscription(sub)
+      setView('coach-home')
+      showToast('Subscrição activada.', 'success')
+      return { ok: true as const }
+    } catch (err) {
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : 'Não foi possível activar.',
+      }
+    }
+  }, [auth, cloudMode, selectedPlanId, subscription?.planId, showToast])
+
+  const completeCheckout = useCallback(async () => {
+    return activateDemoSubscription()
+  }, [activateDemoSubscription])
 
   const refreshPairingData = useCallback(async () => {
     if (!auth) return
@@ -791,7 +867,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSelectedPlanId(null)
     setPublicView('landing')
     setView('coach-home')
-  }, [cloudMode])
+  }, [cloudMode, setPublicView])
 
   const persistSessions = useCallback(
     (next: TrainingSession[]) => {
@@ -835,6 +911,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: false, error: 'Sign in as coach first.' }
       }
 
+      const planId = subscription?.planId ?? selectedPlanId ?? 'starter'
+      const activeCount = coachAthletes.filter((a) => !a.blocked).length
+      const pendingCount = coachLinks.filter((l) => l.status === 'pending').length
+      if (!canAddAthlete(planId, activeCount + pendingCount)) {
+        return {
+          ok: false,
+          error: `Limite de atletas do pack ${getPlan(planId).name} atingido. Faz upgrade para adicionar mais.`,
+        }
+      }
+
       if (cloudMode) {
         const result = await cloudRequestPairingByCode(code)
         if (!result.ok) return result
@@ -875,7 +961,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
       return { ok: true, athleteName: athlete.name }
     },
-    [auth, cloudMode, refreshPairingData],
+    [auth, cloudMode, coachAthletes, coachLinks, refreshPairingData, selectedPlanId, subscription?.planId],
   )
 
   const respondToPairing = useCallback(
@@ -998,8 +1084,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const changePassword = useCallback(
     async (newPassword: string) => {
-      if (auth?.role !== 'atleta') {
-        return { ok: false as const, error: 'Sign in as athlete first.' }
+      if (auth?.role !== 'atleta' && auth?.role !== 'treinador') {
+        return { ok: false as const, error: 'Sign in first.' }
       }
 
       const pwdError = validatePasswordStrength(newPassword)
@@ -1010,33 +1096,62 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!result.ok) return result
         setAuth(result.session)
         authStore.setSession(result.session)
+        setView(auth.role === 'atleta' ? 'athlete-portal' : 'subscription')
+        return { ok: true as const }
+      }
+
+      if (auth.role === 'atleta') {
+        const all = store.getStudents()
+        const index = all.findIndex((s) => s.athleteId === auth.athleteId)
+        if (index < 0) {
+          return { ok: false as const, error: 'Account not found.' }
+        }
+
+        const passwordHash = await hashPassword(newPassword)
+        const updated: StudentAccount = {
+          ...all[index]!,
+          passwordHash,
+          mustChangePassword: false,
+        }
+        const nextStudents = all.map((s, i) => (i === index ? updated : s))
+        store.saveStudents(nextStudents)
+        setStudents(nextStudents)
+
+        const session: AuthSession = { ...auth, mustChangePassword: false }
+        setAuth(session)
+        authStore.setSession(session)
         setView('athlete-portal')
         return { ok: true as const }
       }
 
-      const all = store.getStudents()
-      const index = all.findIndex((s) => s.athleteId === auth.athleteId)
-      if (index < 0) {
-        return { ok: false as const, error: 'Account not found.' }
-      }
-
-      const passwordHash = await hashPassword(newPassword)
-      const updated: StudentAccount = {
-        ...all[index]!,
-        passwordHash,
-        mustChangePassword: false,
-      }
-      const nextStudents = all.map((s, i) => (i === index ? updated : s))
-      store.saveStudents(nextStudents)
-      setStudents(nextStudents)
-
-      const session: AuthSession = { ...auth, mustChangePassword: false }
-      setAuth(session)
-      authStore.setSession(session)
-      setView('athlete-portal')
+      const coaches = store.getCoaches()
+      const coachIndex = coaches.findIndex((c) => c.id === auth.coachId)
+      if (coachIndex < 0) return { ok: false as const, error: 'Account not found.' }
+      const updatedCoach = await upgradeCoachPassword(coaches[coachIndex]!, newPassword)
+      const nextCoaches = coaches.map((c, i) => (i === coachIndex ? updatedCoach : c))
+      store.saveCoaches(nextCoaches)
+      setView('subscription')
       return { ok: true as const }
     },
     [auth, cloudMode],
+  )
+
+  const saveSpotsToCloud = useCallback(
+    (coachId: string, next: SurfSpot[]) => {
+      void cloudSaveSpots(coachId, next).then((result) => {
+        if (!result.ok) showToast(`Erro ao guardar spots: ${result.error}`, 'error')
+      })
+    },
+    [showToast],
+  )
+
+  const saveConditionsToCloud = useCallback(
+    (coachId: string, next: string[]) => {
+      void cloudSaveConditions(coachId, next).then((result) => {
+        if (!result.ok) showToast(`Erro ao guardar condições: ${result.error}`, 'error')
+      })
+    },
+    [showToast],
   )
 
   const addSpot = useCallback(
@@ -1045,10 +1160,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!trimmed || auth?.role !== 'treinador') return
       const next = [...spots, { id: crypto.randomUUID(), name: trimmed }]
       setSpots(next)
-      if (cloudMode) void cloudSaveSpots(auth.coachId, next)
+      if (cloudMode) saveSpotsToCloud(auth.coachId, next)
       else store.saveSpots(next)
     },
-    [auth, cloudMode, spots],
+    [auth, cloudMode, saveSpotsToCloud, spots],
   )
 
   const addCondition = useCallback(
@@ -1057,10 +1172,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!trimmed || conditions.includes(trimmed) || auth?.role !== 'treinador') return
       const next = [...conditions, trimmed]
       setConditions(next)
-      if (cloudMode) void cloudSaveConditions(auth.coachId, next)
+      if (cloudMode) saveConditionsToCloud(auth.coachId, next)
       else store.saveConditions(next)
     },
-    [auth, cloudMode, conditions],
+    [auth, cloudMode, conditions, saveConditionsToCloud],
   )
 
   const updateSpotName = useCallback(
@@ -1069,10 +1184,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!trimmed || auth?.role !== 'treinador') return
       const next = spots.map((s) => (s.id === spotId ? { ...s, name: trimmed } : s))
       setSpots(next)
-      if (cloudMode) void cloudSaveSpots(auth.coachId, next)
+      if (cloudMode) saveSpotsToCloud(auth.coachId, next)
       else store.saveSpots(next)
     },
-    [auth, cloudMode, spots],
+    [auth, cloudMode, saveSpotsToCloud, spots],
   )
 
   const removeSpot = useCallback(
@@ -1085,11 +1200,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...d,
         spotId: d.spotId === spotId ? (next[0]?.id ?? '') : d.spotId,
       }))
-      if (cloudMode) void cloudSaveSpots(auth.coachId, next)
+      if (cloudMode) saveSpotsToCloud(auth.coachId, next)
       else store.saveSpots(next)
       return true
     },
-    [auth, cloudMode, spots],
+    [auth, cloudMode, saveSpotsToCloud, spots],
   )
 
   const updateConditionName = useCallback(
@@ -1104,10 +1219,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...d,
         condition: d.condition === currentLabel ? trimmed : d.condition,
       }))
-      if (cloudMode) void cloudSaveConditions(auth.coachId, next)
+      if (cloudMode) saveConditionsToCloud(auth.coachId, next)
       else store.saveConditions(next)
     },
-    [auth, cloudMode, conditions],
+    [auth, cloudMode, conditions, saveConditionsToCloud],
   )
 
   const removeCondition = useCallback(
@@ -1120,11 +1235,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...d,
         condition: d.condition === label ? '' : d.condition,
       }))
-      if (cloudMode) void cloudSaveConditions(auth.coachId, next)
+      if (cloudMode) saveConditionsToCloud(auth.coachId, next)
       else store.saveConditions(next)
       return true
     },
-    [auth, cloudMode, conditions],
+    [auth, cloudMode, conditions, saveConditionsToCloud],
   )
 
   const getAthlete = useCallback(
@@ -1172,15 +1287,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDraft(emptyDraft())
   }, [])
 
+  const navigateView = useCallback(
+    (next: AppView) => {
+      if (
+        next === 'analytics' &&
+        subscription &&
+        !canAccessTeamAnalytics(subscription.planId)
+      ) {
+        showToast('Team analytics requer pack Team ou Club.', 'error')
+        return
+      }
+      setView(next)
+    },
+    [showToast, subscription],
+  )
+
   const beginDraftSession = useCallback(() => {
-    setDraft(emptyDraft())
-    setView('start-session')
-  }, [])
+    const planId = subscription?.planId ?? 'starter'
+    const draftBase = emptyDraft()
+    if (!canUseTrainingMode(planId, draftBase.mode)) {
+      draftBase.mode = getAllowedModes(planId)[0] ?? 'tecnico'
+    }
+    setDraft(draftBase)
+    navigateView('start-session')
+  }, [navigateView, subscription?.planId])
 
   const confirmAthletesAndStart = useCallback(() => {
     if (!draft.spotId || !draft.condition) return
     if (draft.mode !== 'sea-analysis' && draft.athleteIds.length === 0) return
     if (auth?.role !== 'treinador') return
+
+    const planId = subscription?.planId ?? 'starter'
+    if (!canUseTrainingMode(planId, draft.mode)) {
+      showToast('Este modo de treino não está incluído no teu pack.', 'error')
+      return
+    }
 
     const initialHeat =
       draft.mode === 'heats'
@@ -1212,7 +1353,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveWaveId(null)
     setActiveHeatId(initialHeat?.id ?? null)
     setView(viewForMode(draft.mode))
-  }, [auth, draft, persistSessions, spots, trainingSessions])
+  }, [auth, draft, persistSessions, showToast, spots, subscription?.planId, trainingSessions])
 
   const openEndSessionSheet = useCallback(() => {
     setEndSessionSheetOpen(true)
@@ -1711,6 +1852,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openLanding,
       openCoachLogin,
       openAthleteLogin,
+      openForgotPassword,
+      requestPasswordReset,
+      startCheckout,
+      activateDemoSubscription,
+      refreshSubscription,
       completeCheckout,
       loginAsCoach,
       loginAsStudent,
@@ -1719,7 +1865,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logout,
       role,
       view,
-      setView,
+      setView: navigateView,
       coachAthletes,
       coachLinks,
       athleteLinks,
@@ -1806,6 +1952,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openLanding,
       openCoachLogin,
       openAthleteLogin,
+      openForgotPassword,
+      requestPasswordReset,
+      startCheckout,
+      activateDemoSubscription,
+      refreshSubscription,
       completeCheckout,
       loginAsCoach,
       loginAsStudent,
@@ -1814,6 +1965,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logout,
       role,
       view,
+      navigateView,
       coachAthletes,
       coachLinks,
       athleteLinks,

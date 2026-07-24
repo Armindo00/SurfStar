@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../AppContext'
+import { athleteLimitMessage } from '../planUtils'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { ScreenHeader } from '../components/ScreenHeader'
 import type { AthleteShareSettings } from '../types'
@@ -32,6 +33,7 @@ export function ManageAthletes() {
   const {
     coachAthletes,
     coachLinks,
+    subscription,
     requestPairingByCode,
     revokePairing,
     updateAthleteShareSettings,
@@ -48,6 +50,8 @@ export function ManageAthletes() {
   const [revokeTarget, setRevokeTarget] = useState<{ linkId: string; name: string } | null>(null)
 
   const pendingLinks = coachLinks.filter((l) => l.status === 'pending')
+  const planId = subscription?.planId ?? 'starter'
+  const activeCount = coachAthletes.filter((a) => !a.blocked).length
 
   const submitCode = async () => {
     setError('')
@@ -106,6 +110,9 @@ export function ManageAthletes() {
   return (
     <div className="ss-flow">
       <ScreenHeader title="Athletes & pairing" onBack={() => setView('coach-home')} />
+      <p className="plan-limit-banner muted">
+        {athleteLimitMessage(planId)} · {activeCount} activos · {pendingLinks.length} pendentes
+      </p>
       <div className="ss-card">
         <p className="muted stats-panel__sub">
           Ask the athlete for their <strong>pairing code</strong> from their SurfStar account. After

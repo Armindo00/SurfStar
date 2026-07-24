@@ -24,6 +24,7 @@ export type AppView =
   | 'training-sessions'
   | 'session-history-detail'
   | 'analytics'
+  | 'subscription'
   | 'athlete-portal'
 
 export type AthleteShareSettings = {

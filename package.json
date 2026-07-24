@@ -1,13 +1,14 @@
 {
   "name": "surfstar",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:phone": "vite --host",
     "generate:icons": "node scripts/generate-icons.mjs",
     "build": "npm run generate:icons && tsc -b && vite build",
+    "test": "vitest run",
     "lint": "eslint .",
     "preview": "vite preview",
     "preview:phone": "vite preview --host"
@@ -30,6 +31,7 @@
     "sharp": "^0.35.3",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.62.0",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^3.0.5"
   }
 }

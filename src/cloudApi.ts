@@ -411,11 +411,26 @@ export async function cloudChangePassword(
 
   const built = await buildAuthSessionFromUser(userData.user)
   if ('error' in built) return { ok: false, error: built.error }
-  if (built.role !== 'atleta') {
-    return { ok: false, error: 'Only athletes can use this screen.' }
+
+  if (built.role === 'atleta') {
+    return { ok: true, session: { ...built, mustChangePassword: false } }
   }
 
-  return { ok: true, session: { ...built, mustChangePassword: false } }
+  return { ok: true, session: built }
+}
+
+export async function cloudResetPassword(
+  email: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const normalized = normalizeEmail(email)
+  if (!isValidEmail(normalized)) {
+    return { ok: false, error: 'Enter a valid email address.' }
+  }
+
+  const redirectTo = `${window.location.origin}/login`
+  const { error } = await getSupabase().auth.resetPasswordForEmail(normalized, { redirectTo })
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
 }
 
 export async function cloudFetchSpots(coachId: string): Promise<SurfSpot[]> {
@@ -452,28 +467,33 @@ export async function cloudFetchTrainingSessions(coachId: string): Promise<Train
   }))
 }
 
+export type CloudSaveResult = { ok: true } | { ok: false; error: string }
+
 export async function cloudSaveTrainingSessions(
   coachId: string,
   sessions: TrainingSession[],
-): Promise<void> {
+): Promise<CloudSaveResult> {
   const supabase = getSupabase()
   const coachSessions = sessions.filter((s) => s.coachId === coachId)
 
-  const { data: existing } = await supabase
+  const { data: existing, error: fetchError } = await supabase
     .from('training_sessions')
     .select('id')
     .eq('coach_id', coachId)
+
+  if (fetchError) return { ok: false, error: fetchError.message }
 
   const keepIds = new Set(coachSessions.map((s) => s.id))
   const toDelete = (existing ?? []).filter((r: { id: string }) => !keepIds.has(r.id)).map((r) => r.id)
 
   if (toDelete.length > 0) {
-    await supabase.from('training_sessions').delete().in('id', toDelete)
+    const { error } = await supabase.from('training_sessions').delete().in('id', toDelete)
+    if (error) return { ok: false, error: error.message }
   }
 
-  if (coachSessions.length === 0) return
+  if (coachSessions.length === 0) return { ok: true }
 
-  await supabase.from('training_sessions').upsert(
+  const { error } = await supabase.from('training_sessions').upsert(
     coachSessions.map((s) => ({
       id: s.id,
       coach_id: coachId,
@@ -481,23 +501,43 @@ export async function cloudSaveTrainingSessions(
       updated_at: new Date().toISOString(),
     })),
   )
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
 }
 
-export async function cloudSaveSpots(coachId: string, spots: SurfSpot[]): Promise<void> {
-  const { data: existing } = await getSupabase().from('spots').select('id').eq('coach_id', coachId)
+export async function cloudSaveSpots(coachId: string, spots: SurfSpot[]): Promise<CloudSaveResult> {
+  const supabase = getSupabase()
+  const { data: existing, error: fetchError } = await supabase.from('spots').select('id').eq('coach_id', coachId)
+  if (fetchError) return { ok: false, error: fetchError.message }
+
   const keep = new Set(spots.map((s) => s.id))
   const deleteIds = (existing ?? []).filter((r: { id: string }) => !keep.has(r.id)).map((r) => r.id)
-  if (deleteIds.length) await getSupabase().from('spots').delete().in('id', deleteIds)
-  if (spots.length) {
-    await getSupabase().from('spots').upsert(spots.map((s) => ({ id: s.id, coach_id: coachId, name: s.name })))
+  if (deleteIds.length) {
+    const { error } = await supabase.from('spots').delete().in('id', deleteIds)
+    if (error) return { ok: false, error: error.message }
   }
+  if (spots.length) {
+    const { error } = await supabase.from('spots').upsert(
+      spots.map((s) => ({ id: s.id, coach_id: coachId, name: s.name })),
+    )
+    if (error) return { ok: false, error: error.message }
+  }
+  return { ok: true }
 }
 
-export async function cloudSaveConditions(coachId: string, conditions: string[]): Promise<void> {
-  await getSupabase().from('coach_conditions').delete().eq('coach_id', coachId)
+export async function cloudSaveConditions(
+  coachId: string,
+  conditions: string[],
+): Promise<CloudSaveResult> {
+  const supabase = getSupabase()
+  const { error: deleteError } = await supabase.from('coach_conditions').delete().eq('coach_id', coachId)
+  if (deleteError) return { ok: false, error: deleteError.message }
+
   if (conditions.length) {
-    await getSupabase().from('coach_conditions').insert(
+    const { error } = await supabase.from('coach_conditions').insert(
       conditions.map((label) => ({ coach_id: coachId, label })),
     )
+    if (error) return { ok: false, error: error.message }
   }
+  return { ok: true }
 }

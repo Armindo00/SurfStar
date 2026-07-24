@@ -4,6 +4,7 @@ import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessCha
 import { ScreenHeader } from '../components/ScreenHeader'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { useApp } from '../AppContext'
+import { canAccessTeamAnalytics, planUpgradeHint } from '../planUtils'
 import {
   buildAthleteHeatDetails,
   buildAthleteSessionSummaries,
@@ -32,10 +33,12 @@ function RateBar({ value }: { value: number }) {
 }
 
 export function TeamAnalyticsView() {
-  const { coachAthletes, trainingSessions, auth, getSpot, setView } = useApp()
+  const { coachAthletes, trainingSessions, auth, subscription, getSpot, setView } = useApp()
   const [search, setSearch] = useState('')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
 
+  const planId = subscription?.planId ?? 'starter'
+  const hasAccess = canAccessTeamAnalytics(planId)
   const coachId = auth?.role === 'treinador' ? auth.coachId : null
 
   const filteredAthletes = useMemo(() => {
@@ -62,6 +65,21 @@ export function TeamAnalyticsView() {
     if (!analytics || !selectedAthleteId) return []
     return buildAthleteSessionSummaries(analytics.sessions, selectedAthleteId)
   }, [analytics, selectedAthleteId])
+
+  if (!hasAccess) {
+    return (
+      <div className="ss-flow">
+        <ScreenHeader title="Team analytics" onBack={() => setView('coach-home')} />
+        <div className="ss-card stats-panel">
+          <h2 className="stats-panel__title">Funcionalidade bloqueada</h2>
+          <p className="muted">{planUpgradeHint(planId, 'analytics')}</p>
+          <button type="button" className="btn btn--primary btn--block" onClick={() => setView('subscription')}>
+            Ver subscrição
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (!coachId) return null
 

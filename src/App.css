@@ -4088,6 +4088,82 @@ body {
   color: #64748b;
 }
 
+.toast-stack {
+  position: fixed;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(92vw, 420px);
+  pointer-events: none;
+}
+
+.toast {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  background: #0f172a;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.toast--success {
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.toast--error {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: #450a0a;
+}
+
+.login-success {
+  margin: 0.75rem 0 0;
+  color: #15803d;
+  font-size: 0.9rem;
+}
+
+.login-forgot {
+  margin-bottom: 0.5rem;
+}
+
+.checkout-pending {
+  padding: 1rem;
+  border-radius: 14px;
+  background: #f8fafc;
+  margin-bottom: 0.75rem;
+}
+
+.checkout-pending__title {
+  margin: 0 0 0.35rem;
+  font-weight: 700;
+}
+
+.plan-lock-note,
+.plan-limit-banner {
+  margin: 0 1rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.stats-panel__plan-name {
+  margin: 0.35rem 0;
+  font-size: 1.1rem;
+}
+
+.stats-panel__actions {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.dashboard__plan {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+}
+
 .pack-card {
   position: relative;
   display: flex;

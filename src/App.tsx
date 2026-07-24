@@ -1,8 +1,12 @@
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { ToastProvider } from './components/ToastProvider'
 import { AppProvider, useApp } from './AppContext'
 import { AppLogo } from './components/AppLogo'
 import { ChangePasswordView } from './views/ChangePasswordView'
 import { CheckoutView } from './views/CheckoutView'
+import { ForgotPasswordView } from './views/ForgotPasswordView'
 import { LandingView } from './views/LandingView'
+import { SubscriptionView } from './views/SubscriptionView'
 import { AthletePortal } from './views/AthletePortal'
 import { CoachHome } from './views/CoachHome'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
@@ -21,6 +25,7 @@ import { StartSession } from './views/StartSession'
 import { TeamAnalyticsView } from './views/TeamAnalyticsView'
 import { TrainingSessionsView } from './views/TrainingSessionsView'
 import { TrainingSessionView } from './views/TrainingSessionView'
+import { isForgotPasswordPath } from './routing'
 import './App.css'
 
 function AppHeader() {
@@ -32,13 +37,13 @@ function AppHeader() {
       <div className="app-brandbar__brand">
         <AppLogo size="sm" />
         <div>
-          <small>{role === 'treinador' ? 'Coach' : 'Athlete'}</small>
+          <small>{role === 'treinador' ? 'Treinador' : 'Atleta'}</small>
         </div>
       </div>
       <div className="app-brandbar__user">
         <span className="app-brandbar__name">{auth.name}</span>
         <button type="button" className="btn btn--ghost btn--small" onClick={logout}>
-          Sign out
+          Sair
         </button>
       </div>
     </header>
@@ -52,13 +57,16 @@ function Shell() {
     return (
       <div className="login-page">
         <div className="login-card">
-          <p className="muted">Loading SurfStar…</p>
+          <p className="muted">A carregar SurfStar…</p>
         </div>
       </div>
     )
   }
 
   if (!auth) {
+    if (isForgotPasswordPath(window.location.pathname)) {
+      return <ForgotPasswordView />
+    }
     if (publicView === 'landing') {
       return <LandingView />
     }
@@ -94,6 +102,7 @@ function Shell() {
           {role === 'treinador' && view === 'training-sessions' && <TrainingSessionsView />}
           {role === 'treinador' && view === 'session-history-detail' && <SessionHistoryDetailView />}
           {role === 'treinador' && view === 'analytics' && <TeamAnalyticsView />}
+          {role === 'treinador' && view === 'subscription' && <SubscriptionView />}
         </main>
         <EndSessionSheet />
       </div>
@@ -103,8 +112,12 @@ function Shell() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <Shell />
-    </AppProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <AppProvider>
+          <Shell />
+        </AppProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   )
 }

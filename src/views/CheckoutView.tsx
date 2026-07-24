@@ -1,44 +1,78 @@
-import { useState } from 'react'
-import { formatPlanPrice, getPlan, getStripePaymentLink, type PlanId } from '../plans'
-import { SUBSCRIPTION_PLANS } from '../plans'
+import { useEffect, useState } from 'react'
+import { formatPlanPrice, getPlan, getStripePaymentLink, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
 import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
+import {
+  buildStripeCheckoutUrl,
+  isDemoSubscriptionEnabled,
+  isSubscriptionActive,
+} from '../subscriptionApi'
 
 export function CheckoutView() {
   const {
     auth,
     selectedPlanId,
     selectPlan,
-    completeCheckout,
+    startCheckout,
+    activateDemoSubscription,
+    refreshSubscription,
+    subscription,
     openLanding,
     logout,
     cloudMode,
   } = useApp()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [paidExternally, setPaidExternally] = useState(false)
+  const [awaitingPayment, setAwaitingPayment] = useState(false)
 
-  const planId = selectedPlanId ?? 'team'
+  const planId = selectedPlanId ?? subscription?.planId ?? 'team'
   const plan = getPlan(planId)
   const stripeLink = getStripePaymentLink(planId)
+  const demoEnabled = isDemoSubscriptionEnabled()
+  const isPending = subscription?.status === 'pending'
+  const isActive = isSubscriptionActive(subscription)
 
-  const handlePay = () => {
-    if (stripeLink) {
-      window.open(stripeLink, '_blank', 'noopener,noreferrer')
-      setPaidExternally(true)
-      return
-    }
-    void handleActivate()
-  }
+  useEffect(() => {
+    if (!awaitingPayment && !isPending) return
+    if (isActive) return
 
-  const handleActivate = async () => {
+    const timer = window.setInterval(() => {
+      void refreshSubscription()
+    }, 4000)
+
+    return () => window.clearInterval(timer)
+  }, [awaitingPayment, isPending, isActive, refreshSubscription])
+
+  const handlePay = async () => {
     setError('')
     setBusy(true)
     try {
-      const result = await completeCheckout()
-      if (!result.ok) setError(result.error)
+      if (!stripeLink) {
+        if (demoEnabled) {
+          const result = await activateDemoSubscription()
+          if (!result.ok) setError(result.error)
+          return
+        }
+        setError('Pagamento Stripe não configurado. Contacta o suporte.')
+        return
+      }
+
+      const checkoutResult = await startCheckout()
+      if (!checkoutResult.ok) {
+        setError(checkoutResult.error)
+        return
+      }
+
+      const url = buildStripeCheckoutUrl(
+        stripeLink,
+        auth?.role === 'treinador' ? auth.coachId : '',
+        auth?.email ?? '',
+        planId,
+      )
+      window.open(url, '_blank', 'noopener,noreferrer')
+      setAwaitingPayment(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível ativar a subscrição.')
+      setError(err instanceof Error ? err.message : 'Não foi possível iniciar o checkout.')
     } finally {
       setBusy(false)
     }
@@ -55,7 +89,7 @@ export function CheckoutView() {
           <AppLogo size="lg" />
           <div>
             <h1>Ativar subscrição</h1>
-            <p className="muted">Olá {auth?.name ?? 'treinador'} — falta só confirmar o teu pack.</p>
+            <p className="muted">Olá {auth?.name ?? 'treinador'} — confirma o teu pack para entrar.</p>
           </div>
         </div>
 
@@ -93,43 +127,38 @@ export function CheckoutView() {
 
         {error ? <p className="login-error">{error}</p> : null}
 
-        {stripeLink ? (
-          <>
-            <button type="button" className="btn btn--primary btn--block btn--lg" onClick={handlePay} disabled={busy}>
-              Pagar com Stripe
-            </button>
-            {paidExternally ? (
-              <button
-                type="button"
-                className="btn btn--secondary btn--block"
-                onClick={() => void handleActivate()}
-                disabled={busy}
-              >
-                {busy ? 'A ativar…' : 'Já paguei — ativar conta'}
-              </button>
-            ) : null}
-            <p className="checkout-note muted">
-              Abre o pagamento numa nova janela. Depois de pagar, clica em &quot;Já paguei&quot; para
-              ativar.
+        {isPending || awaitingPayment ? (
+          <div className="checkout-pending">
+            <p className="checkout-pending__title">A aguardar confirmação de pagamento…</p>
+            <p className="muted">
+              Completa o pagamento na janela Stripe. A conta activa-se automaticamente em segundos.
             </p>
-          </>
+            <button type="button" className="btn btn--secondary btn--block" onClick={() => void refreshSubscription()} disabled={busy}>
+              Verificar agora
+            </button>
+          </div>
         ) : (
-          <>
-            <button
-              type="button"
-              className="btn btn--primary btn--block btn--lg"
-              onClick={() => void handleActivate()}
-              disabled={busy}
-            >
-              {busy ? 'A ativar…' : `Ativar ${plan.name} e começar`}
-            </button>
-            <p className="checkout-note muted">
-              {cloudMode
-                ? 'Modo demonstração: a subscrição é ativada na tua conta. Configura VITE_STRIPE_LINK_* para pagamento real.'
-                : 'Modo local: a subscrição fica guardada neste dispositivo.'}
-            </p>
-          </>
+          <button type="button" className="btn btn--gold btn--block btn--lg" onClick={() => void handlePay()} disabled={busy}>
+            {busy ? 'A processar…' : stripeLink ? 'Pagar com Stripe' : demoEnabled ? `Activar ${plan.name} (demo)` : 'Pagamento indisponível'}
+          </button>
         )}
+
+        {demoEnabled && cloudMode && stripeLink ? (
+          <button
+            type="button"
+            className="btn btn--ghost btn--block"
+            disabled={busy}
+            onClick={() => void activateDemoSubscription().then((r) => !r.ok && setError(r.error))}
+          >
+            Activar em modo demo (dev)
+          </button>
+        ) : null}
+
+        <p className="checkout-note muted">
+          {cloudMode
+            ? 'Pagamento seguro via Stripe. Cancela quando quiseres no portal de billing.'
+            : 'Modo local: a subscrição fica guardada neste dispositivo.'}
+        </p>
 
         <button type="button" className="btn btn--ghost btn--block" onClick={logout}>
           Terminar sessão

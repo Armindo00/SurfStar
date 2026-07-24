@@ -21,7 +21,18 @@ Sim — **já faz sentido**. Assim abres no telemóvel com um link `https://...`
    - Copia **anon public** key → `VITE_SUPABASE_ANON_KEY`
 4. **Authentication → Providers → Email**:
    - Desliga **Confirm email** (para entrar logo após registo, ideal para testes).
-5. **SQL Editor → New query** → cola todo o ficheiro `supabase/schema.sql` → **Run**.
+5. **SQL Editor** — corre **todos** os scripts por ordem (ver [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md)), incluindo `fix-subscription-security.sql` para produção.
+
+---
+
+## Passo 1b — Stripe (produção)
+
+1. Cria Payment Links para Starter, Team e Club no Stripe Dashboard.
+2. Cola os URLs em `.env` / Vercel (`VITE_STRIPE_LINK_*`).
+3. Deploy da Edge Function `supabase/functions/stripe-webhook` e configura webhook Stripe.
+4. Ver detalhes em [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md).
+
+Para **dev sem Stripe**: `VITE_DEMO_SUBSCRIPTION=true` + SQL `demo_subscriptions = true`.
 
 ---
 
@@ -60,9 +71,9 @@ Recebes um URL tipo `https://surfstar-xxx.vercel.app` — abre no telemóvel e *
 ## Passo 4 — Usar no telemóvel
 
 1. Abre o link HTTPS no Chrome/Safari.
-2. **Coach → Create account** (ou Sign in).
-3. **Athletes & logins** → adiciona atletas com email/palavra-passe.
-4. Atletas entram no separador **Athlete** com essas credenciais.
+2. **Treinador** → escolhe pack na landing, cria conta e paga via Stripe.
+3. **Gerir atletas** → pede o **código de pairing** ao atleta (conta grátis no separador Atleta).
+4. Atleta aceita o pedido na app — fica ligado ao treinador.
 
 Os mesmos logins funcionam no PC e no telemóvel.
 
