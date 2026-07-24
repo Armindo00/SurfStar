@@ -109,18 +109,35 @@ body {
   color: var(--landing-text) !important;
 }
 
+.login-tabs__btn {
+  color: #cbd5e1 !important;
+}
+
+.login-tabs__btn--on,
+.app-shell .login-tabs__btn--on {
+  background: rgba(201, 169, 98, 0.22) !important;
+  color: var(--landing-gold-light) !important;
+  box-shadow: none !important;
+}
+
+.login-page .login-subtabs__btn,
+.checkout-page .login-subtabs__btn {
+  color: #cbd5e1 !important;
+}
+
+.login-page .login-subtabs__btn--on,
+.checkout-page .login-subtabs__btn--on {
+  background: rgba(201, 169, 98, 0.2) !important;
+  color: var(--landing-gold-light) !important;
+}
+
 .login-tabs {
   background: rgba(0, 0, 0, 0.25);
 }
 
-.login-tabs__btn--on {
-  background: rgba(201, 169, 98, 0.2);
-  color: var(--landing-gold-light);
-}
-
 .field--login span,
 .field span {
-  color: var(--landing-muted);
+  color: #cbd5e1;
 }
 
 .field input,
@@ -243,12 +260,13 @@ body {
 .chip {
   background: rgba(255, 255, 255, 0.06) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: var(--landing-muted) !important;
+  color: #cbd5e1 !important;
+  font-weight: 600;
 }
 
 .chip--active {
-  background: rgba(201, 169, 98, 0.2) !important;
-  border-color: rgba(201, 169, 98, 0.45) !important;
+  background: rgba(201, 169, 98, 0.22) !important;
+  border-color: rgba(201, 169, 98, 0.5) !important;
   color: var(--landing-gold-light) !important;
 }
 
@@ -523,4 +541,269 @@ body {
   .install-banner {
     display: none;
   }
+}
+
+/* —— App contrast: fix light-theme leftovers on dark UI —— */
+
+.app-shell .field-label,
+.app-shell .stats-page__meta,
+.app-shell .stats-panel__sub,
+.app-shell .plan-lock-note,
+.app-shell .side-chart__sub {
+  color: #b8c5d6 !important;
+}
+
+.app-shell .muted {
+  color: #a8b8cc !important;
+}
+
+.app-shell .input-readonly {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #dbe4ef !important;
+}
+
+.app-shell select option {
+  background: #0a1628;
+  color: #f1f5f9;
+}
+
+.app-shell .data-table thead {
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+
+.app-shell .data-table th {
+  color: #cbd5e1 !important;
+}
+
+.app-shell .data-table td {
+  color: #f1f5f9 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.app-shell .data-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.app-shell .table-wrap {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.app-shell .side-chart {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .side-chart__title {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .side-chart__overall {
+  color: #a8b8cc !important;
+}
+
+.app-shell .side-chart__overall strong {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .side-chart__row span {
+  color: #dbe4ef !important;
+}
+
+.app-shell .stats-badge {
+  background: rgba(201, 169, 98, 0.18) !important;
+  color: var(--landing-gold-light) !important;
+  border: 1px solid rgba(201, 169, 98, 0.35);
+}
+
+.app-shell .history-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .history-card__headline {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .history-card__mode {
+  background: rgba(201, 169, 98, 0.18) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .history-card__notes-preview {
+  color: #b8c5d6 !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .history-detail-hero {
+  background: linear-gradient(180deg, rgba(201, 169, 98, 0.12), rgba(5, 11, 24, 0.35) 72%) !important;
+}
+
+.app-shell .athlete-manage-list__head {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .athlete-manage-list__head strong {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .athlete-manage-list__toggle {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .athlete-share-panel,
+.app-shell .athlete-share-option {
+  background: rgba(0, 0, 0, 0.22) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .athlete-share-option strong {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .athlete-share-option small {
+  color: #a8b8cc !important;
+}
+
+.app-shell .pairing-code-box {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(201, 169, 98, 0.35) !important;
+}
+
+.app-shell .pairing-code-box__code {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .pairing-list__item {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .athlete-tile__name {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .athlete-tile__avatar {
+  background: rgba(201, 169, 98, 0.22) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .athlete-potential-card {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .athlete-potential-card strong {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .athlete-potential-card--yes {
+  background: rgba(201, 169, 98, 0.12) !important;
+  border-color: rgba(201, 169, 98, 0.35) !important;
+}
+
+.app-shell .athlete-history-list li {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .heat-timer,
+.app-shell .heat-rule,
+.app-shell .heat-scores-list li,
+.app-shell .heat-leaderboard__list li,
+.app-shell .heat-surfer-row {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .heat-timer__value {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .heat-results-table th,
+.app-shell .heat-results-table td {
+  color: #f1f5f9 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.app-shell .sea-peak-column {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .sea-peak-column__title {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .sea-timeline li {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .sea-recommend__pick {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .wave-summary {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .wave-summary__title,
+.app-shell .wave-summary__eyebrow {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .wave-list li {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.app-shell .evolution-chart__title {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .evolution-chart__tick,
+.app-shell .evolution-chart__month {
+  fill: #94a3b8;
+}
+
+.app-shell .ss-athlete-list li,
+.app-shell .ss-athlete-list__row {
+  color: #f1f5f9 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.app-shell .ss-athlete-list__row small {
+  color: #a8b8cc !important;
+}
+
+.app-shell .action-list__item span[aria-hidden='true'] {
+  color: var(--landing-gold) !important;
+}
+
+.app-shell .login-tabs__btn {
+  color: #cbd5e1 !important;
+}
+
+.app-shell .kpi-card__value {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .kpi-card--accent .kpi-card__value,
+.app-shell .kpi-card--success .kpi-card__value {
+  color: #86efac !important;
+}
+
+.login-page .btn--ghost,
+.checkout-page .btn--ghost,
+.change-password-page .btn--ghost {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: var(--landing-gold-light) !important;
 }
