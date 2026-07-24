@@ -14,6 +14,12 @@ type Props = {
 
 export function PackCard({ planId, selected, onSelect }: Props) {
   const plan = getPlan(planId)
+  const includedFeatures = PLAN_COMPARISON_FEATURES.filter((feature) =>
+    planHasComparisonFeature(planId, feature),
+  )
+  const excludedFeatures = PLAN_COMPARISON_FEATURES.filter(
+    (feature) => !planHasComparisonFeature(planId, feature),
+  )
 
   return (
     <article
@@ -37,20 +43,25 @@ export function PackCard({ planId, selected, onSelect }: Props) {
       </p>
 
       <ul className="pack-card__features">
-        {PLAN_COMPARISON_FEATURES.map((feature) => {
-          const included = planHasComparisonFeature(planId, feature)
-          return (
-            <li
-              key={feature.label}
-              className={included ? 'pack-card__feature pack-card__feature--yes' : 'pack-card__feature pack-card__feature--no'}
-            >
-              <span className="pack-card__mark" aria-hidden="true">
-                {included ? '✓' : '✗'}
-              </span>
-              {feature.label}
-            </li>
-          )
-        })}
+        {includedFeatures.map((feature) => (
+          <li key={feature.label} className="pack-card__feature pack-card__feature--yes">
+            <span className="pack-card__mark" aria-hidden="true">
+              ✓
+            </span>
+            {feature.label}
+          </li>
+        ))}
+        {includedFeatures.length > 0 && excludedFeatures.length > 0 ? (
+          <li className="pack-card__features-divider" aria-hidden="true" />
+        ) : null}
+        {excludedFeatures.map((feature) => (
+          <li key={feature.label} className="pack-card__feature pack-card__feature--no">
+            <span className="pack-card__mark" aria-hidden="true">
+              ✗
+            </span>
+            {feature.label}
+          </li>
+        ))}
       </ul>
 
       <button

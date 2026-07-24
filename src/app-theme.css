@@ -1003,6 +1003,10 @@ body {
   color: #b91c1c !important;
 }
 
+.landing-page .pack-card__features-divider {
+  border-top-color: rgba(15, 23, 42, 0.12) !important;
+}
+
 .landing-page .pack-card__limit {
   color: #92702a !important;
 }

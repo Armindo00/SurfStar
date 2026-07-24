@@ -4530,6 +4530,17 @@ body {
   margin-top: 0.45rem;
 }
 
+.pack-card__features-divider {
+  margin: 0.75rem 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.12);
+  height: 0;
+  padding: 0;
+}
+
+.pack-card--highlighted .pack-card__features-divider {
+  border-top-color: rgba(255, 255, 255, 0.22);
+}
+
 .pack-card__feature--yes {
   color: #047857;
   font-weight: 600;
