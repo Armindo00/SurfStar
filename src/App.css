@@ -2463,7 +2463,12 @@ body {
 }
 
 .sea-recommend-row--on {
-  background: #ecfdf5 !important;
+  background: rgba(201, 169, 98, 0.2) !important;
+}
+
+.sea-recommend-row--on td {
+  color: #0a1628;
+  font-weight: 600;
 }
 
 .sea-recommend-tag {

@@ -750,6 +750,25 @@ body {
   color: var(--landing-gold-light) !important;
 }
 
+.app-shell .sea-recommend-row--on {
+  background: rgba(201, 169, 98, 0.2) !important;
+}
+
+.app-shell .sea-recommend-row--on td {
+  color: #f8fafc !important;
+  font-weight: 600;
+}
+
+.app-shell .sea-recommend-tag {
+  background: rgba(201, 169, 98, 0.85) !important;
+  color: #1a1204 !important;
+}
+
+.app-shell .sea-stats-table td,
+.app-shell .sea-stats-table th {
+  color: #f1f5f9 !important;
+}
+
 .app-shell .wave-summary {
   background: rgba(255, 255, 255, 0.05) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
