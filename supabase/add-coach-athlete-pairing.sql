@@ -413,6 +413,18 @@ $$;
 -- RLS for coach_athlete_links
 -- ---------------------------------------------------------------------------
 
+create or replace function public.get_my_athlete_id()
+returns uuid
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select athlete_id from public.profiles where id = auth.uid() limit 1;
+$$;
+
+grant execute on function public.get_my_athlete_id() to authenticated;
+
 alter table public.coach_athlete_links enable row level security;
 
 create policy "links_coach_read"
@@ -421,12 +433,7 @@ create policy "links_coach_read"
 
 create policy "links_athlete_read"
   on public.coach_athlete_links for select
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.athlete_id = coach_athlete_links.athlete_id
-    )
-  );
+  using (athlete_id = public.get_my_athlete_id());
 
 -- Writes go through security definer RPCs
 
@@ -438,15 +445,12 @@ create policy "sessions_athlete_read"
   using (
     exists (
       select 1
-      from public.profiles p
-      join public.coach_athlete_links cal
-        on cal.athlete_id = p.athlete_id
+      from public.coach_athlete_links cal
+      where cal.athlete_id = public.get_my_athlete_id()
         and cal.coach_id = training_sessions.coach_id
         and cal.status = 'active'
         and cal.blocked = false
-      where p.id = auth.uid()
-        and p.role = 'atleta'
-        and (training_sessions.payload->'athleteIds') @> to_jsonb(p.athlete_id::text)
+        and (training_sessions.payload->'athleteIds') @> to_jsonb(public.get_my_athlete_id()::text)
     )
   );
 
@@ -461,3 +465,54 @@ grant execute on function public.revoke_pairing(uuid) to authenticated;
 grant execute on function public.set_link_blocked(uuid, boolean) to authenticated;
 grant execute on function public.update_link_share_settings(uuid, jsonb) to authenticated;
 grant execute on function public.get_athlete_training_sessions(uuid) to authenticated;
+
+-- Fix profiles RLS recursion (safe to re-run)
+create or replace function public.get_my_athlete_id()
+returns uuid
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select athlete_id from public.profiles where id = auth.uid() limit 1;
+$$;
+
+grant execute on function public.get_my_athlete_id() to authenticated;
+
+drop policy if exists "profiles_select_coach_athletes" on public.profiles;
+
+create policy "profiles_select_coach_athletes"
+  on public.profiles for select
+  using (
+    role = 'atleta'
+    and coach_id = auth.uid()
+  );
+
+drop policy if exists "profiles_athlete_read_linked_coaches" on public.profiles;
+
+create policy "profiles_athlete_read_linked_coaches"
+  on public.profiles for select
+  using (
+    role = 'treinador'
+    and exists (
+      select 1
+      from public.coach_athlete_links cal
+      where cal.coach_id = profiles.id
+        and cal.athlete_id = public.get_my_athlete_id()
+        and cal.status in ('pending', 'active')
+    )
+  );
+
+drop policy if exists "athletes_coach_read_linked" on public.athletes;
+
+create policy "athletes_coach_read_linked"
+  on public.athletes for select
+  using (
+    exists (
+      select 1
+      from public.coach_athlete_links cal
+      where cal.athlete_id = athletes.id
+        and cal.coach_id = auth.uid()
+        and cal.status in ('pending', 'active', 'revoked')
+    )
+  );

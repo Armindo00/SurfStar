@@ -65,12 +65,8 @@ create policy "profiles_select_own"
 create policy "profiles_select_coach_athletes"
   on public.profiles for select
   using (
-    exists (
-      select 1 from public.profiles coach
-      where coach.id = auth.uid()
-        and coach.role = 'treinador'
-        and profiles.coach_id = coach.id
-    )
+    role = 'atleta'
+    and coach_id = auth.uid()
   );
 
 create policy "profiles_insert_own"
