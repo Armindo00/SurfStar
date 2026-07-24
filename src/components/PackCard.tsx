@@ -37,13 +37,16 @@ export function PackCard({ planId, selected, onSelect }: Props) {
 
       <ul className="pack-card__features">
         {plan.features.map((feature) => (
-          <li key={feature}>{feature}</li>
+          <li key={feature}>
+            <span className="pack-card__check" aria-hidden="true">✓</span>
+            {feature}
+          </li>
         ))}
       </ul>
 
       <button
         type="button"
-        className={plan.highlighted ? 'btn btn--primary btn--block' : 'btn btn--secondary btn--block'}
+        className={plan.highlighted ? 'btn btn--gold btn--block' : 'btn btn--secondary btn--block'}
         onClick={() => onSelect(planId)}
       >
         Escolher {plan.name}
