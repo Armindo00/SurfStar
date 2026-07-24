@@ -118,12 +118,18 @@ select * from (
     (
       10,
       'enable-demo-mode.sql',
-      case when exists (
-        select 1 from public.app_settings
-        where key = 'demo_subscriptions'
-          and coalesce(value #>> '{}', 'false') = 'true'
-      )
-      then 'OK' else 'FALTA' end,
+      case
+        when not exists (
+          select 1 from information_schema.tables
+          where table_schema = 'public' and table_name = 'app_settings'
+        ) then 'FALTA'
+        when exists (
+          select 1 from public.app_settings
+          where key = 'demo_subscriptions'
+            and coalesce(value #>> '{}', 'false') = 'true'
+        ) then 'OK'
+        else 'FALTA'
+      end,
       'demo_subscriptions = true (checkout demo sem Stripe)'
     )
 ) as t(ordem, ficheiro, estado, o_que_verifica)
