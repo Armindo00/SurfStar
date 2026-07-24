@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { useApp } from '../AppContext'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -32,82 +31,73 @@ const SHARE_OPTIONS: { key: keyof AthleteShareSettings; label: string; hint: str
 export function ManageAthletes() {
   const {
     coachAthletes,
-    coachStudents,
-    addAthleteWithLogin,
+    coachLinks,
+    requestPairingByCode,
+    revokePairing,
     updateAthleteShareSettings,
     setAthleteBlocked,
-    deleteAthlete,
-    canDeleteAthlete,
     setView,
   } = useApp()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [busy, setBusy] = useState(false)
   const [expandedAthleteId, setExpandedAthleteId] = useState<string | null>(null)
   const [actionError, setActionError] = useState('')
   const [actionBusyId, setActionBusyId] = useState<string | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [revokeTarget, setRevokeTarget] = useState<{ linkId: string; name: string } | null>(null)
 
-  const studentByAthlete = new Map(coachStudents.map((s) => [s.athleteId, s]))
+  const pendingLinks = coachLinks.filter((l) => l.status === 'pending')
 
-  const submit = async () => {
+  const submitCode = async () => {
     setError('')
     setSuccess('')
     setBusy(true)
     try {
-      const result = await addAthleteWithLogin(name, email, password)
+      const result = await requestPairingByCode(code)
       if (!result.ok) {
-        setError(result.error)
+        setError(result.error ?? 'Could not send request.')
         return
       }
-      setName('')
-      setEmail('')
-      setPassword('')
+      setCode('')
       setSuccess(
-        'Athlete saved. Share the email and temporary password — on first sign-in they must choose a new password.',
+        `Request sent to ${result.athleteName ?? 'athlete'}. They must accept before you can add them to sessions.`,
       )
     } finally {
       setBusy(false)
     }
   }
 
-  const toggleShare = (athleteId: string, key: keyof AthleteShareSettings, enabled: boolean) => {
-    const athlete = coachAthletes.find((a) => a.id === athleteId)
-    if (!athlete) return
+  const toggleShare = (linkId: string, key: keyof AthleteShareSettings, enabled: boolean) => {
+    const athlete = coachAthletes.find((a) => a.linkId === linkId)
+    if (!athlete?.linkId) return
     const current = normalizeAthleteShareSettings(athlete.shareSettings)
-    updateAthleteShareSettings(athleteId, { ...current, [key]: enabled })
+    updateAthleteShareSettings(linkId, { ...current, [key]: enabled })
   }
 
-  const toggleBlocked = async (athleteId: string, blocked: boolean) => {
+  const toggleBlocked = async (linkId: string, blocked: boolean) => {
     setActionError('')
-    setActionBusyId(athleteId)
+    setActionBusyId(linkId)
     try {
-      const result = await setAthleteBlocked(athleteId, blocked)
-      if (!result.ok) {
-        setActionError(result.error ?? 'Could not update athlete.')
-      }
+      const result = await setAthleteBlocked(linkId, blocked)
+      if (!result.ok) setActionError(result.error ?? 'Could not update athlete.')
     } finally {
       setActionBusyId(null)
     }
   }
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return
+  const confirmRevoke = async () => {
+    if (!revokeTarget) return
     setActionError('')
-    setActionBusyId(deleteTarget.id)
+    setActionBusyId(revokeTarget.linkId)
     try {
-      const result = await deleteAthlete(deleteTarget.id)
+      const result = await revokePairing(revokeTarget.linkId)
       if (!result.ok) {
-        setActionError(result.error ?? 'Could not delete athlete.')
+        setActionError(result.error ?? 'Could not remove athlete.')
         return
       }
-      if (expandedAthleteId === deleteTarget.id) {
-        setExpandedAthleteId(null)
-      }
-      setDeleteTarget(null)
+      if (expandedAthleteId === revokeTarget.linkId) setExpandedAthleteId(null)
+      setRevokeTarget(null)
     } finally {
       setActionBusyId(null)
     }
@@ -115,40 +105,23 @@ export function ManageAthletes() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Athletes & logins" onBack={() => setView('coach-home')} />
+      <ScreenHeader title="Athletes & pairing" onBack={() => setView('coach-home')} />
       <div className="ss-card">
         <p className="muted stats-panel__sub">
-          Each athlete gets an email and a temporary password. On first login they must set their own
-          password. Use <strong>Block</strong> to suspend access; use <strong>Delete</strong> only if
-          you added someone by mistake (no training history).
+          Ask the athlete for their <strong>pairing code</strong> from their SurfStar account. After
+          they accept your request, you can add them to training sessions. Use <strong>Block</strong>{' '}
+          to suspend them on your team, or <strong>Remove</strong> to unlink (their stats stay on
+          their account).
         </p>
 
         <div className="athlete-login-form">
           <label className="field field--pro">
-            <span>Name</span>
+            <span>Athlete pairing code</span>
             <input
               type="text"
-              placeholder="Athlete name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </label>
-          <label className="field field--pro">
-            <span>Email</span>
-            <input
-              type="email"
-              placeholder="athlete@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <label className="field field--pro">
-            <span>Temporary password (min. {MIN_PASSWORD_LENGTH})</span>
-            <input
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              placeholder="e.g. A3K9P2"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
             />
           </label>
           {error ? <p className="login-error">{error}</p> : null}
@@ -156,27 +129,42 @@ export function ManageAthletes() {
           <button
             type="button"
             className="btn btn--primary btn--block"
-            disabled={busy}
-            onClick={submit}
+            disabled={busy || !code.trim()}
+            onClick={submitCode}
           >
-            {busy ? 'Saving…' : 'Add athlete with login'}
+            {busy ? 'Sending…' : 'Send pairing request'}
           </button>
         </div>
+
+        {pendingLinks.length > 0 ? (
+          <div className="pairing-panel">
+            <h3 className="pairing-panel__title">Waiting for athlete confirmation</h3>
+            <ul className="pairing-list">
+              {pendingLinks.map((link) => (
+                <li key={link.id} className="pairing-list__item">
+                  <span>
+                    <strong>{link.athleteName ?? 'Athlete'}</strong>
+                    <small>Pending</small>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         {actionError ? <p className="login-error">{actionError}</p> : null}
 
         <ul className="ss-athlete-list ss-athlete-list--plain athlete-manage-list">
           {coachAthletes.length === 0 ? (
-            <li className="muted">No athletes yet.</li>
+            <li className="muted">No athletes linked yet.</li>
           ) : (
             coachAthletes.map((a) => {
               const shareSettings = normalizeAthleteShareSettings(
                 a.shareSettings ?? DEFAULT_ATHLETE_SHARE_SETTINGS,
               )
-              const student = studentByAthlete.get(a.id)
               const expanded = expandedAthleteId === a.id
-              const deletable = canDeleteAthlete(a.id)
-              const busyRow = actionBusyId === a.id
+              const linkId = a.linkId ?? a.id
+              const busyRow = actionBusyId === linkId
 
               return (
                 <li key={a.id} className="athlete-manage-list__item">
@@ -187,25 +175,24 @@ export function ManageAthletes() {
                   >
                     <span>
                       <strong>{a.name}</strong>
-                      <small>{student?.email ?? 'No login'}</small>
+                      <small>Code {a.pairingCode || '—'}</small>
                       <span className="athlete-manage-list__badges">
                         {a.blocked ? <span className="badge badge--danger">Blocked</span> : null}
-                        {student?.mustChangePassword ? (
-                          <span className="badge badge--warn">Pending first login</span>
-                        ) : null}
                       </span>
                     </span>
                     <span className="athlete-manage-list__toggle">{expanded ? '−' : '+'}</span>
                   </button>
 
-                  {expanded ? (
+                  {expanded && a.linkId ? (
                     <div className="athlete-share-panel">
                       <div className="athlete-manage-actions">
                         <button
                           type="button"
-                          className={a.blocked ? 'btn btn--primary btn--small' : 'btn btn--ghost btn--small'}
+                          className={
+                            a.blocked ? 'btn btn--primary btn--small' : 'btn btn--ghost btn--small'
+                          }
                           disabled={busyRow}
-                          onClick={() => toggleBlocked(a.id, !a.blocked)}
+                          onClick={() => toggleBlocked(a.linkId!, !a.blocked)}
                         >
                           {busyRow
                             ? 'Saving…'
@@ -213,32 +200,26 @@ export function ManageAthletes() {
                               ? 'Unblock athlete'
                               : 'Block athlete'}
                         </button>
-                        {deletable ? (
-                          <button
-                            type="button"
-                            className="btn btn--danger btn--small"
-                            disabled={busyRow}
-                            onClick={() => setDeleteTarget({ id: a.id, name: a.name })}
-                          >
-                            Delete (added by mistake)
-                          </button>
-                        ) : (
-                          <p className="muted athlete-manage-actions__hint">
-                            Cannot delete — this athlete has training sessions. Use Block instead.
-                          </p>
-                        )}
+                        <button
+                          type="button"
+                          className="btn btn--danger btn--small"
+                          disabled={busyRow}
+                          onClick={() => setRevokeTarget({ linkId: a.linkId!, name: a.name })}
+                        >
+                          Remove from my team
+                        </button>
                       </div>
 
                       <p className="athlete-share-panel__intro">
-                        Choose what this athlete can see beyond the general dashboard (waves,
-                        trainings, heat wins, potential wave split, average heat score).
+                        Choose what this athlete can see from your sessions beyond the general
+                        dashboard.
                       </p>
                       {SHARE_OPTIONS.map((option) => (
                         <label key={option.key} className="athlete-share-option">
                           <input
                             type="checkbox"
                             checked={shareSettings[option.key]}
-                            onChange={(e) => toggleShare(a.id, option.key, e.target.checked)}
+                            onChange={(e) => toggleShare(a.linkId!, option.key, e.target.checked)}
                           />
                           <span>
                             <strong>{option.label}</strong>
@@ -255,12 +236,12 @@ export function ManageAthletes() {
         </ul>
       </div>
 
-      {deleteTarget ? (
+      {revokeTarget ? (
         <ConfirmDeleteModal
-          title={`Delete ${deleteTarget.name}?`}
-          message="Only use this if you added the athlete by mistake. This removes their login and profile permanently. Athletes with training history cannot be deleted."
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
+          title={`Remove ${revokeTarget.name}?`}
+          message="This removes the athlete from your team. Their account and stats are kept — they can pair with you again later using their code."
+          onConfirm={confirmRevoke}
+          onCancel={() => setRevokeTarget(null)}
         />
       ) : null}
     </div>

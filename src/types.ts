@@ -49,12 +49,30 @@ export function normalizeAthleteShareSettings(
   }
 }
 
-export type Athlete = {
+export type PairingStatus = 'pending' | 'active' | 'revoked'
+
+export type CoachAthleteLink = {
   id: string
   coachId: string
+  athleteId: string
+  status: PairingStatus
+  initiatedBy: 'coach' | 'athlete'
+  shareSettings: AthleteShareSettings
+  blocked: boolean
+  coachName?: string
+  athleteName?: string
+  createdAt?: string
+}
+
+export type Athlete = {
+  id: string
   name: string
+  pairingCode: string
+  /** Link row when viewed by a coach */
+  linkId?: string
+  /** @deprecated legacy coach-owned row */
+  coachId?: string
   shareSettings?: AthleteShareSettings
-  /** When true, athlete cannot sign in or be selected for sessions */
   blocked?: boolean
 }
 
@@ -83,10 +101,11 @@ export type AuthSession =
   | { role: 'treinador'; coachId: string; name: string; email: string }
   | {
       role: 'atleta'
-      coachId: string
       athleteId: string
       name: string
       email: string
+      pairingCode: string
+      /** Legacy coach-created accounts only */
       mustChangePassword?: boolean
     }
 

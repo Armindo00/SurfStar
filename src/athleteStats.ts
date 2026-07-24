@@ -51,6 +51,31 @@ export function filterAthleteSessions(
     .sort((a, b) => (b.endedAt ?? '').localeCompare(a.endedAt ?? ''))
 }
 
+/** All completed sessions for an athlete across every linked coach */
+export function filterAthleteSessionsGlobal(
+  sessions: TrainingSession[],
+  athleteId: string,
+): TrainingSession[] {
+  return sessions
+    .filter((s) => Boolean(s.endedAt) && s.athleteIds.includes(athleteId))
+    .sort((a, b) => (b.endedAt ?? '').localeCompare(a.endedAt ?? ''))
+}
+
+export function filterAthleteSessionsForShare(
+  sessions: TrainingSession[],
+  athleteId: string,
+  allowedCoachIds: Set<string>,
+): TrainingSession[] {
+  return sessions
+    .filter(
+      (s) =>
+        allowedCoachIds.has(s.coachId) &&
+        Boolean(s.endedAt) &&
+        s.athleteIds.includes(athleteId),
+    )
+    .sort((a, b) => (b.endedAt ?? '').localeCompare(a.endedAt ?? ''))
+}
+
 function countAthleteStars(sessions: TrainingSession[], athleteId: string) {
   let technicalStars = 0
   let comboStars = 0

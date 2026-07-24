@@ -2,6 +2,7 @@ import { createDefaultConditions, createDefaultSpots } from './defaults'
 import type {
   Athlete,
   CoachAccount,
+  CoachAthleteLink,
   StudentAccount,
   SurfSpot,
   TrainingSession,
@@ -15,6 +16,7 @@ type Persisted = {
   coaches: CoachAccount[]
   students: StudentAccount[]
   athletes: Athlete[]
+  pairings: CoachAthleteLink[]
   spots: SurfSpot[]
   conditions: string[]
   trainingSessions: TrainingSession[]
@@ -51,6 +53,7 @@ function load(): Persisted {
       coaches: (parsed.coaches ?? []).map((c) => normalizeCoach(c as CoachAccount & { password?: string })),
       students: (parsed.students ?? []).map((s) => normalizeStudent(s as StudentAccount & { password?: string })),
       athletes: parsed.athletes ?? [],
+      pairings: parsed.pairings ?? [],
       spots: parsed.spots?.length ? parsed.spots : createDefaultSpots(),
       conditions: parsed.conditions?.length ? parsed.conditions : createDefaultConditions(),
       trainingSessions: (parsed.trainingSessions ?? []).map(migrateSession),
@@ -116,6 +119,7 @@ function seed(): Persisted {
     coaches: [],
     students: [],
     athletes: [],
+    pairings: [],
     spots: createDefaultSpots(),
     conditions: createDefaultConditions(),
     trainingSessions: [],
@@ -149,6 +153,14 @@ export const store = {
   saveAthletes(athletes: Athlete[]) {
     const data = load()
     data.athletes = athletes
+    save(data)
+  },
+  getPairings(): CoachAthleteLink[] {
+    return load().pairings
+  },
+  savePairings(pairings: CoachAthleteLink[]) {
+    const data = load()
+    data.pairings = pairings
     save(data)
   },
   getSpots(): SurfSpot[] {

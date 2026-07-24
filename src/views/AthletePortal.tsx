@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { useApp } from '../AppContext'
 import {
@@ -7,15 +7,16 @@ import {
   computeAthleteComboStats,
   computeAthleteGeneralStats,
   computeAthleteTechnicalStats,
-  filterAthleteSessions,
+  filterAthleteSessionsForShare,
+  filterAthleteSessionsGlobal,
 } from '../athleteStats'
 import { formatHeatTotal } from '../heatUtils'
 import { LEVELS } from '../sessionStats'
 import {
   COMBO_LEVEL_LABELS,
-  DEFAULT_ATHLETE_SHARE_SETTINGS,
   MANEUVER_LABELS,
   TRAINING_MODE_LABELS,
+  type AthleteShareSettings,
   type ManeuverKind,
 } from '../types'
 
@@ -38,17 +39,31 @@ function formatSessionDate(iso: string) {
 }
 
 export function AthletePortal() {
-  const { auth, trainingSessions, getSpot, getAthlete, logout } = useApp()
+  const { auth, trainingSessions, athleteLinks, getSpot, logout, respondToPairing, revokePairing } =
+    useApp()
+  const [pairingBusy, setPairingBusy] = useState<string | null>(null)
+  const [pairingError, setPairingError] = useState('')
+
   const isAthlete = auth?.role === 'atleta'
   const athleteId = isAthlete ? auth.athleteId : ''
-  const coachId = isAthlete ? auth.coachId : ''
 
-  const profile = isAthlete ? getAthlete(athleteId) : undefined
-  const shareSettings = profile?.shareSettings ?? DEFAULT_ATHLETE_SHARE_SETTINGS
+  const activeLinks = useMemo(
+    () => athleteLinks.filter((l) => l.status === 'active'),
+    [athleteLinks],
+  )
+  const pendingLinks = useMemo(
+    () => athleteLinks.filter((l) => l.status === 'pending'),
+    [athleteLinks],
+  )
+
+  const coachesWithShare = (key: keyof AthleteShareSettings) =>
+    new Set(
+      activeLinks.filter((l) => l.shareSettings[key]).map((l) => l.coachId),
+    )
 
   const mySessions = useMemo(
-    () => (isAthlete ? filterAthleteSessions(trainingSessions, coachId, athleteId) : []),
-    [isAthlete, trainingSessions, coachId, athleteId],
+    () => (isAthlete ? filterAthleteSessionsGlobal(trainingSessions, athleteId) : []),
+    [isAthlete, trainingSessions, athleteId],
   )
 
   const general = useMemo(
@@ -56,39 +71,96 @@ export function AthletePortal() {
     [isAthlete, mySessions, athleteId],
   )
 
-  const technicalStats = useMemo(
+  const technicalSessions = useMemo(
     () =>
-      isAthlete && shareSettings.technicalStats
-        ? computeAthleteTechnicalStats(mySessions, athleteId)
-        : null,
-    [isAthlete, mySessions, athleteId, shareSettings.technicalStats],
+      isAthlete
+        ? filterAthleteSessionsForShare(trainingSessions, athleteId, coachesWithShare('technicalStats'))
+        : [],
+    [isAthlete, trainingSessions, athleteId, activeLinks],
+  )
+
+  const comboSessions = useMemo(
+    () =>
+      isAthlete
+        ? filterAthleteSessionsForShare(trainingSessions, athleteId, coachesWithShare('comboStats'))
+        : [],
+    [isAthlete, trainingSessions, athleteId, activeLinks],
+  )
+
+  const historySessions = useMemo(
+    () =>
+      isAthlete
+        ? filterAthleteSessionsForShare(trainingSessions, athleteId, coachesWithShare('sessionHistory'))
+        : [],
+    [isAthlete, trainingSessions, athleteId, activeLinks],
+  )
+
+  const heatSessions = useMemo(
+    () =>
+      isAthlete
+        ? filterAthleteSessionsForShare(trainingSessions, athleteId, coachesWithShare('heatDetails'))
+        : [],
+    [isAthlete, trainingSessions, athleteId, activeLinks],
+  )
+
+  const technicalStats = useMemo(
+    () => (technicalSessions.length ? computeAthleteTechnicalStats(technicalSessions, athleteId) : null),
+    [technicalSessions, athleteId],
   )
 
   const comboStats = useMemo(
-    () =>
-      isAthlete && shareSettings.comboStats
-        ? computeAthleteComboStats(mySessions, athleteId)
-        : null,
-    [isAthlete, mySessions, athleteId, shareSettings.comboStats],
+    () => (comboSessions.length ? computeAthleteComboStats(comboSessions, athleteId) : null),
+    [comboSessions, athleteId],
   )
 
   const sessionSummaries = useMemo(
-    () =>
-      isAthlete && shareSettings.sessionHistory
-        ? buildAthleteSessionSummaries(mySessions, athleteId)
-        : [],
-    [isAthlete, mySessions, athleteId, shareSettings.sessionHistory],
+    () => buildAthleteSessionSummaries(historySessions, athleteId),
+    [historySessions, athleteId],
   )
 
   const heatDetails = useMemo(
-    () =>
-      isAthlete && shareSettings.heatDetails
-        ? buildAthleteHeatDetails(mySessions, athleteId)
-        : [],
-    [isAthlete, mySessions, athleteId, shareSettings.heatDetails],
+    () => buildAthleteHeatDetails(heatSessions, athleteId),
+    [heatSessions, athleteId],
   )
 
-  if (!isAthlete || !general || !auth) {
+  const hasSharedContent =
+    Boolean(technicalStats) ||
+    Boolean(comboStats) ||
+    sessionSummaries.length > 0 ||
+    heatDetails.length > 0
+
+  const copyCode = async () => {
+    if (!isAthlete) return
+    try {
+      await navigator.clipboard.writeText(auth.pairingCode)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const handlePairingResponse = async (linkId: string, accept: boolean) => {
+    setPairingError('')
+    setPairingBusy(linkId)
+    try {
+      const result = await respondToPairing(linkId, accept)
+      if (!result.ok) setPairingError(result.error ?? 'Could not update request.')
+    } finally {
+      setPairingBusy(null)
+    }
+  }
+
+  const handleLeaveCoach = async (linkId: string) => {
+    setPairingError('')
+    setPairingBusy(linkId)
+    try {
+      const result = await revokePairing(linkId)
+      if (!result.ok) setPairingError(result.error ?? 'Could not leave coach.')
+    } finally {
+      setPairingBusy(null)
+    }
+  }
+
+  if (!isAthlete || !auth) {
     return (
       <div className="ss-card">
         <p className="muted">Sign in as an athlete.</p>
@@ -96,52 +168,139 @@ export function AthletePortal() {
     )
   }
 
-  const hasSharedContent =
-    shareSettings.technicalStats ||
-    shareSettings.comboStats ||
-    shareSettings.sessionHistory ||
-    shareSettings.heatDetails
+  const stats = general ?? {
+    totalTrainings: 0,
+    totalWaves: 0,
+    withPotential: 0,
+    withoutPotential: 0,
+    withPotentialRate: null,
+    withoutPotentialRate: null,
+    heatWins: 0,
+    heatParticipations: 0,
+    avgHeatScore: null,
+    totalStars: 0,
+    technicalStars: 0,
+    comboStars: 0,
+  }
 
   return (
     <div className="dashboard athlete-portal">
       <header className="dashboard__hero">
         <p className="dashboard__hello">Hello,</p>
         <h1 className="dashboard__name">{auth.name}</h1>
-        <p className="muted">Your statistics dashboard</p>
+        <p className="muted">Your statistics across all linked coaches</p>
       </header>
+
+      <div className="ss-card athlete-portal__section pairing-panel">
+        <h2 className="page-title">Your pairing code</h2>
+        <p className="muted stats-panel__sub">
+          Share this code with any coach. They send a request — you must accept before they can log
+          your sessions.
+        </p>
+        <div className="pairing-code-box">
+          <strong className="pairing-code-box__code">{auth.pairingCode || '—'}</strong>
+          <button type="button" className="btn btn--ghost btn--small" onClick={copyCode}>
+            Copy
+          </button>
+        </div>
+
+        {pairingError ? <p className="login-error">{pairingError}</p> : null}
+
+        {pendingLinks.length > 0 ? (
+          <>
+            <h3 className="pairing-panel__title">Coach requests</h3>
+            <ul className="pairing-list">
+              {pendingLinks.map((link) => (
+                <li key={link.id} className="pairing-list__item pairing-list__item--actions">
+                  <span>
+                    <strong>{link.coachName ?? 'Coach'}</strong>
+                    <small>wants to link with you</small>
+                  </span>
+                  <span className="pairing-list__buttons">
+                    <button
+                      type="button"
+                      className="btn btn--primary btn--small"
+                      disabled={pairingBusy === link.id}
+                      onClick={() => handlePairingResponse(link.id, true)}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--small"
+                      disabled={pairingBusy === link.id}
+                      onClick={() => handlePairingResponse(link.id, false)}
+                    >
+                      Decline
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
+
+        {activeLinks.length > 0 ? (
+          <>
+            <h3 className="pairing-panel__title">Linked coaches</h3>
+            <ul className="pairing-list">
+              {activeLinks.map((link) => (
+                <li key={link.id} className="pairing-list__item pairing-list__item--actions">
+                  <span>
+                    <strong>{link.coachName ?? 'Coach'}</strong>
+                    <small>Active</small>
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--small"
+                    disabled={pairingBusy === link.id}
+                    onClick={() => handleLeaveCoach(link.id)}
+                  >
+                    Leave
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="muted">No coaches linked yet. Share your code to get started.</p>
+        )}
+      </div>
 
       <div className="ss-card athlete-portal__section">
         <h2 className="page-title">General statistics</h2>
-        <p className="muted stats-panel__sub">Always visible — your overall progress.</p>
+        <p className="muted stats-panel__sub">
+          Combined from every coach you train with — your progress stays with you.
+        </p>
 
         <div className="kpi-grid athlete-portal__kpi">
           <article className="kpi-card">
             <span className="kpi-card__label">Total waves</span>
-            <strong className="kpi-card__value">{general.totalWaves}</strong>
+            <strong className="kpi-card__value">{stats.totalWaves}</strong>
           </article>
           <article className="kpi-card kpi-card--accent">
             <span className="kpi-card__label">Total trainings</span>
-            <strong className="kpi-card__value">{general.totalTrainings}</strong>
+            <strong className="kpi-card__value">{stats.totalTrainings}</strong>
           </article>
           <article className="kpi-card kpi-card--success">
             <span className="kpi-card__label">Heat wins</span>
-            <strong className="kpi-card__value">{general.heatWins}</strong>
+            <strong className="kpi-card__value">{stats.heatWins}</strong>
             <small className="kpi-card__hint">
-              {general.heatParticipations} heats
+              {stats.heatParticipations} heats
             </small>
           </article>
           <article className="kpi-card">
             <span className="kpi-card__label">Avg heat score</span>
             <strong className="kpi-card__value">
-              {general.avgHeatScore !== null ? formatHeatTotal(general.avgHeatScore) : '—'}
+              {stats.avgHeatScore !== null ? formatHeatTotal(stats.avgHeatScore) : '—'}
             </strong>
           </article>
           <article className="kpi-card kpi-card--success athlete-potential-kpi">
             <span className="kpi-card__label">Waves with potential</span>
-            {general.withPotentialRate !== null ? (
+            {stats.withPotentialRate !== null ? (
               <>
-                <strong className="kpi-card__value">{general.withPotentialRate}%</strong>
-                <RateBar value={general.withPotentialRate} />
+                <strong className="kpi-card__value">{stats.withPotentialRate}%</strong>
+                <RateBar value={stats.withPotentialRate} />
               </>
             ) : (
               <>
@@ -152,9 +311,9 @@ export function AthletePortal() {
           </article>
           <article className="kpi-card kpi-card--star">
             <span className="kpi-card__label">Stars landed</span>
-            <strong className="kpi-card__value">{general.totalStars} ★</strong>
+            <strong className="kpi-card__value">{stats.totalStars} ★</strong>
             <small className="kpi-card__hint">
-              {general.technicalStars} technical · {general.comboStars} combo
+              {stats.technicalStars} technical · {stats.comboStars} combo
             </small>
           </article>
         </div>
@@ -162,12 +321,12 @@ export function AthletePortal() {
 
       {hasSharedContent && (
         <div className="athlete-portal__shared-head">
-          <h2 className="page-title">Shared by your coach</h2>
-          <p className="muted">Extra details your coach chose to share with you.</p>
+          <h2 className="page-title">Shared by your coaches</h2>
+          <p className="muted">Extra details each coach chose to share from their sessions.</p>
         </div>
       )}
 
-      {shareSettings.technicalStats && technicalStats && (
+      {technicalStats && (
         <div className="ss-card stats-panel athlete-portal__section">
           <h2 className="stats-panel__title">Technical training</h2>
           <p className="muted stats-panel__sub">
@@ -206,7 +365,7 @@ export function AthletePortal() {
         </div>
       )}
 
-      {shareSettings.comboStats && comboStats && (
+      {comboStats && (
         <div className="ss-card stats-panel athlete-portal__section">
           <h2 className="stats-panel__title">Combos</h2>
           <p className="muted stats-panel__sub">
@@ -245,7 +404,7 @@ export function AthletePortal() {
         </div>
       )}
 
-      {shareSettings.heatDetails && heatDetails.length > 0 && (
+      {heatDetails.length > 0 && (
         <div className="ss-card athlete-portal__section">
           <h2 className="page-title">Heat breakdown</h2>
           <ul className="athlete-history-list">
@@ -267,7 +426,7 @@ export function AthletePortal() {
         </div>
       )}
 
-      {shareSettings.sessionHistory && sessionSummaries.length > 0 && (
+      {sessionSummaries.length > 0 && (
         <div className="ss-card athlete-portal__section">
           <h2 className="page-title">Training history</h2>
           <ul className="athlete-history-list">
@@ -298,7 +457,7 @@ export function AthletePortal() {
       {mySessions.length > 0 && !hasSharedContent && (
         <div className="ss-card athlete-portal__hint">
           <p className="muted">
-            Your coach can share more detailed stats from <strong>Athletes & logins</strong>.
+            Your coaches can share more detailed stats from <strong>Athletes & pairing</strong>.
           </p>
         </div>
       )}

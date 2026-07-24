@@ -10,22 +10,28 @@ import {
 import { authStore, store } from './store'
 import { isCloudEnabled } from './config'
 import {
-  cloudAddAthleteWithLogin,
   cloudChangePassword,
-  cloudDeleteAthlete,
   cloudGetSession,
   cloudLoadAthleteData,
   cloudLoadCoachData,
   cloudLogin,
   cloudLogout,
   cloudOnAuthChange,
+  cloudRegisterAthlete,
   cloudRegisterCoach,
-  cloudSaveAthletes,
   cloudSaveConditions,
   cloudSaveSpots,
   cloudSaveTrainingSessions,
-  cloudSetAthleteBlocked,
 } from './cloudApi'
+import {
+  cloudFetchCoachAthletes,
+  cloudFetchCoachLinks,
+  cloudRequestPairingByCode,
+  cloudRespondToPairing,
+  cloudRevokePairing,
+  cloudSetLinkBlocked,
+  cloudUpdateLinkShareSettings,
+} from './cloudPairingApi'
 import { waveHasLoggedAttempts } from './sessionStats'
 import { filterCoachCompletedSessions } from './sessionHistoryUtils'
 import {
@@ -51,6 +57,7 @@ import type {
   ManeuverLog,
   ComboAttemptLog,
   CoachAccount,
+  CoachAthleteLink,
   StudentAccount,
   SurfSpot,
   TrainingMode,
@@ -60,7 +67,14 @@ import type {
   WaveSide,
 } from './types'
 import { DEFAULT_ATHLETE_SHARE_SETTINGS, normalizeAthleteShareSettings } from './types'
-import { canDeleteAthlete as athleteCanBeDeleted } from './athleteManagementUtils'
+import {
+  backfillLocalLinks,
+  buildCoachAthletesFromLinks,
+  findAthleteByPairingCode,
+  generatePairingCode,
+  loadAthleteSessionsLocal,
+  migrateLegacyLocalAthletes,
+} from './localPairing'
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
 
 type DraftSession = {
@@ -82,26 +96,28 @@ type AppContextValue = {
     email: string,
     password: string,
   ) => Promise<{ ok: true } | { ok: false; error: string }>
+  registerAthlete: (
+    name: string,
+    email: string,
+    password: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
   logout: () => void
   role: UserRole
   view: AppView
   setView: (view: AppView) => void
   coachAthletes: Athlete[]
-  coachStudents: StudentAccount[]
+  coachLinks: CoachAthleteLink[]
+  athleteLinks: CoachAthleteLink[]
   spots: SurfSpot[]
   conditions: string[]
-  addAthlete: (name: string) => void
-  addAthleteWithLogin: (
-    name: string,
-    email: string,
-    password: string,
-  ) => Promise<{ ok: true } | { ok: false; error: string }>
-  updateAthleteShareSettings: (athleteId: string, shareSettings: AthleteShareSettings) => void
-  setAthleteBlocked: (athleteId: string, blocked: boolean) => Promise<{ ok: boolean; error?: string }>
-  deleteAthlete: (athleteId: string) => Promise<{ ok: boolean; error?: string }>
-  canDeleteAthlete: (athleteId: string) => boolean
+  requestPairingByCode: (code: string) => Promise<{ ok: boolean; error?: string; athleteName?: string }>
+  respondToPairing: (linkId: string, accept: boolean) => Promise<{ ok: boolean; error?: string }>
+  revokePairing: (linkId: string) => Promise<{ ok: boolean; error?: string }>
+  updateAthleteShareSettings: (linkId: string, shareSettings: AthleteShareSettings) => void
+  setAthleteBlocked: (linkId: string, blocked: boolean) => Promise<{ ok: boolean; error?: string }>
   activeCoachAthletes: Athlete[]
   changePassword: (newPassword: string) => Promise<{ ok: true } | { ok: false; error: string }>
+  refreshPairingData: () => Promise<void>
   addSpot: (name: string) => void
   updateSpotName: (spotId: string, name: string) => void
   removeSpot: (spotId: string) => boolean
@@ -268,10 +284,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
   const role: UserRole = auth?.role ?? 'treinador'
   const [view, setView] = useState<AppView>('coach-home')
-  const [athletes, setAthletes] = useState<Athlete[]>(() => (cloudMode ? [] : store.getAthletes()))
+  const [athletes, setAthletes] = useState<Athlete[]>(() =>
+    cloudMode ? [] : migrateLegacyLocalAthletes(store.getAthletes()),
+  )
   const [students, setStudents] = useState<StudentAccount[]>(() =>
     cloudMode ? [] : store.getStudents(),
   )
+  const [coachLinks, setCoachLinks] = useState<CoachAthleteLink[]>(() =>
+    cloudMode
+      ? []
+      : backfillLocalLinks(
+          migrateLegacyLocalAthletes(store.getAthletes()),
+          store.getPairings(),
+          store.getCoaches(),
+        ),
+  )
+  const [athleteLinks, setAthleteLinks] = useState<CoachAthleteLink[]>([])
   const [spots, setSpots] = useState<SurfSpot[]>(() => (cloudMode ? [] : store.getSpots()))
   const [conditions, setConditions] = useState<string[]>(() =>
     cloudMode ? [] : store.getConditions(),
@@ -287,17 +315,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [endSessionSheetOpen, setEndSessionSheetOpen] = useState(false)
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
 
-  const coachId = auth?.role === 'treinador' ? auth.coachId : auth?.role === 'atleta' ? auth.coachId : null
+  const coachId = auth?.role === 'treinador' ? auth.coachId : null
 
-  const coachAthletes = useMemo(
-    () => (coachId ? athletes.filter((a) => a.coachId === coachId) : []),
-    [athletes, coachId],
-  )
-
-  const coachStudents = useMemo(
-    () => (coachId ? students.filter((s) => s.coachId === coachId) : []),
-    [students, coachId],
-  )
+  const coachAthletes = useMemo(() => {
+    if (auth?.role === 'treinador') {
+      return cloudMode ? athletes : buildCoachAthletesFromLinks(coachLinks, athletes)
+    }
+    if (auth?.role === 'atleta') {
+      return athletes.filter((a) => a.id === auth.athleteId)
+    }
+    return []
+  }, [athletes, auth, cloudMode, coachLinks])
 
   const activeCoachAthletes = useMemo(
     () => coachAthletes.filter((a) => !a.blocked),
@@ -317,7 +345,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (session.role === 'treinador') {
       const data = await cloudLoadCoachData(session.coachId)
       setAthletes(data.athletes)
-      setStudents(data.students)
+      setCoachLinks(data.links)
+      setAthleteLinks([])
       setSpots(data.spots)
       setConditions(data.conditions)
       setTrainingSessions(data.trainingSessions)
@@ -325,11 +354,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    const data = await cloudLoadAthleteData(session.coachId, session.athleteId)
+    const data = await cloudLoadAthleteData(session.athleteId)
     setAthletes(data.athlete ? [data.athlete] : [])
-    setSpots(data.spots)
+    setAthleteLinks(data.links)
+    setCoachLinks([])
     setTrainingSessions(data.trainingSessions)
+    setSpots([])
   }, [])
+
+  const refreshPairingData = useCallback(async () => {
+    if (!auth) return
+    if (cloudMode) {
+      if (auth.role === 'treinador') {
+        const [athletesNext, linksNext] = await Promise.all([
+          cloudFetchCoachAthletes(auth.coachId),
+          cloudFetchCoachLinks(auth.coachId),
+        ])
+        setAthletes(athletesNext)
+        setCoachLinks(linksNext)
+      } else {
+        const data = await cloudLoadAthleteData(auth.athleteId)
+        setAthletes(data.athlete ? [data.athlete] : [])
+        setAthleteLinks(data.links)
+        setTrainingSessions(data.trainingSessions)
+      }
+      return
+    }
+
+    if (auth.role === 'treinador') {
+      setCoachLinks(store.getPairings().filter((l) => l.coachId === auth.coachId))
+      setAthletes(migrateLegacyLocalAthletes(store.getAthletes()))
+    } else {
+      const allLinks = store.getPairings().filter((l) => l.athleteId === auth.athleteId)
+      setAthleteLinks(allLinks)
+      setTrainingSessions(
+        loadAthleteSessionsLocal(auth.athleteId, allLinks, store.getTrainingSessions()),
+      )
+    }
+  }, [auth, cloudMode])
 
   useEffect(() => {
     if (!cloudMode) return
@@ -361,6 +423,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           } else {
             setAthletes([])
             setStudents([])
+            setCoachLinks([])
+            setAthleteLinks([])
             setSpots([])
             setConditions([])
             setTrainingSessions([])
@@ -478,16 +542,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     const current = nextStudents[index]!
+    const currentAthlete = store.getAthletes().find((a) => a.id === current.athleteId)
     const session: AuthSession = {
       role: 'atleta',
-      coachId: current.coachId,
       athleteId: current.athleteId,
       name: current.name,
       email: current.email,
+      pairingCode: currentAthlete?.pairingCode ?? '',
       mustChangePassword: current.mustChangePassword ?? false,
     }
     authStore.setSession(session)
     setAuth(session)
+    const links = store.getPairings().filter((l) => l.athleteId === current.athleteId)
+    setAthleteLinks(links)
+    setTrainingSessions(
+      loadAthleteSessionsLocal(current.athleteId, links, store.getTrainingSessions()),
+    )
     setView(viewForAuth(session))
     return { ok: true }
   },
@@ -540,6 +610,70 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [applyCloudSessionData, cloudMode],
   )
 
+  const registerAthlete = useCallback(
+    async (name: string, email: string, password: string) => {
+      if (cloudMode) {
+        const result = await cloudRegisterAthlete(name, email, password)
+        if (!result.ok) return result
+        setAuth(result.session)
+        setView(viewForAuth(result.session))
+        void applyCloudSessionData(result.session).catch((err) => {
+          console.error('Failed to load athlete data after registration', err)
+        })
+        return { ok: true as const }
+      }
+
+      const trimmedName = name.trim()
+      const normalized = normalizeEmail(email)
+      if (!trimmedName) return { ok: false as const, error: 'Enter your name.' }
+      if (!isValidEmail(normalized)) return { ok: false as const, error: 'Enter a valid email.' }
+      const pwdError = validatePasswordStrength(password)
+      if (pwdError) return { ok: false as const, error: pwdError }
+      if (students.some((s) => s.email === normalized)) {
+        return { ok: false as const, error: 'This email is already registered.' }
+      }
+
+      const athleteId = crypto.randomUUID()
+      const allAthletes = migrateLegacyLocalAthletes(store.getAthletes())
+      const pairingCode = generatePairingCode(allAthletes.map((a) => a.pairingCode))
+      const athlete: Athlete = {
+        id: athleteId,
+        name: trimmedName,
+        pairingCode,
+      }
+      const passwordHash = await hashPassword(password)
+      const student: StudentAccount = {
+        id: crypto.randomUUID(),
+        coachId: '',
+        athleteId,
+        name: trimmedName,
+        email: normalized,
+        passwordHash,
+        mustChangePassword: false,
+      }
+      const nextAthletes = [...allAthletes, athlete]
+      const nextStudents = [...students, student]
+      store.saveAthletes(nextAthletes)
+      store.saveStudents(nextStudents)
+      setAthletes(nextAthletes)
+      setStudents(nextStudents)
+      setAthleteLinks([])
+
+      const session: AuthSession = {
+        role: 'atleta',
+        athleteId,
+        name: trimmedName,
+        email: normalized,
+        pairingCode,
+      }
+      authStore.setSession(session)
+      setAuth(session)
+      setView('athlete-portal')
+      return { ok: true as const }
+    },
+    [applyCloudSessionData, cloudMode, students],
+  )
+
   const logout = useCallback(async () => {
     if (cloudMode) await cloudLogout()
     else authStore.setSession(null)
@@ -587,146 +721,171 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [persistSessions, trainingSessions],
   )
 
-  const addAthlete = useCallback(
-    (name: string) => {
-      const trimmed = name.trim()
-      if (!trimmed || auth?.role !== 'treinador') return
-      const next = [
-        ...athletes,
-        { id: crypto.randomUUID(), coachId: auth.coachId, name: trimmed },
-      ]
-      setAthletes(next)
-      store.saveAthletes(next)
-    },
-    [athletes, auth],
-  )
-
-  const addAthleteWithLogin = useCallback(
-    async (name: string, email: string, password: string) => {
+  const requestPairingByCode = useCallback(
+    async (code: string) => {
       if (auth?.role !== 'treinador') {
-        return { ok: false as const, error: 'Sign in as coach first.' }
+        return { ok: false, error: 'Sign in as coach first.' }
       }
 
       if (cloudMode) {
-        const result = await cloudAddAthleteWithLogin(auth.coachId, name, email, password)
+        const result = await cloudRequestPairingByCode(code)
         if (!result.ok) return result
-        setAthletes(result.athletes)
-        setStudents(result.students)
-        return { ok: true as const }
+        await refreshPairingData()
+        return { ok: true, athleteName: result.athleteName }
       }
 
-      const trimmedName = name.trim()
-      const normalized = normalizeEmail(email)
-      if (!trimmedName) return { ok: false as const, error: 'Enter athlete name.' }
-      if (!isValidEmail(normalized)) return { ok: false as const, error: 'Enter a valid email.' }
-      const pwdError = validatePasswordStrength(password)
-      if (pwdError) return { ok: false as const, error: pwdError }
-      if (students.some((s) => s.email === normalized)) {
-        return { ok: false as const, error: 'This email is already used.' }
+      const trimmed = code.trim().toUpperCase()
+      const allAthletes = migrateLegacyLocalAthletes(store.getAthletes())
+      const athlete = findAthleteByPairingCode(allAthletes, trimmed)
+      if (!athlete) return { ok: false, error: 'No athlete found with this code.' }
+
+      const pairings = store.getPairings()
+      const existing = pairings.find(
+        (l) => l.coachId === auth.coachId && l.athleteId === athlete.id,
+      )
+      if (existing?.status === 'active') {
+        return { ok: false, error: 'This athlete is already on your team.' }
       }
 
-      const athleteId = crypto.randomUUID()
-      const passwordHash = await hashPassword(password)
-      const athlete: Athlete = {
-        id: athleteId,
-        coachId: auth.coachId,
-        name: trimmedName,
-        shareSettings: DEFAULT_ATHLETE_SHARE_SETTINGS,
-        blocked: false,
-      }
-      const student: StudentAccount = {
-        id: crypto.randomUUID(),
-        coachId: auth.coachId,
-        athleteId,
-        name: trimmedName,
-        email: normalized,
-        passwordHash,
-        mustChangePassword: true,
-      }
-      const nextAthletes = [...athletes, athlete]
-      const nextStudents = [...students, student]
-      setAthletes(nextAthletes)
-      setStudents(nextStudents)
-      store.saveAthletes(nextAthletes)
-      store.saveStudents(nextStudents)
-      return { ok: true as const }
+      const nextLink: CoachAthleteLink = existing
+        ? { ...existing, status: 'pending', initiatedBy: 'coach', blocked: false }
+        : {
+            id: crypto.randomUUID(),
+            coachId: auth.coachId,
+            athleteId: athlete.id,
+            status: 'pending',
+            initiatedBy: 'coach',
+            shareSettings: DEFAULT_ATHLETE_SHARE_SETTINGS,
+            blocked: false,
+            athleteName: athlete.name,
+          }
+
+      const nextPairings = existing
+        ? pairings.map((l) => (l.id === existing.id ? nextLink : l))
+        : [...pairings, nextLink]
+      store.savePairings(nextPairings)
+      setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
+      return { ok: true, athleteName: athlete.name }
     },
-    [athletes, auth, cloudMode, students],
+    [auth, cloudMode, refreshPairingData],
+  )
+
+  const respondToPairing = useCallback(
+    async (linkId: string, accept: boolean) => {
+      if (auth?.role !== 'atleta') {
+        return { ok: false, error: 'Sign in as athlete first.' }
+      }
+
+      if (cloudMode) {
+        const result = await cloudRespondToPairing(linkId, accept)
+        if (!result.ok) return result
+        await refreshPairingData()
+        return { ok: true }
+      }
+
+      const pairings = store.getPairings()
+      const link = pairings.find((l) => l.id === linkId && l.athleteId === auth.athleteId)
+      if (!link || link.status !== 'pending') {
+        return { ok: false, error: 'Request not found.' }
+      }
+
+      const nextPairings = pairings.map((l) =>
+        l.id === linkId
+          ? { ...l, status: accept ? ('active' as const) : ('revoked' as const) }
+          : l,
+      )
+      store.savePairings(nextPairings)
+      setAthleteLinks(nextPairings.filter((l) => l.athleteId === auth.athleteId))
+      if (accept) {
+        setTrainingSessions(
+          loadAthleteSessionsLocal(auth.athleteId, nextPairings, store.getTrainingSessions()),
+        )
+      }
+      return { ok: true }
+    },
+    [auth, cloudMode, refreshPairingData],
+  )
+
+  const revokePairing = useCallback(
+    async (linkId: string) => {
+      if (!auth) return { ok: false, error: 'Sign in first.' }
+
+      if (cloudMode) {
+        const result = await cloudRevokePairing(linkId)
+        if (!result.ok) return result
+        await refreshPairingData()
+        return { ok: true }
+      }
+
+      const pairings = store.getPairings()
+      const link = pairings.find((l) => l.id === linkId)
+      if (!link) return { ok: false, error: 'Link not found.' }
+      if (auth.role === 'treinador' && link.coachId !== auth.coachId) {
+        return { ok: false, error: 'Not allowed.' }
+      }
+      if (auth.role === 'atleta' && link.athleteId !== auth.athleteId) {
+        return { ok: false, error: 'Not allowed.' }
+      }
+
+      const nextPairings = pairings.map((l) =>
+        l.id === linkId ? { ...l, status: 'revoked' as const, blocked: false } : l,
+      )
+      store.savePairings(nextPairings)
+      if (auth.role === 'treinador') {
+        setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
+      } else {
+        setAthleteLinks(nextPairings.filter((l) => l.athleteId === auth.athleteId))
+        setTrainingSessions(
+          loadAthleteSessionsLocal(auth.athleteId, nextPairings, store.getTrainingSessions()),
+        )
+      }
+      return { ok: true }
+    },
+    [auth, cloudMode, refreshPairingData],
   )
 
   const updateAthleteShareSettings = useCallback(
-    (athleteId: string, shareSettings: AthleteShareSettings) => {
+    (linkId: string, shareSettings: AthleteShareSettings) => {
       if (auth?.role !== 'treinador') return
-      const next = athletes.map((a) =>
-        a.id === athleteId ? { ...a, shareSettings: normalizeAthleteShareSettings(shareSettings) } : a,
-      )
-      setAthletes(next)
+      const normalized = normalizeAthleteShareSettings(shareSettings)
+
       if (cloudMode) {
-        void cloudSaveAthletes(auth.coachId, next)
-      } else {
-        store.saveAthletes(next)
+        void cloudUpdateLinkShareSettings(linkId, normalized).then(() => refreshPairingData())
+        return
       }
+
+      const pairings = store.getPairings()
+      const nextPairings = pairings.map((l) =>
+        l.id === linkId ? { ...l, shareSettings: normalized } : l,
+      )
+      store.savePairings(nextPairings)
+      setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
+      setAthletes(buildCoachAthletesFromLinks(nextPairings, store.getAthletes()))
     },
-    [athletes, auth, cloudMode],
+    [auth, cloudMode, refreshPairingData],
   )
 
   const setAthleteBlocked = useCallback(
-    async (athleteId: string, blocked: boolean) => {
+    async (linkId: string, blocked: boolean) => {
       if (auth?.role !== 'treinador') {
         return { ok: false, error: 'Sign in as coach first.' }
       }
 
       if (cloudMode) {
-        const result = await cloudSetAthleteBlocked(auth.coachId, athleteId, blocked)
+        const result = await cloudSetLinkBlocked(linkId, blocked)
         if (!result.ok) return result
-        setAthletes(result.athletes)
+        await refreshPairingData()
         return { ok: true }
       }
 
-      const next = athletes.map((a) => (a.id === athleteId ? { ...a, blocked } : a))
-      setAthletes(next)
-      store.saveAthletes(next)
+      const pairings = store.getPairings()
+      const nextPairings = pairings.map((l) => (l.id === linkId ? { ...l, blocked } : l))
+      store.savePairings(nextPairings)
+      setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
+      setAthletes(buildCoachAthletesFromLinks(nextPairings, store.getAthletes()))
       return { ok: true }
     },
-    [athletes, auth, cloudMode],
-  )
-
-  const deleteAthlete = useCallback(
-    async (athleteId: string) => {
-      if (auth?.role !== 'treinador') {
-        return { ok: false, error: 'Sign in as coach first.' }
-      }
-
-      if (!athleteCanBeDeleted(athleteId, trainingSessions)) {
-        return {
-          ok: false,
-          error:
-            'This athlete has training sessions and cannot be deleted. Use Block instead.',
-        }
-      }
-
-      if (cloudMode) {
-        const result = await cloudDeleteAthlete(auth.coachId, athleteId)
-        if (!result.ok) return result
-        setAthletes(result.athletes)
-        setStudents(result.students)
-        return { ok: true }
-      }
-
-      const nextAthletes = athletes.filter((a) => a.id !== athleteId)
-      const nextStudents = students.filter((s) => s.athleteId !== athleteId)
-      setAthletes(nextAthletes)
-      setStudents(nextStudents)
-      store.saveAthletes(nextAthletes)
-      store.saveStudents(nextStudents)
-      return { ok: true }
-    },
-    [athletes, auth, cloudMode, students, trainingSessions],
-  )
-
-  const canDeleteAthleteById = useCallback(
-    (athleteId: string) => athleteCanBeDeleted(athleteId, trainingSessions),
-    [trainingSessions],
+    [auth, cloudMode, refreshPairingData],
   )
 
   const changePassword = useCallback(
@@ -1433,22 +1592,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loginAsCoach,
       loginAsStudent,
       registerCoach,
+      registerAthlete,
       logout,
       role,
       view,
       setView,
       coachAthletes,
-      coachStudents,
+      coachLinks,
+      athleteLinks,
       spots,
       conditions,
-      addAthlete,
-      addAthleteWithLogin,
+      requestPairingByCode,
+      respondToPairing,
+      revokePairing,
       updateAthleteShareSettings,
       setAthleteBlocked,
-      deleteAthlete,
-      canDeleteAthlete: canDeleteAthleteById,
       activeCoachAthletes,
       changePassword,
+      refreshPairingData,
       addSpot,
       addCondition,
       updateSpotName,
@@ -1516,21 +1677,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loginAsCoach,
       loginAsStudent,
       registerCoach,
+      registerAthlete,
       logout,
       role,
       view,
       coachAthletes,
-      coachStudents,
+      coachLinks,
+      athleteLinks,
       spots,
       conditions,
-      addAthlete,
-      addAthleteWithLogin,
+      requestPairingByCode,
+      respondToPairing,
+      revokePairing,
       updateAthleteShareSettings,
       setAthleteBlocked,
-      deleteAthlete,
-      canDeleteAthleteById,
       activeCoachAthletes,
       changePassword,
+      refreshPairingData,
       addSpot,
       addCondition,
       updateSpotName,

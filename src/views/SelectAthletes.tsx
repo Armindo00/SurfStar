@@ -52,7 +52,7 @@ export function SelectAthletes() {
 
         <div className="athlete-grid">
           {activeCoachAthletes.length === 0 ? (
-            <p className="muted">No active athletes. Add athletes or unblock someone in Athletes & logins.</p>
+            <p className="muted">No active athletes. Pair with athletes using their code in Athletes & pairing.</p>
           ) : null}
           {activeCoachAthletes.map((a) => {
             const selected = draft.athleteIds.includes(a.id)

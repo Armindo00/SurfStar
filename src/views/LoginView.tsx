@@ -3,12 +3,12 @@ import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { useApp } from '../AppContext'
 
 type LoginTab = 'treinador' | 'atleta'
-type CoachMode = 'sign-in' | 'register'
+type AuthMode = 'sign-in' | 'register'
 
 export function LoginView() {
-  const { loginAsCoach, loginAsStudent, registerCoach, cloudMode } = useApp()
+  const { loginAsCoach, loginAsStudent, registerCoach, registerAthlete, cloudMode } = useApp()
   const [tab, setTab] = useState<LoginTab>('treinador')
-  const [coachMode, setCoachMode] = useState<CoachMode>('sign-in')
+  const [authMode, setAuthMode] = useState<AuthMode>('sign-in')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,7 +16,7 @@ export function LoginView() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const resetCoachRegister = () => {
+  const resetRegister = () => {
     setName('')
     setPasswordConfirm('')
     setError('')
@@ -29,12 +29,15 @@ export function LoginView() {
     try {
       const trimmedEmail = email.trim()
 
-      if (tab === 'treinador' && coachMode === 'register') {
+      if (authMode === 'register') {
         if (password !== passwordConfirm) {
           setError('Passwords do not match.')
           return
         }
-        const result = await registerCoach(name, trimmedEmail, password)
+        const result =
+          tab === 'treinador'
+            ? await registerCoach(name, trimmedEmail, password)
+            : await registerAthlete(name, trimmedEmail, password)
         if (!result.ok) setError(result.error)
         return
       }
@@ -52,7 +55,7 @@ export function LoginView() {
     }
   }
 
-  const isRegister = tab === 'treinador' && coachMode === 'register'
+  const isRegister = authMode === 'register'
 
   return (
     <div className="login-page">
@@ -76,7 +79,8 @@ export function LoginView() {
             className={tab === 'treinador' ? 'login-tabs__btn login-tabs__btn--on' : 'login-tabs__btn'}
             onClick={() => {
               setTab('treinador')
-              setError('')
+              setAuthMode('sign-in')
+              resetRegister()
             }}
           >
             Coach
@@ -88,38 +92,36 @@ export function LoginView() {
             className={tab === 'atleta' ? 'login-tabs__btn login-tabs__btn--on' : 'login-tabs__btn'}
             onClick={() => {
               setTab('atleta')
-              setCoachMode('sign-in')
-              resetCoachRegister()
+              setAuthMode('sign-in')
+              resetRegister()
             }}
           >
             Athlete
           </button>
         </div>
 
-        {tab === 'treinador' ? (
-          <div className="login-subtabs">
-            <button
-              type="button"
-              className={coachMode === 'sign-in' ? 'login-subtabs__btn login-subtabs__btn--on' : 'login-subtabs__btn'}
-              onClick={() => {
-                setCoachMode('sign-in')
-                resetCoachRegister()
-              }}
-            >
-              Log in
-            </button>
-            <button
-              type="button"
-              className={coachMode === 'register' ? 'login-subtabs__btn login-subtabs__btn--on' : 'login-subtabs__btn'}
-              onClick={() => {
-                setCoachMode('register')
-                setError('')
-              }}
-            >
-              Create account
-            </button>
-          </div>
-        ) : null}
+        <div className="login-subtabs">
+          <button
+            type="button"
+            className={authMode === 'sign-in' ? 'login-subtabs__btn login-subtabs__btn--on' : 'login-subtabs__btn'}
+            onClick={() => {
+              setAuthMode('sign-in')
+              resetRegister()
+            }}
+          >
+            Log in
+          </button>
+          <button
+            type="button"
+            className={authMode === 'register' ? 'login-subtabs__btn login-subtabs__btn--on' : 'login-subtabs__btn'}
+            onClick={() => {
+              setAuthMode('register')
+              setError('')
+            }}
+          >
+            Create account
+          </button>
+        </div>
 
         <form className="login-form" onSubmit={submit}>
           {isRegister ? (
@@ -130,7 +132,7 @@ export function LoginView() {
                 autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Coach name"
+                placeholder={tab === 'treinador' ? 'Coach name' : 'Athlete name'}
                 required
               />
             </label>
@@ -175,19 +177,25 @@ export function LoginView() {
 
           {error && <p className="login-error">{error}</p>}
           <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={busy}>
-            {busy ? 'Please wait…' : isRegister ? 'Create coach account' : 'Sign in'}
+            {busy
+              ? 'Please wait…'
+              : isRegister
+                ? tab === 'treinador'
+                  ? 'Create coach account'
+                  : 'Create athlete account'
+                : 'Sign in'}
           </button>
         </form>
 
         <aside className="login-demo">
           <p className="login-demo__title">Accounts</p>
           <p>
-            <strong>Coach:</strong> create your account here (password min. {MIN_PASSWORD_LENGTH}{' '}
-            characters).
+            <strong>Coach:</strong> create your account, then add athletes with their pairing code.
           </p>
           <p>
-            <strong>Athlete:</strong> your coach adds you under <em>Add Athletes</em> with email and
-            a temporary password. On first sign-in you must choose a new password.
+            <strong>Athlete:</strong> create your own account once. Share your pairing code with
+            each coach — you must accept each request. Your stats follow you across coaches and
+            schools.
           </p>
           <p className="muted login-demo__note">
             {cloudMode

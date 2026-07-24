@@ -2851,6 +2851,62 @@ body {
   color: var(--ss-muted);
 }
 
+.pairing-panel {
+  margin-bottom: 0.75rem;
+}
+
+.pairing-panel__title {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.pairing-code-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #fffbeb;
+  border: 1px dashed #f59e0b;
+}
+
+.pairing-code-box__code {
+  font-size: 1.5rem;
+  letter-spacing: 0.18em;
+  font-family: ui-monospace, monospace;
+}
+
+.pairing-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pairing-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--ss-border);
+}
+
+.pairing-list__item small {
+  display: block;
+  color: var(--ss-muted);
+  font-size: 0.8rem;
+}
+
+.pairing-list__item--actions {
+  flex-wrap: wrap;
+}
+
+.pairing-list__buttons {
+  display: flex;
+  gap: 0.35rem;
+}
+
 .athlete-manage-list__badges {
   display: flex;
   flex-wrap: wrap;
