@@ -39,47 +39,62 @@ function formatSessionDate(iso: string) {
 
 export function AthletePortal() {
   const { auth, trainingSessions, getSpot, getAthlete, logout } = useApp()
+  const isAthlete = auth?.role === 'atleta'
+  const athleteId = isAthlete ? auth.athleteId : ''
+  const coachId = isAthlete ? auth.coachId : ''
 
-  if (auth?.role !== 'atleta') {
+  const profile = isAthlete ? getAthlete(athleteId) : undefined
+  const shareSettings = profile?.shareSettings ?? DEFAULT_ATHLETE_SHARE_SETTINGS
+
+  const mySessions = useMemo(
+    () => (isAthlete ? filterAthleteSessions(trainingSessions, coachId, athleteId) : []),
+    [isAthlete, trainingSessions, coachId, athleteId],
+  )
+
+  const general = useMemo(
+    () => (isAthlete ? computeAthleteGeneralStats(mySessions, athleteId) : null),
+    [isAthlete, mySessions, athleteId],
+  )
+
+  const technicalStats = useMemo(
+    () =>
+      isAthlete && shareSettings.technicalStats
+        ? computeAthleteTechnicalStats(mySessions, athleteId)
+        : null,
+    [isAthlete, mySessions, athleteId, shareSettings.technicalStats],
+  )
+
+  const comboStats = useMemo(
+    () =>
+      isAthlete && shareSettings.comboStats
+        ? computeAthleteComboStats(mySessions, athleteId)
+        : null,
+    [isAthlete, mySessions, athleteId, shareSettings.comboStats],
+  )
+
+  const sessionSummaries = useMemo(
+    () =>
+      isAthlete && shareSettings.sessionHistory
+        ? buildAthleteSessionSummaries(mySessions, athleteId)
+        : [],
+    [isAthlete, mySessions, athleteId, shareSettings.sessionHistory],
+  )
+
+  const heatDetails = useMemo(
+    () =>
+      isAthlete && shareSettings.heatDetails
+        ? buildAthleteHeatDetails(mySessions, athleteId)
+        : [],
+    [isAthlete, mySessions, athleteId, shareSettings.heatDetails],
+  )
+
+  if (!isAthlete || !general || !auth) {
     return (
       <div className="ss-card">
         <p className="muted">Sign in as an athlete.</p>
       </div>
     )
   }
-
-  const profile = getAthlete(auth.athleteId)
-  const shareSettings = profile?.shareSettings ?? DEFAULT_ATHLETE_SHARE_SETTINGS
-
-  const mySessions = useMemo(
-    () => filterAthleteSessions(trainingSessions, auth.coachId, auth.athleteId),
-    [trainingSessions, auth.coachId, auth.athleteId],
-  )
-
-  const general = useMemo(
-    () => computeAthleteGeneralStats(mySessions, auth.athleteId),
-    [mySessions, auth.athleteId],
-  )
-
-  const technicalStats = useMemo(
-    () => (shareSettings.technicalStats ? computeAthleteTechnicalStats(mySessions, auth.athleteId) : null),
-    [mySessions, auth.athleteId, shareSettings.technicalStats],
-  )
-
-  const comboStats = useMemo(
-    () => (shareSettings.comboStats ? computeAthleteComboStats(mySessions, auth.athleteId) : null),
-    [mySessions, auth.athleteId, shareSettings.comboStats],
-  )
-
-  const sessionSummaries = useMemo(
-    () => (shareSettings.sessionHistory ? buildAthleteSessionSummaries(mySessions, auth.athleteId) : []),
-    [mySessions, auth.athleteId, shareSettings.sessionHistory],
-  )
-
-  const heatDetails = useMemo(
-    () => (shareSettings.heatDetails ? buildAthleteHeatDetails(mySessions, auth.athleteId) : []),
-    [mySessions, auth.athleteId, shareSettings.heatDetails],
-  )
 
   const hasSharedContent =
     shareSettings.technicalStats ||

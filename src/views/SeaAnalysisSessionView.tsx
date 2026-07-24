@@ -25,6 +25,10 @@ export function SeaAnalysisSessionView() {
     cancelActiveSession,
   } = useApp()
 
+  const [pendingLog, setPendingLog] = useState<{ peak: SeaPeak; waveType: SeaWaveType } | null>(
+    null,
+  )
+
   const state = activeSession?.seaAnalysis
 
   if (!activeSession || activeSession.mode !== 'sea-analysis' || !state) {
@@ -40,10 +44,6 @@ export function SeaAnalysisSessionView() {
 
   const running = seaIsRunning(state)
   const canLog = running
-
-  const [pendingLog, setPendingLog] = useState<{ peak: SeaPeak; waveType: SeaWaveType } | null>(
-    null,
-  )
 
   const requestLog = (peak: SeaPeak, waveType: SeaWaveType) => {
     if (!canLog) return
