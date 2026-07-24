@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
@@ -7,63 +7,43 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const sourcePath = join(root, 'public', 'logo-source.png')
 const logoPath = join(root, 'public', 'logo.png')
 
-async function sampleNavyFromImage(input) {
-  const { data, info } = await sharp(input).raw().toBuffer({ resolveWithObject: true })
-  const cx = Math.floor(info.width / 2)
+/** Pad to square using the image edge color — no pixel edits inside the artwork */
+async function toSquarePng(inputPath) {
+  const image = sharp(inputPath)
+  const meta = await image.metadata()
+  if (!meta.width || !meta.height) throw new Error('Invalid logo source')
 
-  for (let y = 0; y < info.height; y += 1) {
-    for (const x of [cx, 48, info.width - 49]) {
-      const i = (y * info.width + x) * info.channels
-      const r = data[i] ?? 255
-      const g = data[i + 1] ?? 255
-      const b = data[i + 2] ?? 255
-      if (r < 235 || g < 235 || b < 235) {
-        return { r, g, b }
-      }
-    }
+  const sample = await sharp(inputPath).raw().toBuffer({ resolveWithObject: true })
+  const background = {
+    r: sample.data[0] ?? 8,
+    g: sample.data[1] ?? 24,
+    b: sample.data[2] ?? 50,
   }
 
-  return { r: 6, g: 18, b: 33 }
+  const side = Math.max(meta.width, meta.height)
+  const padLeft = Math.floor((side - meta.width) / 2)
+  const padRight = side - meta.width - padLeft
+  const padTop = Math.floor((side - meta.height) / 2)
+  const padBottom = side - meta.height - padTop
+
+  return sharp(inputPath)
+    .extend({
+      top: padTop,
+      bottom: padBottom,
+      left: padLeft,
+      right: padRight,
+      background,
+    })
+    .png()
 }
 
-async function removeWhitePadding(input, navy) {
-  const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+// App UI uses the source file exactly as provided by the user
+copyFileSync(sourcePath, logoPath)
+console.log('Copied public/logo-source.png → public/logo.png (unchanged)')
 
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i]
-    const g = data[i + 1]
-    const b = data[i + 2]
-    if (r >= 235 && g >= 235 && b >= 235) {
-      data[i] = navy.r
-      data[i + 1] = navy.g
-      data[i + 2] = navy.b
-      data[i + 3] = 255
-    }
-  }
+const squareLogo = await toSquarePng(sourcePath)
+const squareBuffer = await squareLogo.toBuffer()
 
-  return sharp(Buffer.from(data), {
-    raw: { width: info.width, height: info.height, channels: 4 },
-  }).png()
-}
-
-// Keep original once as logo-source.png (idempotent copy)
-try {
-  readFileSync(sourcePath)
-} catch {
-  writeFileSync(sourcePath, readFileSync(logoPath))
-}
-
-const sourceBuffer = readFileSync(sourcePath)
-const navy = await sampleNavyFromImage(sourceBuffer)
-console.log(`Using navy fill rgb(${navy.r}, ${navy.g}, ${navy.b})`)
-
-const cleanedLogo = await removeWhitePadding(sourceBuffer, navy)
-await cleanedLogo.toFile(logoPath)
-console.log('Prepared public/logo.png')
-
-const logoBuffer = await cleanedLogo.toBuffer()
-
-/** Icons for browser tab, PWA install, and phone home screen */
 const outputs = [
   { name: 'favicon.png', size: 32 },
   { name: 'icon-144.png', size: 144 },
@@ -74,8 +54,8 @@ const outputs = [
 ]
 
 for (const { name, size } of outputs) {
-  await sharp(logoBuffer)
-    .resize(size, size, { fit: 'cover' })
+  await sharp(squareBuffer)
+    .resize(size, size, { fit: 'fill' })
     .png()
     .toFile(join(root, 'public', name))
   console.log(`Created public/${name} (${size}x${size})`)

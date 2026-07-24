@@ -144,23 +144,22 @@ body {
 
 .app-logo--sm {
   width: 2.25rem;
-  height: 2.25rem;
+  height: auto;
 }
 
 .app-logo--md {
   width: 3rem;
-  height: 3rem;
+  height: auto;
 }
 
 .app-logo--lg {
   width: 5.5rem;
-  height: 5.5rem;
+  height: auto;
 }
 
 .app-logo--xl {
   width: min(9.5rem, 72vw);
   height: auto;
-  aspect-ratio: 1;
 }
 
 .role-switch {
