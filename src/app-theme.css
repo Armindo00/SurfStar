@@ -819,6 +819,149 @@ body {
   color: #86efac !important;
 }
 
+/* Selection / highlight: dark surfaces only — never light row + light text */
+.app-shell .ss-pick-item--on,
+.app-shell .athlete-tile--selected,
+.app-shell .champ-heat-item--on {
+  background: rgba(201, 169, 98, 0.22) !important;
+  border-color: rgba(201, 169, 98, 0.5) !important;
+  color: #f8fafc !important;
+}
+
+.app-shell .champ-heat-item--on small {
+  color: #cbd5e1 !important;
+}
+
+.app-shell .champ-heat-item {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .champ-heat-item strong {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .kpi-card--accent {
+  background: rgba(201, 169, 98, 0.12) !important;
+  border-color: rgba(201, 169, 98, 0.35) !important;
+}
+
+.app-shell .kpi-card--star {
+  background: rgba(201, 169, 98, 0.1) !important;
+  border-color: rgba(201, 169, 98, 0.3) !important;
+}
+
+.app-shell .kpi-card--star .kpi-card__value {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .level-chart__row--top {
+  background: rgba(201, 169, 98, 0.2) !important;
+  outline: 1px solid rgba(201, 169, 98, 0.45) !important;
+}
+
+.app-shell .level-chart__row--top .level-chart__label,
+.app-shell .level-chart__row--top .level-chart__meta strong {
+  color: #f8fafc !important;
+}
+
+.app-shell .level-chart__row--top .level-chart__meta small {
+  color: #cbd5e1 !important;
+}
+
+.app-shell .level-chart__track {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .level-chart__fill {
+  background: linear-gradient(90deg, #b8943f, #dbbf6a) !important;
+}
+
+.app-shell .level-chart__fill--top {
+  background: linear-gradient(90deg, #dbbf6a, #e8d5a3) !important;
+}
+
+.app-shell .level-chart__highlight {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .maneuver-level {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .maneuver-level__label {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .heat-cell--counting {
+  background: rgba(201, 169, 98, 0.22) !important;
+  color: var(--landing-gold-light) !important;
+  font-weight: 700;
+}
+
+.app-shell .heat-cell--int-drop {
+  background: rgba(220, 38, 38, 0.22) !important;
+  color: #fecaca !important;
+}
+
+.app-shell .heat-cell--int-half {
+  box-shadow: inset 0 0 0 2px rgba(248, 113, 113, 0.55) !important;
+}
+
+.app-shell .heat-cell--total {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .heat-results-legend__item--counting {
+  background: rgba(201, 169, 98, 0.2) !important;
+  border: 1px solid rgba(201, 169, 98, 0.4) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .heat-results-legend__item--int {
+  background: rgba(220, 38, 38, 0.18) !important;
+  border: 1px solid rgba(248, 113, 113, 0.4) !important;
+  color: #fecaca !important;
+}
+
+.app-shell .sea-recommend {
+  border-color: rgba(201, 169, 98, 0.35) !important;
+}
+
+.app-shell .sea-recommend__title,
+.app-shell .sea-recommend__summary,
+.app-shell .sea-recommend__formula {
+  color: #b8c5d6 !important;
+}
+
+.app-shell .sea-recommend__pick--tie {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .sea-timeline__time {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .sea-wave-btn--selected {
+  box-shadow: inset 0 0 0 2px var(--landing-gold) !important;
+  filter: brightness(1.08);
+}
+
+.app-shell tr[class*='--on'] {
+  background: rgba(201, 169, 98, 0.2) !important;
+}
+
+.app-shell tr[class*='--on'] td,
+.app-shell tr[class*='--on'] th {
+  color: #f8fafc !important;
+}
+
+.app-shell .data-table tbody tr:nth-child(even):not([class*='--on']) {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
 .login-page .btn--ghost,
 .checkout-page .btn--ghost,
 .change-password-page .btn--ghost {
