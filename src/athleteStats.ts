@@ -147,6 +147,7 @@ function mergeSessionsForStats(
     heats: [],
     seaAnalysis: null,
     endedAt: new Date().toISOString(),
+    coachNotes: null,
   }
 }
 

@@ -7,12 +7,15 @@ import { HeatsSessionView } from './views/HeatsSessionView'
 import { LoginView } from './views/LoginView'
 import { ManageAthletes } from './views/ManageAthletes'
 import { ManageSpots } from './views/ManageSpots'
+import { EndSessionSheet } from './components/EndSessionSheet'
 import { PlaceholderScreen } from './views/PlaceholderScreen'
 import { SavedWavesView } from './views/SavedWavesView'
 import { SelectAthletes } from './views/SelectAthletes'
 import { SeaAnalysisSessionView } from './views/SeaAnalysisSessionView'
+import { SessionHistoryDetailView } from './views/SessionHistoryDetailView'
 import { SessionStatsView } from './views/SessionStatsView'
 import { StartSession } from './views/StartSession'
+import { TrainingSessionsView } from './views/TrainingSessionsView'
 import { TrainingSessionView } from './views/TrainingSessionView'
 import './App.css'
 
@@ -76,12 +79,8 @@ function Shell() {
           {role === 'treinador' && view === 'saved-waves' && <SavedWavesView />}
           {role === 'treinador' && view === 'manage-athletes' && <ManageAthletes />}
           {role === 'treinador' && view === 'manage-spots' && <ManageSpots />}
-          {role === 'treinador' && view === 'training-sessions' && (
-            <PlaceholderScreen
-              title="Past sessions"
-              description="Full history — coming soon, linked to your coach account."
-            />
-          )}
+          {role === 'treinador' && view === 'training-sessions' && <TrainingSessionsView />}
+          {role === 'treinador' && view === 'session-history-detail' && <SessionHistoryDetailView />}
           {role === 'treinador' && view === 'analytics' && (
             <PlaceholderScreen
               title="Team analytics"
@@ -89,6 +88,7 @@ function Shell() {
             />
           )}
         </main>
+        <EndSessionSheet />
       </div>
     </div>
   )

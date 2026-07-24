@@ -24,6 +24,7 @@ import {
   cloudSaveTrainingSessions,
 } from './cloudApi'
 import { waveHasLoggedAttempts } from './sessionStats'
+import { filterCoachCompletedSessions } from './sessionHistoryUtils'
 import {
   hashPassword,
   isValidEmail,
@@ -93,7 +94,11 @@ type AppContextValue = {
   ) => Promise<{ ok: true } | { ok: false; error: string }>
   updateAthleteShareSettings: (athleteId: string, shareSettings: AthleteShareSettings) => void
   addSpot: (name: string) => void
+  updateSpotName: (spotId: string, name: string) => void
+  removeSpot: (spotId: string) => boolean
   addCondition: (name: string) => void
+  updateConditionName: (currentLabel: string, nextLabel: string) => void
+  removeCondition: (label: string) => boolean
   getAthlete: (id: string) => Athlete | undefined
   getSpot: (id: string) => SurfSpot | undefined
   draft: DraftSession
@@ -109,8 +114,16 @@ type AppContextValue = {
   trainingSessions: TrainingSession[]
   beginDraftSession: () => void
   confirmAthletesAndStart: () => void
-  endActiveSession: () => void
+  endSessionSheetOpen: boolean
+  openEndSessionSheet: () => void
+  closeEndSessionSheet: () => void
+  confirmEndSession: (coachNotes: string) => void
   cancelActiveSession: () => void
+  completedCoachSessions: TrainingSession[]
+  historySessionId: string | null
+  historySession: TrainingSession | undefined
+  openHistorySession: (sessionId: string) => void
+  closeHistorySession: () => void
   activeAthleteId: string | null
   setActiveAthleteId: (id: string | null) => void
   activeWaveId: string | null
@@ -258,6 +271,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeAthleteId, setActiveAthleteId] = useState<string | null>(null)
   const [activeWaveId, setActiveWaveId] = useState<string | null>(null)
   const [activeHeatId, setActiveHeatId] = useState<string | null>(null)
+  const [endSessionSheetOpen, setEndSessionSheetOpen] = useState(false)
+  const [historySessionId, setHistorySessionId] = useState<string | null>(null)
 
   const coachId = auth?.role === 'treinador' ? auth.coachId : auth?.role === 'atleta' ? auth.coachId : null
 
@@ -523,6 +538,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [trainingSessions, activeSessionId],
   )
 
+  const completedCoachSessions = useMemo(
+    () => (coachId ? filterCoachCompletedSessions(trainingSessions, coachId) : []),
+    [coachId, trainingSessions],
+  )
+
+  const historySession = useMemo(
+    () =>
+      historySessionId
+        ? trainingSessions.find((s) => s.id === historySessionId)
+        : undefined,
+    [historySessionId, trainingSessions],
+  )
+
   const updateSession = useCallback(
     (sessionId: string, updater: (session: TrainingSession) => TrainingSession) => {
       persistSessions(
@@ -637,6 +665,70 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [auth, cloudMode, conditions],
   )
 
+  const updateSpotName = useCallback(
+    (spotId: string, name: string) => {
+      const trimmed = name.trim()
+      if (!trimmed || auth?.role !== 'treinador') return
+      const next = spots.map((s) => (s.id === spotId ? { ...s, name: trimmed } : s))
+      setSpots(next)
+      if (cloudMode) void cloudSaveSpots(auth.coachId, next)
+      else store.saveSpots(next)
+    },
+    [auth, cloudMode, spots],
+  )
+
+  const removeSpot = useCallback(
+    (spotId: string) => {
+      if (auth?.role !== 'treinador') return false
+      if (spots.length <= 1) return false
+      const next = spots.filter((s) => s.id !== spotId)
+      setSpots(next)
+      setDraft((d) => ({
+        ...d,
+        spotId: d.spotId === spotId ? (next[0]?.id ?? '') : d.spotId,
+      }))
+      if (cloudMode) void cloudSaveSpots(auth.coachId, next)
+      else store.saveSpots(next)
+      return true
+    },
+    [auth, cloudMode, spots],
+  )
+
+  const updateConditionName = useCallback(
+    (currentLabel: string, nextLabel: string) => {
+      const trimmed = nextLabel.trim()
+      if (!trimmed || auth?.role !== 'treinador') return
+      if (trimmed === currentLabel) return
+      if (conditions.includes(trimmed)) return
+      const next = conditions.map((c) => (c === currentLabel ? trimmed : c))
+      setConditions(next)
+      setDraft((d) => ({
+        ...d,
+        condition: d.condition === currentLabel ? trimmed : d.condition,
+      }))
+      if (cloudMode) void cloudSaveConditions(auth.coachId, next)
+      else store.saveConditions(next)
+    },
+    [auth, cloudMode, conditions],
+  )
+
+  const removeCondition = useCallback(
+    (label: string) => {
+      if (auth?.role !== 'treinador') return false
+      if (conditions.length <= 1) return false
+      const next = conditions.filter((c) => c !== label)
+      setConditions(next)
+      setDraft((d) => ({
+        ...d,
+        condition: d.condition === label ? '' : d.condition,
+      }))
+      if (cloudMode) void cloudSaveConditions(auth.coachId, next)
+      else store.saveConditions(next)
+      return true
+    },
+    [auth, cloudMode, conditions],
+  )
+
   const getAthlete = useCallback(
     (id: string) => {
       const athlete = athletes.find((a) => a.id === id)
@@ -713,6 +805,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ? { timerStartedAt: null, endedAt: null, logs: [] }
           : null,
       endedAt: null,
+      coachNotes: null,
     }
     persistSessions([session, ...trainingSessions])
     setActiveSessionId(session.id)
@@ -722,19 +815,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setView(viewForMode(draft.mode))
   }, [auth, draft, persistSessions, trainingSessions])
 
-  const endActiveSession = useCallback(() => {
-    if (!activeSessionId) return
-    updateSession(activeSessionId, (s) => ({
-      ...s,
-      endedAt: new Date().toISOString(),
-    }))
-    setActiveWaveId(null)
-    setActiveHeatId(null)
-    setActiveSessionId(null)
-    setActiveAthleteId(null)
-    resetDraft()
-    setView('coach-home')
-  }, [activeSessionId, resetDraft, updateSession])
+  const openEndSessionSheet = useCallback(() => {
+    setEndSessionSheetOpen(true)
+  }, [])
+
+  const closeEndSessionSheet = useCallback(() => {
+    setEndSessionSheetOpen(false)
+  }, [])
+
+  const confirmEndSession = useCallback(
+    (coachNotes: string) => {
+      if (!activeSessionId) return
+      const sessionId = activeSessionId
+      const trimmedNotes = coachNotes.trim()
+
+      updateSession(sessionId, (s) => ({
+        ...s,
+        endedAt: new Date().toISOString(),
+        coachNotes: trimmedNotes || null,
+      }))
+
+      setEndSessionSheetOpen(false)
+      setActiveWaveId(null)
+      setActiveHeatId(null)
+      setActiveSessionId(null)
+      setActiveAthleteId(null)
+      resetDraft()
+      setHistorySessionId(sessionId)
+      setView('session-history-detail')
+    },
+    [activeSessionId, resetDraft, updateSession],
+  )
+
+  const openHistorySession = useCallback((sessionId: string) => {
+    setHistorySessionId(sessionId)
+    setView('session-history-detail')
+  }, [])
+
+  const closeHistorySession = useCallback(() => {
+    setHistorySessionId(null)
+    setView('training-sessions')
+  }, [])
 
   const cancelActiveSession = useCallback(() => {
     if (!activeSessionId) return
@@ -1194,6 +1315,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       updateAthleteShareSettings,
       addSpot,
       addCondition,
+      updateSpotName,
+      removeSpot,
+      updateConditionName,
+      removeCondition,
       getAthlete,
       getSpot,
       draft,
@@ -1209,8 +1334,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       trainingSessions,
       beginDraftSession,
       confirmAthletesAndStart,
-      endActiveSession,
+      endSessionSheetOpen,
+      openEndSessionSheet,
+      closeEndSessionSheet,
+      confirmEndSession,
       cancelActiveSession,
+      completedCoachSessions,
+      historySessionId,
+      historySession,
+      openHistorySession,
+      closeHistorySession,
       activeAthleteId,
       setActiveAthleteId,
       activeWaveId,
@@ -1259,6 +1392,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       updateAthleteShareSettings,
       addSpot,
       addCondition,
+      updateSpotName,
+      removeSpot,
+      updateConditionName,
+      removeCondition,
       getAthlete,
       getSpot,
       draft,
@@ -1274,8 +1411,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       trainingSessions,
       beginDraftSession,
       confirmAthletesAndStart,
-      endActiveSession,
+      endSessionSheetOpen,
+      openEndSessionSheet,
+      closeEndSessionSheet,
+      confirmEndSession,
       cancelActiveSession,
+      completedCoachSessions,
+      historySessionId,
+      historySession,
+      openHistorySession,
+      closeHistorySession,
       activeAthleteId,
       activeWaveId,
       selectAthlete,

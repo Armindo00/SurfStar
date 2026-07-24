@@ -21,7 +21,7 @@ export function SeaAnalysisSessionView() {
     startSeaAnalysisTimer,
     endSeaAnalysisTimer,
     logSeaObservation,
-    endActiveSession,
+    openEndSessionSheet,
     cancelActiveSession,
   } = useApp()
 
@@ -109,7 +109,7 @@ export function SeaAnalysisSessionView() {
       </div>
 
       <section className="ss-card ss-tools-wrap">
-        <button type="button" className="btn btn--primary btn--block" onClick={endActiveSession}>
+        <button type="button" className="btn btn--primary btn--block" onClick={openEndSessionSheet}>
           Save & end session
         </button>
         <button type="button" className="btn btn--ghost btn--block" onClick={cancelActiveSession}>

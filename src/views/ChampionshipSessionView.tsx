@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CreateHeatModal } from '../components/CreateHeatModal'
 import { HeatRunnerPanel } from '../components/HeatRunnerPanel'
+import { SessionTools } from '../components/SessionTools'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 import { formatHeatTotal, heatAthleteTotals, heatIsFinished, heatIsRunning } from '../heatUtils'
@@ -13,12 +14,9 @@ export function ChampionshipSessionView() {
     createChampionshipHeat,
     setView,
     getAthlete,
-    endActiveSession,
-    cancelActiveSession,
     draft,
   } = useApp()
 
-  const [toolsOpen, setToolsOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
 
   const heats = activeSession?.heats ?? []
@@ -92,21 +90,7 @@ export function ChampionshipSessionView() {
         </div>
       ) : null}
 
-      <section className="ss-card ss-tools-wrap">
-        <button type="button" className="ss-tools__toggle" onClick={() => setToolsOpen((v) => !v)}>
-          Session tools
-        </button>
-        {toolsOpen && (
-          <div className="ss-tools__body">
-            <button type="button" className="btn btn--danger btn--block" onClick={cancelActiveSession}>
-              Cancel session
-            </button>
-            <button type="button" className="btn btn--primary btn--block" onClick={endActiveSession}>
-              End session
-            </button>
-          </div>
-        )}
-      </section>
+      <SessionTools />
 
       {createOpen ? (
         <CreateHeatModal

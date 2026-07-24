@@ -15,9 +15,10 @@ import {
 
 type Props = {
   state: SeaAnalysisState
+  readOnly?: boolean
 }
 
-export function SeaAnalysisStatsPanel({ state }: Props) {
+export function SeaAnalysisStatsPanel({ state, readOnly = false }: Props) {
   const { updateSeaAnalysisLog, deleteSeaAnalysisLog } = useApp()
   const [editLog, setEditLog] = useState<SeaAnalysisLog | null>(null)
   const [deleteLogId, setDeleteLogId] = useState<string | null>(null)
@@ -162,7 +163,9 @@ export function SeaAnalysisStatsPanel({ state }: Props) {
       {stats.timeline.length > 0 ? (
         <>
           <h3 className="sea-stats__title">Timeline</h3>
-          <p className="muted sea-stats__sub">Edit or delete entries logged by mistake.</p>
+          {!readOnly ? (
+            <p className="muted sea-stats__sub">Edit or delete entries logged by mistake.</p>
+          ) : null}
           <ul className="sea-timeline">
             {stats.timeline.map((row) => (
               <li key={row.id} className="sea-timeline__row">
@@ -170,13 +173,15 @@ export function SeaAnalysisStatsPanel({ state }: Props) {
                 <span>
                   {SEA_PEAK_LABELS[row.peak]} · {SEA_WAVE_TYPE_LABELS[row.waveType]}
                 </span>
-                <RecordRowActions
-                  onEdit={() => {
-                    const log = state.logs.find((l) => l.id === row.id)
-                    if (log) setEditLog(log)
-                  }}
-                  onDelete={() => setDeleteLogId(row.id)}
-                />
+                {!readOnly ? (
+                  <RecordRowActions
+                    onEdit={() => {
+                      const log = state.logs.find((l) => l.id === row.id)
+                      if (log) setEditLog(log)
+                    }}
+                    onDelete={() => setDeleteLogId(row.id)}
+                  />
+                ) : null}
               </li>
             ))}
           </ul>

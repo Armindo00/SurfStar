@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ComboRegisterPanel } from '../components/ComboRegisterPanel'
+import { SessionTools } from '../components/SessionTools'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { computeWaveStats } from '../sessionStats'
 import { useApp } from '../AppContext'
@@ -14,13 +15,10 @@ export function CombosSessionView() {
     closeActiveWave,
     setView,
     getAthlete,
-    endActiveSession,
-    cancelActiveSession,
   } = useApp()
 
   const [focusAthleteId, setFocusAthleteId] = useState<string | null>(null)
   const [comboLevel, setComboLevel] = useState<ComboLevel | null>(null)
-  const [toolsOpen, setToolsOpen] = useState(false)
 
   const sessionAthletes = useMemo(() => {
     if (!activeSession) return []
@@ -104,21 +102,7 @@ export function CombosSessionView() {
         </div>
       </div>
 
-      <section className="ss-card ss-tools-wrap">
-        <button type="button" className="ss-tools__toggle" onClick={() => setToolsOpen((v) => !v)}>
-          Session tools
-        </button>
-        {toolsOpen && (
-          <div className="ss-tools__body">
-            <button type="button" className="btn btn--danger btn--block" onClick={cancelActiveSession}>
-              Cancel session
-            </button>
-            <button type="button" className="btn btn--primary btn--block" onClick={endActiveSession}>
-              End session
-            </button>
-          </div>
-        )}
-      </section>
+      <SessionTools />
     </div>
   )
 }

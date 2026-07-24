@@ -20,6 +20,7 @@ export type AppView =
   | 'manage-athletes'
   | 'manage-spots'
   | 'training-sessions'
+  | 'session-history-detail'
   | 'analytics'
   | 'athlete-portal'
 
@@ -230,6 +231,8 @@ export type TrainingSession = {
   heats: HeatRecord[]
   seaAnalysis: SeaAnalysisState | null
   endedAt: string | null
+  /** Optional coach notes written when ending the session */
+  coachNotes: string | null
 }
 
 export const TRAINING_MODE_LABELS: Record<TrainingMode, string> = {

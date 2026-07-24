@@ -82,6 +82,7 @@ function migrateSession(s: TrainingSession): TrainingSession {
           logs: s.seaAnalysis.logs ?? [],
         }
       : null,
+    coachNotes: s.coachNotes ?? null,
     waves: (s.waves ?? []).map((raw) => {
       const w = raw as WaveRecord & { kind?: 'wave' | 'no-potential' }
       return {
