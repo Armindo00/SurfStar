@@ -11,6 +11,15 @@ alter table public.athletes
 alter table public.athletes
   add column if not exists pairing_code text;
 
+alter table public.athletes
+  add column if not exists share_settings jsonb not null default '{}'::jsonb;
+
+alter table public.athletes
+  add column if not exists blocked boolean not null default false;
+
+alter table public.profiles
+  add column if not exists must_change_password boolean not null default false;
+
 create unique index if not exists athletes_pairing_code_idx
   on public.athletes (pairing_code)
   where pairing_code is not null;
