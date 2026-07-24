@@ -129,7 +129,7 @@ export function LandingView() {
           <a href="#packs">Pricing</a>
         </nav>
         <div className="landing-nav__actions">
-          <button type="button" className="btn btn--ghost btn--small landing-nav__link" onClick={openAthleteLogin}>
+          <button type="button" className="btn btn--outline btn--small" onClick={openAthleteLogin}>
             I&apos;m an athlete
           </button>
           <button type="button" className="btn btn--gold btn--small" onClick={openCoachLogin}>

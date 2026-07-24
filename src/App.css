@@ -3650,6 +3650,18 @@ body {
   color: white !important;
 }
 
+.landing-page .landing-nav .btn--outline {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.28);
+  color: white;
+  font-weight: 600;
+}
+
+.landing-page .landing-nav .btn--outline:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
 .landing-hero {
   display: grid;
   gap: 2.5rem;
