@@ -969,3 +969,127 @@ body {
   border-color: rgba(255, 255, 255, 0.25) !important;
   color: var(--landing-gold-light) !important;
 }
+
+/* —— Light / white surfaces: dark text only —— */
+
+:root {
+  --on-light-text: #0a1628;
+  --on-light-muted: #475569;
+  --on-light-subtle: #64748b;
+  --on-light-border: #e2e8f0;
+}
+
+/* Landing pricing cards (white) */
+.landing-page .pack-card {
+  color: var(--on-light-text) !important;
+}
+
+.landing-page .pack-card__name,
+.landing-page .pack-card__price strong {
+  color: var(--on-light-text) !important;
+}
+
+.landing-page .pack-card__tagline,
+.landing-page .pack-card__price span,
+.landing-page .pack-card .muted {
+  color: var(--on-light-subtle) !important;
+}
+
+.landing-page .pack-card__features,
+.landing-page .pack-card__features li {
+  color: #334155 !important;
+}
+
+.landing-page .pack-card__limit {
+  color: #92702a !important;
+}
+
+.landing-page .pack-card__check {
+  color: #b8943f !important;
+}
+
+/* App: residual white / pale panels from legacy light-theme CSS */
+.app-shell .wave-summary__item,
+.app-shell .catalog-list__item,
+.app-shell .team-analytics-list__item,
+.app-shell .kind-summary {
+  color: var(--on-light-text) !important;
+  border-color: var(--on-light-border) !important;
+}
+
+.app-shell .wave-summary__item strong,
+.app-shell .catalog-list__main strong,
+.app-shell .team-analytics-list__body strong,
+.app-shell .kind-summary strong {
+  color: var(--on-light-text) !important;
+}
+
+.app-shell .wave-summary__item small,
+.app-shell .catalog-list__item .muted,
+.app-shell .team-analytics-list__body small,
+.app-shell .kind-summary__name,
+.app-shell .kind-summary .muted {
+  color: var(--on-light-muted) !important;
+}
+
+.app-shell .team-analytics-list__chev {
+  color: var(--on-light-subtle) !important;
+}
+
+.app-shell :is(.catalog-list__item, .team-analytics-list__item) .btn--ghost {
+  color: var(--on-light-text) !important;
+  border-color: rgba(10, 22, 40, 0.22) !important;
+}
+
+.app-shell :is(.catalog-list__item, .team-analytics-list__item) .btn--ghost:hover {
+  background: rgba(10, 22, 40, 0.06) !important;
+}
+
+/* Form fields that still pick up pale App.css backgrounds */
+.app-shell .field--pro span,
+.login-page .field--pro span,
+.checkout-page .field--pro span {
+  color: #cbd5e1 !important;
+}
+
+.app-shell .field--pro input,
+.app-shell .field--pro select,
+.app-shell .field--pro textarea,
+.login-page .field--pro input,
+.login-page .field--pro select,
+.login-page .field--pro textarea,
+.checkout-page .field--pro input,
+.checkout-page .field--pro select,
+.checkout-page .field--pro textarea,
+.app-shell .catalog-list__edit input,
+.app-shell .end-session-sheet__textarea {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .field--pro input:focus,
+.app-shell .field--pro select:focus,
+.app-shell .field--pro textarea:focus,
+.login-page .field--pro input:focus,
+.login-page .field--pro select:focus,
+.login-page .field--pro textarea:focus,
+.checkout-page .field--pro input:focus,
+.checkout-page .field--pro select:focus,
+.checkout-page .field--pro textarea:focus,
+.app-shell .catalog-list__edit input:focus,
+.app-shell .end-session-sheet__textarea:focus {
+  background: rgba(0, 0, 0, 0.35) !important;
+  border-color: rgba(201, 169, 98, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Semantic tints on pale backgrounds — keep readable (not white-on-white) */
+.app-shell .heat-int-btn--severe {
+  color: #991b1b !important;
+}
+
+.app-shell .heat-int-btn--severe strong {
+  color: #991b1b !important;
+}
