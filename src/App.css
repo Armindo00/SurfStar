@@ -2709,6 +2709,32 @@ body {
   border-color: rgba(100, 116, 139, 0.25);
 }
 
+.athlete-potential-kpi .kpi-card__value {
+  font-size: 1.15rem;
+}
+
+.athlete-potential-split-bar {
+  display: flex;
+  width: 100%;
+  height: 0.45rem;
+  margin-top: 0.65rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.athlete-potential-split-bar__yes {
+  display: block;
+  height: 100%;
+  background: #2563eb;
+}
+
+.athlete-potential-split-bar__no {
+  display: block;
+  height: 100%;
+  background: #94a3b8;
+}
+
 .athlete-portal__shared-head {
   margin: 0.5rem 0 0.75rem;
 }

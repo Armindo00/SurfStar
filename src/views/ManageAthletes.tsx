@@ -139,7 +139,7 @@ export function ManageAthletes() {
                     <div className="athlete-share-panel">
                       <p className="athlete-share-panel__intro">
                         Choose what this athlete can see beyond the general dashboard (waves,
-                        trainings, heat wins, potential wave success, average heat score).
+                        trainings, heat wins, potential wave split, average heat score).
                       </p>
                       {SHARE_OPTIONS.map((option) => (
                         <label key={option.key} className="athlete-share-option">

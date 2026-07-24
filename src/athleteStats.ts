@@ -11,7 +11,10 @@ import type { TrainingSession } from './types'
 export type AthleteGeneralStats = {
   totalTrainings: number
   totalWaves: number
-  potentialWaveSuccessRate: number | null
+  withPotential: number
+  withoutPotential: number
+  withPotentialRate: number | null
+  withoutPotentialRate: number | null
   heatWins: number
   heatParticipations: number
   avgHeatScore: number | null
@@ -63,38 +66,13 @@ function countAthleteStars(sessions: TrainingSession[], athleteId: string) {
   return { technicalStars, comboStars, totalStars: technicalStars + comboStars }
 }
 
-function computePotentialWaveSuccessRate(
-  sessions: TrainingSession[],
-  athleteId: string,
-): number | null {
-  let attempts = 0
-  let successes = 0
-
-  for (const session of sessions) {
-    for (const wave of session.waves) {
-      if (wave.athleteId !== athleteId || !wave.hasPotential) continue
-
-      for (const maneuver of wave.maneuvers) {
-        attempts += 1
-        if (maneuver.success) successes += 1
-      }
-
-      for (const combo of wave.comboAttempts ?? []) {
-        attempts += 1
-        if (combo.success) successes += 1
-      }
-    }
-  }
-
-  if (attempts === 0) return null
-  return Math.round((successes / attempts) * 100)
-}
-
 export function computeAthleteGeneralStats(
   sessions: TrainingSession[],
   athleteId: string,
 ): AthleteGeneralStats {
   let totalWaves = 0
+  let withPotential = 0
+  let withoutPotential = 0
   let heatWins = 0
   let heatParticipations = 0
   const heatTotals: number[] = []
@@ -102,6 +80,8 @@ export function computeAthleteGeneralStats(
   for (const session of sessions) {
     const waveStats = computeWaveStats(session, athleteId)
     totalWaves += waveStats.totalWaves
+    withPotential += waveStats.withPotential
+    withoutPotential += waveStats.withoutPotential
 
     for (const heat of session.heats) {
       if (!heatIsFinished(heat) || !heat.athleteIds.includes(athleteId)) continue
@@ -121,12 +101,20 @@ export function computeAthleteGeneralStats(
     : null
 
   const { technicalStars, comboStars, totalStars } = countAthleteStars(sessions, athleteId)
-  const potentialWaveSuccessRate = computePotentialWaveSuccessRate(sessions, athleteId)
+  const withPotentialRate = totalWaves
+    ? Math.round((withPotential / totalWaves) * 100)
+    : null
+  const withoutPotentialRate = totalWaves
+    ? Math.round((withoutPotential / totalWaves) * 100)
+    : null
 
   return {
     totalTrainings: sessions.length,
     totalWaves,
-    potentialWaveSuccessRate,
+    withPotential,
+    withoutPotential,
+    withPotentialRate,
+    withoutPotentialRate,
     heatWins,
     heatParticipations,
     avgHeatScore,

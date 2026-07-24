@@ -121,17 +121,36 @@ export function AthletePortal() {
               {general.avgHeatScore !== null ? formatHeatTotal(general.avgHeatScore) : '—'}
             </strong>
           </article>
-          <article className="kpi-card kpi-card--success">
-            <span className="kpi-card__label">Potential waves</span>
-            <strong className="kpi-card__value">
-              {general.potentialWaveSuccessRate !== null
-                ? `${general.potentialWaveSuccessRate}%`
-                : '—'}
-            </strong>
-            {general.potentialWaveSuccessRate !== null ? (
-              <RateBar value={general.potentialWaveSuccessRate} />
+          <article className="kpi-card kpi-card--success athlete-potential-kpi">
+            <span className="kpi-card__label">Potential vs no potential</span>
+            {general.withPotentialRate !== null && general.withoutPotentialRate !== null ? (
+              <>
+                <strong className="kpi-card__value">
+                  {general.withPotentialRate}% / {general.withoutPotentialRate}%
+                </strong>
+                <div
+                  className="athlete-potential-split-bar"
+                  role="presentation"
+                  aria-hidden="true"
+                >
+                  <span
+                    className="athlete-potential-split-bar__yes"
+                    style={{ width: `${general.withPotentialRate}%` }}
+                  />
+                  <span
+                    className="athlete-potential-split-bar__no"
+                    style={{ width: `${general.withoutPotentialRate}%` }}
+                  />
+                </div>
+                <small className="kpi-card__hint">
+                  With potential · No potential
+                </small>
+              </>
             ) : (
-              <small className="kpi-card__hint">No potential waves logged yet</small>
+              <>
+                <strong className="kpi-card__value">—</strong>
+                <small className="kpi-card__hint">No waves logged yet</small>
+              </>
             )}
           </article>
           <article className="kpi-card kpi-card--star">
