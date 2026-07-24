@@ -109,30 +109,32 @@ body {
   color: var(--landing-text) !important;
 }
 
-.login-tabs__btn {
+/* Login tab bars: never light-gray track + light text (App.css #f1f5f9 leak) */
+.login-page .login-tabs,
+.checkout-page .login-tabs,
+.login-page .login-subtabs,
+.checkout-page .login-subtabs,
+.app-shell .login-tabs {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.login-page .login-tabs__btn,
+.checkout-page .login-tabs__btn,
+.login-page .login-subtabs__btn,
+.checkout-page .login-subtabs__btn,
+.app-shell .login-tabs__btn {
   color: #cbd5e1 !important;
 }
 
-.login-tabs__btn--on,
+.login-page .login-tabs__btn--on,
+.checkout-page .login-tabs__btn--on,
+.login-page .login-subtabs__btn--on,
+.checkout-page .login-subtabs__btn--on,
 .app-shell .login-tabs__btn--on {
   background: rgba(201, 169, 98, 0.22) !important;
   color: var(--landing-gold-light) !important;
   box-shadow: none !important;
-}
-
-.login-page .login-subtabs__btn,
-.checkout-page .login-subtabs__btn {
-  color: #cbd5e1 !important;
-}
-
-.login-page .login-subtabs__btn--on,
-.checkout-page .login-subtabs__btn--on {
-  background: rgba(201, 169, 98, 0.2) !important;
-  color: var(--landing-gold-light) !important;
-}
-
-.login-tabs {
-  background: rgba(0, 0, 0, 0.25);
 }
 
 .field--login span,
@@ -804,10 +806,6 @@ body {
 
 .app-shell .action-list__item span[aria-hidden='true'] {
   color: var(--landing-gold) !important;
-}
-
-.app-shell .login-tabs__btn {
-  color: #cbd5e1 !important;
 }
 
 .app-shell .kpi-card__value {
