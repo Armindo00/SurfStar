@@ -44,7 +44,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     priceMonthly: 39,
     currency: 'EUR',
     maxAthletes: 20,
-    highlighted: true,
   },
   {
     id: 'club',
@@ -52,6 +51,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     priceMonthly: 79,
     currency: 'EUR',
     maxAthletes: null,
+    highlighted: true,
   },
 ]
 
