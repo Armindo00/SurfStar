@@ -311,13 +311,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     void (async () => {
       try {
-        unsub = await cloudOnAuthChange((next) => {
+        unsub = await cloudOnAuthChange((next, event) => {
           if (!mounted) return
           setAuth(next)
           if (next) {
+            if (event === 'TOKEN_REFRESHED') return
+
             setTimeout(() => {
               void applySessionData(next).then(() => {
-                if (mounted) {
+                if (!mounted) return
+                if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
                   setView(next.role === 'atleta' ? 'athlete-portal' : 'coach-home')
                 }
               })
@@ -552,10 +555,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (cloudMode) {
         const result = await cloudAddAthleteWithLogin(auth.coachId, name, email, password)
         if (!result.ok) return result
-        const nextAthletes = [...athletes, result.athlete]
-        setAthletes(nextAthletes)
-        const refreshedStudents = await cloudLoadCoachData(auth.coachId).then((d) => d.students)
-        setStudents(refreshedStudents)
+        setAthletes(result.athletes)
+        setStudents(result.students)
         return { ok: true as const }
       }
 

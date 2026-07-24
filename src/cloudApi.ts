@@ -1,3 +1,4 @@
+import type { AuthChangeEvent } from '@supabase/supabase-js'
 import { getEphemeralSupabase, getSupabase } from './lib/supabase'
 import { isValidEmail, normalizeEmail, validatePasswordStrength } from './passwordUtils'
 import type {
@@ -67,16 +68,16 @@ export async function cloudGetSession(): Promise<AuthSession | null> {
 }
 
 export async function cloudOnAuthChange(
-  cb: (session: AuthSession | null) => void,
+  cb: (session: AuthSession | null, event: AuthChangeEvent) => void,
 ): Promise<() => void> {
   const supabase = getSupabase()
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
     setTimeout(() => {
       if (!session?.user) {
-        cb(null)
+        cb(null, event)
         return
       }
-      cb(authSessionFromAuthUser(session.user))
+      cb(authSessionFromAuthUser(session.user), event)
     }, 0)
   })
   return () => data.subscription.unsubscribe()
@@ -110,20 +111,27 @@ async function ensureUserProfile(user: {
     if (error.code === '23505' || error.message.includes('duplicate key')) {
       return { ok: true }
     }
-    if (role === 'treinador') {
-      return { ok: true }
+    if (await fetchProfileRow(user.id)) return { ok: true }
+    return {
+      ok: false,
+      error:
+        role === 'treinador'
+          ? 'Your coach profile is not set up yet. Sign out, sign in again, or ask support to run fix-missing-profiles.sql in Supabase.'
+          : error.message,
     }
-    return { ok: false, error: error.message }
   }
   return { ok: true }
 }
 
-function buildAuthSessionFromUser(user: {
+async function buildAuthSessionFromUser(user: {
   id: string
   email?: string | null
   user_metadata?: Record<string, unknown>
-}): AuthSession {
-  void ensureUserProfile(user)
+}): Promise<AuthSession | { error: string }> {
+  const profileResult = await ensureUserProfile(user)
+  if (!profileResult.ok) {
+    return { error: profileResult.error ?? 'Could not load your profile.' }
+  }
   return authSessionFromAuthUser(user)
 }
 
@@ -161,7 +169,8 @@ export async function cloudRegisterCoach(
   }
 
   if (data.session?.user) {
-    const session = buildAuthSessionFromUser(data.session.user)
+    const session = await buildAuthSessionFromUser(data.session.user)
+    if ('error' in session) return { ok: false, error: session.error }
     return { ok: true, session }
   }
 
@@ -179,7 +188,8 @@ export async function cloudRegisterCoach(
     return { ok: false, error: 'Account created but sign in failed. Try Sign in.' }
   }
 
-  const session = buildAuthSessionFromUser(signInData.user)
+  const session = await buildAuthSessionFromUser(signInData.user)
+  if ('error' in session) return { ok: false, error: session.error }
   return { ok: true, session }
 }
 
@@ -208,7 +218,8 @@ export async function cloudLogin(
 
   if (!data.user) return { ok: false, error: 'Sign in failed. Try again.' }
 
-  const session = buildAuthSessionFromUser(data.user)
+  const session = await buildAuthSessionFromUser(data.user)
+  if ('error' in session) return { ok: false, error: session.error }
   return { ok: true, session }
 }
 
@@ -390,12 +401,26 @@ export async function cloudSaveConditions(coachId: string, conditions: string[])
   }
 }
 
+function friendlyAthleteSaveError(message: string): string {
+  const lower = message.toLowerCase()
+  if (lower.includes('foreign key') || lower.includes('profiles')) {
+    return 'Your coach account is not fully set up in the cloud. Sign out, sign in again, and retry. If it persists, run fix-missing-profiles.sql in Supabase.'
+  }
+  if (lower.includes('duplicate key') || lower.includes('already registered')) {
+    return 'This email is already used by another account.'
+  }
+  return message
+}
+
 export async function cloudAddAthleteWithLogin(
   coachId: string,
   name: string,
   email: string,
   password: string,
-): Promise<{ ok: true; athlete: Athlete } | { ok: false; error: string }> {
+): Promise<
+  | { ok: true; athlete: Athlete; athletes: Athlete[]; students: StudentAccount[] }
+  | { ok: false; error: string }
+> {
   const trimmedName = name.trim()
   const normalized = normalizeEmail(email)
   if (!trimmedName) return { ok: false, error: 'Enter athlete name.' }
@@ -404,14 +429,34 @@ export async function cloudAddAthleteWithLogin(
   if (pwdError) return { ok: false, error: pwdError }
 
   const supabase = getSupabase()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+  if (userError || !user) {
+    return { ok: false, error: 'Session expired. Sign in again as coach.' }
+  }
+
+  const profileResult = await ensureUserProfile(user)
+  if (!profileResult.ok) {
+    return { ok: false, error: profileResult.error ?? 'Coach profile missing.' }
+  }
+
+  const activeCoachId = user.id
+  if (coachId !== activeCoachId) {
+    return { ok: false, error: 'Session mismatch. Sign out and sign in again.' }
+  }
+
   const athleteId = crypto.randomUUID()
 
   const { error: athleteError } = await supabase.from('athletes').insert({
     id: athleteId,
-    coach_id: coachId,
+    coach_id: activeCoachId,
     name: trimmedName,
   })
-  if (athleteError) return { ok: false, error: athleteError.message }
+  if (athleteError) {
+    return { ok: false, error: friendlyAthleteSaveError(athleteError.message) }
+  }
 
   const ephemeral = getEphemeralSupabase()
   const { error: signUpError } = await ephemeral.auth.signUp({
@@ -421,18 +466,30 @@ export async function cloudAddAthleteWithLogin(
       data: {
         role: 'atleta',
         name: trimmedName,
-        coach_id: coachId,
+        coach_id: activeCoachId,
         athlete_id: athleteId,
       },
     },
   })
 
+  await ephemeral.auth.signOut()
+
   if (signUpError) {
     await supabase.from('athletes').delete().eq('id', athleteId)
-    return { ok: false, error: signUpError.message }
+    return { ok: false, error: friendlyAthleteSaveError(signUpError.message) }
   }
 
-  return { ok: true, athlete: { id: athleteId, coachId, name: trimmedName } }
+  const refreshed = await cloudLoadCoachData(activeCoachId)
+  const athlete =
+    refreshed.athletes.find((a) => a.id === athleteId) ??
+    ({ id: athleteId, coachId: activeCoachId, name: trimmedName } satisfies Athlete)
+
+  return {
+    ok: true,
+    athlete,
+    athletes: refreshed.athletes,
+    students: refreshed.students,
+  }
 }
 
 export async function cloudLoadCoachData(coachId: string) {

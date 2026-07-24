@@ -35,6 +35,7 @@ export function ManageAthletes() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [busy, setBusy] = useState(false)
   const [expandedAthleteId, setExpandedAthleteId] = useState<string | null>(null)
 
@@ -42,6 +43,7 @@ export function ManageAthletes() {
 
   const submit = async () => {
     setError('')
+    setSuccess('')
     setBusy(true)
     try {
       const result = await addAthleteWithLogin(name, email, password)
@@ -52,6 +54,7 @@ export function ManageAthletes() {
       setName('')
       setEmail('')
       setPassword('')
+      setSuccess('Athlete saved. They can sign in on the Athlete tab with this email and password.')
     } finally {
       setBusy(false)
     }
@@ -101,6 +104,7 @@ export function ManageAthletes() {
             />
           </label>
           {error ? <p className="login-error">{error}</p> : null}
+          {success ? <p className="login-success">{success}</p> : null}
           <button
             type="button"
             className="btn btn--primary btn--block"
