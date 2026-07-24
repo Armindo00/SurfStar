@@ -44,19 +44,19 @@ export function SeaAnalysisStatsPanel({ state }: Props) {
         )}
         <p className="muted sea-recommend__summary">{rec.summary}</p>
         <p className="sea-recommend__formula muted">
-          Score = 35% volume · 30% waves/h · 20% potential mix (set weighted highest) · 15% arrival
-          frequency
+          Score = 55% weighted wave count (set ×4, large int. ×3, small int. ×2, small ×1) · 45%
+          weighted arrival rate (shorter gaps between same-type waves score higher)
         </p>
         <div className="table-wrap">
           <table className="data-table sea-stats-table">
             <thead>
               <tr>
                 <th>Peak</th>
-                <th>Count</th>
-                <th>Rate (/h)</th>
-                <th>Potential index</th>
+                <th>Waves</th>
+                <th>Wave score</th>
+                <th>Arrival score</th>
                 <th>Avg. gap</th>
-                <th>Score</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
@@ -70,8 +70,8 @@ export function SeaAnalysisStatsPanel({ state }: Props) {
                       {isRec ? <span className="sea-recommend-tag">Best</span> : null}
                     </td>
                     <td>{row.observationCount}</td>
-                    <td>{row.ratePerHour}</td>
-                    <td>{row.weightedPotential}</td>
+                    <td>{row.weightedWaveScore}</td>
+                    <td>{row.weightedArrivalScore}</td>
                     <td>{row.meanIntervalLabel ?? '—'}</td>
                     <td>
                       <strong>{row.compositeScore}</strong>

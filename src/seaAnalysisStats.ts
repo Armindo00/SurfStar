@@ -32,8 +32,8 @@ export type SeaIntervalRow = {
   count: number
 }
 
-/** Higher = more “potential” wave types (set weighs most). */
-const WAVE_POTENTIAL_WEIGHT: Record<SeaWaveType, number> = {
+/** Priority: set > large intermediate > small intermediate > small. */
+const WAVE_TYPE_WEIGHT: Record<SeaWaveType, number> = {
   set: 4,
   'intermedia-grande': 3,
   'intermedia-pequena': 2,
@@ -42,8 +42,10 @@ const WAVE_POTENTIAL_WEIGHT: Record<SeaWaveType, number> = {
 
 export type PeakScoreDetail = {
   observationCount: number
-  ratePerHour: number
-  weightedPotential: number
+  /** Σ (count × type weight) — rewards sets and larger waves most. */
+  weightedWaveScore: number
+  /** Σ type weight × arrival rate; shorter gaps between same-type waves score higher. */
+  weightedArrivalScore: number
   meanIntervalMs: number | null
   meanIntervalLabel: string | null
   compositeScore: number
@@ -109,12 +111,58 @@ function meanIntervalOnPeak(sorted: SeaAnalysisLog[], peak: SeaPeak): number | n
   return sum / (logs.length - 1)
 }
 
-function weightedPotential(counts: SeaCountGrid, peak: SeaPeak): number {
+function meanIntervalForType(
+  sorted: SeaAnalysisLog[],
+  peak: SeaPeak,
+  waveType: SeaWaveType,
+): number | null {
+  const subset = sorted.filter((l) => l.peak === peak && l.waveType === waveType)
+  if (subset.length < 2) return null
+  let sum = 0
+  for (let i = 1; i < subset.length; i++) {
+    sum += new Date(subset[i].at).getTime() - new Date(subset[i - 1].at).getTime()
+  }
+  return sum / (subset.length - 1)
+}
+
+/** Weighted wave count: sets contribute 4×, then large int., small int., small. */
+function weightedWaveScore(counts: SeaCountGrid, peak: SeaPeak): number {
   let sum = 0
   for (const type of SEA_WAVE_TYPES) {
-    sum += counts[peak][type] * WAVE_POTENTIAL_WEIGHT[type]
+    sum += counts[peak][type] * WAVE_TYPE_WEIGHT[type]
   }
   return sum
+}
+
+/**
+ * Weighted arrival rate (waves/h per type, × type weight).
+ * Uses the average wait between consecutive logs of the same type on the peak.
+ */
+function weightedArrivalScore(
+  sorted: SeaAnalysisLog[],
+  counts: SeaCountGrid,
+  peak: SeaPeak,
+  windowMs: number,
+): number {
+  let score = 0
+  const windowHours = windowMs / 3_600_000
+
+  for (const type of SEA_WAVE_TYPES) {
+    const count = counts[peak][type]
+    if (count === 0) continue
+
+    const weight = WAVE_TYPE_WEIGHT[type]
+    const meanGapMs = meanIntervalForType(sorted, peak, type)
+
+    if (meanGapMs !== null && meanGapMs > 0) {
+      const wavesPerHour = (count / meanGapMs) * 3_600_000
+      score += weight * wavesPerHour
+    } else if (count === 1 && windowHours > 0) {
+      score += weight * (1 / windowHours)
+    }
+  }
+
+  return Math.round(score * 10) / 10
 }
 
 function computePeakRecommendation(
@@ -124,21 +172,20 @@ function computePeakRecommendation(
   peakTotals: Record<SeaPeak, number>,
 ): PeakRecommendation {
   const windowMs = observationWindowMs(state, sorted)
-  const windowHours = windowMs / 3_600_000
 
   const raw: Record<SeaPeak, PeakScoreDetail> = {
     'peak-1': {
       observationCount: peakTotals['peak-1'],
-      ratePerHour: 0,
-      weightedPotential: weightedPotential(counts, 'peak-1'),
+      weightedWaveScore: weightedWaveScore(counts, 'peak-1'),
+      weightedArrivalScore: weightedArrivalScore(sorted, counts, 'peak-1', windowMs),
       meanIntervalMs: meanIntervalOnPeak(sorted, 'peak-1'),
       meanIntervalLabel: null,
       compositeScore: 0,
     },
     'peak-2': {
       observationCount: peakTotals['peak-2'],
-      ratePerHour: 0,
-      weightedPotential: weightedPotential(counts, 'peak-2'),
+      weightedWaveScore: weightedWaveScore(counts, 'peak-2'),
+      weightedArrivalScore: weightedArrivalScore(sorted, counts, 'peak-2', windowMs),
       meanIntervalMs: meanIntervalOnPeak(sorted, 'peak-2'),
       meanIntervalLabel: null,
       compositeScore: 0,
@@ -146,38 +193,27 @@ function computePeakRecommendation(
   }
 
   for (const peak of SEA_PEAKS) {
-    raw[peak].ratePerHour =
-      windowHours > 0 ? Math.round((raw[peak].observationCount / windowHours) * 10) / 10 : 0
     raw[peak].meanIntervalLabel =
       raw[peak].meanIntervalMs !== null ? formatElapsedMs(raw[peak].meanIntervalMs) : null
   }
 
-  const maxCount = Math.max(raw['peak-1'].observationCount, raw['peak-2'].observationCount, 1)
-  const maxRate = Math.max(raw['peak-1'].ratePerHour, raw['peak-2'].ratePerHour, 0.001)
-  const maxWeighted = Math.max(
-    raw['peak-1'].weightedPotential,
-    raw['peak-2'].weightedPotential,
+  const maxWaveScore = Math.max(
+    raw['peak-1'].weightedWaveScore,
+    raw['peak-2'].weightedWaveScore,
     1,
   )
-
-  function freqIndex(d: PeakScoreDetail): number {
-    if (d.meanIntervalMs !== null && d.meanIntervalMs > 0) return 1 / d.meanIntervalMs
-    return d.ratePerHour / 3600
-  }
-
-  const maxFreqIdx = Math.max(freqIndex(raw['peak-1']), freqIndex(raw['peak-2']), 0.000001)
+  const maxArrivalScore = Math.max(
+    raw['peak-1'].weightedArrivalScore,
+    raw['peak-2'].weightedArrivalScore,
+    0.001,
+  )
 
   for (const peak of SEA_PEAKS) {
     const d = raw[peak]
-    const normCount = d.observationCount / maxCount
-    const normRate = d.ratePerHour / maxRate
-    const normWeighted = d.weightedPotential / maxWeighted
-    const normFreq = freqIndex(d) / maxFreqIdx
+    const normWave = d.weightedWaveScore / maxWaveScore
+    const normArrival = d.weightedArrivalScore / maxArrivalScore
 
-    d.compositeScore =
-      Math.round(
-        (0.35 * normCount + 0.3 * normRate + 0.2 * normWeighted + 0.15 * normFreq) * 1000,
-      ) / 10
+    d.compositeScore = Math.round((0.55 * normWave + 0.45 * normArrival) * 1000) / 10
   }
 
   const totalObs = peakTotals['peak-1'] + peakTotals['peak-2']
@@ -199,11 +235,13 @@ function computePeakRecommendation(
     recommended = s1 >= s2 ? 'peak-1' : 'peak-2'
   }
 
+  const lead = recommended === 'peak-1' ? raw['peak-1'] : recommended === 'peak-2' ? raw['peak-2'] : null
+
   const summary = tie
-    ? 'Both peaks score similarly on volume, frequency and wave quality — no clear favourite yet.'
-    : recommended === 'peak-1'
-      ? `Peak 1 leads: ${raw['peak-1'].observationCount} observations, ${raw['peak-1'].ratePerHour}/h, weighted potential ${raw['peak-1'].weightedPotential} (score ${s1} vs ${s2}).`
-      : `Peak 2 leads: ${raw['peak-2'].observationCount} observations, ${raw['peak-2'].ratePerHour}/h, weighted potential ${raw['peak-2'].weightedPotential} (score ${s2} vs ${s1}).`
+    ? 'Both peaks score similarly on weighted wave count (set highest priority) and arrival timing.'
+    : lead
+      ? `${recommended === 'peak-1' ? 'Peak 1' : 'Peak 2'} leads: ${lead.observationCount} waves, wave score ${lead.weightedWaveScore}, arrival score ${lead.weightedArrivalScore}${lead.meanIntervalLabel ? ` (avg gap ${lead.meanIntervalLabel})` : ''} — total score ${lead.compositeScore} vs ${recommended === 'peak-1' ? s2 : s1}.`
+      : ''
 
   return { recommended, tie, scores: raw, summary }
 }
