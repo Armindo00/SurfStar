@@ -3,7 +3,7 @@ import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
 
 export function ForgotPasswordView() {
-  const { requestPasswordReset, openCoachLogin } = useApp()
+  const { requestPasswordReset, openCoachSignIn } = useApp()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
@@ -28,7 +28,7 @@ export function ForgotPasswordView() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <button type="button" className="login-back" onClick={openCoachLogin}>
+        <button type="button" className="login-back" onClick={openCoachSignIn}>
           ← Back
         </button>
 

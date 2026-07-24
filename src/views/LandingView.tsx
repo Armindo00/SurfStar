@@ -113,7 +113,13 @@ const FAQ = [
 ]
 
 export function LandingView() {
-  const { selectPlan, openAthleteLogin, openCoachLogin } = useApp()
+  const {
+    selectPlan,
+    openAthleteSignIn,
+    openAthleteSignUp,
+    openCoachSignIn,
+    openCoachSignUp,
+  } = useApp()
 
   return (
     <div className="landing-page">
@@ -129,12 +135,24 @@ export function LandingView() {
           <a href="#packs">Pricing</a>
         </nav>
         <div className="landing-nav__actions">
-          <button type="button" className="btn btn--outline btn--small" onClick={openAthleteLogin}>
-            I&apos;m an athlete
-          </button>
-          <button type="button" className="btn btn--gold btn--small" onClick={openCoachLogin}>
-            Sign in
-          </button>
+          <div className="landing-nav__auth-group">
+            <span className="landing-nav__auth-label">Coach</span>
+            <button type="button" className="btn btn--outline btn--small" onClick={openCoachSignIn}>
+              Sign in
+            </button>
+            <button type="button" className="btn btn--gold btn--small" onClick={openCoachSignUp}>
+              Sign up
+            </button>
+          </div>
+          <div className="landing-nav__auth-group">
+            <span className="landing-nav__auth-label">Athlete</span>
+            <button type="button" className="btn btn--outline btn--small" onClick={openAthleteSignIn}>
+              Sign in
+            </button>
+            <button type="button" className="btn btn--outline btn--small" onClick={openAthleteSignUp}>
+              Sign up
+            </button>
+          </div>
         </div>
       </header>
 
@@ -152,10 +170,10 @@ export function LandingView() {
             </p>
             <div className="landing-hero__cta">
               <a className="btn btn--gold btn--lg" href="#packs">
-                Get started
+                Coach sign up
               </a>
-              <button type="button" className="btn btn--outline btn--lg" onClick={openAthleteLogin}>
-                Sign in as athlete
+              <button type="button" className="btn btn--outline btn--lg" onClick={openAthleteSignIn}>
+                Athlete sign in
               </button>
             </div>
             <ul className="landing-hero__checks">
@@ -394,8 +412,11 @@ export function LandingView() {
           <a href="#sea-analysis">Sea analysis</a>
           <a href="#analytics">Analytics</a>
           <a href="#packs">Pricing</a>
-          <button type="button" className="landing-footer__btn" onClick={openCoachLogin}>
-            Sign in
+          <button type="button" className="landing-footer__btn" onClick={openCoachSignIn}>
+            Coach sign in
+          </button>
+          <button type="button" className="landing-footer__btn" onClick={openAthleteSignIn}>
+            Athlete sign in
           </button>
         </div>
         <p className="landing-footer__copy">© {new Date().getFullYear()} SurfStar</p>

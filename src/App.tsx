@@ -26,7 +26,7 @@ import { StartSession } from './views/StartSession'
 import { TeamAnalyticsView } from './views/TeamAnalyticsView'
 import { TrainingSessionsView } from './views/TrainingSessionsView'
 import { TrainingSessionView } from './views/TrainingSessionView'
-import { isForgotPasswordPath } from './routing'
+import { isAuthPublicView, isForgotPasswordPath } from './routing'
 import './App.css'
 import './app-theme.css'
 
@@ -72,7 +72,10 @@ function Shell() {
     if (publicView === 'landing') {
       return <LandingView />
     }
-    return <LoginView />
+    if (isAuthPublicView(publicView)) {
+      return <LoginView />
+    }
+    return <LandingView />
   }
 
   if (auth.role === 'atleta' && auth.mustChangePassword) {

@@ -120,14 +120,15 @@ type AppContextValue = {
   authReady: boolean
   cloudMode: boolean
   publicView: PublicView
-  loginTab: UserRole
   selectedPlanId: PlanId | null
   subscription: CoachSubscription | null
   hasActiveSubscription: boolean
   selectPlan: (planId: PlanId, options?: { goToLogin?: boolean }) => void
   openLanding: () => void
-  openCoachLogin: () => void
-  openAthleteLogin: () => void
+  openCoachSignIn: () => void
+  openCoachSignUp: () => void
+  openAthleteSignIn: () => void
+  openAthleteSignUp: () => void
   openForgotPassword: () => void
   requestPasswordReset: (email: string) => Promise<{ ok: true } | { ok: false; error: string }>
   startCheckout: () => Promise<{ ok: true } | { ok: false; error: string }>
@@ -330,7 +331,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
   const role: UserRole = auth?.role ?? 'treinador'
   const [publicView, setPublicViewState] = useState<PublicView>(() => publicViewFromPath(window.location.pathname))
-  const [loginTab, setLoginTab] = useState<UserRole>('treinador')
   const [selectedPlanId, setSelectedPlanId] = useState<PlanId | null>(null)
   const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
   const [view, setView] = useState<AppView>('coach-home')
@@ -513,9 +513,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const selectPlan = useCallback((planId: PlanId, options?: { goToLogin?: boolean }) => {
     setSelectedPlanId(planId)
-    setLoginTab('treinador')
     if (options?.goToLogin !== false) {
-      setPublicView('login')
+      setPublicView('coach-sign-up')
     }
   }, [setPublicView])
 
@@ -523,15 +522,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPublicView('landing')
   }, [setPublicView])
 
-  const openCoachLogin = useCallback(() => {
-    setLoginTab('treinador')
-    setPublicView('login')
+  const openCoachSignIn = useCallback(() => {
+    setPublicView('coach-sign-in')
   }, [setPublicView])
 
-  const openAthleteLogin = useCallback(() => {
-    setLoginTab('atleta')
+  const openCoachSignUp = useCallback(() => {
+    setPublicView('coach-sign-up')
+  }, [setPublicView])
+
+  const openAthleteSignIn = useCallback(() => {
     setSelectedPlanId(null)
-    setPublicView('login')
+    setPublicView('athlete-sign-in')
+  }, [setPublicView])
+
+  const openAthleteSignUp = useCallback(() => {
+    setSelectedPlanId(null)
+    setPublicView('athlete-sign-up')
   }, [setPublicView])
 
   const openForgotPassword = useCallback(() => {
@@ -1952,14 +1958,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authReady,
       cloudMode,
       publicView,
-      loginTab,
       selectedPlanId,
       subscription,
       hasActiveSubscription,
       selectPlan,
       openLanding,
-      openCoachLogin,
-      openAthleteLogin,
+      openCoachSignIn,
+      openCoachSignUp,
+      openAthleteSignIn,
+      openAthleteSignUp,
       openForgotPassword,
       requestPasswordReset,
       startCheckout,
@@ -2052,14 +2059,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authReady,
       cloudMode,
       publicView,
-      loginTab,
       selectedPlanId,
       subscription,
       hasActiveSubscription,
       selectPlan,
       openLanding,
-      openCoachLogin,
-      openAthleteLogin,
+      openCoachSignIn,
+      openCoachSignUp,
+      openAthleteSignIn,
+      openAthleteSignUp,
       openForgotPassword,
       requestPasswordReset,
       startCheckout,

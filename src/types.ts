@@ -1,6 +1,14 @@
 export type UserRole = 'treinador' | 'atleta'
 
-export type PublicView = 'landing' | 'login' | 'checkout'
+export type PublicView =
+  | 'landing'
+  | 'coach-sign-in'
+  | 'coach-sign-up'
+  | 'athlete-sign-in'
+  | 'athlete-sign-up'
+  | 'checkout'
+
+export type AuthPublicView = Exclude<PublicView, 'landing' | 'checkout'>
 
 /** Tipos de sessão SurfStar (evolução futura: mar, heat) */
 export type SessionType = 'treino-tecnico' | 'analise-mar' | 'heat'

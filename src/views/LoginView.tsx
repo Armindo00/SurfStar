@@ -1,10 +1,43 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { formatPlanPrice, getPlan } from '../plans'
 import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
+import type { AuthPublicView } from '../types'
 
-type AuthMode = 'sign-in' | 'register'
+const SCREEN_COPY: Record<
+  AuthPublicView,
+  { title: string; submitSignIn: string; submitSignUp: string; switchPrompt: string; switchAction: string }
+> = {
+  'coach-sign-in': {
+    title: 'Coach sign in',
+    submitSignIn: 'Sign in',
+    submitSignUp: '',
+    switchPrompt: 'New coach?',
+    switchAction: 'Create coach account',
+  },
+  'coach-sign-up': {
+    title: 'Create coach account',
+    submitSignIn: '',
+    submitSignUp: 'Create coach account',
+    switchPrompt: 'Already have an account?',
+    switchAction: 'Coach sign in',
+  },
+  'athlete-sign-in': {
+    title: 'Athlete sign in',
+    submitSignIn: 'Sign in',
+    submitSignUp: '',
+    switchPrompt: 'New athlete?',
+    switchAction: 'Create athlete account',
+  },
+  'athlete-sign-up': {
+    title: 'Create athlete account',
+    submitSignIn: '',
+    submitSignUp: 'Create athlete account',
+    switchPrompt: 'Already have an account?',
+    switchAction: 'Athlete sign in',
+  },
+}
 
 export function LoginView() {
   const {
@@ -13,13 +46,21 @@ export function LoginView() {
     registerCoach,
     registerAthlete,
     cloudMode,
-    loginTab,
+    publicView,
     selectedPlanId,
     openLanding,
     openForgotPassword,
+    openCoachSignIn,
+    openCoachSignUp,
+    openAthleteSignIn,
+    openAthleteSignUp,
   } = useApp()
-  const [tab, setTab] = useState(loginTab)
-  const [authMode, setAuthMode] = useState<AuthMode>(selectedPlanId ? 'register' : 'sign-in')
+
+  const screen = publicView as AuthPublicView
+  const isCoach = screen.startsWith('coach')
+  const isRegister = screen.endsWith('sign-up')
+  const copy = SCREEN_COPY[screen]
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -27,20 +68,16 @@ export function LoginView() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => {
-    setTab(loginTab)
-  }, [loginTab])
+  const selectedPlan = selectedPlanId && isCoach ? getPlan(selectedPlanId) : null
 
-  useEffect(() => {
-    if (selectedPlanId && tab === 'treinador') {
-      setAuthMode('register')
-    }
-  }, [selectedPlanId, tab])
-
-  const resetRegister = () => {
+  const switchAuthScreen = () => {
+    setError('')
     setName('')
     setPasswordConfirm('')
-    setError('')
+    if (screen === 'coach-sign-in') openCoachSignUp()
+    else if (screen === 'coach-sign-up') openCoachSignIn()
+    else if (screen === 'athlete-sign-in') openAthleteSignUp()
+    else openAthleteSignIn()
   }
 
   const submit = async (e: FormEvent) => {
@@ -50,23 +87,21 @@ export function LoginView() {
     try {
       const trimmedEmail = email.trim()
 
-      if (authMode === 'register') {
+      if (isRegister) {
         if (password !== passwordConfirm) {
           setError('Passwords do not match.')
           return
         }
-        const result =
-          tab === 'treinador'
-            ? await registerCoach(name, trimmedEmail, password)
-            : await registerAthlete(name, trimmedEmail, password)
+        const result = isCoach
+          ? await registerCoach(name, trimmedEmail, password)
+          : await registerAthlete(name, trimmedEmail, password)
         if (!result.ok) setError(result.error)
         return
       }
 
-      const result =
-        tab === 'treinador'
-          ? await loginAsCoach(trimmedEmail, password)
-          : await loginAsStudent(trimmedEmail, password)
+      const result = isCoach
+        ? await loginAsCoach(trimmedEmail, password)
+        : await loginAsStudent(trimmedEmail, password)
       if (!result.ok) setError(result.error ?? 'Sign in failed.')
     } catch (err) {
       console.error('Login submit failed', err)
@@ -75,9 +110,6 @@ export function LoginView() {
       setBusy(false)
     }
   }
-
-  const isRegister = authMode === 'register'
-  const selectedPlan = selectedPlanId && tab === 'treinador' ? getPlan(selectedPlanId) : null
 
   return (
     <div className="login-page">
@@ -94,6 +126,9 @@ export function LoginView() {
           </div>
         </div>
 
+        <p className="login-role-tag">{isCoach ? 'Coach' : 'Athlete'}</p>
+        <h1 className="login-screen-title">{copy.title}</h1>
+
         {selectedPlan ? (
           <div className="login-plan-banner">
             <span>Selected plan</span>
@@ -102,58 +137,6 @@ export function LoginView() {
             </strong>
           </div>
         ) : null}
-
-        <div className="login-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'treinador'}
-            className={tab === 'treinador' ? 'login-tabs__btn login-tabs__btn--on' : 'login-tabs__btn'}
-            onClick={() => {
-              setTab('treinador')
-              setAuthMode(selectedPlanId ? 'register' : 'sign-in')
-              resetRegister()
-            }}
-          >
-            Coach
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'atleta'}
-            className={tab === 'atleta' ? 'login-tabs__btn login-tabs__btn--on' : 'login-tabs__btn'}
-            onClick={() => {
-              setTab('atleta')
-              setAuthMode('sign-in')
-              resetRegister()
-            }}
-          >
-            Athlete
-          </button>
-        </div>
-
-        <div className="login-subtabs">
-          <button
-            type="button"
-            className={authMode === 'sign-in' ? 'login-subtabs__btn login-subtabs__btn--on' : 'login-subtabs__btn'}
-            onClick={() => {
-              setAuthMode('sign-in')
-              resetRegister()
-            }}
-          >
-            Log in
-          </button>
-          <button
-            type="button"
-            className={authMode === 'register' ? 'login-subtabs__btn login-subtabs__btn--on' : 'login-subtabs__btn'}
-            onClick={() => {
-              setAuthMode('register')
-              setError('')
-            }}
-          >
-            Create account
-          </button>
-        </div>
 
         <form className="login-form" onSubmit={submit}>
           {isRegister ? (
@@ -164,7 +147,7 @@ export function LoginView() {
                 autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={tab === 'treinador' ? 'Coach name' : 'Athlete name'}
+                placeholder={isCoach ? 'Coach name' : 'Athlete name'}
                 required
               />
             </label>
@@ -208,7 +191,7 @@ export function LoginView() {
           ) : null}
 
           {error && <p className="login-error">{error}</p>}
-          {!isRegister && cloudMode ? (
+          {!isRegister && cloudMode && isCoach ? (
             <button type="button" className="login-forgot btn btn--ghost btn--block" onClick={openForgotPassword}>
               Forgot password
             </button>
@@ -217,26 +200,27 @@ export function LoginView() {
             {busy
               ? 'Please wait…'
               : isRegister
-                ? tab === 'treinador'
-                  ? selectedPlan
-                    ? `Create account · ${selectedPlan.name}`
-                    : 'Create coach account'
-                  : 'Create athlete account'
-                : 'Sign in'}
+                ? selectedPlan
+                  ? `Create account · ${selectedPlan.name}`
+                  : copy.submitSignUp
+                : copy.submitSignIn}
           </button>
         </form>
 
+        <p className="login-switch">
+          {copy.switchPrompt}{' '}
+          <button type="button" className="login-switch__btn" onClick={switchAuthScreen}>
+            {copy.switchAction}
+          </button>
+        </p>
+
         <aside className="login-demo">
           <p className="login-demo__title">Accounts</p>
-          {tab === 'treinador' ? (
-            <>
-              <p>
-                <strong>Coach:</strong> pick a plan, create an account, and activate your subscription to manage athletes and sessions.
-              </p>
-              <p>
-                <strong>Athlete:</strong> switch to the Athlete tab — free access with a pairing code.
-              </p>
-            </>
+          {isCoach ? (
+            <p>
+              <strong>Coach:</strong> pick a plan, create an account, and activate your subscription to manage
+              athletes and sessions.
+            </p>
           ) : (
             <p>
               <strong>Athlete:</strong> create your own account once. Share your pairing code with each coach.

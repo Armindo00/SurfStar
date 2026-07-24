@@ -109,6 +109,22 @@ body {
   color: var(--landing-text) !important;
 }
 
+.login-page .login-role-tag {
+  color: var(--landing-gold-light) !important;
+}
+
+.login-page .login-screen-title {
+  color: var(--landing-text) !important;
+}
+
+.login-page .login-switch {
+  color: #94a3b8 !important;
+}
+
+.login-page .login-switch__btn {
+  color: var(--landing-gold-light) !important;
+}
+
 /* Login tab bars: never light-gray track + light text (App.css #f1f5f9 leak) */
 .login-page .login-tabs,
 .checkout-page .login-tabs,
