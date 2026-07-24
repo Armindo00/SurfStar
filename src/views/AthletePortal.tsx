@@ -122,29 +122,11 @@ export function AthletePortal() {
             </strong>
           </article>
           <article className="kpi-card kpi-card--success athlete-potential-kpi">
-            <span className="kpi-card__label">Potential vs no potential</span>
-            {general.withPotentialRate !== null && general.withoutPotentialRate !== null ? (
+            <span className="kpi-card__label">Waves with potential</span>
+            {general.withPotentialRate !== null ? (
               <>
-                <strong className="kpi-card__value">
-                  {general.withPotentialRate}% / {general.withoutPotentialRate}%
-                </strong>
-                <div
-                  className="athlete-potential-split-bar"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <span
-                    className="athlete-potential-split-bar__yes"
-                    style={{ width: `${general.withPotentialRate}%` }}
-                  />
-                  <span
-                    className="athlete-potential-split-bar__no"
-                    style={{ width: `${general.withoutPotentialRate}%` }}
-                  />
-                </div>
-                <small className="kpi-card__hint">
-                  With potential · No potential
-                </small>
+                <strong className="kpi-card__value">{general.withPotentialRate}%</strong>
+                <RateBar value={general.withPotentialRate} />
               </>
             ) : (
               <>
