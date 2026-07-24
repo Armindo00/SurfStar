@@ -12,12 +12,14 @@ export type SubscriptionPlan = {
 export type PlanComparisonFeature = {
   label: string
   includedIn: PlanId[]
+  /** Omit this row on specific plan cards (e.g. lower-tier limits on higher plans). */
+  hiddenOn?: PlanId[]
 }
 
 /** Full feature matrix shown on every pricing card (green = included, red = not included). */
 export const PLAN_COMPARISON_FEATURES: PlanComparisonFeature[] = [
-  { label: 'Up to 5 athletes', includedIn: ['starter'] },
-  { label: 'Up to 20 athletes', includedIn: ['team'] },
+  { label: 'Up to 5 athletes', includedIn: ['starter'], hiddenOn: ['team', 'club'] },
+  { label: 'Up to 20 athletes', includedIn: ['team'], hiddenOn: ['club'] },
   { label: 'Unlimited athletes', includedIn: ['club'] },
   { label: 'Technical training & combos', includedIn: ['starter', 'team', 'club'] },
   { label: 'Session history', includedIn: ['starter', 'team', 'club'] },
@@ -57,6 +59,10 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
 
 export function planHasComparisonFeature(planId: PlanId, feature: PlanComparisonFeature): boolean {
   return feature.includedIn.includes(planId)
+}
+
+export function getVisibleComparisonFeatures(planId: PlanId): PlanComparisonFeature[] {
+  return PLAN_COMPARISON_FEATURES.filter((feature) => !feature.hiddenOn?.includes(planId))
 }
 
 export function getIncludedFeatureLabels(planId: PlanId): string[] {

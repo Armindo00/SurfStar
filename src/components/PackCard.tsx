@@ -1,7 +1,7 @@
 import {
   formatPlanPrice,
   getPlan,
-  PLAN_COMPARISON_FEATURES,
+  getVisibleComparisonFeatures,
   planHasComparisonFeature,
   type PlanId,
 } from '../plans'
@@ -14,10 +14,11 @@ type Props = {
 
 export function PackCard({ planId, selected, onSelect }: Props) {
   const plan = getPlan(planId)
-  const includedFeatures = PLAN_COMPARISON_FEATURES.filter((feature) =>
+  const visibleFeatures = getVisibleComparisonFeatures(planId)
+  const includedFeatures = visibleFeatures.filter((feature) =>
     planHasComparisonFeature(planId, feature),
   )
-  const excludedFeatures = PLAN_COMPARISON_FEATURES.filter(
+  const excludedFeatures = visibleFeatures.filter(
     (feature) => !planHasComparisonFeature(planId, feature),
   )
 
