@@ -8,13 +8,13 @@ import { LoginView } from './views/LoginView'
 import { ManageAthletes } from './views/ManageAthletes'
 import { ManageSpots } from './views/ManageSpots'
 import { EndSessionSheet } from './components/EndSessionSheet'
-import { PlaceholderScreen } from './views/PlaceholderScreen'
 import { SavedWavesView } from './views/SavedWavesView'
 import { SelectAthletes } from './views/SelectAthletes'
 import { SeaAnalysisSessionView } from './views/SeaAnalysisSessionView'
 import { SessionHistoryDetailView } from './views/SessionHistoryDetailView'
 import { SessionStatsView } from './views/SessionStatsView'
 import { StartSession } from './views/StartSession'
+import { TeamAnalyticsView } from './views/TeamAnalyticsView'
 import { TrainingSessionsView } from './views/TrainingSessionsView'
 import { TrainingSessionView } from './views/TrainingSessionView'
 import './App.css'
@@ -81,12 +81,7 @@ function Shell() {
           {role === 'treinador' && view === 'manage-spots' && <ManageSpots />}
           {role === 'treinador' && view === 'training-sessions' && <TrainingSessionsView />}
           {role === 'treinador' && view === 'session-history-detail' && <SessionHistoryDetailView />}
-          {role === 'treinador' && view === 'analytics' && (
-            <PlaceholderScreen
-              title="Team analytics"
-              description="Team-wide analytics dashboard — in development."
-            />
-          )}
+          {role === 'treinador' && view === 'analytics' && <TeamAnalyticsView />}
         </main>
         <EndSessionSheet />
       </div>
