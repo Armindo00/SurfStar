@@ -2,11 +2,7 @@ import { useEffect, useState } from 'react'
 import { formatPlanPrice, getPlan, getStripePaymentLink, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
 import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
-import {
-  buildStripeCheckoutUrl,
-  isDemoSubscriptionEnabled,
-  isSubscriptionActive,
-} from '../subscriptionApi'
+import { buildStripeCheckoutUrl, isSubscriptionActive } from '../subscriptionApi'
 
 export function CheckoutView() {
   const {
@@ -28,7 +24,6 @@ export function CheckoutView() {
   const planId = selectedPlanId ?? subscription?.planId ?? 'team'
   const plan = getPlan(planId)
   const stripeLink = getStripePaymentLink(planId)
-  const demoEnabled = isDemoSubscriptionEnabled()
   const isPending = subscription?.status === 'pending'
   const isActive = isSubscriptionActive(subscription)
 
@@ -43,17 +38,23 @@ export function CheckoutView() {
     return () => window.clearInterval(timer)
   }, [awaitingPayment, isPending, isActive, refreshSubscription])
 
+  const handleActivateWithoutStripe = async () => {
+    setError('')
+    setBusy(true)
+    try {
+      const result = await activateDemoSubscription()
+      if (!result.ok) setError(result.error)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const handlePay = async () => {
     setError('')
     setBusy(true)
     try {
       if (!stripeLink) {
-        if (demoEnabled) {
-          const result = await activateDemoSubscription()
-          if (!result.ok) setError(result.error)
-          return
-        }
-        setError('Pagamento Stripe não configurado. Contacta o suporte.')
+        await handleActivateWithoutStripe()
         return
       }
 
@@ -139,25 +140,16 @@ export function CheckoutView() {
           </div>
         ) : (
           <button type="button" className="btn btn--gold btn--block btn--lg" onClick={() => void handlePay()} disabled={busy}>
-            {busy ? 'A processar…' : stripeLink ? 'Pagar com Stripe' : demoEnabled ? `Activar ${plan.name} (demo)` : 'Pagamento indisponível'}
+            {busy ? 'A processar…' : stripeLink ? 'Pagar com Stripe' : `Activar ${plan.name}`}
           </button>
         )}
 
-        {demoEnabled && cloudMode && stripeLink ? (
-          <button
-            type="button"
-            className="btn btn--ghost btn--block"
-            disabled={busy}
-            onClick={() => void activateDemoSubscription().then((r) => !r.ok && setError(r.error))}
-          >
-            Activar em modo demo (dev)
-          </button>
-        ) : null}
-
         <p className="checkout-note muted">
-          {cloudMode
+          {stripeLink
             ? 'Pagamento seguro via Stripe. Cancela quando quiseres no portal de billing.'
-            : 'Modo local: a subscrição fica guardada neste dispositivo.'}
+            : cloudMode
+              ? 'Sem Stripe configurado — activação directa (modo demo activo no Supabase).'
+              : 'Modo local: a subscrição fica guardada neste dispositivo.'}
         </p>
 
         <button type="button" className="btn btn--ghost btn--block" onClick={logout}>

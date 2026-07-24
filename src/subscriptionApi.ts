@@ -149,9 +149,6 @@ export async function activateCoachSubscription(
   cloudMode: boolean,
 ): Promise<CoachSubscription> {
   if (cloudMode) {
-    if (!isDemoSubscriptionEnabled()) {
-      throw new Error('Ativação manual desactivada. Completa o pagamento via Stripe.')
-    }
     return cloudActivateDemoSubscription(planId)
   }
   return activateLocalSubscription(coachId, planId)
