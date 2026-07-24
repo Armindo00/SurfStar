@@ -7,10 +7,26 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const sourcePath = join(root, 'public', 'logo-source.png')
 const logoPath = join(root, 'public', 'logo.png')
 
-/** Navy sampled from the logo artwork */
-const NAVY = { r: 8, g: 25, b: 53 }
+async function sampleNavyFromImage(input) {
+  const { data, info } = await sharp(input).raw().toBuffer({ resolveWithObject: true })
+  const cx = Math.floor(info.width / 2)
 
-async function removeWhitePadding(input) {
+  for (let y = 0; y < info.height; y += 1) {
+    for (const x of [cx, 48, info.width - 49]) {
+      const i = (y * info.width + x) * info.channels
+      const r = data[i] ?? 255
+      const g = data[i + 1] ?? 255
+      const b = data[i + 2] ?? 255
+      if (r < 235 || g < 235 || b < 235) {
+        return { r, g, b }
+      }
+    }
+  }
+
+  return { r: 6, g: 18, b: 33 }
+}
+
+async function removeWhitePadding(input, navy) {
   const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
 
   for (let i = 0; i < data.length; i += 4) {
@@ -18,9 +34,9 @@ async function removeWhitePadding(input) {
     const g = data[i + 1]
     const b = data[i + 2]
     if (r >= 235 && g >= 235 && b >= 235) {
-      data[i] = NAVY.r
-      data[i + 1] = NAVY.g
-      data[i + 2] = NAVY.b
+      data[i] = navy.r
+      data[i + 1] = navy.g
+      data[i + 2] = navy.b
       data[i + 3] = 255
     }
   }
@@ -37,9 +53,13 @@ try {
   writeFileSync(sourcePath, readFileSync(logoPath))
 }
 
-const cleanedLogo = await removeWhitePadding(readFileSync(sourcePath))
+const sourceBuffer = readFileSync(sourcePath)
+const navy = await sampleNavyFromImage(sourceBuffer)
+console.log(`Using navy fill rgb(${navy.r}, ${navy.g}, ${navy.b})`)
+
+const cleanedLogo = await removeWhitePadding(sourceBuffer, navy)
 await cleanedLogo.toFile(logoPath)
-console.log('Prepared public/logo.png (white padding replaced with navy)')
+console.log('Prepared public/logo.png')
 
 const logoBuffer = await cleanedLogo.toBuffer()
 
