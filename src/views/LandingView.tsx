@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { PackCard } from '../components/PackCard'
 import { AppLogo } from '../components/AppLogo'
 import { SUBSCRIPTION_PLANS } from '../plans'
+import { scrollToPricingSection } from '../routing'
 import { useApp } from '../AppContext'
 
 const TRUST_STATS = [
@@ -118,8 +120,14 @@ export function LandingView() {
     openAthleteSignIn,
     openAthleteSignUp,
     openCoachSignIn,
-    openCoachSignUp,
+    openCoachPlanSelection,
   } = useApp()
+
+  useEffect(() => {
+    if (window.location.hash === '#packs') {
+      requestAnimationFrame(() => scrollToPricingSection())
+    }
+  }, [])
 
   return (
     <div className="landing-page">
@@ -165,7 +173,7 @@ export function LandingView() {
             <div className="landing-hero__create">
               <p className="landing-hero__create-label">Create account</p>
               <div className="landing-hero__cta">
-                <button type="button" className="btn btn--gold btn--lg" onClick={openCoachSignUp}>
+                <button type="button" className="btn btn--gold btn--lg" onClick={openCoachPlanSelection}>
                   I am a coach
                 </button>
                 <button type="button" className="btn btn--outline btn--lg" onClick={openAthleteSignUp}>

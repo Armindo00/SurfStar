@@ -36,6 +36,18 @@ export function isForgotPasswordPath(pathname: string): boolean {
   return pathname === '/forgot-password'
 }
 
+export function navigateToLandingPricing(replace = false) {
+  if (replace) {
+    window.history.replaceState({}, '', '/#packs')
+  } else {
+    window.history.pushState({}, '', '/#packs')
+  }
+}
+
+export function scrollToPricingSection(behavior: ScrollBehavior = 'smooth') {
+  document.getElementById('packs')?.scrollIntoView({ behavior, block: 'start' })
+}
+
 export function navigateToPublicView(view: PublicView, replace = false) {
   const path = pathForPublicView(view)
   if (replace) {

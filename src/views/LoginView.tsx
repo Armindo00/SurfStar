@@ -51,7 +51,7 @@ export function LoginView() {
     openLanding,
     openForgotPassword,
     openCoachSignIn,
-    openCoachSignUp,
+    openCoachPlanSelection,
     openAthleteSignIn,
     openAthleteSignUp,
   } = useApp()
@@ -74,7 +74,7 @@ export function LoginView() {
     setError('')
     setName('')
     setPasswordConfirm('')
-    if (screen === 'coach-sign-in') openCoachSignUp()
+    if (screen === 'coach-sign-in') openCoachPlanSelection()
     else if (screen === 'coach-sign-up') openCoachSignIn()
     else if (screen === 'athlete-sign-in') openAthleteSignUp()
     else openAthleteSignIn()

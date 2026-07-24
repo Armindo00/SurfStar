@@ -96,8 +96,10 @@ import {
 } from './subscriptionApi'
 import { useToast } from './components/ToastProvider'
 import {
+  navigateToLandingPricing,
   navigateToPublicView,
   publicViewFromPath,
+  scrollToPricingSection,
 } from './routing'
 import {
   clearResumeState,
@@ -126,6 +128,7 @@ type AppContextValue = {
   selectPlan: (planId: PlanId, options?: { goToLogin?: boolean }) => void
   openLanding: () => void
   openCoachSignIn: () => void
+  openCoachPlanSelection: () => void
   openCoachSignUp: () => void
   openAthleteSignIn: () => void
   openAthleteSignUp: () => void
@@ -525,6 +528,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const openCoachSignIn = useCallback(() => {
     setPublicView('coach-sign-in')
   }, [setPublicView])
+
+  const openCoachPlanSelection = useCallback(() => {
+    const onLanding = publicView === 'landing'
+    setPublicViewState('landing')
+    navigateToLandingPricing(!onLanding)
+    if (onLanding) {
+      requestAnimationFrame(() => scrollToPricingSection())
+    }
+  }, [publicView])
 
   const openCoachSignUp = useCallback(() => {
     setPublicView('coach-sign-up')
@@ -1964,6 +1976,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       selectPlan,
       openLanding,
       openCoachSignIn,
+      openCoachPlanSelection,
       openCoachSignUp,
       openAthleteSignIn,
       openAthleteSignUp,
@@ -2065,6 +2078,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       selectPlan,
       openLanding,
       openCoachSignIn,
+      openCoachPlanSelection,
       openCoachSignUp,
       openAthleteSignIn,
       openAthleteSignUp,
