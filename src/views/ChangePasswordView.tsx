@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { MIN_PASSWORD_LENGTH, validatePasswordStrength } from '../passwordUtils'
 import { AppLogo } from '../components/AppLogo'
+import { InstallAppBanner } from '../components/InstallAppBanner'
 import { useApp } from '../AppContext'
 
 export function ChangePasswordView() {
@@ -35,6 +36,7 @@ export function ChangePasswordView() {
 
   return (
     <div className="login-page">
+      <InstallAppBanner />
       <div className="login-card">
         <div className="login-brand">
           <AppLogo size="lg" />

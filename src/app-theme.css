@@ -419,3 +419,66 @@ body {
 .login-brand p {
   color: var(--landing-muted) !important;
 }
+
+.install-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 0.75rem 1rem 0;
+  background: linear-gradient(180deg, rgba(5, 11, 24, 0.98), rgba(5, 11, 24, 0.85));
+}
+
+.install-banner__inner {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(201, 169, 98, 0.35);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.install-banner__eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--landing-gold);
+}
+
+.install-banner__title {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+  color: var(--landing-text);
+}
+
+.install-banner__text {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--landing-muted);
+  line-height: 1.5;
+}
+
+.install-banner__steps {
+  margin: 0 0 0.75rem;
+  padding-left: 1.15rem;
+  font-size: 0.86rem;
+  color: var(--landing-muted);
+  line-height: 1.55;
+}
+
+.install-banner__steps strong {
+  color: var(--landing-gold-light);
+}
+
+.install-banner__actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .install-banner {
+    display: none;
+  }
+}

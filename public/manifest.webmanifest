@@ -2,7 +2,7 @@
   "id": "/",
   "name": "SurfStar",
   "short_name": "SurfStar",
-  "description": "Estatísticas de surf para treinadores e atletas",
+  "description": "Surf statistics for coaches and athletes — sessions, evolution, heats and team analytics.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

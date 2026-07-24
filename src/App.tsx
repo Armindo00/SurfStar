@@ -16,6 +16,7 @@ import { LoginView } from './views/LoginView'
 import { ManageAthletes } from './views/ManageAthletes'
 import { ManageSpots } from './views/ManageSpots'
 import { EndSessionSheet } from './components/EndSessionSheet'
+import { InstallAppBanner } from './components/InstallAppBanner'
 import { SavedWavesView } from './views/SavedWavesView'
 import { SelectAthletes } from './views/SelectAthletes'
 import { SeaAnalysisSessionView } from './views/SeaAnalysisSessionView'
@@ -79,11 +80,17 @@ function Shell() {
   }
 
   if (auth.role === 'treinador' && !hasActiveSubscription) {
-    return <CheckoutView />
+    return (
+      <>
+        <InstallAppBanner />
+        <CheckoutView />
+      </>
+    )
   }
 
   return (
     <div className="app-shell">
+      <InstallAppBanner />
       <div className="app-shell__inner">
         <AppHeader />
         <main className="app-main">
