@@ -17,13 +17,17 @@ type ProfileRow = {
   email: string
   coach_id: string | null
   athlete_id: string | null
+  must_change_password?: boolean
 }
 
-function authSessionFromAuthUser(user: {
-  id: string
-  email?: string | null
-  user_metadata?: Record<string, unknown>
-}): AuthSession {
+function authSessionFromAuthUser(
+  user: {
+    id: string
+    email?: string | null
+    user_metadata?: Record<string, unknown>
+  },
+  options?: { mustChangePassword?: boolean },
+): AuthSession {
   const meta = user.user_metadata ?? {}
   if (meta.role === 'atleta' && meta.coach_id && meta.athlete_id) {
     return {
@@ -32,6 +36,7 @@ function authSessionFromAuthUser(user: {
       athleteId: String(meta.athlete_id),
       name: String(meta.name || user.email?.split('@')[0] || 'Athlete'),
       email: (user.email || '').toLowerCase(),
+      mustChangePassword: options?.mustChangePassword ?? false,
     }
   }
   return {
@@ -52,7 +57,7 @@ async function fetchProfileRow(userId: string): Promise<ProfileRow | null> {
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('id, role, name, email, coach_id, athlete_id')
+    .select('id, role, name, email, coach_id, athlete_id, must_change_password')
     .eq('id', userId)
     .maybeSingle()
 
@@ -64,7 +69,9 @@ export async function cloudGetSession(): Promise<AuthSession | null> {
   const supabase = getSupabase()
   const { data } = await supabase.auth.getSession()
   if (!data.session?.user) return null
-  return authSessionFromAuthUser(data.session.user)
+  const built = await buildAuthSessionFromUser(data.session.user)
+  if ('error' in built) return null
+  return built
 }
 
 export async function cloudOnAuthChange(
@@ -73,11 +80,29 @@ export async function cloudOnAuthChange(
   const supabase = getSupabase()
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
     setTimeout(() => {
-      if (!session?.user) {
-        cb(null, event)
-        return
-      }
-      cb(authSessionFromAuthUser(session.user), event)
+      void (async () => {
+        if (!session?.user) {
+          cb(null, event)
+          return
+        }
+        if (event === 'TOKEN_REFRESHED') {
+          const profile = await fetchProfileRow(session.user.id)
+          cb(
+            authSessionFromAuthUser(session.user, {
+              mustChangePassword: profile?.must_change_password ?? false,
+            }),
+            event,
+          )
+          return
+        }
+        const built = await buildAuthSessionFromUser(session.user)
+        if ('error' in built) {
+          await supabase.auth.signOut()
+          cb(null, event)
+          return
+        }
+        cb(built, event)
+      })()
     }, 0)
   })
   return () => data.subscription.unsubscribe()
@@ -132,6 +157,38 @@ async function buildAuthSessionFromUser(user: {
   if (!profileResult.ok) {
     return { error: profileResult.error ?? 'Could not load your profile.' }
   }
+
+  const meta = user.user_metadata ?? {}
+  if (meta.role === 'atleta' && meta.coach_id && meta.athlete_id) {
+    const athleteId = String(meta.athlete_id)
+    const coachId = String(meta.coach_id)
+
+    const supabase = getSupabase()
+    const { data: athleteRow, error: athleteError } = await supabase
+      .from('athletes')
+      .select('blocked')
+      .eq('id', athleteId)
+      .eq('coach_id', coachId)
+      .maybeSingle()
+
+    if (athleteError || !athleteRow) {
+      await supabase.auth.signOut()
+      return { error: 'Your athlete profile is not set up. Ask your coach to recreate your account.' }
+    }
+
+    if (athleteRow.blocked) {
+      await supabase.auth.signOut()
+      return {
+        error: 'Your account is blocked. Contact your coach if you think this is a mistake.',
+      }
+    }
+
+    const profile = await fetchProfileRow(user.id)
+    return authSessionFromAuthUser(user, {
+      mustChangePassword: profile?.must_change_password ?? false,
+    })
+  }
+
   return authSessionFromAuthUser(user)
 }
 
@@ -232,12 +289,14 @@ function mapAthleteRow(row: {
   coach_id: string
   name: string
   share_settings?: Partial<Athlete['shareSettings']> | null
+  blocked?: boolean | null
 }): Athlete {
   return {
     id: row.id,
     coachId: row.coach_id,
     name: row.name,
     shareSettings: normalizeAthleteShareSettings(row.share_settings),
+    blocked: row.blocked ?? false,
   }
 }
 
@@ -245,7 +304,7 @@ export async function cloudFetchAthletes(coachId: string): Promise<Athlete[]> {
   const supabase = getSupabase()
   let { data, error } = await supabase
     .from('athletes')
-    .select('id, coach_id, name, share_settings')
+    .select('id, coach_id, name, share_settings, blocked')
     .eq('coach_id', coachId)
     .order('created_at', { ascending: true })
 
@@ -270,7 +329,7 @@ export async function cloudFetchAthleteById(
   const supabase = getSupabase()
   let { data, error } = await supabase
     .from('athletes')
-    .select('id, coach_id, name, share_settings')
+    .select('id, coach_id, name, share_settings, blocked')
     .eq('coach_id', coachId)
     .eq('id', athleteId)
     .maybeSingle()
@@ -291,13 +350,32 @@ export async function cloudFetchAthleteById(
 }
 
 export async function cloudFetchStudents(coachId: string): Promise<StudentAccount[]> {
-  const { data, error } = await getSupabase()
+  const supabase = getSupabase()
+  const { data, error } = await supabase
     .from('profiles')
-    .select('id, coach_id, athlete_id, name, email')
+    .select('id, coach_id, athlete_id, name, email, must_change_password')
     .eq('coach_id', coachId)
     .eq('role', 'atleta')
 
-  if (error || !data) return []
+  if (error) {
+    const fallback = await supabase
+      .from('profiles')
+      .select('id, coach_id, athlete_id, name, email')
+      .eq('coach_id', coachId)
+      .eq('role', 'atleta')
+    if (fallback.error || !fallback.data) return []
+    return (fallback.data as ProfileRow[]).map((p) => ({
+      id: p.id,
+      coachId: p.coach_id!,
+      athleteId: p.athlete_id!,
+      name: p.name,
+      email: p.email,
+      passwordHash: '',
+      mustChangePassword: false,
+    }))
+  }
+
+  if (!data) return []
   return (data as ProfileRow[]).map((p) => ({
     id: p.id,
     coachId: p.coach_id!,
@@ -305,6 +383,7 @@ export async function cloudFetchStudents(coachId: string): Promise<StudentAccoun
     name: p.name,
     email: p.email,
     passwordHash: '',
+    mustChangePassword: p.must_change_password ?? false,
   }))
 }
 
@@ -378,6 +457,7 @@ export async function cloudSaveAthletes(coachId: string, athletes: Athlete[]): P
       coach_id: coachId,
       name: a.name,
       share_settings: normalizeAthleteShareSettings(a.shareSettings),
+      blocked: a.blocked ?? false,
     })),
   )
 }
@@ -453,6 +533,7 @@ export async function cloudAddAthleteWithLogin(
     id: athleteId,
     coach_id: activeCoachId,
     name: trimmedName,
+    blocked: false,
   })
   if (athleteError) {
     return { ok: false, error: friendlyAthleteSaveError(athleteError.message) }
@@ -512,4 +593,90 @@ export async function cloudLoadAthleteData(coachId: string, athleteId: string) {
     ),
   ])
   return { athlete, spots, trainingSessions }
+}
+
+export async function cloudSetAthleteBlocked(
+  coachId: string,
+  athleteId: string,
+  blocked: boolean,
+): Promise<{ ok: true; athletes: Athlete[] } | { ok: false; error: string }> {
+  const supabase = getSupabase()
+  const { error } = await supabase
+    .from('athletes')
+    .update({ blocked })
+    .eq('id', athleteId)
+    .eq('coach_id', coachId)
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  const athletes = await cloudFetchAthletes(coachId)
+  return { ok: true, athletes }
+}
+
+export async function cloudDeleteAthlete(
+  coachId: string,
+  athleteId: string,
+): Promise<{ ok: true; athletes: Athlete[]; students: StudentAccount[] } | { ok: false; error: string }> {
+  const supabase = getSupabase()
+  const { data, error } = await supabase.rpc('coach_delete_athlete', {
+    p_athlete_id: athleteId,
+  })
+
+  if (error) {
+    const msg = error.message.toLowerCase()
+    if (msg.includes('coach_delete_athlete') || msg.includes('function')) {
+      return {
+        ok: false,
+        error:
+          'Delete is not set up in the cloud yet. Run supabase/add-athlete-management.sql in Supabase SQL Editor.',
+      }
+    }
+    return { ok: false, error: error.message }
+  }
+
+  const result = data as { ok?: boolean; error?: string } | null
+  if (!result?.ok) {
+    return { ok: false, error: result?.error ?? 'Could not delete athlete.' }
+  }
+
+  const refreshed = await cloudLoadCoachData(coachId)
+  return { ok: true, athletes: refreshed.athletes, students: refreshed.students }
+}
+
+export async function cloudChangePassword(
+  newPassword: string,
+): Promise<{ ok: true; session: AuthSession } | { ok: false; error: string }> {
+  const pwdError = validatePasswordStrength(newPassword)
+  if (pwdError) return { ok: false, error: pwdError }
+
+  const supabase = getSupabase()
+  const { data: userData, error: userError } = await supabase.auth.getUser()
+  if (userError || !userData.user) {
+    return { ok: false, error: 'Session expired. Sign in again.' }
+  }
+
+  const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
+  if (updateError) {
+    return { ok: false, error: updateError.message }
+  }
+
+  const { error: clearError } = await supabase.rpc('clear_must_change_password')
+  if (clearError) {
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ must_change_password: false })
+      .eq('id', userData.user.id)
+    if (profileError) {
+      return { ok: false, error: profileError.message }
+    }
+  }
+
+  const session = authSessionFromAuthUser(userData.user, { mustChangePassword: false })
+  if (session.role !== 'atleta') {
+    return { ok: false, error: 'Only athletes can use this screen.' }
+  }
+
+  return { ok: true, session }
 }

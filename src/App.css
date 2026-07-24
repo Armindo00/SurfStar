@@ -2851,6 +2851,45 @@ body {
   color: var(--ss-muted);
 }
 
+.athlete-manage-list__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge--danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge--warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.athlete-manage-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.85rem 0;
+}
+
+.athlete-manage-actions__hint {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
 .athlete-share-panel {
   padding: 0 1rem 1rem;
   border-top: 1px solid var(--ss-border);

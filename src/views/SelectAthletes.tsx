@@ -4,7 +4,7 @@ import { MAX_HEAT_ATHLETES } from '../heatUtils'
 
 export function SelectAthletes() {
   const {
-    coachAthletes,
+    activeCoachAthletes,
     draft,
     addDraftAthlete,
     removeDraftAthlete,
@@ -51,7 +51,10 @@ export function SelectAthletes() {
         </p>
 
         <div className="athlete-grid">
-          {coachAthletes.map((a) => {
+          {activeCoachAthletes.length === 0 ? (
+            <p className="muted">No active athletes. Add athletes or unblock someone in Athletes & logins.</p>
+          ) : null}
+          {activeCoachAthletes.map((a) => {
             const selected = draft.athleteIds.includes(a.id)
             return (
               <button

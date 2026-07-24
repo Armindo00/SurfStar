@@ -187,7 +187,7 @@ export function LoginView() {
           </p>
           <p>
             <strong>Athlete:</strong> your coach adds you under <em>Add Athletes</em> with email and
-            password, then you sign in on this tab.
+            a temporary password. On first sign-in you must choose a new password.
           </p>
           <p className="muted login-demo__note">
             {cloudMode

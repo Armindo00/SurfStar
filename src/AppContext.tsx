@@ -11,6 +11,8 @@ import { authStore, store } from './store'
 import { isCloudEnabled } from './config'
 import {
   cloudAddAthleteWithLogin,
+  cloudChangePassword,
+  cloudDeleteAthlete,
   cloudGetSession,
   cloudLoadAthleteData,
   cloudLoadCoachData,
@@ -22,6 +24,7 @@ import {
   cloudSaveConditions,
   cloudSaveSpots,
   cloudSaveTrainingSessions,
+  cloudSetAthleteBlocked,
 } from './cloudApi'
 import { waveHasLoggedAttempts } from './sessionStats'
 import { filterCoachCompletedSessions } from './sessionHistoryUtils'
@@ -57,6 +60,7 @@ import type {
   WaveSide,
 } from './types'
 import { DEFAULT_ATHLETE_SHARE_SETTINGS, normalizeAthleteShareSettings } from './types'
+import { canDeleteAthlete as athleteCanBeDeleted } from './athleteManagementUtils'
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
 
 type DraftSession = {
@@ -93,6 +97,11 @@ type AppContextValue = {
     password: string,
   ) => Promise<{ ok: true } | { ok: false; error: string }>
   updateAthleteShareSettings: (athleteId: string, shareSettings: AthleteShareSettings) => void
+  setAthleteBlocked: (athleteId: string, blocked: boolean) => Promise<{ ok: boolean; error?: string }>
+  deleteAthlete: (athleteId: string) => Promise<{ ok: boolean; error?: string }>
+  canDeleteAthlete: (athleteId: string) => boolean
+  activeCoachAthletes: Athlete[]
+  changePassword: (newPassword: string) => Promise<{ ok: true } | { ok: false; error: string }>
   addSpot: (name: string) => void
   updateSpotName: (spotId: string, name: string) => void
   removeSpot: (spotId: string) => boolean
@@ -180,6 +189,10 @@ const emptyDraft = (): DraftSession => ({
   athleteIds: [],
   heatDurationMinutes: 15,
 })
+
+function viewForAuth(session: AuthSession): AppView {
+  return session.role === 'atleta' ? 'athlete-portal' : 'coach-home'
+}
 
 function viewForMode(mode: TrainingMode): AppView {
   switch (mode) {
@@ -286,6 +299,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [students, coachId],
   )
 
+  const activeCoachAthletes = useMemo(
+    () => coachAthletes.filter((a) => !a.blocked),
+    [coachAthletes],
+  )
+
   const syncSessionsToCloud = useCallback(
     (next: TrainingSession[], session: AuthSession | null = auth) => {
       if (cloudMode && session?.role === 'treinador') {
@@ -336,7 +354,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               void applySessionData(next).then(() => {
                 if (!mounted) return
                 if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
-                  setView(next.role === 'atleta' ? 'athlete-portal' : 'coach-home')
+                  setView(viewForAuth(next))
                 }
               })
             }, 0)
@@ -360,7 +378,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setAuth(session)
           void applySessionData(session).then(() => {
             if (mounted) {
-              setView(session.role === 'atleta' ? 'athlete-portal' : 'coach-home')
+              setView(viewForAuth(session))
             }
           })
         }
@@ -427,7 +445,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const result = await cloudLogin(email, password)
         if (!result.ok) return result
         setAuth(result.session)
-        setView('athlete-portal')
+        setView(viewForAuth(result.session))
         void applyCloudSessionData(result.session).catch((err) => {
           console.error('Failed to load athlete data after sign in', err)
         })
@@ -441,6 +459,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const student = all[index]!
     if (!(await studentPasswordMatches(student, password))) {
       return { ok: false, error: 'Incorrect email or password.' }
+    }
+
+    const athlete = store.getAthletes().find((a) => a.id === student.athleteId)
+    if (athlete?.blocked) {
+      return {
+        ok: false,
+        error: 'Your account is blocked. Contact your coach if you think this is a mistake.',
+      }
     }
 
     let nextStudents = all
@@ -458,10 +484,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       athleteId: current.athleteId,
       name: current.name,
       email: current.email,
+      mustChangePassword: current.mustChangePassword ?? false,
     }
     authStore.setSession(session)
     setAuth(session)
-    setView('athlete-portal')
+    setView(viewForAuth(session))
     return { ok: true }
   },
     [applyCloudSessionData, cloudMode],
@@ -605,6 +632,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         coachId: auth.coachId,
         name: trimmedName,
         shareSettings: DEFAULT_ATHLETE_SHARE_SETTINGS,
+        blocked: false,
       }
       const student: StudentAccount = {
         id: crypto.randomUUID(),
@@ -613,6 +641,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         name: trimmedName,
         email: normalized,
         passwordHash,
+        mustChangePassword: true,
       }
       const nextAthletes = [...athletes, athlete]
       const nextStudents = [...students, student]
@@ -639,6 +668,108 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     },
     [athletes, auth, cloudMode],
+  )
+
+  const setAthleteBlocked = useCallback(
+    async (athleteId: string, blocked: boolean) => {
+      if (auth?.role !== 'treinador') {
+        return { ok: false, error: 'Sign in as coach first.' }
+      }
+
+      if (cloudMode) {
+        const result = await cloudSetAthleteBlocked(auth.coachId, athleteId, blocked)
+        if (!result.ok) return result
+        setAthletes(result.athletes)
+        return { ok: true }
+      }
+
+      const next = athletes.map((a) => (a.id === athleteId ? { ...a, blocked } : a))
+      setAthletes(next)
+      store.saveAthletes(next)
+      return { ok: true }
+    },
+    [athletes, auth, cloudMode],
+  )
+
+  const deleteAthlete = useCallback(
+    async (athleteId: string) => {
+      if (auth?.role !== 'treinador') {
+        return { ok: false, error: 'Sign in as coach first.' }
+      }
+
+      if (!athleteCanBeDeleted(athleteId, trainingSessions)) {
+        return {
+          ok: false,
+          error:
+            'This athlete has training sessions and cannot be deleted. Use Block instead.',
+        }
+      }
+
+      if (cloudMode) {
+        const result = await cloudDeleteAthlete(auth.coachId, athleteId)
+        if (!result.ok) return result
+        setAthletes(result.athletes)
+        setStudents(result.students)
+        return { ok: true }
+      }
+
+      const nextAthletes = athletes.filter((a) => a.id !== athleteId)
+      const nextStudents = students.filter((s) => s.athleteId !== athleteId)
+      setAthletes(nextAthletes)
+      setStudents(nextStudents)
+      store.saveAthletes(nextAthletes)
+      store.saveStudents(nextStudents)
+      return { ok: true }
+    },
+    [athletes, auth, cloudMode, students, trainingSessions],
+  )
+
+  const canDeleteAthleteById = useCallback(
+    (athleteId: string) => athleteCanBeDeleted(athleteId, trainingSessions),
+    [trainingSessions],
+  )
+
+  const changePassword = useCallback(
+    async (newPassword: string) => {
+      if (auth?.role !== 'atleta') {
+        return { ok: false as const, error: 'Sign in as athlete first.' }
+      }
+
+      const pwdError = validatePasswordStrength(newPassword)
+      if (pwdError) return { ok: false as const, error: pwdError }
+
+      if (cloudMode) {
+        const result = await cloudChangePassword(newPassword)
+        if (!result.ok) return result
+        setAuth(result.session)
+        authStore.setSession(result.session)
+        setView('athlete-portal')
+        return { ok: true as const }
+      }
+
+      const all = store.getStudents()
+      const index = all.findIndex((s) => s.athleteId === auth.athleteId)
+      if (index < 0) {
+        return { ok: false as const, error: 'Account not found.' }
+      }
+
+      const passwordHash = await hashPassword(newPassword)
+      const updated: StudentAccount = {
+        ...all[index]!,
+        passwordHash,
+        mustChangePassword: false,
+      }
+      const nextStudents = all.map((s, i) => (i === index ? updated : s))
+      store.saveStudents(nextStudents)
+      setStudents(nextStudents)
+
+      const session: AuthSession = { ...auth, mustChangePassword: false }
+      setAuth(session)
+      authStore.setSession(session)
+      setView('athlete-portal')
+      return { ok: true as const }
+    },
+    [auth, cloudMode],
   )
 
   const addSpot = useCallback(
@@ -1313,6 +1444,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addAthlete,
       addAthleteWithLogin,
       updateAthleteShareSettings,
+      setAthleteBlocked,
+      deleteAthlete,
+      canDeleteAthlete: canDeleteAthleteById,
+      activeCoachAthletes,
+      changePassword,
       addSpot,
       addCondition,
       updateSpotName,
@@ -1390,6 +1526,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addAthlete,
       addAthleteWithLogin,
       updateAthleteShareSettings,
+      setAthleteBlocked,
+      deleteAthlete,
+      canDeleteAthleteById,
+      activeCoachAthletes,
+      changePassword,
       addSpot,
       addCondition,
       updateSpotName,

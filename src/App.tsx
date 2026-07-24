@@ -1,4 +1,5 @@
 import { AppProvider, useApp } from './AppContext'
+import { ChangePasswordView } from './views/ChangePasswordView'
 import { AthletePortal } from './views/AthletePortal'
 import { CoachHome } from './views/CoachHome'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
@@ -59,6 +60,10 @@ function Shell() {
 
   if (!auth) {
     return <LoginView />
+  }
+
+  if (auth.role === 'atleta' && auth.mustChangePassword) {
+    return <ChangePasswordView />
   }
 
   return (

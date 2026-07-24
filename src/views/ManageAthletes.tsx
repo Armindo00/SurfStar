@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { useApp } from '../AppContext'
+import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { ScreenHeader } from '../components/ScreenHeader'
 import type { AthleteShareSettings } from '../types'
 import { DEFAULT_ATHLETE_SHARE_SETTINGS, normalizeAthleteShareSettings } from '../types'
@@ -29,8 +30,16 @@ const SHARE_OPTIONS: { key: keyof AthleteShareSettings; label: string; hint: str
 ]
 
 export function ManageAthletes() {
-  const { coachAthletes, coachStudents, addAthleteWithLogin, updateAthleteShareSettings, setView } =
-    useApp()
+  const {
+    coachAthletes,
+    coachStudents,
+    addAthleteWithLogin,
+    updateAthleteShareSettings,
+    setAthleteBlocked,
+    deleteAthlete,
+    canDeleteAthlete,
+    setView,
+  } = useApp()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -38,8 +47,11 @@ export function ManageAthletes() {
   const [success, setSuccess] = useState('')
   const [busy, setBusy] = useState(false)
   const [expandedAthleteId, setExpandedAthleteId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState('')
+  const [actionBusyId, setActionBusyId] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
 
-  const studentEmailByAthlete = new Map(coachStudents.map((s) => [s.athleteId, s.email]))
+  const studentByAthlete = new Map(coachStudents.map((s) => [s.athleteId, s]))
 
   const submit = async () => {
     setError('')
@@ -54,7 +66,9 @@ export function ManageAthletes() {
       setName('')
       setEmail('')
       setPassword('')
-      setSuccess('Athlete saved. They can sign in on the Athlete tab with this email and password.')
+      setSuccess(
+        'Athlete saved. Share the email and temporary password — on first sign-in they must choose a new password.',
+      )
     } finally {
       setBusy(false)
     }
@@ -67,12 +81,46 @@ export function ManageAthletes() {
     updateAthleteShareSettings(athleteId, { ...current, [key]: enabled })
   }
 
+  const toggleBlocked = async (athleteId: string, blocked: boolean) => {
+    setActionError('')
+    setActionBusyId(athleteId)
+    try {
+      const result = await setAthleteBlocked(athleteId, blocked)
+      if (!result.ok) {
+        setActionError(result.error ?? 'Could not update athlete.')
+      }
+    } finally {
+      setActionBusyId(null)
+    }
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    setActionError('')
+    setActionBusyId(deleteTarget.id)
+    try {
+      const result = await deleteAthlete(deleteTarget.id)
+      if (!result.ok) {
+        setActionError(result.error ?? 'Could not delete athlete.')
+        return
+      }
+      if (expandedAthleteId === deleteTarget.id) {
+        setExpandedAthleteId(null)
+      }
+      setDeleteTarget(null)
+    } finally {
+      setActionBusyId(null)
+    }
+  }
+
   return (
     <div className="ss-flow">
       <ScreenHeader title="Athletes & logins" onBack={() => setView('coach-home')} />
       <div className="ss-card">
         <p className="muted stats-panel__sub">
-          Each athlete gets an email and password to sign in on the <strong>Athlete</strong> tab.
+          Each athlete gets an email and a temporary password. On first login they must set their own
+          password. Use <strong>Block</strong> to suspend access; use <strong>Delete</strong> only if
+          you added someone by mistake (no training history).
         </p>
 
         <div className="athlete-login-form">
@@ -95,7 +143,7 @@ export function ManageAthletes() {
             />
           </label>
           <label className="field field--pro">
-            <span>Password (min. {MIN_PASSWORD_LENGTH})</span>
+            <span>Temporary password (min. {MIN_PASSWORD_LENGTH})</span>
             <input
               type="password"
               autoComplete="new-password"
@@ -115,6 +163,8 @@ export function ManageAthletes() {
           </button>
         </div>
 
+        {actionError ? <p className="login-error">{actionError}</p> : null}
+
         <ul className="ss-athlete-list ss-athlete-list--plain athlete-manage-list">
           {coachAthletes.length === 0 ? (
             <li className="muted">No athletes yet.</li>
@@ -123,7 +173,10 @@ export function ManageAthletes() {
               const shareSettings = normalizeAthleteShareSettings(
                 a.shareSettings ?? DEFAULT_ATHLETE_SHARE_SETTINGS,
               )
+              const student = studentByAthlete.get(a.id)
               const expanded = expandedAthleteId === a.id
+              const deletable = canDeleteAthlete(a.id)
+              const busyRow = actionBusyId === a.id
 
               return (
                 <li key={a.id} className="athlete-manage-list__item">
@@ -134,13 +187,48 @@ export function ManageAthletes() {
                   >
                     <span>
                       <strong>{a.name}</strong>
-                      <small>{studentEmailByAthlete.get(a.id) ?? 'No login'}</small>
+                      <small>{student?.email ?? 'No login'}</small>
+                      <span className="athlete-manage-list__badges">
+                        {a.blocked ? <span className="badge badge--danger">Blocked</span> : null}
+                        {student?.mustChangePassword ? (
+                          <span className="badge badge--warn">Pending first login</span>
+                        ) : null}
+                      </span>
                     </span>
                     <span className="athlete-manage-list__toggle">{expanded ? '−' : '+'}</span>
                   </button>
 
                   {expanded ? (
                     <div className="athlete-share-panel">
+                      <div className="athlete-manage-actions">
+                        <button
+                          type="button"
+                          className={a.blocked ? 'btn btn--primary btn--small' : 'btn btn--ghost btn--small'}
+                          disabled={busyRow}
+                          onClick={() => toggleBlocked(a.id, !a.blocked)}
+                        >
+                          {busyRow
+                            ? 'Saving…'
+                            : a.blocked
+                              ? 'Unblock athlete'
+                              : 'Block athlete'}
+                        </button>
+                        {deletable ? (
+                          <button
+                            type="button"
+                            className="btn btn--danger btn--small"
+                            disabled={busyRow}
+                            onClick={() => setDeleteTarget({ id: a.id, name: a.name })}
+                          >
+                            Delete (added by mistake)
+                          </button>
+                        ) : (
+                          <p className="muted athlete-manage-actions__hint">
+                            Cannot delete — this athlete has training sessions. Use Block instead.
+                          </p>
+                        )}
+                      </div>
+
                       <p className="athlete-share-panel__intro">
                         Choose what this athlete can see beyond the general dashboard (waves,
                         trainings, heat wins, potential wave split, average heat score).
@@ -166,6 +254,15 @@ export function ManageAthletes() {
           )}
         </ul>
       </div>
+
+      {deleteTarget ? (
+        <ConfirmDeleteModal
+          title={`Delete ${deleteTarget.name}?`}
+          message="Only use this if you added the athlete by mistake. This removes their login and profile permanently. Athletes with training history cannot be deleted."
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      ) : null}
     </div>
   )
 }

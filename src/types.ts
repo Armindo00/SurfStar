@@ -54,6 +54,8 @@ export type Athlete = {
   coachId: string
   name: string
   shareSettings?: AthleteShareSettings
+  /** When true, athlete cannot sign in or be selected for sessions */
+  blocked?: boolean
 }
 
 export type CoachAccount = {
@@ -73,11 +75,20 @@ export type StudentAccount = {
   email: string
   passwordHash: string
   password?: string
+  /** True until athlete sets their own password on first login */
+  mustChangePassword?: boolean
 }
 
 export type AuthSession =
   | { role: 'treinador'; coachId: string; name: string; email: string }
-  | { role: 'atleta'; coachId: string; athleteId: string; name: string; email: string }
+  | {
+      role: 'atleta'
+      coachId: string
+      athleteId: string
+      name: string
+      email: string
+      mustChangePassword?: boolean
+    }
 
 export type SurfSpot = {
   id: string

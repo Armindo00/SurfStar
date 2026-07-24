@@ -10,6 +10,7 @@ create table if not exists public.profiles (
   email text not null,
   coach_id uuid references public.profiles (id) on delete cascade,
   athlete_id uuid,
+  must_change_password boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -18,6 +19,7 @@ create table if not exists public.athletes (
   coach_id uuid not null references public.profiles (id) on delete cascade,
   name text not null,
   share_settings jsonb not null default '{}'::jsonb,
+  blocked boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -139,15 +141,20 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_role text;
 begin
-  insert into public.profiles (id, role, name, email, coach_id, athlete_id)
+  v_role := coalesce(new.raw_user_meta_data->>'role', 'treinador');
+
+  insert into public.profiles (id, role, name, email, coach_id, athlete_id, must_change_password)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data->>'role', 'treinador'),
+    v_role,
     coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
     lower(new.email),
     nullif(new.raw_user_meta_data->>'coach_id', '')::uuid,
-    nullif(new.raw_user_meta_data->>'athlete_id', '')::uuid
+    nullif(new.raw_user_meta_data->>'athlete_id', '')::uuid,
+    v_role = 'atleta'
   );
   return new;
 end;
