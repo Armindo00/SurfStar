@@ -1,20 +1,39 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
+import { formatPlanPrice, getPlan } from '../plans'
 import { useApp } from '../AppContext'
 
-type LoginTab = 'treinador' | 'atleta'
 type AuthMode = 'sign-in' | 'register'
 
 export function LoginView() {
-  const { loginAsCoach, loginAsStudent, registerCoach, registerAthlete, cloudMode } = useApp()
-  const [tab, setTab] = useState<LoginTab>('treinador')
-  const [authMode, setAuthMode] = useState<AuthMode>('sign-in')
+  const {
+    loginAsCoach,
+    loginAsStudent,
+    registerCoach,
+    registerAthlete,
+    cloudMode,
+    loginTab,
+    selectedPlanId,
+    openLanding,
+  } = useApp()
+  const [tab, setTab] = useState(loginTab)
+  const [authMode, setAuthMode] = useState<AuthMode>(selectedPlanId ? 'register' : 'sign-in')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    setTab(loginTab)
+  }, [loginTab])
+
+  useEffect(() => {
+    if (selectedPlanId && tab === 'treinador') {
+      setAuthMode('register')
+    }
+  }, [selectedPlanId, tab])
 
   const resetRegister = () => {
     setName('')
@@ -56,10 +75,15 @@ export function LoginView() {
   }
 
   const isRegister = authMode === 'register'
+  const selectedPlan = selectedPlanId && tab === 'treinador' ? getPlan(selectedPlanId) : null
 
   return (
     <div className="login-page">
       <div className="login-card">
+        <button type="button" className="login-back" onClick={openLanding}>
+          ← Voltar ao início
+        </button>
+
         <div className="login-brand">
           <span className="app-brandbar__mark login-brand__mark" aria-hidden="true">
             ★
@@ -71,6 +95,15 @@ export function LoginView() {
           </div>
         </div>
 
+        {selectedPlan ? (
+          <div className="login-plan-banner">
+            <span>Pack escolhido</span>
+            <strong>
+              {selectedPlan.name} · {formatPlanPrice(selectedPlan)}/mês
+            </strong>
+          </div>
+        ) : null}
+
         <div className="login-tabs" role="tablist">
           <button
             type="button"
@@ -79,7 +112,7 @@ export function LoginView() {
             className={tab === 'treinador' ? 'login-tabs__btn login-tabs__btn--on' : 'login-tabs__btn'}
             onClick={() => {
               setTab('treinador')
-              setAuthMode('sign-in')
+              setAuthMode(selectedPlanId ? 'register' : 'sign-in')
               resetRegister()
             }}
           >
@@ -181,7 +214,9 @@ export function LoginView() {
               ? 'Please wait…'
               : isRegister
                 ? tab === 'treinador'
-                  ? 'Create coach account'
+                  ? selectedPlan
+                    ? `Criar conta · ${selectedPlan.name}`
+                    : 'Create coach account'
                   : 'Create athlete account'
                 : 'Sign in'}
           </button>
@@ -189,14 +224,21 @@ export function LoginView() {
 
         <aside className="login-demo">
           <p className="login-demo__title">Accounts</p>
-          <p>
-            <strong>Coach:</strong> create your account, then add athletes with their pairing code.
-          </p>
-          <p>
-            <strong>Athlete:</strong> create your own account once. Share your pairing code with
-            each coach — you must accept each request. Your stats follow you across coaches and
-            schools.
-          </p>
+          {tab === 'treinador' ? (
+            <>
+              <p>
+                <strong>Coach:</strong> escolhe um pack, cria conta e ativa a subscrição para gerir atletas e
+                treinos.
+              </p>
+              <p>
+                <strong>Athlete:</strong> muda para o separador Athlete — entrada grátis com código de pairing.
+              </p>
+            </>
+          ) : (
+            <p>
+              <strong>Athlete:</strong> create your own account once. Share your pairing code with each coach.
+            </p>
+          )}
           <p className="muted login-demo__note">
             {cloudMode
               ? 'Accounts and sessions are stored securely in the cloud — use the same login on any device.'

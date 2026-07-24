@@ -1,5 +1,7 @@
 export type UserRole = 'treinador' | 'atleta'
 
+export type PublicView = 'landing' | 'login' | 'checkout'
+
 /** Tipos de sessão SurfStar (evolução futura: mar, heat) */
 export type SessionType = 'treino-tecnico' | 'analise-mar' | 'heat'
 

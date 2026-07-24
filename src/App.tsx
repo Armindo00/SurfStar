@@ -1,5 +1,7 @@
 import { AppProvider, useApp } from './AppContext'
 import { ChangePasswordView } from './views/ChangePasswordView'
+import { CheckoutView } from './views/CheckoutView'
+import { LandingView } from './views/LandingView'
 import { AthletePortal } from './views/AthletePortal'
 import { CoachHome } from './views/CoachHome'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
@@ -46,7 +48,7 @@ function AppHeader() {
 }
 
 function Shell() {
-  const { auth, authReady, role, view } = useApp()
+  const { auth, authReady, role, view, publicView, hasActiveSubscription } = useApp()
 
   if (!authReady) {
     return (
@@ -59,11 +61,18 @@ function Shell() {
   }
 
   if (!auth) {
+    if (publicView === 'landing') {
+      return <LandingView />
+    }
     return <LoginView />
   }
 
   if (auth.role === 'atleta' && auth.mustChangePassword) {
     return <ChangePasswordView />
+  }
+
+  if (auth.role === 'treinador' && !hasActiveSubscription) {
+    return <CheckoutView />
   }
 
   return (

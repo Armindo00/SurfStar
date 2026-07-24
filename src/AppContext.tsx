@@ -50,6 +50,7 @@ import type {
   HeatDurationMinutes,
   HeatInterferenceType,
   HeatRecord,
+  PublicView,
   SeaPeak,
   SeaWaveType,
   ManeuverKind,
@@ -76,6 +77,13 @@ import {
   migrateLegacyLocalAthletes,
 } from './localPairing'
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
+import type { PlanId } from './plans'
+import {
+  activateCoachSubscription,
+  fetchCoachSubscription,
+  isSubscriptionActive,
+  type CoachSubscription,
+} from './subscriptionApi'
 
 type DraftSession = {
   mode: TrainingMode
@@ -89,6 +97,16 @@ type AppContextValue = {
   auth: AuthSession | null
   authReady: boolean
   cloudMode: boolean
+  publicView: PublicView
+  loginTab: UserRole
+  selectedPlanId: PlanId | null
+  subscription: CoachSubscription | null
+  hasActiveSubscription: boolean
+  selectPlan: (planId: PlanId, options?: { goToLogin?: boolean }) => void
+  openLanding: () => void
+  openCoachLogin: () => void
+  openAthleteLogin: () => void
+  completeCheckout: () => Promise<{ ok: true } | { ok: false; error: string }>
   loginAsCoach: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   loginAsStudent: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   registerCoach: (
@@ -283,6 +301,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     cloudMode ? null : authStore.getSession(),
   )
   const role: UserRole = auth?.role ?? 'treinador'
+  const [publicView, setPublicView] = useState<PublicView>('landing')
+  const [loginTab, setLoginTab] = useState<UserRole>('treinador')
+  const [selectedPlanId, setSelectedPlanId] = useState<PlanId | null>(null)
+  const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
   const [view, setView] = useState<AppView>('coach-home')
   const [athletes, setAthletes] = useState<Athlete[]>(() =>
     cloudMode ? [] : migrateLegacyLocalAthletes(store.getAthletes()),
@@ -370,6 +392,66 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSpots([])
   }, [])
 
+  const syncCoachSubscription = useCallback(
+    async (session: AuthSession) => {
+      if (session.role !== 'treinador') {
+        setSubscription(null)
+        return
+      }
+      const sub = await fetchCoachSubscription(session.coachId, cloudMode)
+      setSubscription(sub)
+    },
+    [cloudMode],
+  )
+
+  const hasActiveSubscription = useMemo(() => {
+    if (auth?.role !== 'treinador') return true
+    return isSubscriptionActive(subscription)
+  }, [auth, subscription])
+
+  const selectPlan = useCallback((planId: PlanId, options?: { goToLogin?: boolean }) => {
+    setSelectedPlanId(planId)
+    setLoginTab('treinador')
+    if (options?.goToLogin !== false) {
+      setPublicView('login')
+    }
+  }, [])
+
+  const openLanding = useCallback(() => {
+    setPublicView('landing')
+  }, [])
+
+  const openCoachLogin = useCallback(() => {
+    setLoginTab('treinador')
+    setPublicView('login')
+  }, [])
+
+  const openAthleteLogin = useCallback(() => {
+    setLoginTab('atleta')
+    setSelectedPlanId(null)
+    setPublicView('login')
+  }, [])
+
+  const completeCheckout = useCallback(async () => {
+    if (!auth || auth.role !== 'treinador') {
+      return { ok: false as const, error: 'Inicia sessão como treinador.' }
+    }
+
+    const planId = selectedPlanId ?? 'team'
+
+    try {
+      const sub = await activateCoachSubscription(auth.coachId, planId, cloudMode)
+      setSubscription(sub)
+      setView('coach-home')
+      return { ok: true as const }
+    } catch (err) {
+      return {
+        ok: false as const,
+        error: err instanceof Error ? err.message : 'Não foi possível ativar a subscrição.',
+      }
+    }
+  }, [auth, cloudMode, selectedPlanId])
+
   const refreshPairingData = useCallback(async () => {
     if (!auth) return
     if (cloudMode) {
@@ -402,6 +484,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [auth, cloudMode])
 
   useEffect(() => {
+    if (cloudMode || !auth || auth.role !== 'treinador') return
+    void syncCoachSubscription(auth)
+  }, [auth, cloudMode, syncCoachSubscription])
+
+  useEffect(() => {
     if (!cloudMode) return
 
     let mounted = true
@@ -410,6 +497,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const applySessionData = async (session: AuthSession) => {
       if (!mounted) return
       await applyCloudSessionData(session)
+      await syncCoachSubscription(session)
     }
 
     void (async () => {
@@ -440,6 +528,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             setActiveWaveId(null)
             setActiveHeatId(null)
             setActiveAthleteId(null)
+            setSubscription(null)
+            setSelectedPlanId(null)
+            setPublicView('landing')
           }
         })
 
@@ -465,7 +556,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       mounted = false
       unsub?.()
     }
-  }, [cloudMode, applyCloudSessionData])
+  }, [cloudMode, applyCloudSessionData, syncCoachSubscription])
 
   const loginAsCoach = useCallback(
     async (email: string, password: string) => {
@@ -474,7 +565,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!result.ok) return result
         setAuth(result.session)
         setView('coach-home')
-        void applyCloudSessionData(result.session).catch((err) => {
+        void applyCloudSessionData(result.session)
+          .then(() => syncCoachSubscription(result.session))
+          .catch((err) => {
           console.error('Failed to load coach data after sign in', err)
         })
         return { ok: true as const }
@@ -506,9 +599,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     authStore.setSession(session)
     setAuth(session)
     setView('coach-home')
+    await syncCoachSubscription(session)
     return { ok: true }
   },
-    [applyCloudSessionData, cloudMode],
+    [applyCloudSessionData, cloudMode, syncCoachSubscription],
   )
 
   const loginAsStudent = useCallback(
@@ -579,7 +673,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!result.ok) return result
         setAuth(result.session)
         setView('coach-home')
-        void applyCloudSessionData(result.session).catch((err) => {
+        void applyCloudSessionData(result.session)
+          .then(() => syncCoachSubscription(result.session))
+          .catch((err) => {
           console.error('Failed to load coach data after registration', err)
         })
         return { ok: true as const }
@@ -613,9 +709,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authStore.setSession(session)
       setAuth(session)
       setView('coach-home')
+      await syncCoachSubscription(session)
       return { ok: true as const }
     },
-    [applyCloudSessionData, cloudMode],
+    [applyCloudSessionData, cloudMode, syncCoachSubscription],
   )
 
   const registerAthlete = useCallback(
@@ -690,6 +787,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveWaveId(null)
     setActiveHeatId(null)
     setActiveAthleteId(null)
+    setSubscription(null)
+    setSelectedPlanId(null)
+    setPublicView('landing')
     setView('coach-home')
   }, [cloudMode])
 
@@ -1602,6 +1702,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       auth,
       authReady,
       cloudMode,
+      publicView,
+      loginTab,
+      selectedPlanId,
+      subscription,
+      hasActiveSubscription,
+      selectPlan,
+      openLanding,
+      openCoachLogin,
+      openAthleteLogin,
+      completeCheckout,
       loginAsCoach,
       loginAsStudent,
       registerCoach,
@@ -1687,6 +1797,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       auth,
       authReady,
       cloudMode,
+      publicView,
+      loginTab,
+      selectedPlanId,
+      subscription,
+      hasActiveSubscription,
+      selectPlan,
+      openLanding,
+      openCoachLogin,
+      openAthleteLogin,
+      completeCheckout,
       loginAsCoach,
       loginAsStudent,
       registerCoach,

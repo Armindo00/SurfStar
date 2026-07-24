@@ -120,7 +120,7 @@ export function EvolutionLineChart({ title, subtitle, points }: Props) {
             })}
           </svg>
 
-          <div className="evolution-chart__table-wrap">
+          <div className="table-wrap evolution-chart__table-wrap">
             <table className="data-table evolution-chart__table">
               <thead>
                 <tr>
