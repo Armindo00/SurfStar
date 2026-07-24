@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -98,6 +99,13 @@ import {
   navigateToPublicView,
   publicViewFromPath,
 } from './routing'
+import {
+  clearResumeState,
+  loadResumeState,
+  resumeUserKey,
+  saveResumeState,
+  validateAndNormalizeResume,
+} from './resumeStore'
 
 type DraftSession = {
   mode: TrainingMode
@@ -357,6 +365,57 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [endSessionSheetOpen, setEndSessionSheetOpen] = useState(false)
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
 
+  const skipResumeSaveRef = useRef(false)
+  const authRef = useRef(auth)
+  authRef.current = auth
+
+  const resumeSnapshotRef = useRef({
+    view: 'coach-home' as AppView,
+    activeSessionId: null as string | null,
+    activeAthleteId: null as string | null,
+    activeWaveId: null as string | null,
+    activeHeatId: null as string | null,
+    draft: emptyDraft(),
+    historySessionId: null as string | null,
+  })
+  resumeSnapshotRef.current = {
+    view,
+    activeSessionId,
+    activeAthleteId,
+    activeWaveId,
+    activeHeatId,
+    draft,
+    historySessionId,
+  }
+
+  const applyResumeFromStore = useCallback((session: AuthSession, sessions: TrainingSession[]) => {
+    const userKey = resumeUserKey(session)
+    const saved = loadResumeState(userKey)
+    if (!saved) {
+      setView(viewForAuth(session))
+      return
+    }
+
+    const restored = validateAndNormalizeResume(saved, session, sessions)
+    if (!restored) {
+      clearResumeState(userKey)
+      setView(viewForAuth(session))
+      return
+    }
+
+    skipResumeSaveRef.current = true
+    setView(restored.view)
+    setActiveSessionId(restored.activeSessionId)
+    setActiveAthleteId(restored.activeAthleteId)
+    setActiveWaveId(restored.activeWaveId)
+    setActiveHeatId(restored.activeHeatId)
+    setHistorySessionId(restored.historySessionId)
+    setDraft(restored.draft)
+    queueMicrotask(() => {
+      skipResumeSaveRef.current = false
+    })
+  }, [])
+
   const coachId = auth?.role === 'treinador' ? auth.coachId : null
 
   const coachAthletes = useMemo(() => {
@@ -396,33 +455,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
-  const applyCloudSessionData = useCallback(async (session: AuthSession) => {
+  const applyCloudSessionData = useCallback(async (session: AuthSession): Promise<TrainingSession[]> => {
     if (session.role === 'treinador') {
       const data = await cloudLoadCoachData(session.coachId)
+      const sessions = data.trainingSessions.map((trainingSession) => ({
+        ...trainingSession,
+        spotName:
+          trainingSession.spotName?.trim() ||
+          data.spots.find((spot) => spot.id === trainingSession.spotId)?.name?.trim() ||
+          '',
+      }))
       setAthletes(data.athletes)
       setCoachLinks(data.links)
       setAthleteLinks([])
       setSpots(data.spots)
       setConditions(data.conditions)
-      setTrainingSessions(
-        data.trainingSessions.map((session) => ({
-          ...session,
-          spotName:
-            session.spotName?.trim() ||
-            data.spots.find((spot) => spot.id === session.spotId)?.name?.trim() ||
-            '',
-        })),
-      )
+      setTrainingSessions(sessions)
       setDraft((d) => ({ ...d, spotId: data.spots[0]?.id ?? d.spotId }))
-      return
+      return sessions
     }
 
     const data = await cloudLoadAthleteData(session.athleteId)
+    const sessions = data.trainingSessions.filter((s) => Boolean(s.endedAt))
     setAthletes(data.athlete ? [data.athlete] : [])
     setAthleteLinks(data.links)
     setCoachLinks([])
-    setTrainingSessions(data.trainingSessions.filter((s) => Boolean(s.endedAt)))
+    setTrainingSessions(sessions)
     setSpots([])
+    return sessions
   }, [])
 
   const syncCoachSubscription = useCallback(
@@ -565,6 +625,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [auth, cloudMode, syncCoachSubscription])
 
   useEffect(() => {
+    if (!auth || skipResumeSaveRef.current) return
+    saveResumeState(resumeUserKey(auth), resumeSnapshotRef.current)
+  }, [
+    auth,
+    view,
+    activeSessionId,
+    activeAthleteId,
+    activeWaveId,
+    activeHeatId,
+    draft,
+    historySessionId,
+  ])
+
+  useEffect(() => {
+    const flushResume = () => {
+      const session = authRef.current
+      if (!session) return
+      saveResumeState(resumeUserKey(session), resumeSnapshotRef.current)
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flushResume()
+    }
+    window.addEventListener('pagehide', flushResume)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      window.removeEventListener('pagehide', flushResume)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (cloudMode || !auth) return
+    applyResumeFromStore(auth, store.getTrainingSessions())
+  }, [applyResumeFromStore, auth, cloudMode])
+
+  useEffect(() => {
     if (!cloudMode) return
 
     let mounted = true
@@ -572,27 +668,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const applySessionData = async (session: AuthSession) => {
       if (!mounted) return
-      await applyCloudSessionData(session)
+      const sessions = await applyCloudSessionData(session)
       await syncCoachSubscription(session)
+      return sessions
     }
 
     void (async () => {
       try {
         unsub = await cloudOnAuthChange((next, event) => {
           if (!mounted) return
+          const previous = authRef.current
           setAuth(next)
           if (next) {
             if (event === 'TOKEN_REFRESHED') return
 
             setTimeout(() => {
-              void applySessionData(next).then(() => {
-                if (!mounted) return
+              void applySessionData(next).then((sessions) => {
+                if (!mounted || !sessions) return
                 if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
-                  setView(viewForAuth(next))
+                  applyResumeFromStore(next, sessions)
                 }
               })
             }, 0)
           } else {
+            if (previous) clearResumeState(resumeUserKey(previous))
             setAthletes([])
             setStudents([])
             setCoachLinks([])
@@ -615,9 +714,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const session = await cloudGetSession()
         if (session && mounted) {
           setAuth(session)
-          void applySessionData(session).then(() => {
-            if (mounted) {
-              setView(viewForAuth(session))
+          void applySessionData(session).then((sessions) => {
+            if (mounted && sessions) {
+              applyResumeFromStore(session, sessions)
             }
           })
         }
@@ -632,7 +731,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       mounted = false
       unsub?.()
     }
-  }, [cloudMode, applyCloudSessionData, syncCoachSubscription])
+  }, [applyCloudSessionData, applyResumeFromStore, cloudMode, syncCoachSubscription])
 
   const loginAsCoach = useCallback(
     async (email: string, password: string) => {
@@ -640,12 +739,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const result = await cloudLogin(email, password)
         if (!result.ok) return result
         setAuth(result.session)
-        setView('coach-home')
-        void applyCloudSessionData(result.session)
-          .then(() => syncCoachSubscription(result.session))
-          .catch((err) => {
-          console.error('Failed to load coach data after sign in', err)
-        })
+        const sessions = await applyCloudSessionData(result.session)
+        await syncCoachSubscription(result.session)
+        applyResumeFromStore(result.session, sessions)
         return { ok: true as const }
       }
 
@@ -674,11 +770,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     authStore.setSession(session)
     setAuth(session)
-    setView('coach-home')
+    const sessions = store.getTrainingSessions()
+    setTrainingSessions(sessions)
+    applyResumeFromStore(session, sessions)
     await syncCoachSubscription(session)
     return { ok: true }
   },
-    [applyCloudSessionData, cloudMode, syncCoachSubscription],
+    [applyCloudSessionData, applyResumeFromStore, cloudMode, syncCoachSubscription],
   )
 
   const loginAsStudent = useCallback(
@@ -687,10 +785,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const result = await cloudLogin(email, password)
         if (!result.ok) return result
         setAuth(result.session)
-        setView(viewForAuth(result.session))
-        void applyCloudSessionData(result.session).catch((err) => {
-          console.error('Failed to load athlete data after sign in', err)
-        })
+        const sessions = await applyCloudSessionData(result.session)
+        applyResumeFromStore(result.session, sessions)
         return { ok: true as const }
       }
 
@@ -732,14 +828,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     authStore.setSession(session)
     setAuth(session)
     const links = store.getPairings().filter((l) => l.athleteId === current.athleteId)
-    setAthleteLinks(links)
-    setTrainingSessions(
-      loadAthleteSessionsLocal(current.athleteId, links, store.getTrainingSessions()),
+    const athleteSessions = loadAthleteSessionsLocal(
+      current.athleteId,
+      links,
+      store.getTrainingSessions(),
     )
-    setView(viewForAuth(session))
+    setAthleteLinks(links)
+    setTrainingSessions(athleteSessions)
+    applyResumeFromStore(session, athleteSessions)
     return { ok: true }
   },
-    [applyCloudSessionData, cloudMode],
+    [applyCloudSessionData, applyResumeFromStore, cloudMode],
   )
 
   const registerCoach = useCallback(
@@ -856,6 +955,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const logout = useCallback(async () => {
+    if (auth) clearResumeState(resumeUserKey(auth))
     if (cloudMode) await cloudLogout()
     else authStore.setSession(null)
     setAuth(null)
@@ -867,7 +967,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSelectedPlanId(null)
     setPublicView('landing')
     setView('coach-home')
-  }, [cloudMode, setPublicView])
+  }, [auth, cloudMode, setPublicView])
 
   const persistSessions = useCallback(
     (nextOrUpdater: TrainingSession[] | ((prev: TrainingSession[]) => TrainingSession[])) => {
