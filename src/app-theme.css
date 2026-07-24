@@ -145,23 +145,65 @@ body {
   color: var(--landing-gold-light) !important;
 }
 
-.btn--primary {
+.login-forgot {
+  color: var(--landing-gold-light) !important;
+}
+
+/* Signed-in app shell — do not bleed into landing pricing cards */
+.app-shell .btn--primary {
   background: linear-gradient(135deg, #dbbf6a 0%, #b8943f 100%) !important;
   border-color: #b8943f !important;
   color: #1a1204 !important;
   font-weight: 700;
 }
 
-.btn--secondary {
+.app-shell .btn--secondary {
   background: rgba(255, 255, 255, 0.08) !important;
   border-color: rgba(255, 255, 255, 0.2) !important;
   color: var(--landing-text) !important;
 }
 
-.btn {
+.app-shell .btn {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.15);
   color: var(--landing-text);
+}
+
+.login-page .btn--primary,
+.checkout-page .btn--primary {
+  background: linear-gradient(135deg, #dbbf6a 0%, #b8943f 100%) !important;
+  border-color: #b8943f !important;
+  color: #1a1204 !important;
+  font-weight: 700;
+}
+
+.landing-page .pack-card .btn--secondary {
+  background: #0a1628 !important;
+  border-color: #0a1628 !important;
+  color: #f8fafc !important;
+  font-weight: 700;
+}
+
+.landing-page .pack-card .btn--secondary:hover {
+  background: #132038 !important;
+  border-color: #132038 !important;
+}
+
+.landing-page .pack-card .btn--gold {
+  background: linear-gradient(135deg, #dbbf6a 0%, #b8943f 100%) !important;
+  border-color: #b8943f !important;
+  color: #1a1204 !important;
+  font-weight: 700;
+  box-shadow: 0 4px 20px rgba(201, 169, 98, 0.35);
+}
+
+.landing-page .pack-card .btn--gold:hover {
+  filter: brightness(1.05);
+}
+
+.checkout-brand p,
+.login-brand p {
+  color: var(--landing-muted) !important;
 }
 
 .dashboard__hello,
