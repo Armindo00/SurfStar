@@ -140,17 +140,11 @@ export function LandingView() {
             <button type="button" className="btn btn--outline btn--small" onClick={openCoachSignIn}>
               Sign in
             </button>
-            <button type="button" className="btn btn--gold btn--small" onClick={openCoachSignUp}>
-              Sign up
-            </button>
           </div>
           <div className="landing-nav__auth-group">
             <span className="landing-nav__auth-label">Athlete</span>
             <button type="button" className="btn btn--outline btn--small" onClick={openAthleteSignIn}>
               Sign in
-            </button>
-            <button type="button" className="btn btn--outline btn--small" onClick={openAthleteSignUp}>
-              Sign up
             </button>
           </div>
         </div>
@@ -168,13 +162,16 @@ export function LandingView() {
               Log every wave, see live stats on the beach, and track monthly evolution and season totals
               for your whole team.
             </p>
-            <div className="landing-hero__cta">
-              <a className="btn btn--gold btn--lg" href="#packs">
-                Coach sign up
-              </a>
-              <button type="button" className="btn btn--outline btn--lg" onClick={openAthleteSignIn}>
-                Athlete sign in
-              </button>
+            <div className="landing-hero__create">
+              <p className="landing-hero__create-label">Create account</p>
+              <div className="landing-hero__cta">
+                <button type="button" className="btn btn--gold btn--lg" onClick={openCoachSignUp}>
+                  I am a coach
+                </button>
+                <button type="button" className="btn btn--outline btn--lg" onClick={openAthleteSignUp}>
+                  I am an athlete
+                </button>
+              </div>
             </div>
             <ul className="landing-hero__checks">
               <li>Live stats during every session</li>

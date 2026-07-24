@@ -3767,11 +3767,23 @@ body {
   max-width: 32rem;
 }
 
+.landing-hero__create {
+  margin-top: 1.75rem;
+}
+
+.landing-hero__create-label {
+  margin: 0 0 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--landing-gold-light);
+}
+
 .landing-hero__cta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 1.75rem;
 }
 
 .landing-hero__checks {
