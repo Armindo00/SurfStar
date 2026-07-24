@@ -1,4 +1,5 @@
 import { PackCard } from '../components/PackCard'
+import { AppLogo } from '../components/AppLogo'
 import { SUBSCRIPTION_PLANS } from '../plans'
 import { useApp } from '../AppContext'
 
@@ -28,10 +29,7 @@ export function LandingView() {
     <div className="landing-page">
       <header className="landing-nav">
         <div className="landing-nav__brand">
-          <span className="app-brandbar__mark" aria-hidden="true">
-            ★
-          </span>
-          <strong>SurfStar</strong>
+          <AppLogo size="md" />
         </div>
         <div className="landing-nav__actions">
           <button type="button" className="btn btn--ghost btn--small landing-nav__link" onClick={openAthleteLogin}>

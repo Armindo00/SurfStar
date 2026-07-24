@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { formatPlanPrice, getPlan, getStripePaymentLink, type PlanId } from '../plans'
 import { SUBSCRIPTION_PLANS } from '../plans'
+import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
 
 export function CheckoutView() {
@@ -51,9 +52,7 @@ export function CheckoutView() {
         </button>
 
         <div className="checkout-brand">
-          <span className="app-brandbar__mark" aria-hidden="true">
-            ★
-          </span>
+          <AppLogo size="lg" />
           <div>
             <h1>Ativar subscrição</h1>
             <p className="muted">Olá {auth?.name ?? 'treinador'} — falta só confirmar o teu pack.</p>

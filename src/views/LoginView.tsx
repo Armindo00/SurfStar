@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { formatPlanPrice, getPlan } from '../plans'
+import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
 
 type AuthMode = 'sign-in' | 'register'
@@ -85,11 +86,8 @@ export function LoginView() {
         </button>
 
         <div className="login-brand">
-          <span className="app-brandbar__mark login-brand__mark" aria-hidden="true">
-            ★
-          </span>
+          <AppLogo size="xl" />
           <div>
-            <h1>SurfStar</h1>
             <p>Surf stats for coaches and athletes</p>
             {cloudMode ? <p className="login-cloud-tag">Online · cloud version</p> : null}
           </div>

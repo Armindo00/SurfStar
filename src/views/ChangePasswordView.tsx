@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { MIN_PASSWORD_LENGTH, validatePasswordStrength } from '../passwordUtils'
+import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
 
 export function ChangePasswordView() {
@@ -36,14 +37,14 @@ export function ChangePasswordView() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-brand">
-          <span className="login-brand__mark" aria-hidden="true">
-            ★
-          </span>
-          <h1>Set your password</h1>
-          <p>
-            Your coach created your account. Choose a new password before continuing — you will use
-            this password from now on.
-          </p>
+          <AppLogo size="lg" />
+          <div>
+            <h1>Set your password</h1>
+            <p>
+              Your coach created your account. Choose a new password before continuing — you will use
+              this password from now on.
+            </p>
+          </div>
         </div>
 
         <div className="athlete-login-form">

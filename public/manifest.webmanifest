@@ -1,13 +1,21 @@
 {
+  "id": "/",
   "name": "SurfStar",
   "short_name": "SurfStar",
-  "description": "Surf coaching statistics",
+  "description": "Estatísticas de surf para treinadores e atletas",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0ea5e9",
+  "background_color": "#0a1628",
+  "theme_color": "#0a1628",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",

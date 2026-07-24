@@ -1,4 +1,5 @@
 import { AppProvider, useApp } from './AppContext'
+import { AppLogo } from './components/AppLogo'
 import { ChangePasswordView } from './views/ChangePasswordView'
 import { CheckoutView } from './views/CheckoutView'
 import { LandingView } from './views/LandingView'
@@ -29,11 +30,8 @@ function AppHeader() {
   return (
     <header className="app-brandbar">
       <div className="app-brandbar__brand">
-        <span className="app-brandbar__mark" aria-hidden="true">
-          ★
-        </span>
+        <AppLogo size="sm" />
         <div>
-          <strong>SurfStar</strong>
           <small>{role === 'treinador' ? 'Coach' : 'Athlete'}</small>
         </div>
       </div>
