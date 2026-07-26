@@ -56,7 +56,7 @@ export const TRAINING_HELP_GUIDES: TrainingHelpGuide[] = [
       'Tap New session → Championship, set heat length and surfers per heat (2 = top 1 advances, 4 = top 2 advance).',
       'Select all athletes in the contest and tap Start championship.',
       'SurfStar splits the opening round into heats of 3 or 4 (e.g. quarterfinals with 8 surfers = 2 heats of 4).',
-      'Run each heat: score waves, end the heat — winners advance when the whole round is finished.',
+      'When a round has multiple heats, tap Start all heats — they share one clock and you score each heat side by side.',
       'Continue through semifinals and final until a champion is crowned.',
     ],
   },

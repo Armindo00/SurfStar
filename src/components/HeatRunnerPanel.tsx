@@ -18,9 +18,18 @@ import { HEAT_INTERFERENCE_LABELS, type HeatRecord } from '../types'
 type Props = {
   heat: HeatRecord
   championshipHeatSize?: 2 | 4
+  compact?: boolean
+  hideTimer?: boolean
+  hideControls?: boolean
 }
 
-export function HeatRunnerPanel({ heat, championshipHeatSize }: Props) {
+export function HeatRunnerPanel({
+  heat,
+  championshipHeatSize,
+  compact = false,
+  hideTimer = false,
+  hideControls = false,
+}: Props) {
   const { getAthlete, startHeatTimer, endHeat, logHeatWaveScore, setHeatInterference } = useApp()
   const [scoreAthleteId, setScoreAthleteId] = useState<string | null>(null)
   const [interferenceAthleteId, setInterferenceAthleteId] = useState<string | null>(null)
@@ -43,33 +52,37 @@ export function HeatRunnerPanel({ heat, championshipHeatSize }: Props) {
   const interferenceAthlete = interferenceAthleteId ? getAthlete(interferenceAthleteId) : undefined
 
   return (
-    <div className="heat-runner">
+    <div className={compact ? 'heat-runner heat-runner--compact' : 'heat-runner'}>
       <header className="heat-runner__head">
         <h2 className="heat-runner__title">{heat.label}</h2>
         <span className="stats-badge">{heat.athleteIds.length} surfers</span>
       </header>
 
-      <HeatTimer heat={heat} onTimeUp={() => endHeat(heat.id)} />
+      {!hideTimer ? <HeatTimer heat={heat} onTimeUp={() => endHeat(heat.id)} /> : null}
 
-      <p className="heat-rule muted">
-        Heat result = <strong>sum of the 2 best wave scores</strong> per surfer. Interference can halve or
-        remove the 2nd best from the total.
-      </p>
+      {!compact ? (
+        <p className="heat-rule muted">
+          Heat result = <strong>sum of the 2 best wave scores</strong> per surfer. Interference can halve or
+          remove the 2nd best from the total.
+        </p>
+      ) : null}
 
-      <div className="heat-runner__controls">
-        {!heat.timerStartedAt && canStart ? (
-          <button type="button" className="btn btn--primary btn--block btn--lg" onClick={() => startHeatTimer(heat.id)}>
-            Start heat
-          </button>
-        ) : null}
-        {running ? (
-          <button type="button" className="btn btn--danger btn--block" onClick={() => endHeat(heat.id)}>
-            End heat now
-          </button>
-        ) : null}
-      </div>
+      {!hideControls ? (
+        <div className="heat-runner__controls">
+          {!heat.timerStartedAt && canStart ? (
+            <button type="button" className="btn btn--primary btn--block btn--lg" onClick={() => startHeatTimer(heat.id)}>
+              Start heat
+            </button>
+          ) : null}
+          {running ? (
+            <button type="button" className="btn btn--danger btn--block" onClick={() => endHeat(heat.id)}>
+              End heat now
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
-      {heatStarted ? (
+      {heatStarted || compact ? (
         <div className="heat-surfer-actions">
           <p className="field-label">Surfers</p>
           {heat.athleteIds.map((id) => {
@@ -79,7 +92,7 @@ export function HeatRunnerPanel({ heat, championshipHeatSize }: Props) {
               <div key={id} className="heat-surfer-row">
                 <div className="heat-surfer-row__info">
                   <strong>{name}</strong>
-                  <span>{formatHeatTotal(totals[id] ?? 0)}</span>
+                  {heatStarted ? <span>{formatHeatTotal(totals[id] ?? 0)}</span> : null}
                   {int ? <span className="heat-int-badge">{HEAT_INTERFERENCE_LABELS[int]}</span> : null}
                 </div>
                 <div className="heat-surfer-row__btns">
@@ -121,7 +134,7 @@ export function HeatRunnerPanel({ heat, championshipHeatSize }: Props) {
         </div>
       ) : null}
 
-      {heat.waveScores.length > 0 ? (
+      {heat.waveScores.length > 0 && !compact ? (
         <div className="heat-leaderboard">
           <HeatWaveScoreLog heat={heat} />
           <h3 className="heat-leaderboard__title">Heat results</h3>

@@ -7,6 +7,7 @@ type Props = {
   heats: HeatRecord[]
   heatSize: ChampionshipHeatSize
   activeHeatId: string | null
+  runningHeatIds?: string[]
   onSelectHeat: (heatId: string) => void
   getAthleteName: (id: string) => string
 }
@@ -30,6 +31,7 @@ export function ChampionshipBracketBoard({
   heats,
   heatSize,
   activeHeatId,
+  runningHeatIds = [],
   onSelectHeat,
   getAthleteName,
 }: Props) {
@@ -73,7 +75,7 @@ export function ChampionshipBracketBoard({
                   key={heat.id}
                   type="button"
                   className={
-                    activeHeatId === heat.id
+                    activeHeatId === heat.id || runningHeatIds.includes(heat.id)
                       ? 'champ-bracket-heat champ-bracket-heat--on'
                       : locked
                         ? 'champ-bracket-heat champ-bracket-heat--locked'

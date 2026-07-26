@@ -1,10 +1,18 @@
 import { useMemo } from 'react'
 import { ChampionshipBracketBoard } from '../components/ChampionshipBracketBoard'
+import { ChampionshipRoundRunner } from '../components/ChampionshipRoundRunner'
 import { HeatRunnerPanel } from '../components/HeatRunnerPanel'
 import { SessionTools } from '../components/SessionTools'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
-import { activeChampionshipRound, previewBracketRounds, splitAthletesIntoHeats } from '../championshipUtils'
+import {
+  activeChampionshipRound,
+  groupHeatsByRound,
+  previewBracketRounds,
+  roundHeatsActionable,
+  roundHeatsRunning,
+  splitAthletesIntoHeats,
+} from '../championshipUtils'
 
 export function ChampionshipSessionView() {
   const { activeSession, activeHeatId, setActiveHeatId, setView, getAthlete } = useApp()
@@ -39,6 +47,25 @@ export function ChampionshipSessionView() {
   }, [activeSession, athleteCount, heatSize])
 
   const currentRound = useMemo(() => activeChampionshipRound(heats), [heats])
+
+  const focusRound = activeHeat?.round ?? currentRound
+
+  const focusRoundHeats = useMemo(
+    () => roundHeatsActionable(heats, focusRound),
+    [focusRound, heats],
+  )
+
+  const runningHeatIds = useMemo(
+    () => roundHeatsRunning(heats, currentRound).map((h) => h.id),
+    [currentRound, heats],
+  )
+
+  const focusRoundLabel = useMemo(() => {
+    const column = groupHeatsByRound(heats).find((entry) => entry.round === focusRound)
+    return column?.label ?? `Round ${focusRound}`
+  }, [focusRound, heats])
+
+  const showParallelRunner = focusRoundHeats.length > 0 && !focusRoundHeats.every((h) => h.bracketLocked)
 
   if (!activeSession || activeSession.mode !== 'campeonato') {
     return (
@@ -85,12 +112,21 @@ export function ChampionshipSessionView() {
           heats={heats}
           heatSize={heatSize}
           activeHeatId={activeHeat?.id ?? null}
+          runningHeatIds={runningHeatIds}
           onSelectHeat={setActiveHeatId}
           getAthleteName={(id) => getAthlete(id)?.name ?? 'Surfer'}
         />
       </div>
 
-      {activeHeat ? (
+      {showParallelRunner ? (
+        <div className="ss-card">
+          <ChampionshipRoundRunner
+            heats={focusRoundHeats}
+            heatSize={heatSize}
+            roundLabel={focusRoundLabel}
+          />
+        </div>
+      ) : activeHeat ? (
         <div className="ss-card">
           {activeHeat.bracketLocked ? (
             <div className="champ-bracket-wait">

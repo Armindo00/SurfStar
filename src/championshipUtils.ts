@@ -209,6 +209,26 @@ export function heatsInRound(heats: HeatRecord[], round: number): HeatRecord[] {
   return heats.filter((h) => (h.round ?? 1) === round)
 }
 
+export function roundHeatsActionable(heats: HeatRecord[], round: number): HeatRecord[] {
+  return heatsInRound(heats, round).filter(
+    (h) => !h.bracketLocked && h.athleteIds.length > 0,
+  )
+}
+
+export function roundHeatsReadyToStart(heats: HeatRecord[], round: number): HeatRecord[] {
+  return roundHeatsActionable(heats, round).filter((h) => !h.timerStartedAt && !h.endedAt)
+}
+
+export function roundHeatsRunning(heats: HeatRecord[], round: number): HeatRecord[] {
+  return roundHeatsActionable(heats, round).filter(
+    (h) => Boolean(h.timerStartedAt) && !h.endedAt,
+  )
+}
+
+export function roundSupportsParallelRun(heats: HeatRecord[], round: number): boolean {
+  return roundHeatsActionable(heats, round).length > 1
+}
+
 export function maxRound(heats: HeatRecord[]): number {
   return heats.reduce((max, h) => Math.max(max, h.round ?? 1), 1)
 }

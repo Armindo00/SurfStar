@@ -247,7 +247,9 @@ type AppContextValue = {
   setActiveHeatId: (id: string | null) => void
   createChampionshipHeat: (athleteIds: string[], durationMinutes: HeatDurationMinutes) => void
   startHeatTimer: (heatId: string) => void
+  startHeatTimers: (heatIds: string[]) => void
   endHeat: (heatId: string) => void
+  endHeatTimers: (heatIds: string[]) => void
   logHeatWaveScore: (heatId: string, athleteId: string, score: number) => void
   setHeatInterference: (
     heatId: string,
@@ -2063,36 +2065,58 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [activeSessionId, trainingSessions, updateSession],
   )
 
-  const startHeatTimer = useCallback(
-    (heatId: string) => {
-      if (!activeSessionId) return
-      updateSession(activeSessionId, (s) => ({
-        ...s,
-        heats: s.heats.map((h) => {
-          if (h.id !== heatId || h.timerStartedAt || h.endedAt) return h
-          if (h.bracketLocked || h.athleteIds.length === 0) return h
-          return { ...h, timerStartedAt: new Date().toISOString() }
-        }),
-      }))
+  const startHeatTimers = useCallback(
+    (heatIds: string[]) => {
+      if (!activeSessionId || heatIds.length === 0) return
+      updateSession(activeSessionId, (s) => {
+        const selected = s.heats.filter((h) => heatIds.includes(h.id))
+        const syncFrom = selected.find((h) => h.timerStartedAt && !h.endedAt)
+        const startedAt = syncFrom?.timerStartedAt ?? new Date().toISOString()
+        return {
+          ...s,
+          heats: s.heats.map((h) => {
+            if (!heatIds.includes(h.id) || h.timerStartedAt || h.endedAt) return h
+            if (h.bracketLocked || h.athleteIds.length === 0) return h
+            return { ...h, timerStartedAt: startedAt }
+          }),
+        }
+      })
     },
     [activeSessionId, updateSession],
   )
 
-  const endHeat = useCallback(
+  const startHeatTimer = useCallback(
     (heatId: string) => {
-      if (!activeSessionId) return
+      startHeatTimers([heatId])
+    },
+    [startHeatTimers],
+  )
+
+  const endHeatTimers = useCallback(
+    (heatIds: string[]) => {
+      if (!activeSessionId || heatIds.length === 0) return
       const session = trainingSessions.find((s) => s.id === activeSessionId)
       if (!session) return
 
+      const idsToEnd = heatIds.filter((id) => {
+        const heat = session.heats.find((h) => h.id === id)
+        return heat && !heat.endedAt
+      })
+      if (idsToEnd.length === 0) return
+
+      const endedAt = new Date().toISOString()
       let heats = session.heats.map((h) =>
-        h.id === heatId && !h.endedAt ? { ...h, endedAt: new Date().toISOString() } : h,
+        idsToEnd.includes(h.id) && !h.endedAt ? { ...h, endedAt } : h,
       )
       let championship = session.championship ?? null
-      const endedHeat = heats.find((h) => h.id === heatId)
+      const endedHeat = heats.find((h) => idsToEnd.includes(h.id))
 
       if (session.mode === 'campeonato' && championship?.status === 'active' && endedHeat) {
-        const duration = endedHeat.durationMinutes
-        const result = processChampionshipRoundAdvance(heats, championship, duration)
+        const result = processChampionshipRoundAdvance(
+          heats,
+          championship,
+          endedHeat.durationMinutes,
+        )
         heats = result.heats
         const nextChampionship = result.championship
         championship = nextChampionship
@@ -2104,7 +2128,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           showToast(`${name} wins the championship!`, 'success')
         } else if (result.advancedToNextRound) {
           const nextHeat = heats.find(
-            (h) => !h.endedAt && h.round === (endedHeat.round ?? 1) + 1,
+            (h) => !h.endedAt && !h.bracketLocked && h.round === (endedHeat.round ?? 1) + 1,
           )
           if (nextHeat) {
             setActiveHeatId(nextHeat.id)
@@ -2116,6 +2140,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       updateSession(activeSessionId, (s) => ({ ...s, heats, championship }))
     },
     [activeSessionId, coachAthletes, showToast, trainingSessions, updateSession],
+  )
+
+  const endHeat = useCallback(
+    (heatId: string) => {
+      endHeatTimers([heatId])
+    },
+    [endHeatTimers],
   )
 
   const logHeatWaveScore = useCallback(
@@ -2526,7 +2557,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setActiveHeatId,
       createChampionshipHeat,
       startHeatTimer,
+      startHeatTimers,
       endHeat,
+      endHeatTimers,
       logHeatWaveScore,
       setHeatInterference,
       startSeaAnalysisTimer,
@@ -2639,7 +2672,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeHeatId,
       createChampionshipHeat,
       startHeatTimer,
+      startHeatTimers,
       endHeat,
+      endHeatTimers,
       logHeatWaveScore,
       setHeatInterference,
       startSeaAnalysisTimer,

@@ -1609,3 +1609,46 @@ body {
   font-size: 0.84rem;
   line-height: 1.45;
 }
+
+.champ-round-runner__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.champ-round-runner__sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.84rem;
+}
+
+.champ-round-runner__controls {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+.champ-round-runner__heats {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.champ-round-runner__heat {
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.champ-round-runner__heat:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.app-shell .heat-runner--compact .heat-runner__head {
+  margin-bottom: 0.35rem;
+}
+
+.app-shell .heat-runner--compact .heat-surfer-actions {
+  margin-top: 0.35rem;
+}

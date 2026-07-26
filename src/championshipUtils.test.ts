@@ -9,6 +9,9 @@ import {
   partitionHeatSizes,
   previewBracketRounds,
   processChampionshipRoundAdvance,
+  roundHeatsReadyToStart,
+  roundHeatsRunning,
+  roundSupportsParallelRun,
   simulateBracketStructure,
   splitAthletesIntoHeats,
 } from './championshipUtils'
@@ -177,6 +180,17 @@ describe('championshipUtils', () => {
 
   it('previews bracket rounds for 6 surfers in 4-mode', () => {
     expect(previewBracketRounds(6, 4)).toEqual(['Quarterfinal', 'Semifinal', 'Final'])
+  })
+
+  it('detects parallel-ready heats in the same round', () => {
+    const heats = buildFullChampionshipBracket(
+      ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
+      4,
+      15,
+    )
+    expect(roundSupportsParallelRun(heats, 1)).toBe(true)
+    expect(roundHeatsReadyToStart(heats, 1)).toHaveLength(2)
+    expect(roundHeatsRunning(heats, 1)).toHaveLength(0)
   })
 
   it('picks heat winners by total score', () => {
