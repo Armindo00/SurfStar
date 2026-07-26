@@ -63,8 +63,11 @@ function Shell() {
 
   if (!authReady) {
     return (
-      <div className="login-page">
-        <div className="login-card">
+      <div className="auth-page auth-page--loading">
+        <div className="auth-card">
+          <div className="auth-card__mobile-brand">
+            <AppLogo size="lg" />
+          </div>
           <p className="muted">Loading SurfStar…</p>
         </div>
       </div>
