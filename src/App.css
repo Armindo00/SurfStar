@@ -5015,3 +5015,44 @@ body {
 .field--check input {
   width: auto;
 }
+
+@media (max-width: 480px) {
+  .custom-level-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .key--custom {
+    font-size: 0.95rem;
+    min-height: 3rem;
+  }
+
+  .custom-outcome-pick {
+    grid-template-columns: 1fr;
+  }
+
+  .subscription-plan-picker__item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .subscription-plan-picker__item > div {
+    min-width: 0;
+  }
+
+  .subscription-plan-picker__item .btn {
+    width: 100%;
+  }
+
+  .catalog-list__item--stack .catalog-list__actions {
+    flex-wrap: wrap;
+  }
+
+  .catalog-list__actions .btn {
+    flex: 1 1 auto;
+    min-width: 4.5rem;
+  }
+
+  .chip-row--templates .chip {
+    font-size: 0.82rem;
+  }
+}

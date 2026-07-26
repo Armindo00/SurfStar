@@ -1181,17 +1181,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteCustomTemplate = useCallback(
     (templateId: string) => {
-      persistCustomTemplates((prev) => {
-        const next = prev.filter((t) => t.id !== templateId)
-        setDraft((d) =>
-          d.customTemplateId === templateId
-            ? { ...d, customTemplateId: next[0]?.id ?? '' }
-            : d,
-        )
-        return next
+      persistCustomTemplates((prev) => prev.filter((t) => t.id !== templateId))
+      setDraft((d) => {
+        if (d.customTemplateId !== templateId) return d
+        const remaining = customTemplates.filter((t) => t.id !== templateId)
+        return { ...d, customTemplateId: remaining[0]?.id ?? '' }
       })
     },
-    [persistCustomTemplates],
+    [customTemplates, persistCustomTemplates],
   )
 
   const duplicateCustomTemplate = useCallback(
@@ -1890,70 +1887,69 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [activeSessionId, activeWaveId, updateSession],
   )
 
-  const ensureCustomWave = useCallback(
-    (sessionId: string, athleteId: string): string | null => {
-      const session = trainingSessions.find((s) => s.id === sessionId)
-      if (!session) return null
-
-      if (activeWaveId) return activeWaveId
-
-      const useWaves = session.customTemplateSnapshot?.useWaves !== false
-      if (useWaves) return null
-
-      const existing = session.waves.find((w) => w.athleteId === athleteId)
-      if (existing) {
-        setActiveWaveId(existing.id)
-        return existing.id
-      }
-
-      const wave = createPotentialWave(athleteId)
-      updateSession(sessionId, (s) => ({ ...s, waves: [wave, ...s.waves] }))
-      setActiveWaveId(wave.id)
-      return wave.id
-    },
-    [activeWaveId, trainingSessions, updateSession],
-  )
-
   const logCustomAttempt = useCallback(
     (buttonId: string, levelId: string | null, success: boolean | null) => {
       if (!activeSessionId || !activeAthleteId) return
 
-      const session = trainingSessions.find((s) => s.id === activeSessionId)
-      if (!session || session.mode !== 'custom') return
+      let nextActiveWaveId: string | null = null
 
-      const rules = session.customTemplateSnapshot?.rules
-      const useWaves = session.customTemplateSnapshot?.useWaves !== false
-      let waveId = activeWaveId
+      updateSession(activeSessionId, (s) => {
+        if (s.mode !== 'custom') return s
 
-      if (!waveId && !useWaves) {
-        waveId = ensureCustomWave(activeSessionId, activeAthleteId)
+        const rules = s.customTemplateSnapshot?.rules
+        const useWaves = s.customTemplateSnapshot?.useWaves !== false
+
+        let waveId = activeWaveId
+        if (waveId) {
+          const openWave = s.waves.find((w) => w.id === waveId)
+          if (!openWave || openWave.athleteId !== activeAthleteId) waveId = null
+        }
+
+        let newWave: WaveRecord | null = null
+        if (!waveId && !useWaves) {
+          const existing = s.waves.find((w) => w.athleteId === activeAthleteId)
+          if (existing) {
+            waveId = existing.id
+          } else {
+            newWave = createPotentialWave(activeAthleteId)
+            waveId = newWave.id
+          }
+        }
+
+        if (rules?.requireWaveBeforeLog && useWaves && !waveId) return s
+        if (!waveId) return s
+
+        const wave = newWave ?? s.waves.find((w) => w.id === waveId)
+        if (!wave) return s
+
+        const maxAttempts = rules?.maxAttemptsPerWave ?? null
+        if (maxAttempts !== null && countWaveCustomAttempts(wave) >= maxAttempts) return s
+
+        const entry: CustomAttemptLog = {
+          id: crypto.randomUUID(),
+          buttonId,
+          levelId,
+          success,
+          at: new Date().toISOString(),
+        }
+
+        const nextWaves = newWave
+          ? [{ ...newWave, customAttempts: [entry] }, ...s.waves]
+          : s.waves.map((w) =>
+              w.id === waveId
+                ? { ...w, customAttempts: [...(w.customAttempts ?? []), entry] }
+                : w,
+            )
+
+        nextActiveWaveId = waveId
+        return { ...s, waves: nextWaves }
+      })
+
+      if (nextActiveWaveId && nextActiveWaveId !== activeWaveId) {
+        setActiveWaveId(nextActiveWaveId)
       }
-
-      if (rules?.requireWaveBeforeLog && useWaves && !waveId) return
-      if (!waveId) return
-
-      const wave = session.waves.find((w) => w.id === waveId)
-      const maxAttempts = rules?.maxAttemptsPerWave ?? null
-      if (maxAttempts !== null && wave && countWaveCustomAttempts(wave) >= maxAttempts) return
-
-      const entry: CustomAttemptLog = {
-        id: crypto.randomUUID(),
-        buttonId,
-        levelId,
-        success,
-        at: new Date().toISOString(),
-      }
-
-      updateSession(activeSessionId, (s) => ({
-        ...s,
-        waves: s.waves.map((w) =>
-          w.id === waveId
-            ? { ...w, customAttempts: [...(w.customAttempts ?? []), entry] }
-            : w,
-        ),
-      }))
     },
-    [activeAthleteId, activeSessionId, activeWaveId, ensureCustomWave, trainingSessions, updateSession],
+    [activeAthleteId, activeSessionId, activeWaveId, updateSession],
   )
 
   const startCustomTimer = useCallback(() => {

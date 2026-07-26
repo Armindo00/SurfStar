@@ -1116,3 +1116,56 @@ body {
 .app-shell .heat-int-btn--severe strong {
   color: #991b1b !important;
 }
+
+/* Custom training — light panels need dark text on dark app shell */
+.app-shell :is(.custom-rules-panel, .custom-editor__button-card) {
+  color: var(--on-light-text) !important;
+  border-color: var(--on-light-border) !important;
+}
+
+.app-shell :is(.custom-rules-panel, .custom-editor__button-card) .muted,
+.app-shell :is(.custom-rules-panel, .custom-editor__button-card) .stats-panel__sub,
+.app-shell :is(.custom-rules-panel, .custom-editor__button-card) .field--pro span,
+.app-shell :is(.custom-rules-panel, .custom-editor__button-card) .field-label {
+  color: var(--on-light-muted) !important;
+}
+
+.app-shell :is(.custom-rules-panel, .custom-editor__button-card) strong,
+.app-shell .custom-editor__button-head strong {
+  color: var(--on-light-text) !important;
+}
+
+.app-shell .custom-editor__button-card .btn--ghost {
+  color: var(--on-light-text) !important;
+  border-color: rgba(10, 22, 40, 0.22) !important;
+}
+
+.app-shell .custom-rules-panel__notes {
+  color: var(--on-light-text) !important;
+}
+
+/* Catalog / template lists — dark-native cards (no white leak on navy shell) */
+.app-shell .catalog-list__item {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  color: var(--landing-text) !important;
+}
+
+.app-shell .catalog-list__main strong {
+  color: var(--landing-text) !important;
+}
+
+.app-shell .catalog-list__item .muted,
+.app-shell .catalog-list__sub {
+  color: #a8b8cc !important;
+}
+
+.app-shell .catalog-list__icon {
+  background: rgba(201, 169, 98, 0.18) !important;
+}
+
+.app-shell .catalog-list__item .btn--ghost {
+  color: var(--landing-gold-light) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
