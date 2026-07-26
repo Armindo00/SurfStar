@@ -105,12 +105,17 @@ export function getPlanPrice(plan: SubscriptionPlan, interval: BillingInterval):
   return interval === 'annual' ? plan.priceAnnual : plan.priceMonthly
 }
 
-export function formatPlanPrice(plan: SubscriptionPlan, interval: BillingInterval = 'monthly'): string {
-  return formatCurrency(getPlanPrice(plan, interval), plan.currency)
+/** Price shown in the UI (annual plans display the effective monthly rate). */
+export function getPlanDisplayPrice(plan: SubscriptionPlan, interval: BillingInterval): number {
+  return interval === 'annual' ? plan.priceAnnual / 12 : plan.priceMonthly
 }
 
-export function formatPlanPriceSuffix(interval: BillingInterval): string {
-  return interval === 'annual' ? '/yr' : '/mo'
+export function formatPlanPrice(plan: SubscriptionPlan, interval: BillingInterval = 'monthly'): string {
+  return formatCurrency(getPlanDisplayPrice(plan, interval), plan.currency)
+}
+
+export function formatPlanPriceSuffix(_interval: BillingInterval = 'monthly'): string {
+  return '/mo'
 }
 
 export function formatPlanPriceWithSuffix(plan: SubscriptionPlan, interval: BillingInterval): string {
@@ -119,6 +124,10 @@ export function formatPlanPriceWithSuffix(plan: SubscriptionPlan, interval: Bill
 
 export function formatEffectiveMonthlyFromAnnual(plan: SubscriptionPlan): string {
   return formatCurrency(plan.priceAnnual / 12, plan.currency)
+}
+
+export function formatAnnualBillingNote(plan: SubscriptionPlan): string {
+  return `Billed ${formatCurrency(plan.priceAnnual, plan.currency)}/year · ${getAnnualSavingsLabel()}`
 }
 
 export function getAnnualSavingsLabel(): string {

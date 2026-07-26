@@ -202,7 +202,7 @@ export function SubscriptionView() {
             <p className="muted">
               Need up to 5 coaches on one shared roster? Team Academy (
               {formatPlanPriceWithSuffix(getPlan('organization'), 'monthly')} or{' '}
-              {formatPlanPriceWithSuffix(getPlan('organization'), 'annual')}) is available by approval for
+              {formatPlanPriceWithSuffix(getPlan('organization'), 'annual')} billed annually) is available by approval for
               schools and federations.
             </p>
             <button type="button" className="btn btn--secondary btn--block" onClick={openTeamAcademyRequest}>

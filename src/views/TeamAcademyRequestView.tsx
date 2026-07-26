@@ -95,7 +95,8 @@ export function TeamAcademyRequestView() {
         <h1 className="auth-title">Request Team Academy</h1>
         <p className="muted auth-lead">
           For schools, federations, and surf academies. Up to 5 coaches on one shared roster —{' '}
-          {formatPlanPriceWithSuffix(plan, 'monthly')} or {formatPlanPriceWithSuffix(plan, 'annual')} after approval.
+          {formatPlanPriceWithSuffix(plan, 'monthly')} or {formatPlanPriceWithSuffix(plan, 'annual')} billed
+          annually after approval.
         </p>
 
         <ul className="checkout-features team-academy-request__features">

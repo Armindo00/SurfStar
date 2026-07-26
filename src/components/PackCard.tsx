@@ -1,8 +1,7 @@
 import {
-  formatEffectiveMonthlyFromAnnual,
+  formatAnnualBillingNote,
   formatPlanPrice,
   formatPlanPriceSuffix,
-  getAnnualSavingsLabel,
   getPlan,
   getVisibleComparisonFeatures,
   isApprovalRequiredPlan,
@@ -53,16 +52,8 @@ export function PackCard({ planId, billingInterval = 'monthly', selected, onSele
         <span>{formatPlanPriceSuffix(billingInterval)}</span>
       </p>
 
-      {billingInterval === 'annual' && !approvalRequired ? (
-        <p className="pack-card__annual-equiv muted">
-          {formatEffectiveMonthlyFromAnnual(plan)}/mo · {getAnnualSavingsLabel()}
-        </p>
-      ) : null}
-
-      {billingInterval === 'annual' && approvalRequired ? (
-        <p className="pack-card__annual-equiv muted">
-          {formatEffectiveMonthlyFromAnnual(plan)}/mo equivalent · {getAnnualSavingsLabel()}
-        </p>
+      {billingInterval === 'annual' ? (
+        <p className="pack-card__annual-equiv muted">{formatAnnualBillingNote(plan)}</p>
       ) : null}
 
       {approvalRequired ? (
