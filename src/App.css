@@ -4531,13 +4531,23 @@ body {
   letter-spacing: 0.04em;
   padding: 0.15rem 0.45rem;
   border-radius: 999px;
-  background: rgba(201, 169, 98, 0.22);
+  background: rgba(201, 169, 98, 0.32);
   color: #fde68a;
 }
 
+.billing-toggle__btn--active .billing-toggle__save {
+  background: linear-gradient(135deg, #dbbf6a, #b8943f);
+  color: #1a1204;
+}
+
 .checkout-card .billing-toggle__save {
-  background: rgba(201, 169, 98, 0.18);
+  background: rgba(201, 169, 98, 0.28);
   color: #92702a;
+}
+
+.checkout-card .billing-toggle__btn--active .billing-toggle__save {
+  background: linear-gradient(135deg, #dbbf6a, #b8943f);
+  color: #1a1204;
 }
 
 .pack-card__annual-equiv {

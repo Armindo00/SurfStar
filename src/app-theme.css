@@ -1048,6 +1048,7 @@ body {
 
 /* Form fields that still pick up pale App.css backgrounds */
 .app-shell .field--pro span,
+.auth-page .field--pro span,
 .login-page .field--pro span,
 .checkout-page .field--pro span {
   color: #cbd5e1 !important;
@@ -1056,6 +1057,9 @@ body {
 .app-shell .field--pro input,
 .app-shell .field--pro select,
 .app-shell .field--pro textarea,
+.auth-page .field--pro input,
+.auth-page .field--pro select,
+.auth-page .field--pro textarea,
 .login-page .field--pro input,
 .login-page .field--pro select,
 .login-page .field--pro textarea,
@@ -1069,9 +1073,41 @@ body {
   color: #f1f5f9 !important;
 }
 
+.auth-page .field--pro input::placeholder,
+.auth-page .field--pro textarea::placeholder {
+  color: #64748b !important;
+}
+
+.auth-page .field--pro select {
+  appearance: none;
+  color-scheme: dark;
+  padding-right: 2.5rem;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23cbd5e1' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    no-repeat right 0.85rem center,
+    rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f1f5f9 !important;
+}
+
+.auth-page .field--pro select:focus {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23f1f5f9' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    no-repeat right 0.85rem center,
+    rgba(0, 0, 0, 0.35) !important;
+}
+
+.auth-page .field--pro select option {
+  color: #0f172a;
+  background: #fff;
+}
+
 .app-shell .field--pro input:focus,
 .app-shell .field--pro select:focus,
 .app-shell .field--pro textarea:focus,
+.auth-page .field--pro input:focus,
+.auth-page .field--pro select:focus,
+.auth-page .field--pro textarea:focus,
 .login-page .field--pro input:focus,
 .login-page .field--pro select:focus,
 .login-page .field--pro textarea:focus,
