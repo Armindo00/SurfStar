@@ -1,5 +1,10 @@
+import { useMemo } from 'react'
 import { useApp } from '../AppContext'
-import { previewBracketRounds } from '../championshipUtils'
+import {
+  describeFullBracket,
+  isValidChampionshipField,
+  previewBracketRounds,
+} from '../championshipUtils'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { MAX_HEAT_ATHLETES } from '../heatUtils'
 
@@ -17,10 +22,22 @@ export function SelectAthletes() {
   const isCampeonato = draft.mode === 'campeonato'
   const isSeaAnalysis = draft.mode === 'sea-analysis'
 
-  const bracketPreview =
-    isCampeonato && draft.athleteIds.length >= 2
-      ? previewBracketRounds(draft.athleteIds.length, draft.championshipHeatSize)
-      : []
+  const selectedCount = draft.athleteIds.length
+
+  const bracketPreview = useMemo(() => {
+    if (!isCampeonato || selectedCount < 2) return []
+    return previewBracketRounds(selectedCount, draft.championshipHeatSize)
+  }, [draft.championshipHeatSize, isCampeonato, selectedCount])
+
+  const bracketDetail = useMemo(() => {
+    if (!isCampeonato || selectedCount < 2) return ''
+    return describeFullBracket(selectedCount, draft.championshipHeatSize)
+  }, [draft.championshipHeatSize, isCampeonato, selectedCount])
+
+  const bracketReady = useMemo(() => {
+    if (!isCampeonato) return true
+    return isValidChampionshipField(selectedCount, draft.championshipHeatSize)
+  }, [draft.championshipHeatSize, isCampeonato, selectedCount])
 
   const toggleAthlete = (id: string) => {
     if (draft.athleteIds.includes(id)) removeDraftAthlete(id)
@@ -55,14 +72,27 @@ export function SelectAthletes() {
           {heatCap
             ? `Select up to ${MAX_HEAT_ATHLETES} surfers for this heat.`
             : isCampeonato
-              ? 'Select everyone in today\'s contest. Heats will have 3 or 4 surfers depending on the total — SurfStar builds the full bracket.'
+              ? 'Select everyone in today\'s contest. The bracket adapts automatically — every heat always has at least 2 surfers.'
               : 'Tap to select or deselect. You can pick multiple athletes.'}
         </p>
 
-        {bracketPreview.length > 0 ? (
+        {isCampeonato ? (
           <p className="muted stats-panel__sub">
-            Bracket preview: {bracketPreview.join(' → ')}
+            {selectedCount} surfer{selectedCount === 1 ? '' : 's'} selected
+            {selectedCount >= 2 && bracketReady
+              ? ` · ${draft.championshipHeatSize === 2 ? 'top 1 per heat' : 'top 2 per heat'}`
+              : ''}
           </p>
+        ) : null}
+
+        {bracketPreview.length > 0 ? (
+          <p className="muted stats-panel__sub">Rounds: {bracketPreview.join(' → ')}</p>
+        ) : null}
+
+        {bracketDetail ? (
+          <p className="champ-bracket-preview-detail">{bracketDetail}</p>
+        ) : isCampeonato && selectedCount === 1 ? (
+          <p className="muted stats-panel__sub">Select at least one more surfer to build the bracket.</p>
         ) : null}
 
         <div className="athlete-grid">
@@ -91,7 +121,10 @@ export function SelectAthletes() {
         <button
           type="button"
           className="btn btn--primary btn--block btn--lg"
-          disabled={draft.athleteIds.length === 0 || (isCampeonato && draft.athleteIds.length < 2)}
+          disabled={
+            draft.athleteIds.length === 0 ||
+            (isCampeonato && (selectedCount < 2 || !bracketReady))
+          }
           onClick={confirmAthletesAndStart}
         >
           {isCampeonato ? 'Start championship' : 'Start training'}

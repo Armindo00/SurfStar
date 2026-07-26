@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
+import { ChampionshipBracketBoard } from '../components/ChampionshipBracketBoard'
 import { HeatRunnerPanel } from '../components/HeatRunnerPanel'
 import { SessionTools } from '../components/SessionTools'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
-import { getAdvancementSummary, heatsInRound, maxRound, previewBracketRounds, splitAthletesIntoHeats } from '../championshipUtils'
-import { heatIsFinished, heatIsRunning } from '../heatUtils'
+import { activeChampionshipRound, previewBracketRounds, splitAthletesIntoHeats } from '../championshipUtils'
 
 export function ChampionshipSessionView() {
   const { activeSession, activeHeatId, setActiveHeatId, setView, getAthlete } = useApp()
@@ -12,7 +12,10 @@ export function ChampionshipSessionView() {
   const heats = activeSession?.heats ?? []
   const championship = activeSession?.championship ?? null
   const heatSize = championship?.heatSize ?? 4
-  const activeHeat = heats.find((h) => h.id === activeHeatId) ?? heats.find((h) => !h.endedAt) ?? heats[0]
+  const activeHeat =
+    heats.find((h) => h.id === activeHeatId) ??
+    heats.find((h) => !h.endedAt && !h.bracketLocked) ??
+    heats[0]
 
   const athleteCount = activeSession?.athleteIds.length ?? 0
 
@@ -35,15 +38,7 @@ export function ChampionshipSessionView() {
       .join(' · ')
   }, [activeSession, athleteCount, heatSize])
 
-  const rounds = useMemo(() => {
-    const total = maxRound(heats)
-    return Array.from({ length: total }, (_, i) => i + 1)
-  }, [heats])
-
-  const currentRound = useMemo(() => {
-    const open = heats.find((h) => !h.endedAt)
-    return open?.round ?? maxRound(heats)
-  }, [heats])
+  const currentRound = useMemo(() => activeChampionshipRound(heats), [heats])
 
   if (!activeSession || activeSession.mode !== 'campeonato') {
     return (
@@ -68,12 +63,13 @@ export function ChampionshipSessionView() {
       <div className="ss-card champ-bracket-card">
         <h2 className="page-title">Bracket</h2>
         <p className="muted stats-panel__sub">
-          {athleteCount} surfers · {heatSize === 2 ? 'heats of 2 · top 1 advances' : 'heats of 3 or 4 · top 2 advance'}
+          {athleteCount} surfers ·{' '}
+          {heatSize === 2 ? 'heats of 2 · top 1 advances' : 'heats of 3 or 4 · top 2 advance'}
         </p>
         {bracketPreview.length > 0 ? (
           <p className="muted stats-panel__sub">
-            Bracket: {bracketPreview.join(' → ')}
-            {firstRoundLayout ? ` · opening round: ${firstRoundLayout}` : ''}
+            {bracketPreview.join(' → ')}
+            {firstRoundLayout ? ` · opening: ${firstRoundLayout}` : ''}
           </p>
         ) : null}
 
@@ -85,66 +81,35 @@ export function ChampionshipSessionView() {
           <p className="muted">Round {currentRound} in progress</p>
         )}
 
-        {rounds.map((round) => {
-          const roundHeats = heatsInRound(heats, round)
-          if (roundHeats.length === 0) return null
-          return (
-            <section key={round} className="champ-round">
-              <h3 className="champ-round__title">
-                {roundHeats[0]?.label.split(' · ')[0] ?? `Round ${round}`}
-              </h3>
-              <ul className="champ-heat-list">
-                {roundHeats.map((h) => {
-                  const running = heatIsRunning(h)
-                  const done = heatIsFinished(h)
-                  const summary = done ? getAdvancementSummary(h, heatSize) : []
-
-                  return (
-                    <li key={h.id}>
-                      <button
-                        type="button"
-                        className={
-                          activeHeat?.id === h.id ? 'champ-heat-item champ-heat-item--on' : 'champ-heat-item'
-                        }
-                        onClick={() => setActiveHeatId(h.id)}
-                      >
-                        <span>
-                          <strong>{h.label}</strong>
-                          <small>
-                            {h.durationMinutes} min · {h.athleteIds.length} surfers
-                            {done ? ' · finished' : running ? ' · live' : ' · ready'}
-                          </small>
-                          {done && summary.length > 0 ? (
-                            <small className="champ-heat-item__advance">
-                              Advances:{' '}
-                              {summary
-                                .filter((row) => row.advances)
-                                .map((row) => getAthlete(row.athleteId)?.name ?? 'Surfer')
-                                .join(', ') || '—'}
-                            </small>
-                          ) : null}
-                          {!done ? (
-                            <small className="champ-heat-item__lineup">
-                              {h.athleteIds
-                                .map((id) => getAthlete(id)?.name ?? 'Surfer')
-                                .join(' · ')}
-                            </small>
-                          ) : null}
-                        </span>
-                        <span aria-hidden="true">›</span>
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
-            </section>
-          )
-        })}
+        <ChampionshipBracketBoard
+          heats={heats}
+          heatSize={heatSize}
+          activeHeatId={activeHeat?.id ?? null}
+          onSelectHeat={setActiveHeatId}
+          getAthleteName={(id) => getAthlete(id)?.name ?? 'Surfer'}
+        />
       </div>
 
       {activeHeat ? (
         <div className="ss-card">
-          <HeatRunnerPanel heat={activeHeat} championshipHeatSize={heatSize} />
+          {activeHeat.bracketLocked ? (
+            <div className="champ-bracket-wait">
+              <h2 className="heat-runner__title">{activeHeat.label}</h2>
+              <p className="muted">
+                This heat unlocks when the previous round finishes. Finish every heat in the
+                current round to fill these slots automatically.
+              </p>
+              <ul className="champ-bracket-slots">
+                {Array.from({ length: activeHeat.bracketCapacity ?? 2 }, (_, i) => (
+                  <li key={i} className="champ-bracket-slots__tbd">
+                    TBD
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <HeatRunnerPanel heat={activeHeat} championshipHeatSize={heatSize} />
+          )}
         </div>
       ) : null}
 

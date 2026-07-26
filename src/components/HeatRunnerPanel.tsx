@@ -27,6 +27,8 @@ export function HeatRunnerPanel({ heat, championshipHeatSize }: Props) {
 
   const running = heatIsRunning(heat)
   const finished = heatIsFinished(heat)
+  const locked = Boolean(heat.bracketLocked)
+  const canStart = !locked && heat.athleteIds.length > 0
   const canScore = running && !finished
   const heatStarted = Boolean(heat.timerStartedAt)
   const canPenalize = heatStarted
@@ -55,7 +57,7 @@ export function HeatRunnerPanel({ heat, championshipHeatSize }: Props) {
       </p>
 
       <div className="heat-runner__controls">
-        {!heat.timerStartedAt ? (
+        {!heat.timerStartedAt && canStart ? (
           <button type="button" className="btn btn--primary btn--block btn--lg" onClick={() => startHeatTimer(heat.id)}>
             Start heat
           </button>

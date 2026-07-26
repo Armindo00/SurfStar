@@ -289,6 +289,10 @@ export type HeatRecord = {
   advancesCount?: number
   /** True when this heat decides the champion (top 1 only). */
   isFinal?: boolean
+  /** Championship: waiting for previous round — no surfers assigned yet. */
+  bracketLocked?: boolean
+  /** Expected surfers in this heat (for empty bracket slots). */
+  bracketCapacity?: number
 }
 
 export type ChampionshipHeatSize = 2 | 4

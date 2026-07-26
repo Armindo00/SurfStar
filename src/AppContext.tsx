@@ -89,7 +89,7 @@ import {
   migrateLegacyLocalAthletes,
 } from './localPairing'
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
-import { buildInitialChampionshipHeats, processChampionshipRoundAdvance } from './championshipUtils'
+import { buildInitialChampionshipHeats, isValidChampionshipField, processChampionshipRoundAdvance } from './championshipUtils'
 import type { PlanId } from './plans'
 import { getPlan, getStripePaymentLink, isStripeConfigured } from './plans'
 import {
@@ -1704,6 +1704,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       showToast('Select at least 2 athletes for a championship.', 'error')
       return
     }
+    if (
+      draft.mode === 'campeonato' &&
+      !isValidChampionshipField(draft.athleteIds.length, draft.championshipHeatSize)
+    ) {
+      showToast(
+        'Cannot build a valid bracket with this number of surfers. Each heat needs at least 2 athletes.',
+        'error',
+      )
+      return
+    }
     if (auth?.role !== 'treinador') return
 
     const planId = subscription?.planId ?? 'starter'
@@ -2058,11 +2068,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!activeSessionId) return
       updateSession(activeSessionId, (s) => ({
         ...s,
-        heats: s.heats.map((h) =>
-          h.id === heatId && !h.timerStartedAt && !h.endedAt
-            ? { ...h, timerStartedAt: new Date().toISOString() }
-            : h,
-        ),
+        heats: s.heats.map((h) => {
+          if (h.id !== heatId || h.timerStartedAt || h.endedAt) return h
+          if (h.bracketLocked || h.athleteIds.length === 0) return h
+          return { ...h, timerStartedAt: new Date().toISOString() }
+        }),
       }))
     },
     [activeSessionId, updateSession],

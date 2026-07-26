@@ -1448,3 +1448,164 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+.champ-bracket-board {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  scroll-snap-type: x proximity;
+}
+
+.champ-bracket-col {
+  position: relative;
+  flex: 0 0 min(17rem, 78vw);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.champ-bracket-col--active .champ-bracket-col__head h3 {
+  color: var(--landing-gold-light);
+}
+
+.champ-bracket-col__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.champ-bracket-col__head h3 {
+  margin: 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #c5d0df;
+}
+
+.champ-bracket-col__head span {
+  font-size: 0.72rem;
+  color: #8fa0b5;
+}
+
+.champ-bracket-col__heats {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.champ-bracket-col__arrow {
+  position: absolute;
+  right: -0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(201, 169, 98, 0.55);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.champ-bracket-heat {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(8, 30, 58, 0.45);
+  padding: 0.65rem 0.75rem;
+  color: #dbe4ef;
+  cursor: pointer;
+}
+
+.champ-bracket-heat--on {
+  border-color: rgba(201, 169, 98, 0.55);
+  box-shadow: 0 0 0 1px rgba(201, 169, 98, 0.15);
+}
+
+.champ-bracket-heat--locked {
+  opacity: 0.82;
+  background: rgba(8, 30, 58, 0.25);
+}
+
+.champ-bracket-heat__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  margin-bottom: 0.45rem;
+}
+
+.champ-bracket-heat__top strong {
+  font-size: 0.88rem;
+}
+
+.champ-bracket-heat__badge {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #a8b8cc;
+}
+
+.champ-bracket-heat__badge--live {
+  background: rgba(220, 80, 80, 0.2);
+  color: #ffb4b4;
+}
+
+.champ-bracket-heat__badge--wait {
+  background: rgba(255, 255, 255, 0.06);
+  color: #8fa0b5;
+}
+
+.champ-bracket-heat__badge--done {
+  background: rgba(80, 180, 120, 0.18);
+  color: #b8efd0;
+}
+
+.champ-bracket-slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.champ-bracket-slots li {
+  font-size: 0.84rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.champ-bracket-slots__tbd {
+  color: #7f8fa3;
+  font-style: italic;
+}
+
+.champ-bracket-heat__hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.74rem;
+}
+
+.champ-bracket-heat__advance {
+  margin: 0.35rem 0 0;
+  font-size: 0.74rem;
+  color: var(--landing-gold-light);
+}
+
+.champ-bracket-wait {
+  padding: 0.25rem 0;
+}
+
+.champ-bracket-preview-detail {
+  margin: 0.65rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(201, 169, 98, 0.08);
+  border: 1px solid rgba(201, 169, 98, 0.2);
+  color: #e8edf4;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}

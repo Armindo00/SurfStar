@@ -7,30 +7,42 @@ import type {
 } from './types'
 
 export function advancesFromHeat(heatSize: ChampionshipHeatSize, athleteCount: number): number {
-  if (athleteCount <= 0) return 0
-  if (athleteCount === 1) return 1
+  if (athleteCount < 2) return 0
   return heatSize === 2 ? 1 : 2
 }
 
-/** Find heat sizes (each 2–4 in 4-mode, or 1–2 in 2-mode) that fit all athletes. */
+const MIN_HEAT_SURFERS = 2
+
+function heatSizesAreValid(sizes: number[]): boolean {
+  return sizes.length > 0 && sizes.every((size) => size >= MIN_HEAT_SURFERS)
+}
+
+/** Find heat sizes (2–4 in 4-mode, 2–3 in 2-mode). Never creates a heat of 1. */
 export function partitionHeatSizes(
   athleteCount: number,
   heatSize: ChampionshipHeatSize,
 ): number[] {
-  if (athleteCount <= 0) return []
+  if (athleteCount < MIN_HEAT_SURFERS) return []
 
   if (heatSize === 2) {
-    const sizes: number[] = []
-    let remaining = athleteCount
-    while (remaining > 0) {
-      if (remaining === 1) {
-        sizes.push(1)
-        break
+    if (athleteCount <= 3) return [athleteCount]
+
+    let best: number[] | null = null
+    let bestScore = -Infinity
+    const minHeats = Math.ceil(athleteCount / 3)
+    const maxHeats = Math.ceil(athleteCount / 2)
+
+    for (let heatCount = minHeats; heatCount <= maxHeats; heatCount++) {
+      const sizes = distributeIntoHeats(athleteCount, heatCount, MIN_HEAT_SURFERS, 3)
+      if (!sizes || !heatSizesAreValid(sizes)) continue
+      const score = scorePartition(sizes, heatSize)
+      if (score > bestScore) {
+        bestScore = score
+        best = sizes
       }
-      sizes.push(2)
-      remaining -= 2
     }
-    return sizes
+
+    return best ?? []
   }
 
   if (athleteCount <= 4) return [athleteCount]
@@ -41,8 +53,8 @@ export function partitionHeatSizes(
   const maxHeats = Math.ceil(athleteCount / 2)
 
   for (let heatCount = minHeats; heatCount <= maxHeats; heatCount++) {
-    const sizes = distributeIntoHeats(athleteCount, heatCount, 2, 4)
-    if (!sizes) continue
+    const sizes = distributeIntoHeats(athleteCount, heatCount, MIN_HEAT_SURFERS, 4)
+    if (!sizes || !heatSizesAreValid(sizes)) continue
     const score = scorePartition(sizes, heatSize)
     if (score > bestScore) {
       bestScore = score
@@ -50,7 +62,7 @@ export function partitionHeatSizes(
     }
   }
 
-  return best ?? [athleteCount]
+  return best ?? []
 }
 
 function scorePartition(sizes: number[], heatSize: ChampionshipHeatSize): number {
@@ -145,27 +157,39 @@ export function previewBracketRounds(
   athleteCount: number,
   heatSize: ChampionshipHeatSize,
 ): string[] {
-  if (athleteCount < 2) return []
+  return simulateBracketStructure(athleteCount, heatSize).map((round) => round.label)
+}
 
-  const labels: string[] = []
-  let current = athleteCount
-  let round = 1
+export function describeHeatSizes(sizes: number[]): string {
+  const summary = sizes.reduce<Record<number, number>>((acc, n) => {
+    acc[n] = (acc[n] ?? 0) + 1
+    return acc
+  }, {})
 
-  while (current > 1) {
-    labels.push(roundLabelForRound(current, round))
-    if (current <= 2) break
+  return Object.entries(summary)
+    .sort(([a], [b]) => Number(b) - Number(a))
+    .map(([size, count]) => `${count} heat${count === 1 ? '' : 's'} of ${size}`)
+    .join(' · ')
+}
 
-    const sizes = partitionHeatSizes(current, heatSize)
-    current = sizes.reduce((sum, size) => sum + advancesFromHeat(heatSize, size), 0)
-    round += 1
-  }
+/** Human-readable bracket for the coach while selecting athletes. */
+export function describeFullBracket(
+  athleteCount: number,
+  heatSize: ChampionshipHeatSize,
+): string {
+  const structure = simulateBracketStructure(athleteCount, heatSize)
+  if (structure.length === 0) return ''
 
-  const last = labels[labels.length - 1]
-  if (last && last !== 'Final') {
-    labels.push('Final')
-  }
+  return structure
+    .map((round) => `${round.label}: ${describeHeatSizes(round.heatSizes)}`)
+    .join(' → ')
+}
 
-  return [...new Set(labels)]
+export function isValidChampionshipField(
+  athleteCount: number,
+  heatSize: ChampionshipHeatSize,
+): boolean {
+  return simulateBracketStructure(athleteCount, heatSize).length > 0
 }
 
 export function describeHeatGroups(groups: string[][]): string {
@@ -224,8 +248,168 @@ export function buildInitialChampionshipHeats(
   heatSize: ChampionshipHeatSize,
   durationMinutes: HeatDurationMinutes,
 ): HeatRecord[] {
-  const groups = splitAthletesIntoHeats(athleteIds, heatSize)
-  return createHeatRecordsForGroups(groups, 1, heatSize, durationMinutes)
+  return buildFullChampionshipBracket(athleteIds, heatSize, durationMinutes)
+}
+
+export type BracketRoundPlan = {
+  round: number
+  label: string
+  heatSizes: number[]
+  isFinal: boolean
+}
+
+/** Full bracket structure from opening round through the final. */
+export function simulateBracketStructure(
+  athleteCount: number,
+  heatSize: ChampionshipHeatSize,
+): BracketRoundPlan[] {
+  if (athleteCount < MIN_HEAT_SURFERS) return []
+
+  if (athleteCount === MIN_HEAT_SURFERS) {
+    return [{ round: 1, label: 'Final', heatSizes: [2], isFinal: true }]
+  }
+
+  const rounds: BracketRoundPlan[] = []
+  let current = athleteCount
+  let roundNum = 1
+
+  while (true) {
+    const sizes = partitionHeatSizes(current, heatSize)
+    if (!heatSizesAreValid(sizes)) return []
+
+    const advances = sizes.reduce((sum, size) => sum + advancesFromHeat(heatSize, size), 0)
+
+    if (advances <= 1) {
+      rounds.push({
+        round: roundNum,
+        label: current <= 4 && sizes.length === 1 ? 'Final' : roundLabelForRound(current, roundNum),
+        heatSizes: sizes,
+        isFinal: true,
+      })
+      break
+    }
+
+    if (advances === 2) {
+      rounds.push({
+        round: roundNum,
+        label: roundLabelForRound(current, roundNum),
+        heatSizes: sizes,
+        isFinal: false,
+      })
+      rounds.push({
+        round: roundNum + 1,
+        label: 'Final',
+        heatSizes: [2],
+        isFinal: true,
+      })
+      break
+    }
+
+    rounds.push({
+      round: roundNum,
+      label: roundLabelForRound(current, roundNum),
+      heatSizes: sizes,
+      isFinal: false,
+    })
+    current = advances
+    roundNum += 1
+  }
+
+  return rounds.every((round) => heatSizesAreValid(round.heatSizes)) ? rounds : []
+}
+
+/** Create every heat upfront — later rounds start locked until winners arrive. */
+export function buildFullChampionshipBracket(
+  athleteIds: string[],
+  heatSize: ChampionshipHeatSize,
+  durationMinutes: HeatDurationMinutes,
+): HeatRecord[] {
+  const structure = simulateBracketStructure(athleteIds.length, heatSize)
+  if (structure.length === 0) return []
+
+  const allHeats: HeatRecord[] = []
+  const firstPlan = structure[0]!
+  const openingGroups = splitAthletesIntoHeats(athleteIds, heatSize)
+
+  openingGroups.forEach((group, index) => {
+    const isSingleFinalRound = firstPlan.isFinal && structure.length === 1
+    allHeats.push({
+      id: crypto.randomUUID(),
+      label: isSingleFinalRound
+        ? 'Final'
+        : `${firstPlan.label} · Heat ${index + 1}`,
+      athleteIds: group,
+      durationMinutes,
+      timerStartedAt: null,
+      endedAt: null,
+      waveScores: [],
+      interferences: [],
+      round: firstPlan.round,
+      advancesCount: firstPlan.isFinal ? 1 : advancesFromHeat(heatSize, group.length),
+      isFinal: firstPlan.isFinal,
+      bracketLocked: false,
+      bracketCapacity: group.length,
+    })
+  })
+
+  for (let planIndex = 1; planIndex < structure.length; planIndex++) {
+    const plan = structure[planIndex]!
+    plan.heatSizes.forEach((capacity, index) => {
+      allHeats.push({
+        id: crypto.randomUUID(),
+        label:
+          plan.heatSizes.length === 1 && plan.isFinal
+            ? 'Final'
+            : `${plan.label} · Heat ${index + 1}`,
+        athleteIds: [],
+        durationMinutes,
+        timerStartedAt: null,
+        endedAt: null,
+        waveScores: [],
+        interferences: [],
+        round: plan.round,
+        advancesCount: plan.isFinal ? 1 : advancesFromHeat(heatSize, capacity),
+        isFinal: plan.isFinal,
+        bracketLocked: true,
+        bracketCapacity: capacity,
+      })
+    })
+  }
+
+  return allHeats
+}
+
+export function findRoundReadyToAdvance(heats: HeatRecord[]): number | null {
+  const rounds = [...new Set(heats.map((h) => h.round ?? 1))].sort((a, b) => a - b)
+  for (const round of rounds) {
+    if (!isRoundComplete(heats, round)) continue
+    const nextRoundHeats = heatsInRound(heats, round + 1)
+    if (nextRoundHeats.length === 0) continue
+    if (nextRoundHeats.some((h) => h.bracketLocked || h.athleteIds.length === 0)) {
+      return round
+    }
+  }
+  return null
+}
+
+export function activeChampionshipRound(heats: HeatRecord[]): number {
+  const rounds = [...new Set(heats.map((h) => h.round ?? 1))].sort((a, b) => a - b)
+  for (const round of rounds) {
+    const roundHeats = heatsInRound(heats, round)
+    if (roundHeats.some((h) => !h.bracketLocked && !h.endedAt)) return round
+  }
+  return rounds[rounds.length - 1] ?? 1
+}
+
+export function groupHeatsByRound(heats: HeatRecord[]): { round: number; label: string; heats: HeatRecord[] }[] {
+  const rounds = [...new Set(heats.map((h) => h.round ?? 1))].sort((a, b) => a - b)
+  return rounds.map((round) => {
+    const roundHeats = heatsInRound(heats, round).sort((a, b) => a.label.localeCompare(b.label))
+    const label = roundHeats[0]?.isFinal
+      ? 'Final'
+      : roundHeats[0]?.label.split(' · ')[0] ?? `Round ${round}`
+    return { round, label, heats: roundHeats }
+  })
 }
 
 export type ChampionshipAdvanceResult = {
@@ -237,14 +421,27 @@ export type ChampionshipAdvanceResult = {
 export function processChampionshipRoundAdvance(
   heats: HeatRecord[],
   championship: ChampionshipState,
-  durationMinutes: HeatDurationMinutes,
+  _durationMinutes: HeatDurationMinutes,
 ): ChampionshipAdvanceResult {
-  const round = maxRound(heats)
-  if (!isRoundComplete(heats, round)) {
+  const finalHeat = heats.find((h) => h.isFinal)
+  if (finalHeat?.endedAt) {
+    const championId = getHeatWinners(finalHeat, championship.heatSize)[0] ?? null
+    if (championship.status === 'complete' && championship.championAthleteId === championId) {
+      return { heats, championship, advancedToNextRound: false }
+    }
+    return {
+      heats,
+      championship: { ...championship, status: 'complete', championAthleteId: championId },
+      advancedToNextRound: false,
+    }
+  }
+
+  const roundToAdvance = findRoundReadyToAdvance(heats)
+  if (roundToAdvance === null) {
     return { heats, championship, advancedToNextRound: false }
   }
 
-  const roundHeats = heatsInRound(heats, round)
+  const roundHeats = heatsInRound(heats, roundToAdvance)
   const winners = roundHeats.flatMap((h) => getHeatWinners(h, championship.heatSize))
 
   if (winners.length <= 1) {
@@ -259,39 +456,30 @@ export function processChampionshipRoundAdvance(
     }
   }
 
-  const nextRound = round + 1
+  const nextRound = roundToAdvance + 1
+  const nextRoundHeats = heatsInRound(heats, nextRound)
+  const winnerGroups = splitAthletesIntoHeats(winners, championship.heatSize)
+  let groupIndex = 0
 
-  if (winners.length === 2) {
-    const finalHeat: HeatRecord = {
-      id: crypto.randomUUID(),
-      label: 'Final',
-      athleteIds: winners,
-      durationMinutes,
-      timerStartedAt: null,
-      endedAt: null,
-      waveScores: [],
-      interferences: [],
-      round: nextRound,
-      advancesCount: 1,
-      isFinal: true,
-    }
+  const updatedHeats = heats.map((heat) => {
+    if ((heat.round ?? 1) !== nextRound) return heat
+    const slotIndex = nextRoundHeats.findIndex((h) => h.id === heat.id)
+    if (slotIndex < 0) return heat
+
+    const group = winnerGroups[groupIndex]
+    groupIndex += 1
+    if (!group || group.length === 0) return heat
+
     return {
-      heats: [...heats, finalHeat],
-      championship: { ...championship, status: 'active', championAthleteId: null },
-      advancedToNextRound: true,
+      ...heat,
+      athleteIds: group,
+      bracketLocked: false,
+      advancesCount: heat.isFinal ? 1 : advancesFromHeat(championship.heatSize, group.length),
     }
-  }
-
-  const groups = splitAthletesIntoHeats(winners, championship.heatSize)
-  const nextHeats = createHeatRecordsForGroups(
-    groups,
-    nextRound,
-    championship.heatSize,
-    durationMinutes,
-  )
+  })
 
   return {
-    heats: [...heats, ...nextHeats],
+    heats: updatedHeats,
     championship: { ...championship, status: 'active', championAthleteId: null },
     advancedToNextRound: true,
   }
