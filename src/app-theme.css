@@ -1703,24 +1703,54 @@ body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1.1rem;
+  gap: 1.35rem;
 }
 
-.auth-brand-mark__tagline {
+.auth-brand-mark__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding-top: 0.15rem;
+}
+
+.auth-brand-mark__copy::before {
+  content: '';
+  display: block;
+  width: 2.75rem;
+  height: 1px;
+  margin-bottom: 0.55rem;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(201, 169, 98, 0.55) 50%,
+    transparent
+  );
+}
+
+.auth-brand-mark__lead {
   margin: 0;
-  max-width: 16rem;
-  font-size: clamp(1rem, 2vw, 1.15rem);
-  line-height: 1.45;
-}
-
-.auth-brand-mark__pre {
-  color: #94a3b8;
+  font-size: 0.82rem;
   font-weight: 500;
+  letter-spacing: 0.03em;
+  color: #8fa0b5;
 }
 
 .auth-brand-mark__slogan {
-  color: var(--landing-gold-light);
+  margin: 0;
+  font-size: clamp(0.88rem, 1.7vw, 1rem);
   font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--landing-gold-light);
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .auth-brand-mark__slogan {
+    letter-spacing: 0.1em;
+    font-size: 0.82rem;
+  }
 }
 
 .auth-hero__inner {

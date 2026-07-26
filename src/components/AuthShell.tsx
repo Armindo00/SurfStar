@@ -13,10 +13,10 @@ export function AuthBrandMark({ showTagline = false }: { showTagline?: boolean }
     <div className="auth-brand-mark">
       <AppLogo size="2xl" />
       {showTagline ? (
-        <p className="auth-brand-mark__tagline">
-          <span className="auth-brand-mark__pre">Get ready to,</span>{' '}
-          <span className="auth-brand-mark__slogan">Ride, improve, win!</span>
-        </p>
+        <div className="auth-brand-mark__copy">
+          <p className="auth-brand-mark__lead">Get ready to</p>
+          <p className="auth-brand-mark__slogan">Ride · Improve · Win</p>
+        </div>
       ) : null}
     </div>
   )
