@@ -8,6 +8,8 @@ export type SubscriptionPlan = {
   maxAthletes: number | null
   maxCoaches: number
   highlighted?: boolean
+  /** Cannot self-checkout — contact / manual approval required */
+  requiresApproval?: boolean
 }
 
 export type PlanComparisonFeature = {
@@ -60,6 +62,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     currency: 'EUR',
     maxAthletes: null,
     maxCoaches: 5,
+    requiresApproval: true,
   },
 ]
 
@@ -90,14 +93,28 @@ export function formatPlanPrice(plan: SubscriptionPlan): string {
 }
 
 export function getStripePaymentLink(planId: PlanId): string | null {
+  if (isApprovalRequiredPlan(planId)) return null
   const envKey = `VITE_STRIPE_LINK_${planId.toUpperCase()}` as const
   const value = import.meta.env[envKey]
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }
 
 export function isStripeConfigured(): boolean {
-  const ids: PlanId[] = ['team', 'club', 'organization']
-  return ids.some((id) => Boolean(getStripePaymentLink(id)))
+  return getSelfServePlans().some((id) => Boolean(getStripePaymentLink(id)))
+}
+
+export function isApprovalRequiredPlan(planId: PlanId): boolean {
+  return Boolean(getPlan(planId).requiresApproval)
+}
+
+export function getSelfServePlans(): PlanId[] {
+  return SUBSCRIPTION_PLANS.filter((p) => !p.requiresApproval).map((p) => p.id)
+}
+
+export function getTeamAcademyContactEmail(): string {
+  const value = import.meta.env.VITE_TEAM_ACADEMY_CONTACT_EMAIL
+  if (typeof value === 'string' && value.trim()) return value.trim()
+  return 'hello@surf-star.vercel.app'
 }
 
 export function isOrganizationPlan(planId: PlanId): boolean {

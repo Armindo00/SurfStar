@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { formatPlanPrice, getPlan, isStripeConfigured, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
+import { formatPlanPrice, getPlan, isApprovalRequiredPlan, isStripeConfigured, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
 import { athleteLimitMessage, coachSeatLimitMessage, canManageOrganizationCoaches } from '../planUtils'
 import { cloudOpenBillingPortal, isSubscriptionActive } from '../subscriptionApi'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -16,6 +16,7 @@ export function SubscriptionView() {
     changeSubscriptionPlan,
     cancelSubscription,
     changePassword,
+    openTeamAcademyRequest,
     setView,
     cloudMode,
   } = useApp()
@@ -166,7 +167,7 @@ export function SubscriptionView() {
             : 'Switch anytime. Upgrades apply immediately; downgrades follow your billing cycle when paid via Stripe.'}
         </p>
         <div className="subscription-plan-picker">
-          {SUBSCRIPTION_PLANS.map((item) => {
+          {SUBSCRIPTION_PLANS.filter((item) => !isApprovalRequiredPlan(item.id)).map((item) => {
             const isCurrent = subscription?.planId === item.id && isActive
             return (
               <div
@@ -194,6 +195,17 @@ export function SubscriptionView() {
             )
           })}
         </div>
+        {!canManageOrganizationCoaches(plan?.id ?? 'team') ? (
+          <div className="subscription-team-academy-cta">
+            <p className="muted">
+              Need up to 5 coaches on one shared roster? Team Academy ({formatPlanPrice(getPlan('organization'))}/mo)
+              is available by approval for schools and federations.
+            </p>
+            <button type="button" className="btn btn--secondary btn--block" onClick={openTeamAcademyRequest}>
+              Request Team Academy
+            </button>
+          </div>
+        ) : null}
         {cloudMode ? (
           <button
             type="button"

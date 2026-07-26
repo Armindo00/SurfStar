@@ -13,6 +13,7 @@ export function OrganizationView() {
     inviteOrganizationCoach,
     removeOrganizationMember,
     updateOrganizationName,
+    openTeamAcademyRequest,
     setView,
   } = useApp()
 
@@ -192,8 +193,8 @@ export function OrganizationView() {
             The Team Academy plan is built for schools, federations, and surf academies — up to 5 coaches,
             unlimited athletes, and everything in Coach Premium.
           </p>
-          <button type="button" className="btn btn--gold btn--block" onClick={() => setView('subscription')}>
-            View Team Academy plan
+          <button type="button" className="btn btn--gold btn--block" onClick={openTeamAcademyRequest}>
+            Request Team Academy access
           </button>
         </div>
       ) : null}

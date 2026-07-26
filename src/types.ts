@@ -7,8 +7,9 @@ export type PublicView =
   | 'athlete-sign-in'
   | 'athlete-sign-up'
   | 'checkout'
+  | 'team-academy-request'
 
-export type AuthPublicView = Exclude<PublicView, 'landing' | 'checkout'>
+export type AuthPublicView = Exclude<PublicView, 'landing' | 'checkout' | 'team-academy-request'>
 
 /** Tipos de sessão SurfStar (evolução futura: mar, heat) */
 export type SessionType = 'treino-tecnico' | 'analise-mar' | 'heat'

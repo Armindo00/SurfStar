@@ -92,7 +92,7 @@ import {
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
 import { buildInitialChampionshipHeats, isValidChampionshipField, processChampionshipRoundAdvance } from './championshipUtils'
 import type { PlanId } from './plans'
-import { getPlan, getStripePaymentLink, isStripeConfigured } from './plans'
+import { getPlan, getStripePaymentLink, isApprovalRequiredPlan, isStripeConfigured } from './plans'
 import {
   canAccessTeamAnalytics,
   canAddAthlete,
@@ -167,6 +167,7 @@ type AppContextValue = {
   openCoachSignUp: () => void
   openAthleteSignIn: () => void
   openAthleteSignUp: () => void
+  openTeamAcademyRequest: () => void
   openForgotPassword: () => void
   requestPasswordReset: (email: string) => Promise<{ ok: true } | { ok: false; error: string }>
   startCheckout: () => Promise<{ ok: true } | { ok: false; error: string }>
@@ -613,6 +614,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [auth, cloudMode, refreshOrganizationMembers])
 
   const selectPlan = useCallback((planId: PlanId, options?: { goToLogin?: boolean }) => {
+    if (isApprovalRequiredPlan(planId)) {
+      setSelectedPlanId(planId)
+      setPublicView('team-academy-request')
+      return
+    }
     setSelectedPlanId(planId)
     if (options?.goToLogin !== false) {
       setPublicView('coach-sign-up')
@@ -650,6 +656,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPublicView('athlete-sign-up')
   }, [setPublicView])
 
+  const openTeamAcademyRequest = useCallback(() => {
+    setSelectedPlanId('organization')
+    setPublicView('team-academy-request')
+  }, [setPublicView])
+
   const openForgotPassword = useCallback(() => {
     window.history.pushState({}, '', '/forgot-password')
   }, [])
@@ -669,6 +680,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: false as const, error: 'Sign in as coach first.' }
     }
     const planId = selectedPlanId ?? subscription?.planId ?? 'team'
+    if (isApprovalRequiredPlan(planId)) {
+      return {
+        ok: false as const,
+        error: 'Team Academy requires approval. Submit a request and we will activate your plan manually.',
+      }
+    }
     const orgName =
       planId === 'organization' && auth.role === 'treinador'
         ? `${auth.name}'s Academy`
@@ -690,6 +707,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: false as const, error: 'Sign in as coach first.' }
     }
     const planId = selectedPlanId ?? subscription?.planId ?? 'team'
+    if (isApprovalRequiredPlan(planId)) {
+      return {
+        ok: false as const,
+        error: 'Team Academy requires approval before activation.',
+      }
+    }
     const orgName =
       planId === 'organization' && auth.role === 'treinador'
         ? `${auth.name}'s Academy`
@@ -716,6 +739,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async (planId: PlanId) => {
       if (!auth || auth.role !== 'treinador') {
         return { ok: false as const, error: 'Sign in as coach first.' }
+      }
+
+      if (isApprovalRequiredPlan(planId)) {
+        return {
+          ok: false as const,
+          error: 'Team Academy is approval-only. Submit a request from the pricing page.',
+        }
       }
 
       if (subscription?.planId === planId && isSubscriptionActive(subscription)) {
@@ -2606,6 +2636,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openCoachSignUp,
       openAthleteSignIn,
       openAthleteSignUp,
+      openTeamAcademyRequest,
       openForgotPassword,
       requestPasswordReset,
       startCheckout,
@@ -2728,6 +2759,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openCoachSignUp,
       openAthleteSignIn,
       openAthleteSignUp,
+      openTeamAcademyRequest,
       openForgotPassword,
       requestPasswordReset,
       startCheckout,

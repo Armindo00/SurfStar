@@ -3,8 +3,9 @@ import {
   formatPlanPrice,
   getIncludedFeatureLabels,
   getPlan,
+  getSelfServePlans,
   getStripePaymentLink,
-  SUBSCRIPTION_PLANS,
+  isApprovalRequiredPlan,
   type PlanId,
 } from '../plans'
 import { AppLogo } from '../components/AppLogo'
@@ -21,6 +22,7 @@ export function CheckoutView() {
     refreshSubscription,
     subscription,
     openLanding,
+    openTeamAcademyRequest,
     logout,
     cloudMode,
   } = useApp()
@@ -28,11 +30,13 @@ export function CheckoutView() {
   const [error, setError] = useState('')
   const [awaitingPayment, setAwaitingPayment] = useState(false)
 
-  const planId = selectedPlanId ?? subscription?.planId ?? 'team'
+  const rawPlanId = selectedPlanId ?? subscription?.planId ?? 'team'
+  const planId = isApprovalRequiredPlan(rawPlanId) ? 'team' : rawPlanId
   const plan = getPlan(planId)
   const stripeLink = getStripePaymentLink(planId)
   const isPending = subscription?.status === 'pending'
   const isActive = isSubscriptionActive(subscription)
+  const approvalBlocked = isApprovalRequiredPlan(rawPlanId)
 
   useEffect(() => {
     if (!awaitingPayment && !isPending) return
@@ -76,6 +80,7 @@ export function CheckoutView() {
         auth?.role === 'treinador' ? auth.coachId : '',
         auth?.email ?? '',
         planId,
+        auth?.role === 'treinador' ? auth.organizationId : undefined,
       )
       window.open(url, '_blank', 'noopener,noreferrer')
       setAwaitingPayment(true)
@@ -101,6 +106,19 @@ export function CheckoutView() {
           </div>
         </div>
 
+        {approvalBlocked ? (
+          <div className="checkout-pending team-academy-request__banner">
+            <p className="checkout-pending__title">Team Academy requires approval</p>
+            <p className="muted">
+              This plan is not available for instant checkout. Submit a request and we&apos;ll activate your
+              organization after review.
+            </p>
+            <button type="button" className="btn btn--gold btn--block" onClick={openTeamAcademyRequest}>
+              Request Team Academy
+            </button>
+          </div>
+        ) : null}
+
         <div className="checkout-summary">
           <div>
             <span className="checkout-summary__label">Selected plan</span>
@@ -118,11 +136,14 @@ export function CheckoutView() {
             value={planId}
             onChange={(e) => selectPlan(e.target.value as PlanId, { goToLogin: false })}
           >
-            {SUBSCRIPTION_PLANS.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name} — {formatPlanPrice(item)}/mo
-              </option>
-            ))}
+            {getSelfServePlans().map((id) => {
+              const item = getPlan(id)
+              return (
+                <option key={item.id} value={item.id}>
+                  {item.name} — {formatPlanPrice(item)}/mo
+                </option>
+              )
+            })}
           </select>
         </label>
 
@@ -134,21 +155,33 @@ export function CheckoutView() {
 
         {error ? <p className="login-error">{error}</p> : null}
 
-        {isPending || awaitingPayment ? (
-          <div className="checkout-pending">
-            <p className="checkout-pending__title">Waiting for payment confirmation…</p>
-            <p className="muted">
-              Complete payment in the Stripe window. Your account activates automatically within seconds.
-            </p>
-            <button type="button" className="btn btn--secondary btn--block" onClick={() => void refreshSubscription()} disabled={busy}>
-              Check now
+        {!approvalBlocked ? (
+          isPending || awaitingPayment ? (
+            <div className="checkout-pending">
+              <p className="checkout-pending__title">Waiting for payment confirmation…</p>
+              <p className="muted">
+                Complete payment in the Stripe window. Your account activates automatically within seconds.
+              </p>
+              <button
+                type="button"
+                className="btn btn--secondary btn--block"
+                onClick={() => void refreshSubscription()}
+                disabled={busy}
+              >
+                Check now
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="btn btn--gold btn--block btn--lg"
+              onClick={() => void handlePay()}
+              disabled={busy}
+            >
+              {busy ? 'Processing…' : stripeLink ? 'Pay with Stripe' : `Activate ${plan.name}`}
             </button>
-          </div>
-        ) : (
-          <button type="button" className="btn btn--gold btn--block btn--lg" onClick={() => void handlePay()} disabled={busy}>
-            {busy ? 'Processing…' : stripeLink ? 'Pay with Stripe' : `Activate ${plan.name}`}
-          </button>
-        )}
+          )
+        ) : null}
 
         <p className="checkout-note muted">
           {stripeLink

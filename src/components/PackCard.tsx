@@ -2,6 +2,7 @@ import {
   formatPlanPrice,
   getPlan,
   getVisibleComparisonFeatures,
+  isApprovalRequiredPlan,
   planHasComparisonFeature,
   type PlanId,
 } from '../plans'
@@ -14,6 +15,7 @@ type Props = {
 
 export function PackCard({ planId, selected, onSelect }: Props) {
   const plan = getPlan(planId)
+  const approvalRequired = isApprovalRequiredPlan(planId)
   const visibleFeatures = getVisibleComparisonFeatures(planId)
   const includedFeatures = visibleFeatures.filter((feature) =>
     planHasComparisonFeature(planId, feature),
@@ -29,10 +31,13 @@ export function PackCard({ planId, selected, onSelect }: Props) {
           ? 'pack-card pack-card--highlighted'
           : selected
             ? 'pack-card pack-card--selected'
-            : 'pack-card'
+            : approvalRequired
+              ? 'pack-card pack-card--approval'
+              : 'pack-card'
       }
     >
       {plan.highlighted ? <span className="pack-card__badge">Most popular</span> : null}
+      {approvalRequired ? <span className="pack-card__badge pack-card__badge--muted">By approval</span> : null}
 
       <header className="pack-card__head">
         <h3 className="pack-card__name">{plan.name}</h3>
@@ -42,6 +47,10 @@ export function PackCard({ planId, selected, onSelect }: Props) {
         <strong>{formatPlanPrice(plan)}</strong>
         <span>/ month</span>
       </p>
+
+      {approvalRequired ? (
+        <p className="pack-card__approval-note muted">For schools, clubs & federations — we review every request.</p>
+      ) : null}
 
       <ul className="pack-card__features">
         {includedFeatures.map((feature) => (
@@ -67,10 +76,16 @@ export function PackCard({ planId, selected, onSelect }: Props) {
 
       <button
         type="button"
-        className={plan.highlighted ? 'btn btn--gold btn--block' : 'btn btn--secondary btn--block'}
+        className={
+          approvalRequired
+            ? 'btn btn--secondary btn--block'
+            : plan.highlighted
+              ? 'btn btn--gold btn--block'
+              : 'btn btn--secondary btn--block'
+        }
         onClick={() => onSelect(planId)}
       >
-        Choose {plan.name}
+        {approvalRequired ? 'Request access' : `Choose ${plan.name}`}
       </button>
     </article>
   )

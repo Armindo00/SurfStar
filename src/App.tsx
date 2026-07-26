@@ -7,6 +7,7 @@ import { CheckoutView } from './views/CheckoutView'
 import { ForgotPasswordView } from './views/ForgotPasswordView'
 import { LandingView } from './views/LandingView'
 import { SubscriptionView } from './views/SubscriptionView'
+import { TeamAcademyRequestView } from './views/TeamAcademyRequestView'
 import { AthletePortal } from './views/AthletePortal'
 import { CoachHome } from './views/CoachHome'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
@@ -79,6 +80,9 @@ function Shell() {
     }
     if (publicView === 'landing') {
       return <LandingView />
+    }
+    if (publicView === 'team-academy-request') {
+      return <TeamAcademyRequestView />
     }
     if (isAuthPublicView(publicView)) {
       return <LoginView />
