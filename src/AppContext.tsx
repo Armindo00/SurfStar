@@ -22,6 +22,7 @@ import {
   cloudRegisterCoach,
   cloudResetPassword,
   cloudSaveConditions,
+  cloudSaveCustomTemplates,
   cloudSaveSpots,
   cloudSaveTrainingSessions,
 } from './cloudApi'
@@ -36,6 +37,12 @@ import {
 } from './cloudPairingApi'
 import { waveHasLoggedAttempts } from './sessionStats'
 import { filterCoachCompletedSessions } from './sessionHistoryUtils'
+import {
+  countWaveCustomAttempts,
+  createEmptyCustomTemplate,
+  duplicateCustomTemplateRecord,
+  snapshotCustomTemplate,
+} from './customTrainingUtils'
 import {
   hashPassword,
   isValidEmail,
@@ -59,6 +66,8 @@ import type {
   ManeuverLevel,
   ManeuverLog,
   ComboAttemptLog,
+  CustomAttemptLog,
+  CustomTrainingTemplate,
   CoachAccount,
   CoachAthleteLink,
   StudentAccount,
@@ -80,7 +89,7 @@ import {
 } from './localPairing'
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
 import type { PlanId } from './plans'
-import { getPlan } from './plans'
+import { getPlan, getStripePaymentLink } from './plans'
 import {
   canAccessTeamAnalytics,
   canAddAthlete,
@@ -89,6 +98,11 @@ import {
 } from './planUtils'
 import {
   activateCoachSubscription,
+  buildStripeCheckoutUrl,
+  cancelLocalSubscription,
+  changeLocalSubscriptionPlan,
+  cloudCancelSubscription,
+  cloudChangeSubscriptionPlan,
   fetchCoachSubscription,
   isSubscriptionActive,
   startCoachCheckout,
@@ -115,6 +129,7 @@ type DraftSession = {
   condition: string
   athleteIds: string[]
   heatDurationMinutes: HeatDurationMinutes
+  customTemplateId: string
 }
 
 type AppContextValue = {
@@ -137,6 +152,8 @@ type AppContextValue = {
   startCheckout: () => Promise<{ ok: true } | { ok: false; error: string }>
   activateDemoSubscription: () => Promise<{ ok: true } | { ok: false; error: string }>
   refreshSubscription: () => Promise<void>
+  changeSubscriptionPlan: (planId: PlanId) => Promise<{ ok: true } | { ok: false; error: string }>
+  cancelSubscription: () => Promise<{ ok: true } | { ok: false; error: string }>
   completeCheckout: () => Promise<{ ok: true } | { ok: false; error: string }>
   loginAsCoach: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   loginAsStudent: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
@@ -159,6 +176,10 @@ type AppContextValue = {
   athleteLinks: CoachAthleteLink[]
   spots: SurfSpot[]
   conditions: string[]
+  customTemplates: CustomTrainingTemplate[]
+  saveCustomTemplate: (template: CustomTrainingTemplate) => void
+  deleteCustomTemplate: (templateId: string) => void
+  duplicateCustomTemplate: (templateId: string) => void
   requestPairingByCode: (code: string) => Promise<{ ok: boolean; error?: string; athleteName?: string }>
   respondToPairing: (linkId: string, accept: boolean) => Promise<{ ok: boolean; error?: string }>
   revokePairing: (linkId: string) => Promise<{ ok: boolean; error?: string }>
@@ -177,6 +198,7 @@ type AppContextValue = {
   getSpot: (id: string) => SurfSpot | undefined
   draft: DraftSession
   setDraftMode: (mode: TrainingMode) => void
+  setDraftCustomTemplate: (templateId: string) => void
   setDraftSpot: (spotId: string) => void
   setDraftCondition: (condition: string) => void
   setDraftHeatDuration: (minutes: HeatDurationMinutes) => void
@@ -212,6 +234,9 @@ type AppContextValue = {
   ) => void
   closeActiveWave: () => void
   logComboAttempt: (level: ComboLevel, side: WaveSide, success: boolean) => void
+  logCustomAttempt: (buttonId: string, levelId: string | null, success: boolean | null) => void
+  startCustomTimer: () => void
+  endCustomTimer: () => void
   activeHeatId: string | null
   setActiveHeatId: (id: string | null) => void
   createChampionshipHeat: (athleteIds: string[], durationMinutes: HeatDurationMinutes) => void
@@ -240,6 +265,12 @@ type AppContextValue = {
     patch: Pick<ComboAttemptLog, 'level' | 'side' | 'success'>,
   ) => void
   deleteComboAttempt: (waveId: string, logId: string) => void
+  updateCustomAttempt: (
+    waveId: string,
+    logId: string,
+    patch: Pick<CustomAttemptLog, 'levelId' | 'success'>,
+  ) => void
+  deleteCustomAttempt: (waveId: string, logId: string) => void
   deleteWaveRecord: (waveId: string) => void
   updateHeatWaveScore: (heatId: string, scoreId: string, score: number) => void
   deleteHeatWaveScore: (heatId: string, scoreId: string) => void
@@ -253,6 +284,7 @@ const emptyDraft = (): DraftSession => ({
   condition: '',
   athleteIds: [],
   heatDurationMinutes: 15,
+  customTemplateId: store.getCustomTemplates()[0]?.id ?? '',
 })
 
 function viewForAuth(session: AuthSession): AppView {
@@ -269,6 +301,8 @@ function viewForMode(mode: TrainingMode): AppView {
       return 'campeonato'
     case 'sea-analysis':
       return 'sea-analysis'
+    case 'custom':
+      return 'custom'
     default:
       return 'training'
   }
@@ -300,6 +334,7 @@ function createPotentialWave(athleteId: string): WaveRecord {
     startedAt: new Date().toISOString(),
     maneuvers: [],
     comboAttempts: [],
+    customAttempts: [],
   }
 }
 
@@ -360,6 +395,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [trainingSessions, setTrainingSessions] = useState<TrainingSession[]>(() =>
     cloudMode ? [] : store.getTrainingSessions(),
   )
+  const [customTemplates, setCustomTemplates] = useState<CustomTrainingTemplate[]>(() => {
+    if (cloudMode) return []
+    const list = store.getCustomTemplates()
+    if (list.length === 0) {
+      const seed = [createEmptyCustomTemplate()]
+      store.saveCustomTemplates(seed)
+      return seed
+    }
+    return list
+  })
   const [draft, setDraft] = useState<DraftSession>(emptyDraft)
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
   const [activeAthleteId, setActiveAthleteId] = useState<string | null>(null)
@@ -473,8 +518,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAthleteLinks([])
       setSpots(data.spots)
       setConditions(data.conditions)
+      const templates =
+        data.customTemplates.length > 0
+          ? data.customTemplates
+          : [createEmptyCustomTemplate()]
+      setCustomTemplates(templates)
       setTrainingSessions(sessions)
-      setDraft((d) => ({ ...d, spotId: data.spots[0]?.id ?? d.spotId }))
+      setDraft((d) => ({
+        ...d,
+        spotId: data.spots[0]?.id ?? d.spotId,
+        customTemplateId: templates[0]?.id ?? d.customTemplateId,
+      }))
       return sessions
     }
 
@@ -605,6 +659,95 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const completeCheckout = useCallback(async () => {
     return activateDemoSubscription()
   }, [activateDemoSubscription])
+
+  const changeSubscriptionPlan = useCallback(
+    async (planId: PlanId) => {
+      if (!auth || auth.role !== 'treinador') {
+        return { ok: false as const, error: 'Sign in as coach first.' }
+      }
+
+      if (subscription?.planId === planId && isSubscriptionActive(subscription)) {
+        return { ok: true as const }
+      }
+
+      if (!cloudMode) {
+        const sub = changeLocalSubscriptionPlan(auth.coachId, planId)
+        setSubscription(sub)
+        setSelectedPlanId(planId)
+        showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+        return { ok: true as const }
+      }
+
+      const result = await cloudChangeSubscriptionPlan(planId)
+      if (!result.ok) return result
+
+      if (result.unchanged) {
+        return { ok: true as const }
+      }
+
+      if (result.portalUrl) {
+        window.open(result.portalUrl, '_blank', 'noopener,noreferrer')
+        if (result.message) showToast(result.message, 'info')
+        return { ok: true as const }
+      }
+
+      if (result.requiresCheckout) {
+        setSelectedPlanId(planId)
+        try {
+          const sub = await startCoachCheckout(auth.coachId, planId, cloudMode)
+          setSubscription(sub)
+        } catch (err) {
+          return {
+            ok: false as const,
+            error: err instanceof Error ? err.message : 'Could not update plan.',
+          }
+        }
+
+        const stripeLink = getStripePaymentLink(planId)
+        if (stripeLink) {
+          const url = buildStripeCheckoutUrl(stripeLink, auth.coachId, auth.email, planId)
+          window.open(url, '_blank', 'noopener,noreferrer')
+          showToast('Complete payment to activate your new plan.', 'info')
+          return { ok: true as const }
+        }
+
+        const demo = await activateCoachSubscription(auth.coachId, planId, cloudMode)
+        setSubscription(demo)
+        showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+        return { ok: true as const }
+      }
+
+      await refreshSubscription()
+      showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+      return { ok: true as const }
+    },
+    [auth, cloudMode, refreshSubscription, showToast, subscription],
+  )
+
+  const cancelSubscription = useCallback(async () => {
+    if (!auth || auth.role !== 'treinador') {
+      return { ok: false as const, error: 'Sign in as coach first.' }
+    }
+
+    if (!cloudMode) {
+      const sub = cancelLocalSubscription(auth.coachId)
+      setSubscription(sub)
+      showToast('Subscription canceled.', 'success')
+      return { ok: true as const }
+    }
+
+    const result = await cloudCancelSubscription()
+    if (!result.ok) return result
+
+    await refreshSubscription()
+    showToast(
+      result.currentPeriodEnd
+        ? `Subscription canceled. Access until ${new Date(result.currentPeriodEnd).toLocaleDateString('en-GB')}.`
+        : 'Subscription canceled.',
+      'success',
+    )
+    return { ok: true as const }
+  }, [auth, cloudMode, refreshSubscription, showToast])
 
   const refreshPairingData = useCallback(async () => {
     if (!auth) return
@@ -999,6 +1142,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [cloudMode, syncSessionsToCloud],
   )
 
+  const persistCustomTemplates = useCallback(
+    (
+      nextOrUpdater:
+        | CustomTrainingTemplate[]
+        | ((prev: CustomTrainingTemplate[]) => CustomTrainingTemplate[]),
+    ) => {
+      setCustomTemplates((prev) => {
+        const next = typeof nextOrUpdater === 'function' ? nextOrUpdater(prev) : nextOrUpdater
+        if (cloudMode && auth?.role === 'treinador') {
+          void cloudSaveCustomTemplates(auth.coachId, next).then((result) => {
+            if (!result.ok) showToast(`Failed to save templates: ${result.error}`, 'error')
+          })
+        } else {
+          store.saveCustomTemplates(next)
+        }
+        return next
+      })
+    },
+    [auth, cloudMode, showToast],
+  )
+
+  const saveCustomTemplate = useCallback(
+    (template: CustomTrainingTemplate) => {
+      persistCustomTemplates((prev) => {
+        const index = prev.findIndex((t) => t.id === template.id)
+        if (index >= 0) {
+          const next = [...prev]
+          next[index] = template
+          return next
+        }
+        return [template, ...prev]
+      })
+      setDraft((d) => (d.customTemplateId ? d : { ...d, customTemplateId: template.id }))
+    },
+    [persistCustomTemplates],
+  )
+
+  const deleteCustomTemplate = useCallback(
+    (templateId: string) => {
+      persistCustomTemplates((prev) => {
+        const next = prev.filter((t) => t.id !== templateId)
+        setDraft((d) =>
+          d.customTemplateId === templateId
+            ? { ...d, customTemplateId: next[0]?.id ?? '' }
+            : d,
+        )
+        return next
+      })
+    },
+    [persistCustomTemplates],
+  )
+
+  const duplicateCustomTemplate = useCallback(
+    (templateId: string) => {
+      const source = customTemplates.find((t) => t.id === templateId)
+      if (!source) return
+      const copy = duplicateCustomTemplateRecord(source)
+      persistCustomTemplates((prev) => [copy, ...prev])
+    },
+    [customTemplates, persistCustomTemplates],
+  )
+
   const activeSession = useMemo(
     () => trainingSessions.find((s) => s.id === activeSessionId),
     [trainingSessions, activeSessionId],
@@ -1381,8 +1586,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
   const getSpot = useCallback((id: string) => spots.find((s) => s.id === id), [spots])
 
-  const setDraftMode = useCallback((mode: TrainingMode) => {
-    setDraft((d) => ({ ...d, mode }))
+  const setDraftMode = useCallback(
+    (mode: TrainingMode) => {
+      setDraft((d) => ({
+        ...d,
+        mode,
+        customTemplateId:
+          mode === 'custom'
+            ? d.customTemplateId || customTemplates[0]?.id || ''
+            : d.customTemplateId,
+      }))
+    },
+    [customTemplates],
+  )
+
+  const setDraftCustomTemplate = useCallback((templateId: string) => {
+    setDraft((d) => ({ ...d, customTemplateId: templateId, mode: 'custom' }))
   }, [])
 
   const setDraftSpot = useCallback((spotId: string) => {
@@ -1431,12 +1650,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const beginDraftSession = useCallback(() => {
     const planId = subscription?.planId ?? 'starter'
     const draftBase = emptyDraft()
+    draftBase.customTemplateId = customTemplates[0]?.id ?? ''
     if (!canUseTrainingMode(planId, draftBase.mode)) {
       draftBase.mode = getAllowedModes(planId)[0] ?? 'tecnico'
     }
     setDraft(draftBase)
     navigateView('start-session')
-  }, [navigateView, subscription?.planId])
+  }, [customTemplates, navigateView, subscription?.planId])
 
   const confirmAthletesAndStart = useCallback(() => {
     if (!draft.spotId || !draft.condition) return
@@ -1448,6 +1668,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       showToast('This training mode is not included in your plan.', 'error')
       return
     }
+
+    if (draft.mode === 'custom') {
+      const template = customTemplates.find((t) => t.id === draft.customTemplateId)
+      if (!template) {
+        showToast('Select a custom training template first.', 'error')
+        return
+      }
+    }
+
+    const customTemplate =
+      draft.mode === 'custom'
+        ? customTemplates.find((t) => t.id === draft.customTemplateId)
+        : null
+    const customSnapshot = customTemplate ? snapshotCustomTemplate(customTemplate) : null
 
     const initialHeat =
       draft.mode === 'heats'
@@ -1470,6 +1704,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         draft.mode === 'sea-analysis'
           ? { timerStartedAt: null, endedAt: null, logs: [] }
           : null,
+      customTemplateId: customTemplate?.id ?? null,
+      customTemplateName: customTemplate?.name ?? null,
+      customTemplateSnapshot: customSnapshot,
+      customTimerStartedAt:
+        customSnapshot?.timer.enabled && customSnapshot.timer.autoStart
+          ? new Date().toISOString()
+          : null,
+      customTimerEndedAt: null,
       endedAt: null,
       coachNotes: null,
     }
@@ -1479,7 +1721,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveWaveId(null)
     setActiveHeatId(initialHeat?.id ?? null)
     setView(viewForMode(draft.mode))
-  }, [auth, draft, persistSessions, showToast, spots, subscription?.planId])
+  }, [auth, customTemplates, draft, persistSessions, showToast, spots, subscription?.planId])
 
   const openEndSessionSheet = useCallback(() => {
     setEndSessionSheetOpen(true)
@@ -1647,6 +1889,88 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     [activeSessionId, activeWaveId, updateSession],
   )
+
+  const ensureCustomWave = useCallback(
+    (sessionId: string, athleteId: string): string | null => {
+      const session = trainingSessions.find((s) => s.id === sessionId)
+      if (!session) return null
+
+      if (activeWaveId) return activeWaveId
+
+      const useWaves = session.customTemplateSnapshot?.useWaves !== false
+      if (useWaves) return null
+
+      const existing = session.waves.find((w) => w.athleteId === athleteId)
+      if (existing) {
+        setActiveWaveId(existing.id)
+        return existing.id
+      }
+
+      const wave = createPotentialWave(athleteId)
+      updateSession(sessionId, (s) => ({ ...s, waves: [wave, ...s.waves] }))
+      setActiveWaveId(wave.id)
+      return wave.id
+    },
+    [activeWaveId, trainingSessions, updateSession],
+  )
+
+  const logCustomAttempt = useCallback(
+    (buttonId: string, levelId: string | null, success: boolean | null) => {
+      if (!activeSessionId || !activeAthleteId) return
+
+      const session = trainingSessions.find((s) => s.id === activeSessionId)
+      if (!session || session.mode !== 'custom') return
+
+      const rules = session.customTemplateSnapshot?.rules
+      const useWaves = session.customTemplateSnapshot?.useWaves !== false
+      let waveId = activeWaveId
+
+      if (!waveId && !useWaves) {
+        waveId = ensureCustomWave(activeSessionId, activeAthleteId)
+      }
+
+      if (rules?.requireWaveBeforeLog && useWaves && !waveId) return
+      if (!waveId) return
+
+      const wave = session.waves.find((w) => w.id === waveId)
+      const maxAttempts = rules?.maxAttemptsPerWave ?? null
+      if (maxAttempts !== null && wave && countWaveCustomAttempts(wave) >= maxAttempts) return
+
+      const entry: CustomAttemptLog = {
+        id: crypto.randomUUID(),
+        buttonId,
+        levelId,
+        success,
+        at: new Date().toISOString(),
+      }
+
+      updateSession(activeSessionId, (s) => ({
+        ...s,
+        waves: s.waves.map((w) =>
+          w.id === waveId
+            ? { ...w, customAttempts: [...(w.customAttempts ?? []), entry] }
+            : w,
+        ),
+      }))
+    },
+    [activeAthleteId, activeSessionId, activeWaveId, ensureCustomWave, trainingSessions, updateSession],
+  )
+
+  const startCustomTimer = useCallback(() => {
+    if (!activeSessionId) return
+    updateSession(activeSessionId, (s) => {
+      if (!s.customTemplateSnapshot?.timer.enabled || s.customTimerStartedAt) return s
+      return { ...s, customTimerStartedAt: new Date().toISOString(), customTimerEndedAt: null }
+    })
+  }, [activeSessionId, updateSession])
+
+  const endCustomTimer = useCallback(() => {
+    if (!activeSessionId) return
+    updateSession(activeSessionId, (s) => {
+      if (!s.customTimerStartedAt || s.customTimerEndedAt) return s
+      return { ...s, customTimerEndedAt: new Date().toISOString() }
+    })
+  }, [activeSessionId, updateSession])
 
   const createChampionshipHeat = useCallback(
     (athleteIds: string[], durationMinutes: HeatDurationMinutes) => {
@@ -1916,6 +2240,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [activeSessionId, updateSession],
   )
 
+  const updateCustomAttempt = useCallback(
+    (
+      waveId: string,
+      logId: string,
+      patch: Pick<CustomAttemptLog, 'levelId' | 'success'>,
+    ) => {
+      if (!activeSessionId) return
+      updateSession(activeSessionId, (s) => ({
+        ...s,
+        waves: s.waves.map((w) =>
+          w.id === waveId
+            ? {
+                ...w,
+                customAttempts: (w.customAttempts ?? []).map((c) =>
+                  c.id === logId ? { ...c, ...patch } : c,
+                ),
+              }
+            : w,
+        ),
+      }))
+    },
+    [activeSessionId, updateSession],
+  )
+
+  const deleteCustomAttempt = useCallback(
+    (waveId: string, logId: string) => {
+      if (!activeSessionId) return
+      updateSession(activeSessionId, (s) => ({
+        ...s,
+        waves: s.waves.map((w) =>
+          w.id === waveId
+            ? { ...w, customAttempts: (w.customAttempts ?? []).filter((c) => c.id !== logId) }
+            : w,
+        ),
+      }))
+    },
+    [activeSessionId, updateSession],
+  )
+
   const deleteWaveRecord = useCallback(
     (waveId: string) => {
       if (!activeSessionId) return
@@ -1985,6 +2348,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       startCheckout,
       activateDemoSubscription,
       refreshSubscription,
+      changeSubscriptionPlan,
+      cancelSubscription,
       completeCheckout,
       loginAsCoach,
       loginAsStudent,
@@ -1999,6 +2364,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       athleteLinks,
       spots,
       conditions,
+      customTemplates,
+      saveCustomTemplate,
+      deleteCustomTemplate,
+      duplicateCustomTemplate,
       requestPairingByCode,
       respondToPairing,
       revokePairing,
@@ -2017,6 +2386,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       getSpot,
       draft,
       setDraftMode,
+      setDraftCustomTemplate,
       setDraftSpot,
       setDraftCondition,
       setDraftHeatDuration,
@@ -2047,6 +2417,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logTechnicalManeuver,
       closeActiveWave,
       logComboAttempt,
+      logCustomAttempt,
+      startCustomTimer,
+      endCustomTimer,
       activeHeatId,
       setActiveHeatId,
       createChampionshipHeat,
@@ -2063,6 +2436,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteManeuverLog,
       updateComboAttempt,
       deleteComboAttempt,
+      updateCustomAttempt,
+      deleteCustomAttempt,
       deleteWaveRecord,
       updateHeatWaveScore,
       deleteHeatWaveScore,
@@ -2087,6 +2462,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       startCheckout,
       activateDemoSubscription,
       refreshSubscription,
+      changeSubscriptionPlan,
+      cancelSubscription,
       completeCheckout,
       loginAsCoach,
       loginAsStudent,
@@ -2101,6 +2478,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       athleteLinks,
       spots,
       conditions,
+      customTemplates,
+      saveCustomTemplate,
+      deleteCustomTemplate,
+      duplicateCustomTemplate,
       requestPairingByCode,
       respondToPairing,
       revokePairing,
@@ -2119,6 +2500,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       getSpot,
       draft,
       setDraftMode,
+      setDraftCustomTemplate,
       setDraftSpot,
       setDraftCondition,
       setDraftHeatDuration,
@@ -2148,6 +2530,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logTechnicalManeuver,
       closeActiveWave,
       logComboAttempt,
+      logCustomAttempt,
+      startCustomTimer,
+      endCustomTimer,
       activeHeatId,
       createChampionshipHeat,
       startHeatTimer,
@@ -2163,6 +2548,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteManeuverLog,
       updateComboAttempt,
       deleteComboAttempt,
+      updateCustomAttempt,
+      deleteCustomAttempt,
       deleteWaveRecord,
       updateHeatWaveScore,
       deleteHeatWaveScore,

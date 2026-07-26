@@ -172,3 +172,99 @@ export function getStripeBillingPortalUrl(): string | null {
   const value = import.meta.env.VITE_STRIPE_BILLING_PORTAL_URL
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }
+
+type ManageResult =
+  | { ok: true; url?: string; requires_checkout?: boolean; use_portal?: boolean; message?: string; cancel_at_period_end?: boolean; current_period_end?: string | null; plan_id?: PlanId; unchanged?: boolean }
+  | { ok: false; error: string }
+
+function appReturnUrl(): string {
+  return `${window.location.origin}${window.location.pathname}`
+}
+
+async function invokeSubscriptionManage(body: Record<string, unknown>): Promise<ManageResult> {
+  const { data, error } = await getSupabase().functions.invoke('subscription-manage', {
+    body: { ...body, return_url: appReturnUrl() },
+  })
+
+  if (error) {
+    return { ok: false, error: error.message }
+  }
+
+  if (!data?.ok) {
+    return { ok: false, error: data?.error ?? 'Request failed.' }
+  }
+
+  return data as ManageResult & { ok: true }
+}
+
+export async function cloudOpenBillingPortal(): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  const staticPortal = getStripeBillingPortalUrl()
+  const result = await invokeSubscriptionManage({ action: 'portal' })
+  if (result.ok && result.url) {
+    return { ok: true, url: result.url }
+  }
+  if (staticPortal) {
+    return { ok: true, url: staticPortal }
+  }
+  return { ok: false, error: result.ok ? 'Billing portal unavailable.' : result.error }
+}
+
+export async function cloudCancelSubscription(): Promise<
+  { ok: true; currentPeriodEnd?: string | null } | { ok: false; error: string }
+> {
+  const result = await invokeSubscriptionManage({ action: 'cancel' })
+  if (!result.ok) return result
+  return {
+    ok: true,
+    currentPeriodEnd: result.current_period_end ?? null,
+  }
+}
+
+export async function cloudChangeSubscriptionPlan(planId: PlanId): Promise<
+  | { ok: true; requiresCheckout?: boolean; portalUrl?: string; message?: string; unchanged?: boolean }
+  | { ok: false; error: string }
+> {
+  const result = await invokeSubscriptionManage({ action: 'change_plan', plan_id: planId })
+  if (!result.ok) return result
+
+  if (result.unchanged) {
+    return { ok: true, unchanged: true }
+  }
+
+  if (result.url) {
+    return {
+      ok: true,
+      portalUrl: result.url,
+      message: result.message,
+    }
+  }
+
+  if (result.requires_checkout) {
+    return { ok: true, requiresCheckout: true }
+  }
+
+  return { ok: true }
+}
+
+export function cancelLocalSubscription(coachId: string): CoachSubscription {
+  const existing = loadLocalSubscription(coachId)
+  const periodEnd = existing?.currentPeriodEnd ?? new Date().toISOString()
+  return saveLocalSubscription({
+    coachId,
+    planId: existing?.planId ?? 'starter',
+    status: 'canceled',
+    currentPeriodEnd: periodEnd,
+  })
+}
+
+export function changeLocalSubscriptionPlan(coachId: string, planId: PlanId): CoachSubscription {
+  const existing = loadLocalSubscription(coachId)
+  if (!existing) {
+    return activateLocalSubscription(coachId, planId)
+  }
+  return saveLocalSubscription({
+    ...existing,
+    planId,
+    status: 'active',
+  })
+}

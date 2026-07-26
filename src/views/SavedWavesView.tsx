@@ -6,7 +6,7 @@ import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { ManeuverEditModal } from '../components/ManeuverEditModal'
 import { RecordRowActions } from '../components/RecordRowActions'
 import type { ComboAttemptLog, ManeuverLog } from '../types'
-import { formatComboEntry, formatManeuverEntry } from '../waveDisplay'
+import { formatComboEntry, formatCustomEntry, formatManeuverEntry } from '../waveDisplay'
 
 export function SavedWavesView() {
   const {
@@ -18,6 +18,7 @@ export function SavedWavesView() {
     deleteManeuverLog,
     updateComboAttempt,
     deleteComboAttempt,
+    deleteCustomAttempt,
     deleteWaveRecord,
   } = useApp()
 
@@ -29,14 +30,21 @@ export function SavedWavesView() {
   )
   const [editCombo, setEditCombo] = useState<{ waveId: string; log: ComboAttemptLog } | null>(null)
   const [deleteCombo, setDeleteCombo] = useState<{ waveId: string; logId: string } | null>(null)
+  const [deleteCustom, setDeleteCustom] = useState<{ waveId: string; logId: string } | null>(null)
   const [deleteWaveId, setDeleteWaveId] = useState<string | null>(null)
 
-  const backView = activeSession?.mode === 'combos' ? 'combos' : 'training'
+  const backView =
+    activeSession?.mode === 'combos'
+      ? 'combos'
+      : activeSession?.mode === 'custom'
+        ? 'custom'
+        : 'training'
 
   const waves =
     activeSession?.waves.filter((w) => !activeAthleteId || w.athleteId === activeAthleteId) ?? []
 
   const isCombo = activeSession?.mode === 'combos'
+  const isCustom = activeSession?.mode === 'custom'
 
   return (
     <div className="ss-flow">
@@ -48,6 +56,7 @@ export function SavedWavesView() {
           <ul className="wave-list wave-list--editable">
             {waves.map((w) => {
               const comboCount = w.comboAttempts?.length ?? 0
+              const customCount = w.customAttempts?.length ?? 0
               const maneuverCount = w.maneuvers.length
 
               return (
@@ -84,7 +93,18 @@ export function SavedWavesView() {
                         </li>
                       ))}
                     </ul>
-                  ) : !isCombo && maneuverCount > 0 ? (
+                  ) : isCustom && customCount > 0 ? (
+                    <ul className="wave-list__entries">
+                      {(w.customAttempts ?? []).map((c) => (
+                        <li key={c.id} className="wave-list__entry">
+                          <span>{formatCustomEntry(c, activeSession?.customTemplateSnapshot)}</span>
+                          <RecordRowActions
+                            onDelete={() => setDeleteCustom({ waveId: w.id, logId: c.id })}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : !isCombo && !isCustom && maneuverCount > 0 ? (
                     <ul className="wave-list__entries">
                       {w.maneuvers.map((m) => (
                         <li key={m.id} className="wave-list__entry">
@@ -149,6 +169,18 @@ export function SavedWavesView() {
             setDeleteCombo(null)
           }}
           onCancel={() => setDeleteCombo(null)}
+        />
+      ) : null}
+
+      {deleteCustom ? (
+        <ConfirmDeleteModal
+          title="Delete attempt?"
+          message="Remove this entry from the saved wave?"
+          onConfirm={() => {
+            deleteCustomAttempt(deleteCustom.waveId, deleteCustom.logId)
+            setDeleteCustom(null)
+          }}
+          onCancel={() => setDeleteCustom(null)}
         />
       ) : null}
 

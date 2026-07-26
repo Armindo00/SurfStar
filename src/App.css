@@ -4508,6 +4508,66 @@ body {
   margin-top: 1rem;
 }
 
+.subscription-manage__hint {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+}
+
+.subscription-plan-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.subscription-plan-picker__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--ss-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.subscription-plan-picker__item--current {
+  border-color: rgba(201, 169, 98, 0.45);
+  background: rgba(201, 169, 98, 0.08);
+}
+
+.subscription-plan-picker__badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #92702a;
+  background: rgba(201, 169, 98, 0.18);
+}
+
+.subscription-cancel-panel {
+  border-color: rgba(220, 38, 38, 0.15);
+}
+
+.subscription-cancel-confirm {
+  margin-top: 0.75rem;
+}
+
+.subscription-cancel-confirm p {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+
+.subscription-cancel-confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .dashboard__plan {
   margin: 0.35rem 0 0;
   font-size: 0.88rem;
@@ -4763,4 +4823,195 @@ body {
 
 .login-plan-banner strong {
   color: var(--ss-primary-dark);
+}
+
+/* Custom training mode */
+.custom-button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+
+.custom-skill-btn {
+  min-height: 3.5rem;
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+}
+
+.custom-skill-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.custom-skill-btn__label {
+  display: block;
+  padding: 0.35rem 0.5rem;
+}
+
+.custom-rules-panel {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.custom-rules-panel__notes {
+  margin: 0.35rem 0 0;
+  white-space: pre-wrap;
+}
+
+.custom-level-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0 0 0.5rem;
+}
+
+.key--custom {
+  min-height: 3rem;
+  border-width: 2px;
+  border-style: solid;
+  background: #fff;
+  color: #0f172a;
+}
+
+.key--custom.key--active {
+  background: #eff6ff;
+}
+
+.custom-outcome-pick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+
+.custom-outcome-pick .btn-outcome {
+  min-height: 3.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.custom-editor__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.custom-editor__button-card {
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #fafafa;
+}
+
+.custom-editor__button-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.custom-editor__button-head strong {
+  flex: 1;
+}
+
+.custom-editor__button-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.custom-editor__color-dot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+}
+
+.custom-color-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.custom-color-swatch {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.custom-color-swatch--on {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 2px #fff inset;
+}
+
+.custom-editor__levels {
+  margin-top: 0.75rem;
+}
+
+.custom-editor__levels-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.custom-editor__level-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.custom-editor__level-row input {
+  flex: 1;
+}
+
+.custom-editor__footer {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.custom-editor__timer-fields {
+  margin-top: 0.75rem;
+}
+
+.catalog-list__item--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+}
+
+.catalog-list__sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+}
+
+.chip-row--templates {
+  flex-wrap: wrap;
+}
+
+.custom-start-empty {
+  margin: 0.75rem 0 1rem;
+}
+
+.field--check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 0.92rem;
+}
+
+.field--check input {
+  width: auto;
 }

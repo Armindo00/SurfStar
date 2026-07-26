@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useApp } from '../AppContext'
 import { waveHasLoggedAttempts } from '../sessionStats'
 import type { ComboAttemptLog, ManeuverLog, TrainingMode } from '../types'
-import { formatComboEntry, formatManeuverEntry } from '../waveDisplay'
+import { formatComboEntry, formatCustomEntry, formatManeuverEntry } from '../waveDisplay'
 import { ComboEditModal } from './ComboEditModal'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
 import { ManeuverEditModal } from './ManeuverEditModal'
@@ -20,12 +20,14 @@ export function WaveRegisterSummary({ mode }: Props) {
     deleteManeuverLog,
     updateComboAttempt,
     deleteComboAttempt,
+    deleteCustomAttempt,
   } = useApp()
 
   const [editManeuver, setEditManeuver] = useState<ManeuverLog | null>(null)
   const [deleteManeuverId, setDeleteManeuverId] = useState<string | null>(null)
   const [editCombo, setEditCombo] = useState<ComboAttemptLog | null>(null)
   const [deleteComboId, setDeleteComboId] = useState<string | null>(null)
+  const [deleteCustomId, setDeleteCustomId] = useState<string | null>(null)
 
   const openWave = useMemo(
     () => activeSession?.waves.find((w) => w.id === activeWaveId),
@@ -35,7 +37,12 @@ export function WaveRegisterSummary({ mode }: Props) {
   if (!activeWaveId || !openWave) return null
 
   const isCombo = mode === 'combos'
-  const entries = isCombo ? (openWave.comboAttempts ?? []) : openWave.maneuvers
+  const isCustom = mode === 'custom'
+  const entries = isCombo
+    ? (openWave.comboAttempts ?? [])
+    : isCustom
+      ? (openWave.customAttempts ?? [])
+      : openWave.maneuvers
   const hasEntries = waveHasLoggedAttempts(openWave, mode)
 
   const waveId = openWave.id
@@ -68,7 +75,14 @@ export function WaveRegisterSummary({ mode }: Props) {
                   />
                 </li>
               ))
-            : openWave.maneuvers.map((log) => (
+            : isCustom
+              ? (openWave.customAttempts ?? []).map((log) => (
+                  <li key={log.id} className="wave-summary__item wave-summary__item--row">
+                    <span>{formatCustomEntry(log, activeSession?.customTemplateSnapshot)}</span>
+                    <RecordRowActions onDelete={() => setDeleteCustomId(log.id)} />
+                  </li>
+                ))
+              : openWave.maneuvers.map((log) => (
                 <li key={log.id} className="wave-summary__item wave-summary__item--row">
                   <span>{formatManeuverEntry(log)}</span>
                   <RecordRowActions
@@ -123,6 +137,18 @@ export function WaveRegisterSummary({ mode }: Props) {
             setDeleteComboId(null)
           }}
           onCancel={() => setDeleteComboId(null)}
+        />
+      ) : null}
+
+      {deleteCustomId ? (
+        <ConfirmDeleteModal
+          title="Delete attempt?"
+          message="Remove this entry from the current wave?"
+          onConfirm={() => {
+            deleteCustomAttempt(waveId, deleteCustomId)
+            setDeleteCustomId(null)
+          }}
+          onCancel={() => setDeleteCustomId(null)}
         />
       ) : null}
     </section>

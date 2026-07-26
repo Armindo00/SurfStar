@@ -3,6 +3,7 @@ import type {
   Athlete,
   CoachAccount,
   CoachAthleteLink,
+  CustomTrainingTemplate,
   StudentAccount,
   SurfSpot,
   TrainingSession,
@@ -20,6 +21,7 @@ type Persisted = {
   spots: SurfSpot[]
   conditions: string[]
   trainingSessions: TrainingSession[]
+  customTemplates: CustomTrainingTemplate[]
 }
 
 function normalizeCoach(c: CoachAccount & { password?: string }): CoachAccount {
@@ -59,6 +61,7 @@ function load(): Persisted {
       spots,
       conditions,
       trainingSessions: (parsed.trainingSessions ?? []).map((s) => migrateSession(s, spots)),
+      customTemplates: parsed.customTemplates ?? [],
     }
   } catch {
     return seed()
@@ -94,6 +97,11 @@ function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession 
         }
       : null,
     coachNotes: s.coachNotes ?? null,
+    customTemplateId: s.customTemplateId ?? null,
+    customTemplateName: s.customTemplateName ?? null,
+    customTemplateSnapshot: s.customTemplateSnapshot ?? null,
+    customTimerStartedAt: s.customTimerStartedAt ?? null,
+    customTimerEndedAt: s.customTimerEndedAt ?? null,
     waves: (s.waves ?? []).map((raw) => {
       const w = raw as WaveRecord & { kind?: 'wave' | 'no-potential' }
       return {
@@ -111,6 +119,13 @@ function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession 
           ...c,
           level: normalizeLevel(c.level),
           success: c.success ?? true,
+        })),
+        customAttempts: (w.customAttempts ?? []).map((c) => ({
+          id: c.id,
+          buttonId: c.buttonId,
+          levelId: c.levelId ?? null,
+          success: c.success ?? null,
+          at: c.at,
         })),
       }
     }),
@@ -131,6 +146,7 @@ function seed(): Persisted {
     spots: createDefaultSpots(),
     conditions: createDefaultConditions(),
     trainingSessions: [],
+    customTemplates: [],
   }
 }
 
@@ -193,6 +209,14 @@ export const store = {
   saveTrainingSessions(sessions: TrainingSession[]) {
     const data = load()
     data.trainingSessions = sessions
+    save(data)
+  },
+  getCustomTemplates(): CustomTrainingTemplate[] {
+    return load().customTemplates
+  },
+  saveCustomTemplates(templates: CustomTrainingTemplate[]) {
+    const data = load()
+    data.customTemplates = templates
     save(data)
   },
 }

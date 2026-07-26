@@ -1,5 +1,5 @@
 type Props = {
-  onEdit: () => void
+  onEdit?: () => void
   onDelete: () => void
   editLabel?: string
   deleteLabel?: string
@@ -13,9 +13,11 @@ export function RecordRowActions({
 }: Props) {
   return (
     <span className="record-row-actions">
-      <button type="button" className="btn btn--ghost btn--small" onClick={onEdit}>
-        {editLabel}
-      </button>
+      {onEdit ? (
+        <button type="button" className="btn btn--ghost btn--small" onClick={onEdit}>
+          {editLabel}
+        </button>
+      ) : null}
       <button type="button" className="btn btn--ghost btn--small record-row-actions__delete" onClick={onDelete}>
         {deleteLabel}
       </button>

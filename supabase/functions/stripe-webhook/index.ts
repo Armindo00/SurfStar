@@ -109,10 +109,29 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 }
 
 async function handleSubscriptionUpdated(sub: Stripe.Subscription) {
-  const coachId = sub.metadata?.coach_id ?? sub.metadata?.coachId
-  const planId = planFromMetadata(sub.metadata)
-  if (!coachId || !planId) {
-    console.error('subscription update missing coach_id or plan_id metadata', sub.id)
+  let coachId = sub.metadata?.coach_id ?? sub.metadata?.coachId ?? null
+  let planId = planFromMetadata(sub.metadata)
+
+  if (!coachId) {
+    const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id
+    if (customerId) {
+      const { data } = await supabase
+        .from('coach_subscriptions')
+        .select('coach_id, plan_id')
+        .eq('stripe_customer_id', customerId)
+        .maybeSingle()
+      coachId = data?.coach_id ?? null
+      if (!planId && data?.plan_id) planId = data.plan_id
+    }
+  }
+
+  if (!coachId) {
+    console.error('subscription update missing coach_id metadata', sub.id)
+    return
+  }
+
+  if (!planId) {
+    console.error('subscription update missing plan_id metadata', sub.id)
     return
   }
 

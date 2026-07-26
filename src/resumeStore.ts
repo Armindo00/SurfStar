@@ -12,6 +12,7 @@ export type DraftSessionResume = {
   condition: string
   athleteIds: string[]
   heatDurationMinutes: HeatDurationMinutes
+  customTemplateId: string
 }
 
 export type AppResumeState = {
@@ -32,6 +33,7 @@ const SESSION_VIEWS: AppView[] = [
   'heats',
   'campeonato',
   'sea-analysis',
+  'custom',
   'session-stats',
   'saved-waves',
 ]
@@ -42,6 +44,7 @@ const COACH_NAV_VIEWS: AppView[] = [
   'coach-home',
   'manage-athletes',
   'manage-spots',
+  'manage-custom-templates',
   'training-sessions',
   'session-history-detail',
   'analytics',
@@ -60,6 +63,8 @@ function viewForMode(mode: TrainingMode): AppView {
       return 'campeonato'
     case 'sea-analysis':
       return 'sea-analysis'
+    case 'custom':
+      return 'custom'
     default:
       return 'training'
   }

@@ -73,7 +73,7 @@ function emptyLevelStats(): Record<ManeuverLevel, LevelSuccessStats> {
   }
 }
 
-function rate(successes: number, attempts: number) {
+export function rate(successes: number, attempts: number) {
   return attempts ? Math.round((successes / attempts) * 100) : 0
 }
 
@@ -119,6 +119,7 @@ function kindStats(logs: ManeuverLog[]): MoveStats {
 
 export function waveHasLoggedAttempts(w: WaveRecord, mode: TrainingMode): boolean {
   if (mode === 'combos') return (w.comboAttempts?.length ?? 0) > 0
+  if (mode === 'custom') return (w.customAttempts?.length ?? 0) > 0
   return w.maneuvers.length > 0
 }
 

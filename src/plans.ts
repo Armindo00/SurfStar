@@ -22,6 +22,7 @@ export const PLAN_COMPARISON_FEATURES: PlanComparisonFeature[] = [
   { label: 'Up to 20 athletes', includedIn: ['team'], hiddenOn: ['club'] },
   { label: 'Unlimited athletes', includedIn: ['club'] },
   { label: 'Technical training & combos', includedIn: ['starter', 'team', 'club'] },
+  { label: 'Custom training templates', includedIn: ['team', 'club'] },
   { label: 'Session history', includedIn: ['starter', 'team', 'club'] },
   { label: 'Spot management', includedIn: ['starter', 'team', 'club'] },
   { label: 'Team analytics (6 months)', includedIn: ['team', 'club'] },

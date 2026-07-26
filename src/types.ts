@@ -14,7 +14,7 @@ export type AuthPublicView = Exclude<PublicView, 'landing' | 'checkout'>
 export type SessionType = 'treino-tecnico' | 'analise-mar' | 'heat'
 
 /** Modo ao iniciar NEW SESSION */
-export type TrainingMode = 'tecnico' | 'combos' | 'heats' | 'campeonato' | 'sea-analysis'
+export type TrainingMode = 'tecnico' | 'combos' | 'heats' | 'campeonato' | 'sea-analysis' | 'custom'
 
 export type AppView =
   | 'coach-home'
@@ -25,6 +25,7 @@ export type AppView =
   | 'heats'
   | 'campeonato'
   | 'sea-analysis'
+  | 'custom'
   | 'session-stats'
   | 'saved-waves'
   | 'manage-athletes'
@@ -34,6 +35,58 @@ export type AppView =
   | 'analytics'
   | 'subscription'
   | 'athlete-portal'
+  | 'manage-custom-templates'
+
+export type CustomLevel = {
+  id: string
+  label: string
+  sortOrder: number
+}
+
+export type CustomButton = {
+  id: string
+  label: string
+  shortLabel?: string
+  color?: string
+  levels: CustomLevel[]
+  /** When true, coach picks success or fail after level (or alone if no levels). */
+  trackSuccess: boolean
+  sortOrder: number
+}
+
+export type CustomTimerConfig = {
+  enabled: boolean
+  durationMinutes: number
+  autoStart: boolean
+  label?: string
+}
+
+export type CustomSessionRules = {
+  /** Max logged attempts per wave (null = unlimited). */
+  maxAttemptsPerWave?: number | null
+  requireWaveBeforeLog: boolean
+  showRulesPanel: boolean
+}
+
+export type CustomTrainingTemplate = {
+  id: string
+  name: string
+  description?: string
+  rulesNotes?: string
+  buttons: CustomButton[]
+  timer: CustomTimerConfig
+  useWaves: boolean
+  rules: CustomSessionRules
+  updatedAt: string
+}
+
+export type CustomAttemptLog = {
+  id: string
+  buttonId: string
+  levelId?: string | null
+  success?: boolean | null
+  at: string
+}
 
 export type AthleteShareSettings = {
   technicalStats: boolean
@@ -189,6 +242,7 @@ export type WaveRecord = {
   startedAt: string
   maneuvers: ManeuverLog[]
   comboAttempts: ComboAttemptLog[]
+  customAttempts?: CustomAttemptLog[]
 }
 
 export type HeatDurationMinutes = 5 | 10 | 15 | 20 | 25 | 30
@@ -284,6 +338,11 @@ export type TrainingSession = {
   comboEntries: SessionComboEntry[]
   heats: HeatRecord[]
   seaAnalysis: SeaAnalysisState | null
+  customTemplateId?: string | null
+  customTemplateName?: string | null
+  customTemplateSnapshot?: CustomTrainingTemplate | null
+  customTimerStartedAt?: string | null
+  customTimerEndedAt?: string | null
   endedAt: string | null
   /** Optional coach notes written when ending the session */
   coachNotes: string | null
@@ -295,6 +354,7 @@ export const TRAINING_MODE_LABELS: Record<TrainingMode, string> = {
   heats: 'Heats',
   campeonato: 'Championship',
   'sea-analysis': 'Sea analysis',
+  custom: 'Custom training',
 }
 
 export const MANEUVER_LABELS: Record<ManeuverKind, string> = {

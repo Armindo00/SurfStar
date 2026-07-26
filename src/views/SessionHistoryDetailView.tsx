@@ -12,6 +12,7 @@ import {
   resolveSessionSpotName,
 } from '../sessionHistoryUtils'
 import { computeComboSessionStats, computeSessionStats, LEVELS } from '../sessionStats'
+import { computeCustomSessionStats } from '../customTrainingStats'
 import { heatIsFinished } from '../heatUtils'
 import {
   COMBO_LEVEL_LABELS,
@@ -137,6 +138,43 @@ function ComboStatsBlock({
   )
 }
 
+function CustomStatsBlock({
+  session,
+  athleteId,
+}: {
+  session: TrainingSession
+  athleteId: string
+}) {
+  const stats = computeCustomSessionStats(session, athleteId)
+
+  return (
+    <>
+      <div className="kpi-grid">
+        <article className="kpi-card">
+          <span className="kpi-card__label">Attempts</span>
+          <strong className="kpi-card__value">{stats.totalAttempts}</strong>
+        </article>
+        <article className="kpi-card kpi-card--success">
+          <span className="kpi-card__label">Overall success</span>
+          <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>
+          <RateBar value={stats.overallSuccessRate} />
+        </article>
+      </div>
+
+      {stats.byButton.map((button) => (
+        <div key={button.buttonId} className="ss-card stats-panel">
+          <header className="stats-panel__head">
+            <h2 className="stats-panel__title">{button.label}</h2>
+            <span className="stats-badge">
+              {button.successes}/{button.attempts} · {button.rate}%
+            </span>
+          </header>
+        </div>
+      ))}
+    </>
+  )
+}
+
 export function SessionHistoryDetailView() {
   const { historySession, getSpot, getAthlete, closeHistorySession } = useApp()
 
@@ -199,6 +237,20 @@ export function SessionHistoryDetailView() {
                 Athlete: <strong>{getAthleteName(athleteId)}</strong>
               </h2>
               <ComboStatsBlock session={historySession} athleteId={athleteId} />
+            </section>
+          ))
+        : null}
+
+      {historySession.mode === 'custom'
+        ? historySession.athleteIds.map((athleteId) => (
+            <section key={athleteId} className="history-athlete-stats">
+              <h2 className="stats-page__meta">
+                Athlete: <strong>{getAthleteName(athleteId)}</strong>
+                {historySession.customTemplateName ? (
+                  <span className="muted"> · {historySession.customTemplateName}</span>
+                ) : null}
+              </h2>
+              <CustomStatsBlock session={historySession} athleteId={athleteId} />
             </section>
           ))
         : null}

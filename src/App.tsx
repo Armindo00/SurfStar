@@ -11,10 +11,12 @@ import { AthletePortal } from './views/AthletePortal'
 import { CoachHome } from './views/CoachHome'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
 import { CombosSessionView } from './views/CombosSessionView'
+import { CustomSessionView } from './views/CustomSessionView'
 import { HeatsSessionView } from './views/HeatsSessionView'
 import { LoginView } from './views/LoginView'
 import { ManageAthletes } from './views/ManageAthletes'
 import { ManageSpots } from './views/ManageSpots'
+import { ManageCustomTemplates } from './views/ManageCustomTemplates'
 import { EndSessionSheet } from './components/EndSessionSheet'
 import { InstallAppBanner } from './components/InstallAppBanner'
 import { SavedWavesView } from './views/SavedWavesView'
@@ -106,10 +108,12 @@ function Shell() {
           {role === 'treinador' && view === 'heats' && <HeatsSessionView />}
           {role === 'treinador' && view === 'campeonato' && <ChampionshipSessionView />}
           {role === 'treinador' && view === 'sea-analysis' && <SeaAnalysisSessionView />}
+          {role === 'treinador' && view === 'custom' && <CustomSessionView />}
           {role === 'treinador' && view === 'session-stats' && <SessionStatsView />}
           {role === 'treinador' && view === 'saved-waves' && <SavedWavesView />}
           {role === 'treinador' && view === 'manage-athletes' && <ManageAthletes />}
           {role === 'treinador' && view === 'manage-spots' && <ManageSpots />}
+          {role === 'treinador' && view === 'manage-custom-templates' && <ManageCustomTemplates />}
           {role === 'treinador' && view === 'training-sessions' && <TrainingSessionsView />}
           {role === 'treinador' && view === 'session-history-detail' && <SessionHistoryDetailView />}
           {role === 'treinador' && view === 'analytics' && <TeamAnalyticsView />}

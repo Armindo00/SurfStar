@@ -1,4 +1,5 @@
 import { computeComboSessionStats, computeSessionStats, LEVELS } from '../sessionStats'
+import { computeCustomSessionStats } from '../customTrainingStats'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessChart'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -27,8 +28,84 @@ export function SessionStatsView() {
     )
   }
 
-  const backView = activeSession.mode === 'combos' ? 'combos' : 'training'
+  const backView =
+    activeSession.mode === 'combos'
+      ? 'combos'
+      : activeSession.mode === 'custom'
+        ? 'custom'
+        : 'training'
   const athleteName = activeAthleteId ? getAthlete(activeAthleteId)?.name : 'All athletes'
+
+  if (activeSession.mode === 'custom') {
+    const stats = computeCustomSessionStats(activeSession, activeAthleteId)
+    const templateName = activeSession.customTemplateName ?? 'Custom training'
+
+    return (
+      <div className="ss-flow stats-page">
+        <ScreenHeader title={`Live stats · ${templateName}`} onBack={() => setView(backView)} />
+
+        <p className="stats-page__meta">
+          Athlete: <strong>{athleteName}</strong>
+        </p>
+
+        <div className="kpi-grid">
+          <article className="kpi-card">
+            <span className="kpi-card__label">Attempts</span>
+            <strong className="kpi-card__value">{stats.totalAttempts}</strong>
+          </article>
+          <article className="kpi-card kpi-card--accent">
+            <span className="kpi-card__label">Waves</span>
+            <strong className="kpi-card__value">{stats.waveStats.totalWaves}</strong>
+          </article>
+          <article className="kpi-card kpi-card--success">
+            <span className="kpi-card__label">Overall success</span>
+            <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>
+            <RateBar value={stats.overallSuccessRate} />
+          </article>
+        </div>
+
+        {stats.byButton.map((button) => (
+          <div key={button.buttonId} className="ss-card stats-panel">
+            <header className="stats-panel__head">
+              <h2 className="stats-panel__title">{button.label}</h2>
+              <span className="stats-badge">
+                {button.successes}/{button.attempts} · {button.rate}%
+              </span>
+            </header>
+            {Object.values(button.byLevel).some((level) => level.attempts > 0) ? (
+              <div className="table-wrap stats-panel__table">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Level</th>
+                      <th>Attempts</th>
+                      <th>Successes</th>
+                      <th>Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.values(button.byLevel).map((level) => (
+                      <tr key={level.levelId}>
+                        <td>{level.label}</td>
+                        <td>{level.attempts}</td>
+                        <td className="data-table__ok">{level.successes}</td>
+                        <td>
+                          <span className="data-table__rate">{level.rate}%</span>
+                          <RateBar value={level.rate} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="muted">No level breakdown yet.</p>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   if (activeSession.mode === 'combos') {
     const stats = computeComboSessionStats(activeSession, activeAthleteId)

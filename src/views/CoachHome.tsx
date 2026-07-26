@@ -27,7 +27,7 @@ export function CoachHome() {
         </span>
         <span>
           <strong>New session</strong>
-          <small>Technical, combos, heats, sea analysis</small>
+          <small>Technical, combos, custom, heats, sea analysis</small>
         </span>
       </button>
 
@@ -46,6 +46,14 @@ export function CoachHome() {
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('manage-spots')}>
           <span>Spots & conditions</span>
+          <span aria-hidden="true">›</span>
+        </button>
+        <button
+          type="button"
+          className="action-list__item"
+          onClick={() => setView('manage-custom-templates')}
+        >
+          <span>Custom training templates</span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('subscription')}>

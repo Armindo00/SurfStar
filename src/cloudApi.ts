@@ -9,6 +9,7 @@ import {
 import { isValidEmail, normalizeEmail, validatePasswordStrength } from './passwordUtils'
 import type {
   AuthSession,
+  CustomTrainingTemplate,
   SurfSpot,
   TrainingSession,
 } from './types'
@@ -367,14 +368,15 @@ export async function cloudLogout(): Promise<void> {
 }
 
 export async function cloudLoadCoachData(coachId: string) {
-  const [athletes, links, spots, conditions, trainingSessions] = await Promise.all([
+  const [athletes, links, spots, conditions, trainingSessions, customTemplates] = await Promise.all([
     cloudFetchCoachAthletes(coachId),
     cloudFetchCoachLinks(coachId),
     cloudFetchSpots(coachId),
     cloudFetchConditions(coachId),
     cloudFetchTrainingSessions(coachId),
+    cloudFetchCustomTemplates(coachId),
   ])
-  return { athletes, links, spots, conditions, trainingSessions }
+  return { athletes, links, spots, conditions, trainingSessions, customTemplates }
 }
 
 export async function cloudLoadAthleteData(athleteId: string) {
@@ -539,5 +541,51 @@ export async function cloudSaveConditions(
     )
     if (error) return { ok: false, error: error.message }
   }
+  return { ok: true }
+}
+
+export async function cloudFetchCustomTemplates(coachId: string): Promise<CustomTrainingTemplate[]> {
+  const { data, error } = await getSupabase()
+    .from('custom_training_templates')
+    .select('payload')
+    .eq('coach_id', coachId)
+    .order('updated_at', { ascending: false })
+
+  if (error || !data) return []
+  return data.map((row: { payload: CustomTrainingTemplate }) => row.payload)
+}
+
+export async function cloudSaveCustomTemplates(
+  coachId: string,
+  templates: CustomTrainingTemplate[],
+): Promise<CloudSaveResult> {
+  const supabase = getSupabase()
+  const { data: existing, error: fetchError } = await supabase
+    .from('custom_training_templates')
+    .select('id')
+    .eq('coach_id', coachId)
+
+  if (fetchError) return { ok: false, error: fetchError.message }
+
+  const keep = new Set(templates.map((t) => t.id))
+  const deleteIds = (existing ?? []).map((r: { id: string }) => r.id).filter((id) => !keep.has(id))
+
+  if (deleteIds.length) {
+    const { error } = await supabase.from('custom_training_templates').delete().in('id', deleteIds)
+    if (error) return { ok: false, error: error.message }
+  }
+
+  if (templates.length) {
+    const { error } = await supabase.from('custom_training_templates').upsert(
+      templates.map((template) => ({
+        id: template.id,
+        coach_id: coachId,
+        payload: template,
+        updated_at: template.updatedAt,
+      })),
+    )
+    if (error) return { ok: false, error: error.message }
+  }
+
   return { ok: true }
 }

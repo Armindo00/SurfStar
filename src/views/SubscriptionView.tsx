@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { formatPlanPrice, getPlan } from '../plans'
+import { formatPlanPrice, getPlan, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
 import { athleteLimitMessage } from '../planUtils'
-import { getStripeBillingPortalUrl } from '../subscriptionApi'
+import { cloudOpenBillingPortal, isSubscriptionActive } from '../subscriptionApi'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { useApp } from '../AppContext'
@@ -11,6 +11,8 @@ export function SubscriptionView() {
     subscription,
     coachAthletes,
     refreshSubscription,
+    changeSubscriptionPlan,
+    cancelSubscription,
     changePassword,
     setView,
     cloudMode,
@@ -20,10 +22,16 @@ export function SubscriptionView() {
   const [pwdError, setPwdError] = useState('')
   const [pwdSuccess, setPwdSuccess] = useState('')
   const [pwdBusy, setPwdBusy] = useState(false)
+  const [planBusy, setPlanBusy] = useState<PlanId | null>(null)
+  const [billingBusy, setBillingBusy] = useState(false)
+  const [cancelBusy, setCancelBusy] = useState(false)
+  const [manageError, setManageError] = useState('')
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
   const plan = subscription ? getPlan(subscription.planId) : null
-  const billingPortal = getStripeBillingPortalUrl()
   const activeCount = coachAthletes.filter((a) => !a.blocked).length
+  const isActive = isSubscriptionActive(subscription)
+  const isCanceled = subscription?.status === 'canceled'
 
   const submitPassword = async (e: FormEvent) => {
     e.preventDefault()
@@ -48,6 +56,48 @@ export function SubscriptionView() {
     }
   }
 
+  const handleChangePlan = async (planId: PlanId) => {
+    if (subscription?.planId === planId && isActive) return
+    setManageError('')
+    setPlanBusy(planId)
+    try {
+      const result = await changeSubscriptionPlan(planId)
+      if (!result.ok) setManageError(result.error)
+    } finally {
+      setPlanBusy(null)
+    }
+  }
+
+  const handleOpenBilling = async () => {
+    setManageError('')
+    setBillingBusy(true)
+    try {
+      const result = await cloudOpenBillingPortal()
+      if (!result.ok) {
+        setManageError(result.error)
+        return
+      }
+      window.open(result.url, '_blank', 'noopener,noreferrer')
+    } finally {
+      setBillingBusy(false)
+    }
+  }
+
+  const handleCancel = async () => {
+    setManageError('')
+    setCancelBusy(true)
+    try {
+      const result = await cancelSubscription()
+      if (!result.ok) {
+        setManageError(result.error)
+        return
+      }
+      setShowCancelConfirm(false)
+    } finally {
+      setCancelBusy(false)
+    }
+  }
+
   return (
     <div className="ss-flow">
       <ScreenHeader title="Account & subscription" onBack={() => setView('coach-home')} />
@@ -59,10 +109,26 @@ export function SubscriptionView() {
             <p className="stats-panel__plan-name">
               <strong>{plan.name}</strong> — {formatPlanPrice(plan)}/mo
             </p>
-            <p className="muted">{athleteLimitMessage(plan.id)} · {activeCount} active athletes</p>
+            <p className="muted">
+              {athleteLimitMessage(plan.id)} · {activeCount} active athletes
+            </p>
+            {subscription?.status ? (
+              <p className="muted">
+                Status:{' '}
+                <strong>
+                  {subscription.status === 'active'
+                    ? 'Active'
+                    : subscription.status === 'trialing'
+                      ? 'Trial'
+                      : subscription.status === 'pending'
+                        ? 'Pending payment'
+                        : 'Canceled'}
+                </strong>
+              </p>
+            ) : null}
             {subscription?.currentPeriodEnd ? (
               <p className="muted">
-                Renews:{' '}
+                {isCanceled ? 'Access until' : 'Renews'}:{' '}
                 {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', {
                   day: '2-digit',
                   month: 'long',
@@ -70,25 +136,105 @@ export function SubscriptionView() {
                 })}
               </p>
             ) : null}
-            <div className="stats-panel__actions">
-              {billingPortal ? (
-                <a className="btn btn--gold btn--block" href={billingPortal} target="_blank" rel="noreferrer">
-                  Manage subscription (Stripe)
-                </a>
-              ) : (
-                <p className="muted">To change plans, configure the Stripe Customer Portal or contact support.</p>
-              )}
-              {cloudMode ? (
-                <button type="button" className="btn btn--ghost btn--block" onClick={() => void refreshSubscription()}>
-                  Refresh status
-                </button>
-              ) : null}
-            </div>
+            {cloudMode ? (
+              <button type="button" className="btn btn--ghost btn--block" onClick={() => void refreshSubscription()}>
+                Refresh status
+              </button>
+            ) : null}
           </>
         ) : (
           <p className="muted">No active subscription.</p>
         )}
       </div>
+
+      <div className="ss-card stats-panel">
+        <h2 className="stats-panel__title">Change plan</h2>
+        <p className="muted subscription-manage__hint">
+          Switch anytime. Upgrades apply immediately; downgrades follow your billing cycle when paid via Stripe.
+        </p>
+        <div className="subscription-plan-picker">
+          {SUBSCRIPTION_PLANS.map((item) => {
+            const isCurrent = subscription?.planId === item.id && isActive
+            return (
+              <div
+                key={item.id}
+                className={
+                  isCurrent
+                    ? 'subscription-plan-picker__item subscription-plan-picker__item--current'
+                    : 'subscription-plan-picker__item'
+                }
+              >
+                <div>
+                  <strong>{item.name}</strong>
+                  <span className="muted"> · {formatPlanPrice(item)}/mo</span>
+                  {isCurrent ? <span className="subscription-plan-picker__badge">Current</span> : null}
+                </div>
+                <button
+                  type="button"
+                  className={isCurrent ? 'btn btn--ghost btn--small' : 'btn btn--secondary btn--small'}
+                  disabled={isCurrent || planBusy !== null || cancelBusy}
+                  onClick={() => void handleChangePlan(item.id)}
+                >
+                  {planBusy === item.id ? 'Updating…' : isCurrent ? 'Current plan' : `Switch to ${item.name}`}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+        {cloudMode ? (
+          <button
+            type="button"
+            className="btn btn--gold btn--block"
+            disabled={billingBusy || cancelBusy}
+            onClick={() => void handleOpenBilling()}
+          >
+            {billingBusy ? 'Opening…' : 'Manage billing on Stripe'}
+          </button>
+        ) : null}
+      </div>
+
+      <div className="ss-card stats-panel subscription-cancel-panel">
+        <h2 className="stats-panel__title">Cancel subscription</h2>
+        <p className="muted">
+          {cloudMode
+            ? 'Your subscription stays active until the end of the current billing period. You can resubscribe anytime.'
+            : 'Canceling stops access to coach features on this device.'}
+        </p>
+        {!showCancelConfirm ? (
+          <button
+            type="button"
+            className="btn btn--danger btn--block"
+            disabled={!isActive || cancelBusy || planBusy !== null}
+            onClick={() => setShowCancelConfirm(true)}
+          >
+            Cancel subscription
+          </button>
+        ) : (
+          <div className="subscription-cancel-confirm">
+            <p>Are you sure you want to cancel?</p>
+            <div className="subscription-cancel-confirm__actions">
+              <button
+                type="button"
+                className="btn btn--danger"
+                disabled={cancelBusy}
+                onClick={() => void handleCancel()}
+              >
+                {cancelBusy ? 'Canceling…' : 'Yes, cancel'}
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                disabled={cancelBusy}
+                onClick={() => setShowCancelConfirm(false)}
+              >
+                Keep subscription
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {manageError ? <p className="login-error">{manageError}</p> : null}
 
       <div className="ss-card stats-panel">
         <h2 className="stats-panel__title">Change password</h2>

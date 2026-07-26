@@ -3,8 +3,8 @@ import { getPlan } from './plans'
 import type { TrainingMode } from './types'
 
 const STARTER_MODES: TrainingMode[] = ['tecnico', 'combos']
-const TEAM_MODES: TrainingMode[] = ['tecnico', 'combos']
-const CLUB_MODES: TrainingMode[] = ['tecnico', 'combos', 'heats', 'campeonato', 'sea-analysis']
+const TEAM_MODES: TrainingMode[] = ['tecnico', 'combos', 'custom']
+const CLUB_MODES: TrainingMode[] = ['tecnico', 'combos', 'custom', 'heats', 'campeonato', 'sea-analysis']
 
 export function getAllowedModes(planId: PlanId): TrainingMode[] {
   switch (planId) {

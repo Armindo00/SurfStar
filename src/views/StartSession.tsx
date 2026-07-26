@@ -3,15 +3,17 @@ import { canUseTrainingMode } from '../planUtils'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { HEAT_DURATIONS, TRAINING_MODE_LABELS, type TrainingMode } from '../types'
 
-const ALL_MODES: TrainingMode[] = ['tecnico', 'combos', 'heats', 'campeonato', 'sea-analysis']
+const ALL_MODES: TrainingMode[] = ['tecnico', 'combos', 'custom', 'heats', 'campeonato', 'sea-analysis']
 
 export function StartSession() {
   const {
     draft,
     spots,
     conditions,
+    customTemplates,
     subscription,
     setDraftMode,
+    setDraftCustomTemplate,
     setDraftSpot,
     setDraftCondition,
     setDraftHeatDuration,
@@ -24,6 +26,8 @@ export function StartSession() {
 
   const showHeatDuration = draft.mode === 'heats' || draft.mode === 'campeonato'
   const isSeaAnalysis = draft.mode === 'sea-analysis'
+  const isCustom = draft.mode === 'custom'
+  const selectedTemplate = customTemplates.find((t) => t.id === draft.customTemplateId)
 
   const startedLabel = new Date().toLocaleString('en-GB', {
     day: '2-digit',
@@ -58,6 +62,58 @@ export function StartSession() {
           <p className="plan-lock-note muted">
             {lockedModes.map((m) => TRAINING_MODE_LABELS[m]).join(', ')} — available on Coach Premium plan.
           </p>
+        ) : null}
+
+        {isCustom ? (
+          <>
+            <p className="field-label">Training template</p>
+            {customTemplates.length === 0 ? (
+              <div className="custom-start-empty">
+                <p className="muted">Create a template first to use custom training.</p>
+                <button
+                  type="button"
+                  className="btn btn--primary btn--block"
+                  onClick={() => setView('manage-custom-templates')}
+                >
+                  Manage custom templates
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="chip-row chip-row--pro chip-row--templates">
+                  {customTemplates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      className={
+                        draft.customTemplateId === template.id ? 'chip chip--active' : 'chip'
+                      }
+                      onClick={() => setDraftCustomTemplate(template.id)}
+                    >
+                      {template.name}
+                    </button>
+                  ))}
+                </div>
+                {selectedTemplate ? (
+                  <p className="muted stats-panel__sub">
+                    {selectedTemplate.buttons.length} skill button
+                    {selectedTemplate.buttons.length === 1 ? '' : 's'}
+                    {selectedTemplate.timer.enabled
+                      ? ` · ${selectedTemplate.timer.durationMinutes} min timer`
+                      : ''}
+                    {selectedTemplate.useWaves ? ' · wave-based' : ' · direct logging'}
+                  </p>
+                ) : null}
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--block"
+                  onClick={() => setView('manage-custom-templates')}
+                >
+                  Edit templates
+                </button>
+              </>
+            )}
+          </>
         ) : null}
 
         {isSeaAnalysis ? (
@@ -117,7 +173,11 @@ export function StartSession() {
         <button
           type="button"
           className="btn btn--primary btn--block btn--lg"
-          disabled={!draft.condition || modes.length === 0}
+          disabled={
+            !draft.condition ||
+            modes.length === 0 ||
+            (isCustom && (!draft.customTemplateId || customTemplates.length === 0))
+          }
           onClick={() => setView('select-athletes')}
         >
           Continue
