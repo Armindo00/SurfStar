@@ -1,19 +1,24 @@
 import {
+  formatEffectiveMonthlyFromAnnual,
   formatPlanPrice,
+  formatPlanPriceSuffix,
+  getAnnualSavingsLabel,
   getPlan,
   getVisibleComparisonFeatures,
   isApprovalRequiredPlan,
   planHasComparisonFeature,
+  type BillingInterval,
   type PlanId,
 } from '../plans'
 
 type Props = {
   planId: PlanId
+  billingInterval?: BillingInterval
   selected?: boolean
   onSelect: (planId: PlanId) => void
 }
 
-export function PackCard({ planId, selected, onSelect }: Props) {
+export function PackCard({ planId, billingInterval = 'monthly', selected, onSelect }: Props) {
   const plan = getPlan(planId)
   const approvalRequired = isApprovalRequiredPlan(planId)
   const visibleFeatures = getVisibleComparisonFeatures(planId)
@@ -44,9 +49,21 @@ export function PackCard({ planId, selected, onSelect }: Props) {
       </header>
 
       <p className="pack-card__price">
-        <strong>{formatPlanPrice(plan)}</strong>
-        <span>/ month</span>
+        <strong>{formatPlanPrice(plan, billingInterval)}</strong>
+        <span>{formatPlanPriceSuffix(billingInterval)}</span>
       </p>
+
+      {billingInterval === 'annual' && !approvalRequired ? (
+        <p className="pack-card__annual-equiv muted">
+          {formatEffectiveMonthlyFromAnnual(plan)}/mo · {getAnnualSavingsLabel()}
+        </p>
+      ) : null}
+
+      {billingInterval === 'annual' && approvalRequired ? (
+        <p className="pack-card__annual-equiv muted">
+          {formatEffectiveMonthlyFromAnnual(plan)}/mo equivalent · {getAnnualSavingsLabel()}
+        </p>
+      ) : null}
 
       {approvalRequired ? (
         <p className="pack-card__approval-note muted">For schools, clubs & federations — we review every request.</p>

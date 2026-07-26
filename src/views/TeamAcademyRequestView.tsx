@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
 import { isValidEmail, normalizeEmail } from '../passwordUtils'
-import { formatPlanPrice, getPlan } from '../plans'
+import { formatPlanPriceWithSuffix, getPlan } from '../plans'
 import { submitOrganizationPlanRequest } from '../organizationPlanRequestApi'
 
 export function TeamAcademyRequestView() {
@@ -95,7 +95,7 @@ export function TeamAcademyRequestView() {
         <h1 className="auth-title">Request Team Academy</h1>
         <p className="muted auth-lead">
           For schools, federations, and surf academies. Up to 5 coaches on one shared roster —{' '}
-          {formatPlanPrice(plan)}/month after approval.
+          {formatPlanPriceWithSuffix(plan, 'monthly')} or {formatPlanPriceWithSuffix(plan, 'annual')} after approval.
         </p>
 
         <ul className="checkout-features team-academy-request__features">

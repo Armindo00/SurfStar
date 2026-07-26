@@ -1,9 +1,15 @@
 export type PlanId = 'team' | 'club' | 'organization'
 
+export type BillingInterval = 'monthly' | 'annual'
+
+/** Months included free when paying annually (annual = monthly × (12 − free months)). */
+export const ANNUAL_FREE_MONTHS = 2
+
 export type SubscriptionPlan = {
   id: PlanId
   name: string
   priceMonthly: number
+  priceAnnual: number
   currency: 'EUR'
   maxAthletes: number | null
   maxCoaches: number
@@ -41,7 +47,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'team',
     name: 'Coach',
-    priceMonthly: 39,
+    priceMonthly: 49,
+    priceAnnual: 490,
     currency: 'EUR',
     maxAthletes: 20,
     maxCoaches: 1,
@@ -49,7 +56,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'club',
     name: 'Coach Premium',
-    priceMonthly: 79,
+    priceMonthly: 89,
+    priceAnnual: 890,
     currency: 'EUR',
     maxAthletes: null,
     maxCoaches: 1,
@@ -58,7 +66,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: 'organization',
     name: 'Team Academy',
-    priceMonthly: 149,
+    priceMonthly: 179,
+    priceAnnual: 1790,
     currency: 'EUR',
     maxAthletes: null,
     maxCoaches: 5,
@@ -84,23 +93,50 @@ export function getPlan(planId: PlanId): SubscriptionPlan {
   return plan
 }
 
-export function formatPlanPrice(plan: SubscriptionPlan): string {
+function formatCurrency(amount: number, currency: SubscriptionPlan['currency']): string {
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
-    currency: plan.currency,
+    currency,
     maximumFractionDigits: 0,
-  }).format(plan.priceMonthly)
+  }).format(amount)
 }
 
-export function getStripePaymentLink(planId: PlanId): string | null {
+export function getPlanPrice(plan: SubscriptionPlan, interval: BillingInterval): number {
+  return interval === 'annual' ? plan.priceAnnual : plan.priceMonthly
+}
+
+export function formatPlanPrice(plan: SubscriptionPlan, interval: BillingInterval = 'monthly'): string {
+  return formatCurrency(getPlanPrice(plan, interval), plan.currency)
+}
+
+export function formatPlanPriceSuffix(interval: BillingInterval): string {
+  return interval === 'annual' ? '/yr' : '/mo'
+}
+
+export function formatPlanPriceWithSuffix(plan: SubscriptionPlan, interval: BillingInterval): string {
+  return `${formatPlanPrice(plan, interval)}${formatPlanPriceSuffix(interval)}`
+}
+
+export function formatEffectiveMonthlyFromAnnual(plan: SubscriptionPlan): string {
+  return formatCurrency(plan.priceAnnual / 12, plan.currency)
+}
+
+export function getAnnualSavingsLabel(): string {
+  return `${ANNUAL_FREE_MONTHS} months free`
+}
+
+export function getStripePaymentLink(planId: PlanId, interval: BillingInterval = 'monthly'): string | null {
   if (isApprovalRequiredPlan(planId)) return null
-  const envKey = `VITE_STRIPE_LINK_${planId.toUpperCase()}` as const
+  const intervalSuffix = interval === 'annual' ? '_ANNUAL' : ''
+  const envKey = `VITE_STRIPE_LINK_${planId.toUpperCase()}${intervalSuffix}` as const
   const value = import.meta.env[envKey]
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }
 
 export function isStripeConfigured(): boolean {
-  return getSelfServePlans().some((id) => Boolean(getStripePaymentLink(id)))
+  return getSelfServePlans().some(
+    (id) => Boolean(getStripePaymentLink(id, 'monthly')) || Boolean(getStripePaymentLink(id, 'annual')),
+  )
 }
 
 export function isApprovalRequiredPlan(planId: PlanId): boolean {

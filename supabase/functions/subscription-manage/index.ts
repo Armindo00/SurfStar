@@ -1,7 +1,8 @@
 // Supabase Edge Function — coach subscription change / cancel / billing portal
 // Deploy: supabase functions deploy subscription-manage
 // Secrets: STRIPE_SECRET_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-// Optional price IDs for in-app plan switches: STRIPE_PRICE_STARTER, STRIPE_PRICE_TEAM, STRIPE_PRICE_CLUB
+// Optional price IDs for in-app plan switches:
+// STRIPE_PRICE_TEAM, STRIPE_PRICE_CLUB, STRIPE_PRICE_TEAM_ANNUAL, STRIPE_PRICE_CLUB_ANNUAL
 
 import Stripe from 'npm:stripe@17.7.0'
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1'

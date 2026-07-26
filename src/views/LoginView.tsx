@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { AuthShell } from '../components/AuthShell'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
-import { formatPlanPrice, getPlan } from '../plans'
+import { formatPlanPriceWithSuffix, getPlan } from '../plans'
 import { useApp } from '../AppContext'
 import type { AuthPublicView } from '../types'
 
@@ -69,6 +69,7 @@ export function LoginView() {
     cloudMode,
     publicView,
     selectedPlanId,
+    selectedBillingInterval,
     openLanding,
     openForgotPassword,
     openCoachSignIn,
@@ -171,7 +172,7 @@ export function LoginView() {
         <div className="auth-plan-banner">
           <span className="auth-plan-banner__label">Selected plan</span>
           <strong>
-            {selectedPlan.name} · {formatPlanPrice(selectedPlan)}/mo
+            {selectedPlan.name} · {formatPlanPriceWithSuffix(selectedPlan, selectedBillingInterval)}
           </strong>
         </div>
       ) : null}

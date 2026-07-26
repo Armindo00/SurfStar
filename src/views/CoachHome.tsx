@@ -5,7 +5,7 @@ import {
   canUseCustomTraining,
   getAllowedModes,
 } from '../planUtils'
-import { formatPlanPrice, getPlan, type PlanId } from '../plans'
+import { formatPlanPriceWithSuffix, getPlan, type PlanId } from '../plans'
 import { TRAINING_MODE_LABELS } from '../types'
 
 function sessionModesSubtitle(planId: PlanId): string {
@@ -30,7 +30,7 @@ export function CoachHome() {
         {orgName ? <p className="dashboard__org muted">{orgName}</p> : null}
         {plan ? (
           <p className="dashboard__plan muted">
-            {plan.name} plan · {formatPlanPrice(plan)}/mo · {athleteLimitMessage(plan.id)}
+            {plan.name} plan · {formatPlanPriceWithSuffix(plan, 'monthly')} · {athleteLimitMessage(plan.id)}
           </p>
         ) : (
           <p className="muted">SurfStar coach dashboard</p>

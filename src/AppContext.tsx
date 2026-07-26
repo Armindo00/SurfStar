@@ -91,7 +91,7 @@ import {
 } from './localPairing'
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
 import { buildInitialChampionshipHeats, isValidChampionshipField, processChampionshipRoundAdvance } from './championshipUtils'
-import type { PlanId } from './plans'
+import type { BillingInterval, PlanId } from './plans'
 import { getPlan, getStripePaymentLink, isApprovalRequiredPlan, isStripeConfigured } from './plans'
 import {
   canAccessTeamAnalytics,
@@ -158,6 +158,8 @@ type AppContextValue = {
   cloudMode: boolean
   publicView: PublicView
   selectedPlanId: PlanId | null
+  selectedBillingInterval: BillingInterval
+  setBillingInterval: (interval: BillingInterval) => void
   subscription: CoachSubscription | null
   hasActiveSubscription: boolean
   selectPlan: (planId: PlanId, options?: { goToLogin?: boolean }) => void
@@ -400,6 +402,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const role: UserRole = auth?.role ?? 'treinador'
   const [publicView, setPublicViewState] = useState<PublicView>(() => publicViewFromPath(window.location.pathname))
   const [selectedPlanId, setSelectedPlanId] = useState<PlanId | null>(null)
+  const [selectedBillingInterval, setSelectedBillingInterval] = useState<BillingInterval>('monthly')
   const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
   const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([])
   const [view, setView] = useState<AppView>('coach-home')
@@ -656,6 +659,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPublicView('athlete-sign-up')
   }, [setPublicView])
 
+  const setBillingInterval = useCallback((interval: BillingInterval) => {
+    setSelectedBillingInterval(interval)
+  }, [])
+
   const openTeamAcademyRequest = useCallback(() => {
     setSelectedPlanId('organization')
     setPublicView('team-academy-request')
@@ -771,7 +778,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const result = await cloudChangeSubscriptionPlan(planId)
       if (!result.ok) {
-        if (!getStripePaymentLink(planId)) {
+        if (!getStripePaymentLink(planId, selectedBillingInterval)) {
           const direct = await cloudChangeSubscriptionPlanDirect(planId)
           if (!direct.ok) return direct
           await refreshSubscription()
@@ -804,9 +811,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        const stripeLink = getStripePaymentLink(planId)
+        const stripeLink = getStripePaymentLink(planId, selectedBillingInterval)
         if (stripeLink) {
-          const url = buildStripeCheckoutUrl(stripeLink, auth.coachId, auth.email, planId, auth.organizationId)
+          const url = buildStripeCheckoutUrl(
+            stripeLink,
+            auth.coachId,
+            auth.email,
+            planId,
+            auth.organizationId,
+            selectedBillingInterval,
+          )
           window.open(url, '_blank', 'noopener,noreferrer')
           showToast('Complete payment to activate your new plan.', 'info')
           return { ok: true as const }
@@ -822,7 +836,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
       return { ok: true as const }
     },
-    [auth, cloudMode, refreshSubscription, showToast, subscription],
+    [auth, cloudMode, refreshSubscription, selectedBillingInterval, showToast, subscription],
   )
 
   const cancelSubscription = useCallback(async () => {
@@ -2627,6 +2641,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       cloudMode,
       publicView,
       selectedPlanId,
+      selectedBillingInterval,
+      setBillingInterval,
       subscription,
       hasActiveSubscription,
       selectPlan,
@@ -2750,6 +2766,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       cloudMode,
       publicView,
       selectedPlanId,
+      selectedBillingInterval,
+      setBillingInterval,
       subscription,
       hasActiveSubscription,
       selectPlan,

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import {
   formatPlanPrice,
+  formatPlanPriceSuffix,
+  formatPlanPriceWithSuffix,
   getIncludedFeatureLabels,
   getPlan,
   getSelfServePlans,
@@ -9,6 +11,7 @@ import {
   type PlanId,
 } from '../plans'
 import { AppLogo } from '../components/AppLogo'
+import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { useApp } from '../AppContext'
 import { buildStripeCheckoutUrl, isSubscriptionActive } from '../subscriptionApi'
 
@@ -16,6 +19,8 @@ export function CheckoutView() {
   const {
     auth,
     selectedPlanId,
+    selectedBillingInterval,
+    setBillingInterval,
     selectPlan,
     startCheckout,
     activateDemoSubscription,
@@ -33,7 +38,7 @@ export function CheckoutView() {
   const rawPlanId = selectedPlanId ?? subscription?.planId ?? 'team'
   const planId = isApprovalRequiredPlan(rawPlanId) ? 'team' : rawPlanId
   const plan = getPlan(planId)
-  const stripeLink = getStripePaymentLink(planId)
+  const stripeLink = getStripePaymentLink(planId, selectedBillingInterval)
   const isPending = subscription?.status === 'pending'
   const isActive = isSubscriptionActive(subscription)
   const approvalBlocked = isApprovalRequiredPlan(rawPlanId)
@@ -81,6 +86,7 @@ export function CheckoutView() {
         auth?.email ?? '',
         planId,
         auth?.role === 'treinador' ? auth.organizationId : undefined,
+        selectedBillingInterval,
       )
       window.open(url, '_blank', 'noopener,noreferrer')
       setAwaitingPayment(true)
@@ -119,14 +125,16 @@ export function CheckoutView() {
           </div>
         ) : null}
 
+        <BillingIntervalToggle value={selectedBillingInterval} onChange={setBillingInterval} />
+
         <div className="checkout-summary">
           <div>
             <span className="checkout-summary__label">Selected plan</span>
             <strong>{plan.name}</strong>
           </div>
           <div className="checkout-summary__price">
-            <strong>{formatPlanPrice(plan)}</strong>
-            <span>/ month</span>
+            <strong>{formatPlanPrice(plan, selectedBillingInterval)}</strong>
+            <span>{formatPlanPriceSuffix(selectedBillingInterval)}</span>
           </div>
         </div>
 
@@ -140,7 +148,7 @@ export function CheckoutView() {
               const item = getPlan(id)
               return (
                 <option key={item.id} value={item.id}>
-                  {item.name} — {formatPlanPrice(item)}/mo
+                  {item.name} — {formatPlanPriceWithSuffix(item, selectedBillingInterval)}
                 </option>
               )
             })}

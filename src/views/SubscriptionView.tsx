@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { formatPlanPrice, getPlan, isApprovalRequiredPlan, isStripeConfigured, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
+import { formatPlanPriceWithSuffix, getPlan, isApprovalRequiredPlan, isStripeConfigured, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
 import { athleteLimitMessage, coachSeatLimitMessage, canManageOrganizationCoaches } from '../planUtils'
 import { cloudOpenBillingPortal, isSubscriptionActive } from '../subscriptionApi'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -110,7 +110,7 @@ export function SubscriptionView() {
         {plan ? (
           <>
             <p className="stats-panel__plan-name">
-              <strong>{plan.name}</strong> — {formatPlanPrice(plan)}/mo
+              <strong>{plan.name}</strong> — {formatPlanPriceWithSuffix(plan, 'monthly')}
             </p>
             <p className="muted">
               {athleteLimitMessage(plan.id)} · {activeCount} active athletes
@@ -165,6 +165,8 @@ export function SubscriptionView() {
           {cloudMode && !isStripeConfigured()
             ? 'Switch anytime. Plans update instantly while Stripe is not active.'
             : 'Switch anytime. Upgrades apply immediately; downgrades follow your billing cycle when paid via Stripe.'}
+          {' '}
+          Annual billing (2 months free) is available at checkout when you subscribe or upgrade via Stripe.
         </p>
         <div className="subscription-plan-picker">
           {SUBSCRIPTION_PLANS.filter((item) => !isApprovalRequiredPlan(item.id)).map((item) => {
@@ -180,7 +182,7 @@ export function SubscriptionView() {
               >
                 <div>
                   <strong>{item.name}</strong>
-                  <span className="muted"> · {formatPlanPrice(item)}/mo</span>
+                  <span className="muted"> · {formatPlanPriceWithSuffix(item, 'monthly')}</span>
                   {isCurrent ? <span className="subscription-plan-picker__badge">Current</span> : null}
                 </div>
                 <button
@@ -198,8 +200,10 @@ export function SubscriptionView() {
         {!canManageOrganizationCoaches(plan?.id ?? 'team') ? (
           <div className="subscription-team-academy-cta">
             <p className="muted">
-              Need up to 5 coaches on one shared roster? Team Academy ({formatPlanPrice(getPlan('organization'))}/mo)
-              is available by approval for schools and federations.
+              Need up to 5 coaches on one shared roster? Team Academy (
+              {formatPlanPriceWithSuffix(getPlan('organization'), 'monthly')} or{' '}
+              {formatPlanPriceWithSuffix(getPlan('organization'), 'annual')}) is available by approval for
+              schools and federations.
             </p>
             <button type="button" className="btn btn--secondary btn--block" onClick={openTeamAcademyRequest}>
               Request Team Academy

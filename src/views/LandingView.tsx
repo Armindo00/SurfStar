@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { PackCard } from '../components/PackCard'
 import { AppLogo } from '../components/AppLogo'
 import { SUBSCRIPTION_PLANS } from '../plans'
@@ -133,6 +134,8 @@ const FAQ = [
 export function LandingView() {
   const {
     selectPlan,
+    selectedBillingInterval,
+    setBillingInterval,
     openAthleteSignIn,
     openAthleteSignUp,
     openCoachSignIn,
@@ -455,12 +458,22 @@ export function LandingView() {
             <p className="landing-eyebrow">Pricing</p>
             <h2>Choose the right plan</h2>
             <p className="landing-section__sub">
-              Monthly subscription, no lock-in. Secure payment via Stripe.
+              Monthly or annual billing. Annual plans include 2 months free. Secure payment via Stripe.
             </p>
           </div>
+          <BillingIntervalToggle
+            className="billing-toggle--landing"
+            value={selectedBillingInterval}
+            onChange={setBillingInterval}
+          />
           <div className="landing-pricing__grid">
             {SUBSCRIPTION_PLANS.map((plan) => (
-              <PackCard key={plan.id} planId={plan.id} onSelect={selectPlan} />
+              <PackCard
+                key={plan.id}
+                planId={plan.id}
+                billingInterval={selectedBillingInterval}
+                onSelect={selectPlan}
+              />
             ))}
           </div>
         </section>

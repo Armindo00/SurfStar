@@ -225,12 +225,14 @@ export function buildStripeCheckoutUrl(
   email: string,
   planId: PlanId,
   organizationId?: string,
+  billingInterval: 'monthly' | 'annual' = 'monthly',
 ): string {
   const url = new URL(baseLink)
   url.searchParams.set('client_reference_id', coachId)
   if (email.trim()) url.searchParams.set('prefilled_email', email.trim())
   url.searchParams.set('metadata[plan_id]', planId)
   url.searchParams.set('metadata[coach_id]', coachId)
+  url.searchParams.set('metadata[billing_interval]', billingInterval)
   if (organizationId) url.searchParams.set('metadata[organization_id]', organizationId)
   return url.toString()
 }
