@@ -190,6 +190,21 @@ as $$
     and os.status in ('active', 'trialing');
 $$;
 
+create or replace function public.get_my_organization_id_for_coach(p_coach_id uuid)
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select om.organization_id
+  from public.organization_members om
+  where om.profile_id = p_coach_id
+    and om.status = 'active'
+  order by om.accepted_at nulls last, om.created_at
+  limit 1;
+$$;
+
 -- Fallback: coach subscription → org limit during migration
 create or replace function public.coach_athlete_limit(p_coach_id uuid)
 returns int
@@ -208,21 +223,6 @@ as $$
         and cs.status in ('active', 'trialing')
     )
   );
-$$;
-
-create or replace function public.get_my_organization_id_for_coach(p_coach_id uuid)
-returns uuid
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select om.organization_id
-  from public.organization_members om
-  where om.profile_id = p_coach_id
-    and om.status = 'active'
-  order by om.accepted_at nulls last, om.created_at
-  limit 1;
 $$;
 
 create or replace function public.coach_active_athlete_count(p_coach_id uuid)
