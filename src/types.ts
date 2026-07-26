@@ -34,6 +34,7 @@ export type AppView =
   | 'session-history-detail'
   | 'analytics'
   | 'subscription'
+  | 'help'
   | 'athlete-portal'
   | 'manage-custom-templates'
 

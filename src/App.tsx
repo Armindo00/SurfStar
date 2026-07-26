@@ -18,6 +18,7 @@ import { ManageAthletes } from './views/ManageAthletes'
 import { ManageSpots } from './views/ManageSpots'
 import { ManageCustomTemplates } from './views/ManageCustomTemplates'
 import { EndSessionSheet } from './components/EndSessionSheet'
+import { HelpView } from './views/HelpView'
 import { InstallAppBanner } from './components/InstallAppBanner'
 import { SavedWavesView } from './views/SavedWavesView'
 import { SelectAthletes } from './views/SelectAthletes'
@@ -33,7 +34,7 @@ import './App.css'
 import './app-theme.css'
 
 function AppHeader() {
-  const { auth, logout, role } = useApp()
+  const { auth, logout, role, setView } = useApp()
   if (!auth) return null
 
   return (
@@ -46,6 +47,9 @@ function AppHeader() {
       </div>
       <div className="app-brandbar__user">
         <span className="app-brandbar__name">{auth.name}</span>
+        <button type="button" className="btn btn--ghost btn--small" onClick={() => setView('help')}>
+          Help
+        </button>
         <button type="button" className="btn btn--ghost btn--small" onClick={logout}>
           Sign out
         </button>
@@ -99,7 +103,8 @@ function Shell() {
       <div className="app-shell__inner">
         <AppHeader />
         <main className="app-main">
-          {role === 'atleta' && <AthletePortal />}
+          {role === 'atleta' && view === 'help' && <HelpView />}
+          {role === 'atleta' && view !== 'help' && <AthletePortal />}
           {role === 'treinador' && view === 'coach-home' && <CoachHome />}
           {role === 'treinador' && view === 'start-session' && <StartSession />}
           {role === 'treinador' && view === 'select-athletes' && <SelectAthletes />}
@@ -118,6 +123,7 @@ function Shell() {
           {role === 'treinador' && view === 'session-history-detail' && <SessionHistoryDetailView />}
           {role === 'treinador' && view === 'analytics' && <TeamAnalyticsView />}
           {role === 'treinador' && view === 'subscription' && <SubscriptionView />}
+          {role === 'treinador' && view === 'help' && <HelpView />}
         </main>
         <EndSessionSheet />
       </div>

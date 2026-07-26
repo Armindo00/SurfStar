@@ -40,8 +40,17 @@ function formatSessionDate(iso: string) {
 }
 
 export function AthletePortal() {
-  const { auth, trainingSessions, athleteLinks, getSpot, logout, respondToPairing, revokePairing, refreshPairingData } =
-    useApp()
+  const {
+    auth,
+    trainingSessions,
+    athleteLinks,
+    getSpot,
+    logout,
+    respondToPairing,
+    revokePairing,
+    refreshPairingData,
+    setView,
+  } = useApp()
   const [pairingBusy, setPairingBusy] = useState<string | null>(null)
   const [pairingError, setPairingError] = useState('')
 
@@ -474,6 +483,10 @@ export function AthletePortal() {
           </p>
         </div>
       )}
+
+      <button type="button" className="btn btn--outline btn--block" onClick={() => setView('help')}>
+        Help & install guide
+      </button>
 
       <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>
         Sign out

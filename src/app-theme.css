@@ -1257,3 +1257,125 @@ body {
 .app-shell .field--check input {
   accent-color: var(--landing-gold);
 }
+
+/* —— Help page —— */
+
+.help-page .help-section + .help-section {
+  margin-top: 0;
+}
+
+.help-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: #dbe4ef;
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.help-list li + li {
+  margin-top: 0.45rem;
+}
+
+.help-faq {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.help-faq__item {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  background: rgba(8, 30, 58, 0.35);
+}
+
+.help-faq__item summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--landing-text);
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.help-faq__item summary::-webkit-details-marker {
+  display: none;
+}
+
+.help-faq__title {
+  flex: 1 1 auto;
+}
+
+.help-faq__badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(201, 169, 98, 0.18);
+  color: var(--landing-gold-light);
+}
+
+.help-faq__item p {
+  margin: 0.55rem 0 0.65rem;
+}
+
+.help-steps {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: #b8c5d6;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.help-steps li + li {
+  margin-top: 0.35rem;
+}
+
+.install-help__platform {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.install-help__platform:first-of-type {
+  margin-top: 0.75rem;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.install-help__platform h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--landing-gold-light);
+}
+
+.install-help__steps {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: #b8c5d6;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.install-help__steps li + li {
+  margin-top: 0.35rem;
+}
+
+.install-help__installed {
+  margin: 0.5rem 0 0;
+}
+
+.install-help__note {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 420px) {
+  .app-brandbar__name {
+    display: none;
+  }
+}

@@ -49,6 +49,7 @@ const COACH_NAV_VIEWS: AppView[] = [
   'session-history-detail',
   'analytics',
   'subscription',
+  'help',
   ...DRAFT_VIEWS,
   ...SESSION_VIEWS,
 ]

@@ -74,6 +74,10 @@ export function CoachHome() {
           <span>Account & subscription</span>
           <span aria-hidden="true">›</span>
         </button>
+        <button type="button" className="action-list__item" onClick={() => setView('help')}>
+          <span>Help & training guide</span>
+          <span aria-hidden="true">›</span>
+        </button>
       </nav>
 
       <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>
