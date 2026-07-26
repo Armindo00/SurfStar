@@ -17,7 +17,7 @@ export function ManageCustomTemplates() {
     setView,
   } = useApp()
 
-  const planId = subscription?.planId ?? 'starter'
+  const planId = subscription?.planId ?? 'team'
   const hasAccess = canUseCustomTraining(planId)
 
   const [editing, setEditing] = useState<CustomTrainingTemplate | null>(null)

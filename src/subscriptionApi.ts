@@ -1,9 +1,11 @@
 import { getSupabase } from './lib/supabase'
 import type { PlanId } from './plans'
+import { cloudFetchOrganizationContext } from './organizationApi'
 
 export type SubscriptionStatus = 'active' | 'trialing' | 'pending' | 'canceled'
 
 export type CoachSubscription = {
+  organizationId: string
   coachId: string
   planId: PlanId
   status: SubscriptionStatus
@@ -38,24 +40,44 @@ export function isDemoSubscriptionEnabled(): boolean {
   return import.meta.env.VITE_DEMO_SUBSCRIPTION === 'true'
 }
 
-export function loadLocalSubscription(coachId: string): CoachSubscription | null {
+export function loadLocalSubscription(organizationId: string): CoachSubscription | null {
+  return readLocalSubscriptions().find((s) => s.organizationId === organizationId) ?? null
+}
+
+export function loadLocalSubscriptionByCoach(coachId: string): CoachSubscription | null {
   return readLocalSubscriptions().find((s) => s.coachId === coachId) ?? null
 }
 
 export function saveLocalSubscription(sub: CoachSubscription): CoachSubscription {
-  const next = readLocalSubscriptions().filter((s) => s.coachId !== sub.coachId)
+  const next = readLocalSubscriptions().filter((s) => s.organizationId !== sub.organizationId)
   next.push(sub)
   writeLocalSubscriptions(next)
   return sub
 }
 
-function mapRow(data: {
+function mapOrgRow(data: {
+  organization_id: string
+  plan_id: string
+  status: string
+  current_period_end: string | null
+}, coachId: string): CoachSubscription {
+  return {
+    organizationId: data.organization_id,
+    coachId,
+    planId: data.plan_id as PlanId,
+    status: data.status as SubscriptionStatus,
+    currentPeriodEnd: data.current_period_end,
+  }
+}
+
+function mapLegacyRow(data: {
   coach_id: string
   plan_id: string
   status: string
   current_period_end: string | null
-}): CoachSubscription {
+}, organizationId: string): CoachSubscription {
   return {
+    organizationId,
     coachId: data.coach_id,
     planId: data.plan_id as PlanId,
     status: data.status as SubscriptionStatus,
@@ -63,7 +85,23 @@ function mapRow(data: {
   }
 }
 
-export async function cloudFetchSubscription(coachId: string): Promise<CoachSubscription | null> {
+export async function cloudFetchSubscription(
+  coachId: string,
+  organizationId?: string,
+): Promise<CoachSubscription | null> {
+  const orgId = organizationId ?? (await cloudFetchOrganizationContext())?.organizationId
+  if (orgId) {
+    const { data, error } = await getSupabase()
+      .from('organization_subscriptions')
+      .select('organization_id, plan_id, status, current_period_end')
+      .eq('organization_id', orgId)
+      .maybeSingle()
+
+    if (!error && data) {
+      return mapOrgRow(data, coachId)
+    }
+  }
+
   const { data, error } = await getSupabase()
     .from('coach_subscriptions')
     .select('coach_id, plan_id, status, current_period_end')
@@ -71,46 +109,65 @@ export async function cloudFetchSubscription(coachId: string): Promise<CoachSubs
     .maybeSingle()
 
   if (error || !data) return null
-  return mapRow(data)
+  return mapLegacyRow(data, orgId ?? coachId)
 }
 
-export async function cloudCreatePendingSubscription(planId: PlanId): Promise<CoachSubscription> {
-  const { data, error } = await getSupabase().rpc('create_pending_coach_subscription', {
+export async function cloudCreatePendingSubscription(
+  planId: PlanId,
+  orgName?: string,
+): Promise<CoachSubscription> {
+  const { data, error } = await getSupabase().rpc('create_pending_organization_subscription', {
     p_plan_id: planId,
+    p_org_name: orgName ?? null,
   })
 
   if (error) throw new Error(error.message)
   if (!data?.ok) throw new Error(data?.error ?? 'Failed to start checkout')
 
+  const coachId = (await getSupabase().auth.getUser()).data.user?.id ?? ''
+
   return {
-    coachId: data.coach_id,
+    organizationId: data.organization_id,
+    coachId,
     planId: data.plan_id as PlanId,
     status: data.status as SubscriptionStatus,
     currentPeriodEnd: data.current_period_end ?? null,
   }
 }
 
-export async function cloudActivateDemoSubscription(planId: PlanId): Promise<CoachSubscription> {
-  const { data, error } = await getSupabase().rpc('activate_coach_subscription_demo', {
+export async function cloudActivateDemoSubscription(
+  planId: PlanId,
+  orgName?: string,
+): Promise<CoachSubscription> {
+  const { data, error } = await getSupabase().rpc('activate_organization_subscription_demo', {
     p_plan_id: planId,
+    p_org_name: orgName ?? null,
   })
 
   if (error) throw new Error(error.message)
   if (!data?.ok) throw new Error(data?.error ?? 'Failed to activate subscription')
 
+  const coachId = (await getSupabase().auth.getUser()).data.user?.id ?? ''
+
   return {
-    coachId: data.coach_id,
+    organizationId: data.organization_id,
+    coachId,
     planId: data.plan_id as PlanId,
     status: data.status as SubscriptionStatus,
     currentPeriodEnd: data.current_period_end ?? null,
   }
 }
 
-export function activateLocalSubscription(coachId: string, planId: PlanId): CoachSubscription {
+export function activateLocalSubscription(
+  coachId: string,
+  organizationId: string,
+  planId: PlanId,
+): CoachSubscription {
   const periodEnd = new Date()
   periodEnd.setMonth(periodEnd.getMonth() + 1)
 
   return saveLocalSubscription({
+    organizationId,
     coachId,
     planId,
     status: 'active',
@@ -121,37 +178,45 @@ export function activateLocalSubscription(coachId: string, planId: PlanId): Coac
 export async function fetchCoachSubscription(
   coachId: string,
   cloudMode: boolean,
+  organizationId?: string,
 ): Promise<CoachSubscription | null> {
   if (cloudMode) {
     try {
-      return await cloudFetchSubscription(coachId)
+      return await cloudFetchSubscription(coachId, organizationId)
     } catch {
       return null
     }
   }
-  return loadLocalSubscription(coachId)
+  if (organizationId) {
+    return loadLocalSubscription(organizationId)
+  }
+  return loadLocalSubscriptionByCoach(coachId)
 }
 
 export async function startCoachCheckout(
   coachId: string,
+  organizationId: string,
   planId: PlanId,
   cloudMode: boolean,
+  orgName?: string,
 ): Promise<CoachSubscription> {
   if (cloudMode) {
-    return cloudCreatePendingSubscription(planId)
+    return cloudCreatePendingSubscription(planId, orgName)
   }
-  return activateLocalSubscription(coachId, planId)
+  return activateLocalSubscription(coachId, organizationId, planId)
 }
 
 export async function activateCoachSubscription(
   coachId: string,
+  organizationId: string,
   planId: PlanId,
   cloudMode: boolean,
+  orgName?: string,
 ): Promise<CoachSubscription> {
   if (cloudMode) {
-    return cloudActivateDemoSubscription(planId)
+    return cloudActivateDemoSubscription(planId, orgName)
   }
-  return activateLocalSubscription(coachId, planId)
+  return activateLocalSubscription(coachId, organizationId, planId)
 }
 
 export function buildStripeCheckoutUrl(
@@ -159,12 +224,14 @@ export function buildStripeCheckoutUrl(
   coachId: string,
   email: string,
   planId: PlanId,
+  organizationId?: string,
 ): string {
   const url = new URL(baseLink)
   url.searchParams.set('client_reference_id', coachId)
   if (email.trim()) url.searchParams.set('prefilled_email', email.trim())
   url.searchParams.set('metadata[plan_id]', planId)
   url.searchParams.set('metadata[coach_id]', coachId)
+  if (organizationId) url.searchParams.set('metadata[organization_id]', organizationId)
   return url.toString()
 }
 
@@ -260,21 +327,26 @@ export async function cloudChangeSubscriptionPlan(planId: PlanId): Promise<
   return { ok: true }
 }
 
-export function cancelLocalSubscription(coachId: string): CoachSubscription {
-  const existing = loadLocalSubscription(coachId)
+export function cancelLocalSubscription(organizationId: string, coachId: string): CoachSubscription {
+  const existing = loadLocalSubscription(organizationId)
   const periodEnd = existing?.currentPeriodEnd ?? new Date().toISOString()
   return saveLocalSubscription({
+    organizationId,
     coachId,
-    planId: existing?.planId ?? 'starter',
+    planId: existing?.planId ?? 'team',
     status: 'canceled',
     currentPeriodEnd: periodEnd,
   })
 }
 
-export function changeLocalSubscriptionPlan(coachId: string, planId: PlanId): CoachSubscription {
-  const existing = loadLocalSubscription(coachId)
+export function changeLocalSubscriptionPlan(
+  organizationId: string,
+  coachId: string,
+  planId: PlanId,
+): CoachSubscription {
+  const existing = loadLocalSubscription(organizationId)
   if (!existing) {
-    return activateLocalSubscription(coachId, planId)
+    return activateLocalSubscription(coachId, organizationId, planId)
   }
   return saveLocalSubscription({
     ...existing,

@@ -38,18 +38,58 @@ function buildAthleteSession(
   }
 }
 
-function buildCoachSession(user: {
-  id: string
-  email?: string | null
-  user_metadata?: Record<string, unknown>
-}): AuthSession {
+function buildCoachSession(
+  user: {
+    id: string
+    email?: string | null
+    user_metadata?: Record<string, unknown>
+  },
+  org?: {
+    organizationId: string
+    organizationName: string
+    role: 'owner' | 'coach'
+  },
+): AuthSession {
   const meta = user.user_metadata ?? {}
   return {
     role: 'treinador',
     coachId: user.id,
+    organizationId: org?.organizationId ?? '',
+    organizationRole: org?.role ?? 'owner',
+    organizationName: org?.organizationName ?? 'My Team',
     name: String(meta.name || user.email?.split('@')[0] || 'Coach'),
     email: (user.email || '').toLowerCase(),
   }
+}
+
+async function enrichCoachSession(user: {
+  id: string
+  email?: string | null
+  user_metadata?: Record<string, unknown>
+}): Promise<AuthSession> {
+  const supabase = getSupabase()
+  await supabase.rpc('accept_organization_invites')
+  const { data } = await supabase.rpc('get_my_organization_context')
+
+  if (data?.ok) {
+    return buildCoachSession(user, {
+      organizationId: data.organization_id,
+      organizationName: data.organization_name,
+      role: data.role,
+    })
+  }
+
+  await supabase.rpc('ensure_coach_organization', { p_org_name: null })
+  const { data: retry } = await supabase.rpc('get_my_organization_context')
+  if (retry?.ok) {
+    return buildCoachSession(user, {
+      organizationId: retry.organization_id,
+      organizationName: retry.organization_name,
+      role: retry.role,
+    })
+  }
+
+  return buildCoachSession(user)
 }
 
 async function buildAthleteAuthSession(
@@ -218,7 +258,7 @@ async function buildAuthSessionFromUser(user: {
     return buildAthleteAuthSession(user, profile)
   }
 
-  return buildCoachSession(user)
+  return enrichCoachSession(user)
 }
 
 export type CloudAuthResult =
@@ -367,16 +407,16 @@ export async function cloudLogout(): Promise<void> {
   await getSupabase().auth.signOut()
 }
 
-export async function cloudLoadCoachData(coachId: string) {
+export async function cloudLoadCoachData(organizationId: string, coachId: string) {
   const [athletes, links, spots, conditions, trainingSessions, customTemplates] = await Promise.all([
-    cloudFetchCoachAthletes(coachId),
-    cloudFetchCoachLinks(coachId),
-    cloudFetchSpots(coachId),
-    cloudFetchConditions(coachId),
-    cloudFetchTrainingSessions(coachId),
-    cloudFetchCustomTemplates(coachId),
+    cloudFetchCoachAthletes(organizationId),
+    cloudFetchCoachLinks(organizationId),
+    cloudFetchSpots(organizationId),
+    cloudFetchConditions(organizationId),
+    cloudFetchTrainingSessions(organizationId),
+    cloudFetchCustomTemplates(organizationId),
   ])
-  return { athletes, links, spots, conditions, trainingSessions, customTemplates }
+  return { athletes, links, spots, conditions, trainingSessions, customTemplates, coachId }
 }
 
 export async function cloudLoadAthleteData(athleteId: string) {
@@ -435,36 +475,37 @@ export async function cloudResetPassword(
   return { ok: true }
 }
 
-export async function cloudFetchSpots(coachId: string): Promise<SurfSpot[]> {
+export async function cloudFetchSpots(organizationId: string): Promise<SurfSpot[]> {
   const { data, error } = await getSupabase()
     .from('spots')
     .select('id, name')
-    .eq('coach_id', coachId)
+    .eq('organization_id', organizationId)
 
   if (error || !data) return []
   return data as SurfSpot[]
 }
 
-export async function cloudFetchConditions(coachId: string): Promise<string[]> {
+export async function cloudFetchConditions(organizationId: string): Promise<string[]> {
   const { data, error } = await getSupabase()
     .from('coach_conditions')
     .select('label')
-    .eq('coach_id', coachId)
+    .eq('organization_id', organizationId)
 
   if (error || !data) return []
   return data.map((r: { label: string }) => r.label)
 }
 
-export async function cloudFetchTrainingSessions(coachId: string): Promise<TrainingSession[]> {
+export async function cloudFetchTrainingSessions(organizationId: string): Promise<TrainingSession[]> {
   const { data, error } = await getSupabase()
     .from('training_sessions')
     .select('payload')
-    .eq('coach_id', coachId)
+    .eq('organization_id', organizationId)
     .order('updated_at', { ascending: false })
 
   if (error || !data) return []
   return data.map((r: { payload: TrainingSession }) => ({
     ...r.payload,
+    organizationId,
     spotName: r.payload.spotName?.trim() ?? '',
   }))
 }
@@ -472,20 +513,23 @@ export async function cloudFetchTrainingSessions(coachId: string): Promise<Train
 export type CloudSaveResult = { ok: true } | { ok: false; error: string }
 
 export async function cloudSaveTrainingSessions(
+  organizationId: string,
   coachId: string,
   sessions: TrainingSession[],
 ): Promise<CloudSaveResult> {
   const supabase = getSupabase()
-  const coachSessions = sessions.filter((s) => s.coachId === coachId)
+  const orgSessions = sessions
+    .filter((s) => s.organizationId === organizationId || s.coachId === coachId)
+    .map((s) => ({ ...s, organizationId, coachId: s.coachId || coachId }))
 
   const { data: existing, error: fetchError } = await supabase
     .from('training_sessions')
     .select('id')
-    .eq('coach_id', coachId)
+    .eq('organization_id', organizationId)
 
   if (fetchError) return { ok: false, error: fetchError.message }
 
-  const keepIds = new Set(coachSessions.map((s) => s.id))
+  const keepIds = new Set(orgSessions.map((s) => s.id))
   const toDelete = (existing ?? []).filter((r: { id: string }) => !keepIds.has(r.id)).map((r) => r.id)
 
   if (toDelete.length > 0) {
@@ -493,12 +537,13 @@ export async function cloudSaveTrainingSessions(
     if (error) return { ok: false, error: error.message }
   }
 
-  if (coachSessions.length === 0) return { ok: true }
+  if (orgSessions.length === 0) return { ok: true }
 
   const { error } = await supabase.from('training_sessions').upsert(
-    coachSessions.map((s) => ({
+    orgSessions.map((s) => ({
       id: s.id,
-      coach_id: coachId,
+      coach_id: s.coachId,
+      organization_id: organizationId,
       payload: s,
       updated_at: new Date().toISOString(),
     })),
@@ -507,9 +552,12 @@ export async function cloudSaveTrainingSessions(
   return { ok: true }
 }
 
-export async function cloudSaveSpots(coachId: string, spots: SurfSpot[]): Promise<CloudSaveResult> {
+export async function cloudSaveSpots(organizationId: string, coachId: string, spots: SurfSpot[]): Promise<CloudSaveResult> {
   const supabase = getSupabase()
-  const { data: existing, error: fetchError } = await supabase.from('spots').select('id').eq('coach_id', coachId)
+  const { data: existing, error: fetchError } = await supabase
+    .from('spots')
+    .select('id')
+    .eq('organization_id', organizationId)
   if (fetchError) return { ok: false, error: fetchError.message }
 
   const keep = new Set(spots.map((s) => s.id))
@@ -520,7 +568,7 @@ export async function cloudSaveSpots(coachId: string, spots: SurfSpot[]): Promis
   }
   if (spots.length) {
     const { error } = await supabase.from('spots').upsert(
-      spots.map((s) => ({ id: s.id, coach_id: coachId, name: s.name })),
+      spots.map((s) => ({ id: s.id, coach_id: coachId, organization_id: organizationId, name: s.name })),
     )
     if (error) return { ok: false, error: error.message }
   }
@@ -528,27 +576,31 @@ export async function cloudSaveSpots(coachId: string, spots: SurfSpot[]): Promis
 }
 
 export async function cloudSaveConditions(
+  organizationId: string,
   coachId: string,
   conditions: string[],
 ): Promise<CloudSaveResult> {
   const supabase = getSupabase()
-  const { error: deleteError } = await supabase.from('coach_conditions').delete().eq('coach_id', coachId)
+  const { error: deleteError } = await supabase
+    .from('coach_conditions')
+    .delete()
+    .eq('organization_id', organizationId)
   if (deleteError) return { ok: false, error: deleteError.message }
 
   if (conditions.length) {
     const { error } = await supabase.from('coach_conditions').insert(
-      conditions.map((label) => ({ coach_id: coachId, label })),
+      conditions.map((label) => ({ coach_id: coachId, organization_id: organizationId, label })),
     )
     if (error) return { ok: false, error: error.message }
   }
   return { ok: true }
 }
 
-export async function cloudFetchCustomTemplates(coachId: string): Promise<CustomTrainingTemplate[]> {
+export async function cloudFetchCustomTemplates(organizationId: string): Promise<CustomTrainingTemplate[]> {
   const { data, error } = await getSupabase()
     .from('custom_training_templates')
     .select('payload')
-    .eq('coach_id', coachId)
+    .eq('organization_id', organizationId)
     .order('updated_at', { ascending: false })
 
   if (error || !data) return []
@@ -556,6 +608,7 @@ export async function cloudFetchCustomTemplates(coachId: string): Promise<Custom
 }
 
 export async function cloudSaveCustomTemplates(
+  organizationId: string,
   coachId: string,
   templates: CustomTrainingTemplate[],
 ): Promise<CloudSaveResult> {
@@ -563,7 +616,7 @@ export async function cloudSaveCustomTemplates(
   const { data: existing, error: fetchError } = await supabase
     .from('custom_training_templates')
     .select('id')
-    .eq('coach_id', coachId)
+    .eq('organization_id', organizationId)
 
   if (fetchError) return { ok: false, error: fetchError.message }
 
@@ -580,6 +633,7 @@ export async function cloudSaveCustomTemplates(
       templates.map((template) => ({
         id: template.id,
         coach_id: coachId,
+        organization_id: organizationId,
         payload: template,
         updated_at: template.updatedAt,
       })),

@@ -37,6 +37,7 @@ export type AppView =
   | 'help'
   | 'athlete-portal'
   | 'manage-custom-templates'
+  | 'organization'
 
 export type CustomLevel = {
   id: string
@@ -127,9 +128,33 @@ export function normalizeAthleteShareSettings(
 
 export type PairingStatus = 'pending' | 'active' | 'revoked'
 
+export type OrganizationRole = 'owner' | 'coach'
+
+export type OrganizationMemberStatus = 'pending' | 'active'
+
+export type Organization = {
+  id: string
+  name: string
+  createdAt?: string
+}
+
+export type OrganizationMember = {
+  id: string
+  organizationId: string
+  profileId: string | null
+  role: OrganizationRole
+  status: OrganizationMemberStatus
+  invitedEmail?: string | null
+  name: string
+  email: string
+  acceptedAt?: string | null
+  createdAt?: string
+}
+
 export type CoachAthleteLink = {
   id: string
   coachId: string
+  organizationId?: string
   athleteId: string
   status: PairingStatus
   initiatedBy: 'coach' | 'athlete'
@@ -157,6 +182,7 @@ export type CoachAccount = {
   name: string
   email: string
   passwordHash: string
+  organizationId?: string
   /** Legacy plain text — upgraded on next login */
   password?: string
 }
@@ -174,7 +200,15 @@ export type StudentAccount = {
 }
 
 export type AuthSession =
-  | { role: 'treinador'; coachId: string; name: string; email: string }
+  | {
+      role: 'treinador'
+      coachId: string
+      organizationId: string
+      organizationRole: OrganizationRole
+      organizationName: string
+      name: string
+      email: string
+    }
   | {
       role: 'atleta'
       athleteId: string
@@ -346,6 +380,7 @@ export const SEA_PEAKS: SeaPeak[] = ['peak-1', 'peak-2']
 export type TrainingSession = {
   id: string
   coachId: string
+  organizationId?: string
   mode: TrainingMode
   spotId: string
   /** Snapshot at session start so history keeps the spot name */

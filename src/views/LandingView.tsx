@@ -89,7 +89,7 @@ const STEPS = [
   {
     step: '01',
     title: 'Pick your plan',
-    text: 'Starter, Coach, or Coach Premium — pick the pack that fits your team.',
+    text: 'Coach, Coach Premium, or Team Academy — pick the plan that fits your team.',
   },
   {
     step: '02',

@@ -14,6 +14,16 @@ export function resolveSessionSpotName(
   return getSpot?.(session.spotId)?.name ?? 'Unknown spot'
 }
 
+export function filterOrgCompletedSessions(
+  sessions: TrainingSession[],
+  organizationId: string,
+): TrainingSession[] {
+  return sessions
+    .filter((s) => (s.organizationId === organizationId || !s.organizationId) && Boolean(s.endedAt))
+    .sort((a, b) => (b.endedAt ?? '').localeCompare(a.endedAt ?? ''))
+}
+
+/** @deprecated use filterOrgCompletedSessions */
 export function filterCoachCompletedSessions(
   sessions: TrainingSession[],
   coachId: string,

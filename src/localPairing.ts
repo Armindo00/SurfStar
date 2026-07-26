@@ -45,12 +45,12 @@ export function loadAthleteSessionsLocal(
   links: CoachAthleteLink[],
   sessions: TrainingSession[],
 ): TrainingSession[] {
-  const activeCoachIds = new Set(
-    links.filter((l) => l.status === 'active' && !l.blocked).map((l) => l.coachId),
+  const activeOrgIds = new Set(
+    links.filter((l) => l.status === 'active' && !l.blocked).map((l) => l.organizationId ?? l.coachId),
   )
   return sessions.filter(
     (s) =>
-      activeCoachIds.has(s.coachId) &&
+      (activeOrgIds.has(s.organizationId ?? s.coachId) || activeOrgIds.has(s.coachId)) &&
       Boolean(s.endedAt) &&
       s.athleteIds.includes(athleteId),
   )

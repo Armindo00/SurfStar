@@ -17,6 +17,7 @@ import { LoginView } from './views/LoginView'
 import { ManageAthletes } from './views/ManageAthletes'
 import { ManageSpots } from './views/ManageSpots'
 import { ManageCustomTemplates } from './views/ManageCustomTemplates'
+import { OrganizationView } from './views/OrganizationView'
 import { EndSessionSheet } from './components/EndSessionSheet'
 import { HelpView } from './views/HelpView'
 import { InstallAppBanner } from './components/InstallAppBanner'
@@ -123,6 +124,7 @@ function Shell() {
           {role === 'treinador' && view === 'training-sessions' && <TrainingSessionsView />}
           {role === 'treinador' && view === 'session-history-detail' && <SessionHistoryDetailView />}
           {role === 'treinador' && view === 'analytics' && <TeamAnalyticsView />}
+          {role === 'treinador' && view === 'organization' && <OrganizationView />}
           {role === 'treinador' && view === 'subscription' && <SubscriptionView />}
           {role === 'treinador' && view === 'help' && <HelpView />}
         </main>

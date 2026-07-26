@@ -147,11 +147,11 @@ export function planBadgeForMode(mode: TrainingMode, planId: PlanId): string | n
   const guide = TRAINING_HELP_GUIDES.find((g) => g.mode === mode)
   if (!guide) return null
   if (mode === 'tecnico' || mode === 'combos') return null
-  if ((mode === 'heats' || mode === 'campeonato') && (planId === 'team' || planId === 'club')) {
+  if ((mode === 'heats' || mode === 'campeonato') && (planId === 'team' || planId === 'club' || planId === 'organization')) {
     return 'Included in your plan'
   }
   if (mode === 'custom' || mode === 'sea-analysis') {
-    return planId === 'club' ? 'Included in your plan' : guide.planLabel
+    return planId === 'club' || planId === 'organization' ? 'Included in your plan' : guide.planLabel
   }
   if (mode === 'heats' || mode === 'campeonato') return guide.planLabel
   return guide.planLabel

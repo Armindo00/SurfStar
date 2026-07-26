@@ -36,7 +36,7 @@ import {
   cloudUpdateLinkShareSettings,
 } from './cloudPairingApi'
 import { waveHasLoggedAttempts } from './sessionStats'
-import { filterCoachCompletedSessions } from './sessionHistoryUtils'
+import { filterOrgCompletedSessions } from './sessionHistoryUtils'
 import {
   countWaveCustomAttempts,
   createEmptyCustomTemplate,
@@ -70,6 +70,7 @@ import type {
   CustomAttemptLog,
   CustomTrainingTemplate,
   CoachAccount,
+  OrganizationMember,
   CoachAthleteLink,
   StudentAccount,
   SurfSpot,
@@ -95,6 +96,7 @@ import { getPlan, getStripePaymentLink, isStripeConfigured } from './plans'
 import {
   canAccessTeamAnalytics,
   canAddAthlete,
+  canAddCoach,
   canUseCustomTraining,
   canUseTrainingMode,
   getAllowedModes,
@@ -119,6 +121,19 @@ import {
   publicViewFromPath,
   scrollToPricingSection,
 } from './routing'
+import {
+  buildLocalCoachAuthSession,
+  cloudInviteOrganizationCoach,
+  cloudListOrganizationMembers,
+  cloudRemoveOrganizationMember,
+  cloudUpdateOrganizationName,
+  loadLocalCoachData,
+  localEnsureCoachOrganization,
+  localInviteOrganizationCoach,
+  localListOrganizationMembers,
+  localRemoveOrganizationMember,
+  localUpdateOrganizationName,
+} from './organizationApi'
 import {
   clearResumeState,
   loadResumeState,
@@ -193,6 +208,11 @@ type AppContextValue = {
   activeCoachAthletes: Athlete[]
   changePassword: (newPassword: string) => Promise<{ ok: true } | { ok: false; error: string }>
   refreshPairingData: () => Promise<void>
+  organizationMembers: OrganizationMember[]
+  refreshOrganizationMembers: () => Promise<void>
+  inviteOrganizationCoach: (email: string) => Promise<{ ok: boolean; error?: string }>
+  removeOrganizationMember: (memberId: string) => Promise<{ ok: boolean; error?: string }>
+  updateOrganizationName: (name: string) => Promise<{ ok: boolean; error?: string; name?: string }>
   addSpot: (name: string) => void
   updateSpotName: (spotId: string, name: string) => void
   removeSpot: (spotId: string) => boolean
@@ -380,6 +400,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [publicView, setPublicViewState] = useState<PublicView>(() => publicViewFromPath(window.location.pathname))
   const [selectedPlanId, setSelectedPlanId] = useState<PlanId | null>(null)
   const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
+  const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([])
   const [view, setView] = useState<AppView>('coach-home')
   const [athletes, setAthletes] = useState<Athlete[]>(() =>
     cloudMode ? [] : migrateLegacyLocalAthletes(store.getAthletes()),
@@ -473,7 +494,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const coachId = auth?.role === 'treinador' ? auth.coachId : null
+  const organizationId = auth?.role === 'treinador' ? auth.organizationId : null
 
   const coachAthletes = useMemo(() => {
     if (auth?.role === 'treinador') {
@@ -493,7 +514,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const syncSessionsToCloud = useCallback(
     (next: TrainingSession[], session: AuthSession | null = auth) => {
       if (cloudMode && session?.role === 'treinador') {
-        void cloudSaveTrainingSessions(session.coachId, next).then((result) => {
+        void cloudSaveTrainingSessions(session.organizationId, session.coachId, next).then((result) => {
           if (!result.ok) showToast(`Failed to save sessions: ${result.error}`, 'error')
         })
       }
@@ -514,7 +535,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const applyCloudSessionData = useCallback(async (session: AuthSession): Promise<TrainingSession[]> => {
     if (session.role === 'treinador') {
-      const data = await cloudLoadCoachData(session.coachId)
+      const data = await cloudLoadCoachData(session.organizationId, session.coachId)
       const sessions = data.trainingSessions.map((trainingSession) => ({
         ...trainingSession,
         spotName:
@@ -557,11 +578,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setSubscription(null)
         return
       }
-      const sub = await fetchCoachSubscription(session.coachId, cloudMode)
+      const sub = await fetchCoachSubscription(session.coachId, cloudMode, session.organizationId)
       setSubscription(sub)
     },
     [cloudMode],
   )
+
+  const refreshOrganizationMembers = useCallback(async () => {
+    if (!auth || auth.role !== 'treinador') {
+      setOrganizationMembers([])
+      return
+    }
+    if (cloudMode) {
+      const members = await cloudListOrganizationMembers()
+      setOrganizationMembers(members)
+      return
+    }
+    setOrganizationMembers(localListOrganizationMembers(auth.organizationId))
+  }, [auth, cloudMode])
 
   const hasActiveSubscription = useMemo(() => {
     if (auth?.role !== 'treinador') return true
@@ -570,12 +604,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const refreshSubscription = useCallback(async () => {
     if (!auth || auth.role !== 'treinador') return
-    const sub = await fetchCoachSubscription(auth.coachId, cloudMode)
+    const sub = await fetchCoachSubscription(auth.coachId, cloudMode, auth.organizationId)
     setSubscription(sub)
+    await refreshOrganizationMembers()
     if (isSubscriptionActive(sub)) {
       setView('coach-home')
     }
-  }, [auth, cloudMode])
+  }, [auth, cloudMode, refreshOrganizationMembers])
 
   const selectPlan = useCallback((planId: PlanId, options?: { goToLogin?: boolean }) => {
     setSelectedPlanId(planId)
@@ -634,8 +669,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: false as const, error: 'Sign in as coach first.' }
     }
     const planId = selectedPlanId ?? subscription?.planId ?? 'team'
+    const orgName =
+      planId === 'organization' && auth.role === 'treinador'
+        ? `${auth.name}'s Academy`
+        : undefined
     try {
-      const sub = await startCoachCheckout(auth.coachId, planId, cloudMode)
+      const sub = await startCoachCheckout(auth.coachId, auth.organizationId, planId, cloudMode, orgName)
       setSubscription(sub)
       return { ok: true as const }
     } catch (err) {
@@ -651,8 +690,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: false as const, error: 'Sign in as coach first.' }
     }
     const planId = selectedPlanId ?? subscription?.planId ?? 'team'
+    const orgName =
+      planId === 'organization' && auth.role === 'treinador'
+        ? `${auth.name}'s Academy`
+        : undefined
     try {
-      const sub = await activateCoachSubscription(auth.coachId, planId, cloudMode)
+      const sub = await activateCoachSubscription(auth.coachId, auth.organizationId, planId, cloudMode, orgName)
       setSubscription(sub)
       setView('coach-home')
       showToast('Subscription activated.', 'success')
@@ -680,7 +723,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       if (!cloudMode) {
-        const sub = changeLocalSubscriptionPlan(auth.coachId, planId)
+        const sub = changeLocalSubscriptionPlan(auth.organizationId, auth.coachId, planId)
         setSubscription(sub)
         setSelectedPlanId(planId)
         showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
@@ -722,7 +765,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (result.requiresCheckout) {
         setSelectedPlanId(planId)
         try {
-          const sub = await startCoachCheckout(auth.coachId, planId, cloudMode)
+          const sub = await startCoachCheckout(auth.coachId, auth.organizationId, planId, cloudMode)
           setSubscription(sub)
         } catch (err) {
           return {
@@ -733,13 +776,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         const stripeLink = getStripePaymentLink(planId)
         if (stripeLink) {
-          const url = buildStripeCheckoutUrl(stripeLink, auth.coachId, auth.email, planId)
+          const url = buildStripeCheckoutUrl(stripeLink, auth.coachId, auth.email, planId, auth.organizationId)
           window.open(url, '_blank', 'noopener,noreferrer')
           showToast('Complete payment to activate your new plan.', 'info')
           return { ok: true as const }
         }
 
-        const demo = await activateCoachSubscription(auth.coachId, planId, cloudMode)
+        const demo = await activateCoachSubscription(auth.coachId, auth.organizationId, planId, cloudMode)
         setSubscription(demo)
         showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
         return { ok: true as const }
@@ -758,7 +801,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     if (!cloudMode) {
-      const sub = cancelLocalSubscription(auth.coachId)
+      const sub = cancelLocalSubscription(auth.organizationId, auth.coachId)
       setSubscription(sub)
       showToast('Subscription canceled.', 'success')
       return { ok: true as const }
@@ -782,8 +825,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (cloudMode) {
       if (auth.role === 'treinador') {
         const [athletesNext, linksNext] = await Promise.all([
-          cloudFetchCoachAthletes(auth.coachId),
-          cloudFetchCoachLinks(auth.coachId),
+          cloudFetchCoachAthletes(auth.organizationId),
+          cloudFetchCoachLinks(auth.organizationId),
         ])
         setAthletes(athletesNext)
         setCoachLinks(linksNext)
@@ -797,14 +840,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     if (auth.role === 'treinador') {
-      setCoachLinks(store.getPairings().filter((l) => l.coachId === auth.coachId))
-      setAthletes(migrateLegacyLocalAthletes(store.getAthletes()))
+      const orgId = auth.organizationId
+      setCoachLinks(store.getPairings().filter((l) => l.organizationId === orgId))
+      setAthletes(buildCoachAthletesFromLinks(store.getPairings().filter((l) => l.organizationId === orgId), migrateLegacyLocalAthletes(store.getAthletes())))
     } else {
       const allLinks = store.getPairings().filter((l) => l.athleteId === auth.athleteId)
       setAthleteLinks(allLinks)
-      setTrainingSessions(
-        loadAthleteSessionsLocal(auth.athleteId, allLinks, store.getTrainingSessions()),
-      )
+      const orgIds = new Set(allLinks.filter((l) => l.status === 'active').map((l) => l.organizationId).filter(Boolean) as string[])
+      const sessions = orgIds.size
+        ? orgIds.values().next().value
+          ? store.getTrainingSessionsForOrg(orgIds.values().next().value as string)
+          : []
+        : []
+      setTrainingSessions(loadAthleteSessionsLocal(auth.athleteId, allLinks, sessions))
     }
   }, [auth, cloudMode])
 
@@ -859,6 +907,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!mounted) return
       const sessions = await applyCloudSessionData(session)
       await syncCoachSubscription(session)
+      await refreshOrganizationMembers()
       return sessions
     }
 
@@ -920,7 +969,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       mounted = false
       unsub?.()
     }
-  }, [applyCloudSessionData, applyResumeFromStore, cloudMode, syncCoachSubscription])
+  }, [applyCloudSessionData, applyResumeFromStore, cloudMode, refreshOrganizationMembers, syncCoachSubscription])
 
   const loginAsCoach = useCallback(
     async (email: string, password: string) => {
@@ -951,21 +1000,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     const current = nextCoaches[index]!
-    const session: AuthSession = {
-      role: 'treinador',
-      coachId: current.id,
-      name: current.name,
-      email: current.email,
-    }
+    const session = buildLocalCoachAuthSession(current)
     authStore.setSession(session)
     setAuth(session)
-    const sessions = store.getTrainingSessions()
-    setTrainingSessions(sessions)
-    applyResumeFromStore(session, sessions)
+    const data = loadLocalCoachData(session.organizationId)
+    setTrainingSessions(data.trainingSessions)
+    setSpots(data.spots)
+    setConditions(data.conditions)
+    setCustomTemplates(data.customTemplates)
+    setCoachLinks(data.links)
+    setAthletes(data.athletes)
+    applyResumeFromStore(session, data.trainingSessions)
     await syncCoachSubscription(session)
+    await refreshOrganizationMembers()
     return { ok: true }
   },
-    [applyCloudSessionData, applyResumeFromStore, cloudMode, syncCoachSubscription],
+    [applyCloudSessionData, applyResumeFromStore, cloudMode, refreshOrganizationMembers, syncCoachSubscription],
   )
 
   const loginAsStudent = useCallback(
@@ -1064,19 +1114,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       const next = [...coaches, coach]
       store.saveCoaches(next)
-      const session: AuthSession = {
-        role: 'treinador',
-        coachId: coach.id,
-        name: coach.name,
-        email: coach.email,
-      }
+      const orgName =
+        selectedPlanId === 'organization' ? `${trimmedName}'s Academy` : undefined
+      const org = localEnsureCoachOrganization(coach.id, coach.name, orgName)
+      store.saveCoaches(
+        store.getCoaches().map((c) => (c.id === coach.id ? { ...c, organizationId: org.id } : c)),
+      )
+      const session = buildLocalCoachAuthSession({ ...coach, organizationId: org.id })
       authStore.setSession(session)
       setAuth(session)
       setView('coach-home')
       await syncCoachSubscription(session)
+      await refreshOrganizationMembers()
       return { ok: true as const }
     },
-    [applyCloudSessionData, cloudMode, syncCoachSubscription],
+    [applyCloudSessionData, cloudMode, refreshOrganizationMembers, selectedPlanId, syncCoachSubscription],
   )
 
   const registerAthlete = useCallback(
@@ -1163,11 +1215,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setTrainingSessions((prev) => {
         const next = typeof nextOrUpdater === 'function' ? nextOrUpdater(prev) : nextOrUpdater
         if (cloudMode) syncSessionsToCloud(next)
-        else store.saveTrainingSessions(next)
+        else if (auth?.role === 'treinador') store.saveTrainingSessionsForOrg(auth.organizationId, next)
         return next
       })
     },
-    [cloudMode, syncSessionsToCloud],
+    [auth, cloudMode, syncSessionsToCloud],
   )
 
   const persistCustomTemplates = useCallback(
@@ -1179,11 +1231,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCustomTemplates((prev) => {
         const next = typeof nextOrUpdater === 'function' ? nextOrUpdater(prev) : nextOrUpdater
         if (cloudMode && auth?.role === 'treinador') {
-          void cloudSaveCustomTemplates(auth.coachId, next).then((result) => {
+          void cloudSaveCustomTemplates(auth.organizationId, auth.coachId, next).then((result) => {
             if (!result.ok) showToast(`Failed to save templates: ${result.error}`, 'error')
           })
-        } else {
-          store.saveCustomTemplates(next)
+        } else if (auth?.role === 'treinador') {
+          store.saveCustomTemplatesForOrg(auth.organizationId, next)
         }
         return next
       })
@@ -1238,8 +1290,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const completedCoachSessions = useMemo(
-    () => (coachId ? filterCoachCompletedSessions(trainingSessions, coachId) : []),
-    [coachId, trainingSessions],
+    () => (organizationId ? filterOrgCompletedSessions(trainingSessions, organizationId) : []),
+    [organizationId, trainingSessions],
   )
 
   const historySession = useMemo(
@@ -1263,7 +1315,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: false, error: 'Sign in as coach first.' }
       }
 
-      const planId = subscription?.planId ?? selectedPlanId ?? 'starter'
+      const planId = subscription?.planId ?? selectedPlanId ?? 'team'
       const activeCount = coachAthletes.filter((a) => !a.blocked).length
       const pendingCount = coachLinks.filter((l) => l.status === 'pending').length
       if (!canAddAthlete(planId, activeCount + pendingCount)) {
@@ -1287,7 +1339,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const pairings = store.getPairings()
       const existing = pairings.find(
-        (l) => l.coachId === auth.coachId && l.athleteId === athlete.id,
+        (l) => l.organizationId === auth.organizationId && l.athleteId === athlete.id,
       )
       if (existing?.status === 'active') {
         return { ok: false, error: 'This athlete is already on your team.' }
@@ -1298,6 +1350,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         : {
             id: crypto.randomUUID(),
             coachId: auth.coachId,
+            organizationId: auth.organizationId,
             athleteId: athlete.id,
             status: 'pending',
             initiatedBy: 'coach',
@@ -1310,7 +1363,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ? pairings.map((l) => (l.id === existing.id ? nextLink : l))
         : [...pairings, nextLink]
       store.savePairings(nextPairings)
-      setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
+      setCoachLinks(nextPairings.filter((l) => l.organizationId === auth.organizationId))
       return { ok: true, athleteName: athlete.name }
     },
     [auth, cloudMode, coachAthletes, coachLinks, refreshPairingData, selectedPlanId, subscription?.planId],
@@ -1366,7 +1419,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const pairings = store.getPairings()
       const link = pairings.find((l) => l.id === linkId)
       if (!link) return { ok: false, error: 'Link not found.' }
-      if (auth.role === 'treinador' && link.coachId !== auth.coachId) {
+      if (auth.role === 'treinador' && link.organizationId !== auth.organizationId) {
         return { ok: false, error: 'Not allowed.' }
       }
       if (auth.role === 'atleta' && link.athleteId !== auth.athleteId) {
@@ -1378,7 +1431,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       )
       store.savePairings(nextPairings)
       if (auth.role === 'treinador') {
-        setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
+        setCoachLinks(nextPairings.filter((l) => l.organizationId === auth.organizationId))
       } else {
         setAthleteLinks(nextPairings.filter((l) => l.athleteId === auth.athleteId))
         setTrainingSessions(
@@ -1411,7 +1464,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         l.id === linkId ? { ...l, shareSettings: normalized } : l,
       )
       store.savePairings(nextPairings)
-      setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
+      setCoachLinks(nextPairings.filter((l) => l.organizationId === auth.organizationId))
       setAthletes(buildCoachAthletesFromLinks(nextPairings, store.getAthletes()))
     },
     [auth, cloudMode, refreshPairingData, showToast],
@@ -1433,11 +1486,88 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const pairings = store.getPairings()
       const nextPairings = pairings.map((l) => (l.id === linkId ? { ...l, blocked } : l))
       store.savePairings(nextPairings)
-      setCoachLinks(nextPairings.filter((l) => l.coachId === auth.coachId))
+      setCoachLinks(nextPairings.filter((l) => l.organizationId === auth.organizationId))
       setAthletes(buildCoachAthletesFromLinks(nextPairings, store.getAthletes()))
       return { ok: true }
     },
     [auth, cloudMode, refreshPairingData],
+  )
+
+  const inviteOrganizationCoach = useCallback(
+    async (email: string) => {
+      if (!auth || auth.role !== 'treinador') {
+        return { ok: false, error: 'Sign in as coach first.' }
+      }
+      if (auth.organizationRole !== 'owner') {
+        return { ok: false, error: 'Only the organization owner can invite coaches.' }
+      }
+
+      const planId = subscription?.planId ?? 'team'
+      const seatCount = organizationMembers.filter((m) => m.status === 'active' || m.status === 'pending').length
+      if (!canAddCoach(planId, seatCount)) {
+        return { ok: false, error: `Coach seat limit reached (${getPlan(planId).maxCoaches} coaches).` }
+      }
+
+      if (cloudMode) {
+        const result = await cloudInviteOrganizationCoach(email)
+        if (!result.ok) return result
+        await refreshOrganizationMembers()
+        return { ok: true }
+      }
+
+      const result = localInviteOrganizationCoach(auth.organizationId, email)
+      if (!result.ok) return result
+      await refreshOrganizationMembers()
+      return { ok: true }
+    },
+    [auth, cloudMode, refreshOrganizationMembers],
+  )
+
+  const removeOrganizationMember = useCallback(
+    async (memberId: string) => {
+      if (!auth || auth.role !== 'treinador') {
+        return { ok: false, error: 'Sign in as coach first.' }
+      }
+
+      if (cloudMode) {
+        const result = await cloudRemoveOrganizationMember(memberId)
+        if (!result.ok) return result
+        await refreshOrganizationMembers()
+        return { ok: true }
+      }
+
+      const result = localRemoveOrganizationMember(auth.organizationId, memberId)
+      if (!result.ok) return result
+      await refreshOrganizationMembers()
+      return { ok: true }
+    },
+    [auth, cloudMode, refreshOrganizationMembers],
+  )
+
+  const updateOrganizationName = useCallback(
+    async (name: string) => {
+      if (!auth || auth.role !== 'treinador') {
+        return { ok: false, error: 'Sign in as coach first.' }
+      }
+      if (auth.organizationRole !== 'owner') {
+        return { ok: false, error: 'Only the organization owner can rename the team.' }
+      }
+
+      if (cloudMode) {
+        const result = await cloudUpdateOrganizationName(name)
+        if (!result.ok) return result
+        setAuth({ ...auth, organizationName: result.name })
+        await refreshOrganizationMembers()
+        return { ok: true, name: result.name }
+      }
+
+      const result = localUpdateOrganizationName(auth.organizationId, name)
+      if (!result.ok) return result
+      setAuth({ ...auth, organizationName: result.name })
+      await refreshOrganizationMembers()
+      return { ok: true, name: result.name }
+    },
+    [auth, cloudMode, refreshOrganizationMembers],
   )
 
   const changePassword = useCallback(
@@ -1495,8 +1625,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const saveSpotsToCloud = useCallback(
-    (coachId: string, next: SurfSpot[]) => {
-      void cloudSaveSpots(coachId, next).then((result) => {
+    (organizationId: string, coachId: string, next: SurfSpot[]) => {
+      void cloudSaveSpots(organizationId, coachId, next).then((result) => {
         if (!result.ok) showToast(`Failed to save spots: ${result.error}`, 'error')
       })
     },
@@ -1504,8 +1634,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const saveConditionsToCloud = useCallback(
-    (coachId: string, next: string[]) => {
-      void cloudSaveConditions(coachId, next).then((result) => {
+    (organizationId: string, coachId: string, next: string[]) => {
+      void cloudSaveConditions(organizationId, coachId, next).then((result) => {
         if (!result.ok) showToast(`Failed to save conditions: ${result.error}`, 'error')
       })
     },
@@ -1518,8 +1648,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!trimmed || auth?.role !== 'treinador') return
       const next = [...spots, { id: crypto.randomUUID(), name: trimmed }]
       setSpots(next)
-      if (cloudMode) saveSpotsToCloud(auth.coachId, next)
-      else store.saveSpots(next)
+      if (cloudMode) saveSpotsToCloud(auth.organizationId, auth.coachId, next)
+      else store.saveSpotsForOrg(auth.organizationId, next)
     },
     [auth, cloudMode, saveSpotsToCloud, spots],
   )
@@ -1530,8 +1660,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!trimmed || conditions.includes(trimmed) || auth?.role !== 'treinador') return
       const next = [...conditions, trimmed]
       setConditions(next)
-      if (cloudMode) saveConditionsToCloud(auth.coachId, next)
-      else store.saveConditions(next)
+      if (cloudMode) saveConditionsToCloud(auth.organizationId, auth.coachId, next)
+      else store.saveConditionsForOrg(auth.organizationId, next)
     },
     [auth, cloudMode, conditions, saveConditionsToCloud],
   )
@@ -1542,8 +1672,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!trimmed || auth?.role !== 'treinador') return
       const next = spots.map((s) => (s.id === spotId ? { ...s, name: trimmed } : s))
       setSpots(next)
-      if (cloudMode) saveSpotsToCloud(auth.coachId, next)
-      else store.saveSpots(next)
+      if (cloudMode) saveSpotsToCloud(auth.organizationId, auth.coachId, next)
+      else store.saveSpotsForOrg(auth.organizationId, next)
     },
     [auth, cloudMode, saveSpotsToCloud, spots],
   )
@@ -1558,8 +1688,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...d,
         spotId: d.spotId === spotId ? (next[0]?.id ?? '') : d.spotId,
       }))
-      if (cloudMode) saveSpotsToCloud(auth.coachId, next)
-      else store.saveSpots(next)
+      if (cloudMode) saveSpotsToCloud(auth.organizationId, auth.coachId, next)
+      else store.saveSpotsForOrg(auth.organizationId, next)
       return true
     },
     [auth, cloudMode, saveSpotsToCloud, spots],
@@ -1577,8 +1707,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...d,
         condition: d.condition === currentLabel ? trimmed : d.condition,
       }))
-      if (cloudMode) saveConditionsToCloud(auth.coachId, next)
-      else store.saveConditions(next)
+      if (cloudMode) saveConditionsToCloud(auth.organizationId, auth.coachId, next)
+      else store.saveConditionsForOrg(auth.organizationId, next)
     },
     [auth, cloudMode, conditions, saveConditionsToCloud],
   )
@@ -1593,8 +1723,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...d,
         condition: d.condition === label ? '' : d.condition,
       }))
-      if (cloudMode) saveConditionsToCloud(auth.coachId, next)
-      else store.saveConditions(next)
+      if (cloudMode) saveConditionsToCloud(auth.organizationId, auth.coachId, next)
+      else store.saveConditionsForOrg(auth.organizationId, next)
       return true
     },
     [auth, cloudMode, conditions, saveConditionsToCloud],
@@ -1689,7 +1819,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const beginDraftSession = useCallback(() => {
-    const planId = subscription?.planId ?? 'starter'
+    const planId = subscription?.planId ?? 'team'
     const draftBase = emptyDraft()
     draftBase.customTemplateId = customTemplates[0]?.id ?? ''
     if (!canUseTrainingMode(planId, draftBase.mode)) {
@@ -1718,7 +1848,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     if (auth?.role !== 'treinador') return
 
-    const planId = subscription?.planId ?? 'starter'
+    const planId = subscription?.planId ?? 'team'
     if (!canUseTrainingMode(planId, draft.mode)) {
       showToast(
         draft.mode === 'custom'
@@ -1760,6 +1890,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const session: TrainingSession = {
       id: crypto.randomUUID(),
       coachId: auth.coachId,
+      organizationId: auth.organizationId,
       mode: draft.mode,
       spotId: draft.spotId,
       spotName: spots.find((spot) => spot.id === draft.spotId)?.name?.trim() ?? '',
@@ -2508,6 +2639,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeCoachAthletes,
       changePassword,
       refreshPairingData,
+      organizationMembers,
+      refreshOrganizationMembers,
+      inviteOrganizationCoach,
+      removeOrganizationMember,
+      updateOrganizationName,
       addSpot,
       addCondition,
       updateSpotName,
@@ -2625,6 +2761,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeCoachAthletes,
       changePassword,
       refreshPairingData,
+      organizationMembers,
+      refreshOrganizationMembers,
+      inviteOrganizationCoach,
+      removeOrganizationMember,
+      updateOrganizationName,
       addSpot,
       addCondition,
       updateSpotName,

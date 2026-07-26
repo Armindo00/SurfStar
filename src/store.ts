@@ -4,6 +4,8 @@ import type {
   CoachAccount,
   CoachAthleteLink,
   CustomTrainingTemplate,
+  Organization,
+  OrganizationMember,
   StudentAccount,
   SurfSpot,
   TrainingSession,
@@ -13,15 +15,26 @@ import type {
 const KEY = 'surfstar-v2'
 const AUTH_KEY = 'surfstar-auth'
 
+type OrgData = {
+  spots: SurfSpot[]
+  conditions: string[]
+  trainingSessions: TrainingSession[]
+  customTemplates: CustomTrainingTemplate[]
+}
+
 type Persisted = {
   coaches: CoachAccount[]
   students: StudentAccount[]
   athletes: Athlete[]
   pairings: CoachAthleteLink[]
-  spots: SurfSpot[]
-  conditions: string[]
-  trainingSessions: TrainingSession[]
-  customTemplates: CustomTrainingTemplate[]
+  organizations: Organization[]
+  organizationMembers: OrganizationMember[]
+  orgData: Record<string, OrgData>
+  /** @deprecated legacy flat storage — migrated into orgData */
+  spots?: SurfSpot[]
+  conditions?: string[]
+  trainingSessions?: TrainingSession[]
+  customTemplates?: CustomTrainingTemplate[]
 }
 
 function normalizeCoach(c: CoachAccount & { password?: string }): CoachAccount {
@@ -30,6 +43,7 @@ function normalizeCoach(c: CoachAccount & { password?: string }): CoachAccount {
     name: c.name,
     email: c.email.toLowerCase(),
     passwordHash: c.passwordHash ?? '',
+    organizationId: c.organizationId,
     password: c.password,
   }
 }
@@ -46,23 +60,89 @@ function normalizeStudent(s: StudentAccount & { password?: string }): StudentAcc
   }
 }
 
+function defaultOrgData(): OrgData {
+  return {
+    spots: createDefaultSpots(),
+    conditions: createDefaultConditions(),
+    trainingSessions: [],
+    customTemplates: [],
+  }
+}
+
+function migrateLegacyData(parsed: Persisted): Persisted {
+  const organizations = parsed.organizations ?? []
+  const organizationMembers = parsed.organizationMembers ?? []
+  const orgData = parsed.orgData ?? {}
+  let coaches = (parsed.coaches ?? []).map((c) => normalizeCoach(c as CoachAccount & { password?: string }))
+
+  const legacySpots = parsed.spots?.length ? parsed.spots : createDefaultSpots()
+  const legacyConditions = parsed.conditions?.length ? parsed.conditions : createDefaultConditions()
+  const legacySessions = (parsed.trainingSessions ?? []).map((s) => migrateSession(s, legacySpots))
+  const legacyTemplates = parsed.customTemplates ?? []
+  const legacyPairings = parsed.pairings ?? []
+
+  if (organizations.length === 0 && coaches.length > 0) {
+    for (const coach of coaches) {
+      const orgId = crypto.randomUUID()
+      organizations.push({
+        id: orgId,
+        name: `${coach.name}'s Team`,
+        createdAt: new Date().toISOString(),
+      })
+      organizationMembers.push({
+        id: crypto.randomUUID(),
+        organizationId: orgId,
+        profileId: coach.id,
+        role: 'owner',
+        status: 'active',
+        name: coach.name,
+        email: coach.email,
+        acceptedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      })
+      orgData[orgId] = {
+        spots: legacySpots,
+        conditions: legacyConditions,
+        trainingSessions: legacySessions.filter((s) => !s.coachId || s.coachId === coach.id),
+        customTemplates: legacyTemplates,
+      }
+    }
+    coaches = coaches.map((c, index) => ({
+      ...c,
+      organizationId: organizations[index]?.id ?? c.organizationId,
+    }))
+  }
+
+  for (const coach of coaches) {
+    if (!coach.organizationId) continue
+    if (!orgData[coach.organizationId]) {
+      orgData[coach.organizationId] = defaultOrgData()
+    }
+  }
+
+  const pairings = legacyPairings.map((link) => {
+    if (link.organizationId) return link
+    const coach = coaches.find((c) => c.id === link.coachId)
+    return { ...link, organizationId: coach?.organizationId }
+  })
+
+  return {
+    coaches,
+    students: (parsed.students ?? []).map((s) => normalizeStudent(s as StudentAccount & { password?: string })),
+    athletes: parsed.athletes ?? [],
+    pairings,
+    organizations,
+    organizationMembers,
+    orgData,
+  }
+}
+
 function load(): Persisted {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return seed()
     const parsed = JSON.parse(raw) as Persisted
-    const spots = parsed.spots?.length ? parsed.spots : createDefaultSpots()
-    const conditions = parsed.conditions?.length ? parsed.conditions : createDefaultConditions()
-    return {
-      coaches: (parsed.coaches ?? []).map((c) => normalizeCoach(c as CoachAccount & { password?: string })),
-      students: (parsed.students ?? []).map((s) => normalizeStudent(s as StudentAccount & { password?: string })),
-      athletes: parsed.athletes ?? [],
-      pairings: parsed.pairings ?? [],
-      spots,
-      conditions,
-      trainingSessions: (parsed.trainingSessions ?? []).map((s) => migrateSession(s, spots)),
-      customTemplates: parsed.customTemplates ?? [],
-    }
+    return migrateLegacyData(parsed)
   } catch {
     return seed()
   }
@@ -77,6 +157,7 @@ function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession 
   return {
     ...s,
     coachId: s.coachId ?? '',
+    organizationId: s.organizationId,
     mode: s.mode ?? 'tecnico',
     spotName,
     comboEntries: s.comboEntries ?? [],
@@ -147,15 +228,21 @@ function seed(): Persisted {
     students: [],
     athletes: [],
     pairings: [],
-    spots: createDefaultSpots(),
-    conditions: createDefaultConditions(),
-    trainingSessions: [],
-    customTemplates: [],
+    organizations: [],
+    organizationMembers: [],
+    orgData: {},
   }
 }
 
 function save(data: Persisted) {
   localStorage.setItem(KEY, JSON.stringify(data))
+}
+
+function getOrgData(orgId: string, data: Persisted): OrgData {
+  if (!data.orgData[orgId]) {
+    data.orgData[orgId] = defaultOrgData()
+  }
+  return data.orgData[orgId]
 }
 
 export const store = {
@@ -191,38 +278,87 @@ export const store = {
     data.pairings = pairings
     save(data)
   },
+  getOrganizations(): Organization[] {
+    return load().organizations
+  },
+  saveOrganizations(organizations: Organization[]) {
+    const data = load()
+    data.organizations = organizations
+    save(data)
+  },
+  getOrganizationMembers(): OrganizationMember[] {
+    return load().organizationMembers
+  },
+  saveOrganizationMembers(members: OrganizationMember[]) {
+    const data = load()
+    data.organizationMembers = members
+    save(data)
+  },
+  ensureOrgData(orgId: string) {
+    const data = load()
+    getOrgData(orgId, data)
+    save(data)
+  },
+  getSpotsForOrg(orgId: string): SurfSpot[] {
+    const data = load()
+    return getOrgData(orgId, data).spots
+  },
+  saveSpotsForOrg(orgId: string, spots: SurfSpot[]) {
+    const data = load()
+    getOrgData(orgId, data).spots = spots
+    save(data)
+  },
+  getConditionsForOrg(orgId: string): string[] {
+    const data = load()
+    return getOrgData(orgId, data).conditions
+  },
+  saveConditionsForOrg(orgId: string, conditions: string[]) {
+    const data = load()
+    getOrgData(orgId, data).conditions = conditions
+    save(data)
+  },
+  getTrainingSessionsForOrg(orgId: string): TrainingSession[] {
+    const data = load()
+    return getOrgData(orgId, data).trainingSessions
+  },
+  saveTrainingSessionsForOrg(orgId: string, sessions: TrainingSession[]) {
+    const data = load()
+    getOrgData(orgId, data).trainingSessions = sessions
+    save(data)
+  },
+  getCustomTemplatesForOrg(orgId: string): CustomTrainingTemplate[] {
+    const data = load()
+    return getOrgData(orgId, data).customTemplates
+  },
+  saveCustomTemplatesForOrg(orgId: string, templates: CustomTrainingTemplate[]) {
+    const data = load()
+    getOrgData(orgId, data).customTemplates = templates
+    save(data)
+  },
+  /** @deprecated use getSpotsForOrg */
   getSpots(): SurfSpot[] {
-    return load().spots
+    return createDefaultSpots()
   },
-  saveSpots(spots: SurfSpot[]) {
-    const data = load()
-    data.spots = spots
-    save(data)
-  },
+  /** @deprecated use saveSpotsForOrg */
+  saveSpots(_spots: SurfSpot[]) {},
+  /** @deprecated use getConditionsForOrg */
   getConditions(): string[] {
-    return load().conditions
+    return createDefaultConditions()
   },
-  saveConditions(conditions: string[]) {
-    const data = load()
-    data.conditions = conditions
-    save(data)
-  },
+  /** @deprecated use saveConditionsForOrg */
+  saveConditions(_conditions: string[]) {},
+  /** @deprecated use getTrainingSessionsForOrg */
   getTrainingSessions(): TrainingSession[] {
-    return load().trainingSessions
+    return []
   },
-  saveTrainingSessions(sessions: TrainingSession[]) {
-    const data = load()
-    data.trainingSessions = sessions
-    save(data)
-  },
+  /** @deprecated use saveTrainingSessionsForOrg */
+  saveTrainingSessions(_sessions: TrainingSession[]) {},
+  /** @deprecated use getCustomTemplatesForOrg */
   getCustomTemplates(): CustomTrainingTemplate[] {
-    return load().customTemplates
+    return []
   },
-  saveCustomTemplates(templates: CustomTrainingTemplate[]) {
-    const data = load()
-    data.customTemplates = templates
-    save(data)
-  },
+  /** @deprecated use saveCustomTemplatesForOrg */
+  saveCustomTemplates(_templates: CustomTrainingTemplate[]) {},
 }
 
 export const authStore = {
@@ -231,7 +367,6 @@ export const authStore = {
       const raw = localStorage.getItem(AUTH_KEY) ?? sessionStorage.getItem(AUTH_KEY)
       if (!raw) return null
       const session = JSON.parse(raw) as import('./types').AuthSession
-      // Migrate legacy sessionStorage sessions to localStorage (survives app restart).
       if (!localStorage.getItem(AUTH_KEY) && sessionStorage.getItem(AUTH_KEY)) {
         localStorage.setItem(AUTH_KEY, raw)
         sessionStorage.removeItem(AUTH_KEY)

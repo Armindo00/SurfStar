@@ -23,7 +23,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-type PlanId = 'starter' | 'team' | 'club'
+type PlanId = 'team' | 'club' | 'organization'
 
 type ManageAction = 'portal' | 'cancel' | 'change_plan'
 
@@ -36,9 +36,9 @@ function json(body: Record<string, unknown>, status = 200) {
 
 function priceIdForPlan(planId: PlanId): string | null {
   const map: Record<PlanId, string | undefined> = {
-    starter: Deno.env.get('STRIPE_PRICE_STARTER'),
     team: Deno.env.get('STRIPE_PRICE_TEAM'),
     club: Deno.env.get('STRIPE_PRICE_CLUB'),
+    organization: Deno.env.get('STRIPE_PRICE_ORGANIZATION'),
   }
   const value = map[planId]
   return value?.trim() ? value.trim() : null
@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
 
     if (action === 'change_plan') {
       const planId = body.plan_id
-      if (planId !== 'starter' && planId !== 'team' && planId !== 'club') {
+      if (planId !== 'team' && planId !== 'club' && planId !== 'organization') {
         return json({ ok: false, error: 'Invalid plan.' }, 400)
       }
 

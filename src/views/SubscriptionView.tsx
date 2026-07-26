@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { formatPlanPrice, getPlan, isStripeConfigured, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
-import { athleteLimitMessage } from '../planUtils'
+import { athleteLimitMessage, coachSeatLimitMessage, canManageOrganizationCoaches } from '../planUtils'
 import { cloudOpenBillingPortal, isSubscriptionActive } from '../subscriptionApi'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
@@ -10,6 +10,8 @@ export function SubscriptionView() {
   const {
     subscription,
     coachAthletes,
+    organizationMembers,
+    auth,
     refreshSubscription,
     changeSubscriptionPlan,
     cancelSubscription,
@@ -111,7 +113,16 @@ export function SubscriptionView() {
             </p>
             <p className="muted">
               {athleteLimitMessage(plan.id)} · {activeCount} active athletes
+              {canManageOrganizationCoaches(plan.id)
+                ? ` · ${organizationMembers.filter((m) => m.status === 'active' || m.status === 'pending').length} coaches`
+                : ''}
             </p>
+            {auth?.role === 'treinador' ? (
+              <p className="muted">Team: {auth.organizationName}</p>
+            ) : null}
+            {canManageOrganizationCoaches(plan.id) ? (
+              <p className="muted">{coachSeatLimitMessage(plan.id)}</p>
+            ) : null}
             {subscription?.status ? (
               <p className="muted">
                 Status:{' '}

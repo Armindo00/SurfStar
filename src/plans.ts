@@ -1,4 +1,4 @@
-export type PlanId = 'starter' | 'team' | 'club'
+export type PlanId = 'team' | 'club' | 'organization'
 
 export type SubscriptionPlan = {
   id: PlanId
@@ -6,6 +6,7 @@ export type SubscriptionPlan = {
   priceMonthly: number
   currency: 'EUR'
   maxAthletes: number | null
+  maxCoaches: number
   highlighted?: boolean
 }
 
@@ -18,35 +19,30 @@ export type PlanComparisonFeature = {
 
 /** Full feature matrix shown on every pricing card (green = included, red = not included). */
 export const PLAN_COMPARISON_FEATURES: PlanComparisonFeature[] = [
-  { label: 'Up to 5 athletes', includedIn: ['starter'], hiddenOn: ['team', 'club'] },
-  { label: 'Up to 20 athletes', includedIn: ['team'], hiddenOn: ['club'] },
-  { label: 'Unlimited athletes', includedIn: ['club'] },
-  { label: 'Technical training & combos', includedIn: ['starter', 'team', 'club'] },
-  { label: 'Custom training templates', includedIn: ['club'] },
-  { label: 'Session history', includedIn: ['starter', 'team', 'club'] },
-  { label: 'Spot management', includedIn: ['starter', 'team', 'club'] },
-  { label: 'Team analytics (6 months)', includedIn: ['team', 'club'] },
-  { label: 'Multi-coach pairing', includedIn: ['team', 'club'] },
-  { label: 'Share stats with athletes', includedIn: ['team', 'club'] },
-  { label: 'Heats & championship', includedIn: ['team', 'club'] },
-  { label: 'Sea analysis', includedIn: ['club'] },
-  { label: 'Priority support', includedIn: ['club'] },
+  { label: 'Up to 20 athletes', includedIn: ['team'], hiddenOn: ['club', 'organization'] },
+  { label: 'Unlimited athletes', includedIn: ['club', 'organization'] },
+  { label: '1 coach account', includedIn: ['team', 'club'], hiddenOn: ['organization'] },
+  { label: 'Up to 5 coach accounts', includedIn: ['organization'], hiddenOn: ['team', 'club'] },
+  { label: 'Shared roster & database', includedIn: ['organization'] },
+  { label: 'Technical training & combos', includedIn: ['team', 'club', 'organization'] },
+  { label: 'Custom training templates', includedIn: ['club', 'organization'] },
+  { label: 'Session history', includedIn: ['team', 'club', 'organization'] },
+  { label: 'Spot management', includedIn: ['team', 'club', 'organization'] },
+  { label: 'Team analytics (6 months)', includedIn: ['team', 'club', 'organization'] },
+  { label: 'Share stats with athletes', includedIn: ['team', 'club', 'organization'] },
+  { label: 'Heats & championship', includedIn: ['team', 'club', 'organization'] },
+  { label: 'Sea analysis', includedIn: ['club', 'organization'] },
+  { label: 'Priority support', includedIn: ['club', 'organization'] },
 ]
 
 export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    priceMonthly: 19,
-    currency: 'EUR',
-    maxAthletes: 5,
-  },
   {
     id: 'team',
     name: 'Coach',
     priceMonthly: 39,
     currency: 'EUR',
     maxAthletes: 20,
+    maxCoaches: 1,
   },
   {
     id: 'club',
@@ -54,7 +50,16 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     priceMonthly: 79,
     currency: 'EUR',
     maxAthletes: null,
+    maxCoaches: 1,
     highlighted: true,
+  },
+  {
+    id: 'organization',
+    name: 'Team Academy',
+    priceMonthly: 149,
+    currency: 'EUR',
+    maxAthletes: null,
+    maxCoaches: 5,
   },
 ]
 
@@ -91,6 +96,16 @@ export function getStripePaymentLink(planId: PlanId): string | null {
 }
 
 export function isStripeConfigured(): boolean {
-  const ids: PlanId[] = ['starter', 'team', 'club']
+  const ids: PlanId[] = ['team', 'club', 'organization']
   return ids.some((id) => Boolean(getStripePaymentLink(id)))
+}
+
+export function isOrganizationPlan(planId: PlanId): boolean {
+  return planId === 'organization'
+}
+
+export function coachSeatLabel(planId: PlanId): string {
+  const plan = getPlan(planId)
+  if (plan.maxCoaches <= 1) return '1 coach account'
+  return `Up to ${plan.maxCoaches} coaches`
 }

@@ -37,7 +37,7 @@ export function TeamAnalyticsView() {
   const [search, setSearch] = useState('')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
 
-  const planId = subscription?.planId ?? 'starter'
+  const planId = subscription?.planId ?? 'team'
   const hasAccess = canAccessTeamAnalytics(planId)
   const coachId = auth?.role === 'treinador' ? auth.coachId : null
 

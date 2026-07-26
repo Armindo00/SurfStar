@@ -50,7 +50,7 @@ export function ManageAthletes() {
   const [revokeTarget, setRevokeTarget] = useState<{ linkId: string; name: string } | null>(null)
 
   const pendingLinks = coachLinks.filter((l) => l.status === 'pending')
-  const planId = subscription?.planId ?? 'starter'
+  const planId = subscription?.planId ?? 'team'
   const activeCount = coachAthletes.filter((a) => !a.blocked).length
 
   const submitCode = async () => {

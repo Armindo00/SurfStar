@@ -12,7 +12,7 @@ import { useApp } from '../AppContext'
 export function HelpView() {
   const { role, subscription, setView } = useApp()
   const isCoach = role === 'treinador'
-  const planId = subscription?.planId ?? 'starter'
+  const planId = subscription?.planId ?? 'team'
 
   const goBack = () => {
     setView(isCoach ? 'coach-home' : 'athlete-portal')

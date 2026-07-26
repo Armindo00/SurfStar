@@ -5,6 +5,7 @@ import { normalizeAthleteShareSettings } from './types'
 type LinkRow = {
   id: string
   coach_id: string
+  organization_id?: string | null
   athlete_id: string
   status: 'pending' | 'active' | 'revoked'
   initiated_by: 'coach' | 'athlete'
@@ -21,6 +22,7 @@ function mapLinkRow(row: LinkRow, coachName?: string, athleteName?: string): Coa
   return {
     id: row.id,
     coachId: row.coach_id,
+    organizationId: row.organization_id ?? undefined,
     athleteId: row.athlete_id,
     status: row.status,
     initiatedBy: row.initiated_by,
@@ -56,13 +58,13 @@ function mapCoachAthlete(row: LinkRow): Athlete {
   }
 }
 
-export async function cloudFetchCoachLinks(coachId: string): Promise<CoachAthleteLink[]> {
+export async function cloudFetchCoachLinks(organizationId: string): Promise<CoachAthleteLink[]> {
   const { data, error } = await getSupabase()
     .from('coach_athlete_links')
     .select(
-      'id, coach_id, athlete_id, status, initiated_by, share_settings, blocked, created_at, athletes(id, name, pairing_code)',
+      'id, coach_id, organization_id, athlete_id, status, initiated_by, share_settings, blocked, created_at, athletes(id, name, pairing_code)',
     )
-    .eq('coach_id', coachId)
+    .eq('organization_id', organizationId)
     .order('created_at', { ascending: true })
 
   if (error || !data) return []
@@ -82,13 +84,13 @@ export async function cloudFetchAthleteLinks(athleteId: string): Promise<CoachAt
   return (data as LinkRow[]).map((row) => mapLinkRow(row))
 }
 
-export async function cloudFetchCoachAthletes(coachId: string): Promise<Athlete[]> {
+export async function cloudFetchCoachAthletes(organizationId: string): Promise<Athlete[]> {
   const { data, error } = await getSupabase()
     .from('coach_athlete_links')
     .select(
-      'id, coach_id, athlete_id, status, share_settings, blocked, athletes(id, name, pairing_code)',
+      'id, coach_id, organization_id, athlete_id, status, share_settings, blocked, athletes(id, name, pairing_code)',
     )
-    .eq('coach_id', coachId)
+    .eq('organization_id', organizationId)
     .eq('status', 'active')
 
   if (error || !data) return []
@@ -239,10 +241,10 @@ export async function cloudLoadAthletePortalData(athleteId: string) {
   return { athlete, links, trainingSessions }
 }
 
-export async function cloudLoadCoachPairingData(coachId: string) {
+export async function cloudLoadCoachPairingData(organizationId: string) {
   const [athletes, links] = await Promise.all([
-    cloudFetchCoachAthletes(coachId),
-    cloudFetchCoachLinks(coachId),
+    cloudFetchCoachAthletes(organizationId),
+    cloudFetchCoachLinks(organizationId),
   ])
   return { athletes, links }
 }

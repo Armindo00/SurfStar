@@ -21,18 +21,18 @@ const supabase = createClient(supabaseUrl, serviceRoleKey)
 function planFromPaymentLinkId(paymentLinkId: string | null | undefined): string | null {
   if (!paymentLinkId) return null
   const map: Record<string, string> = {}
-  const starter = Deno.env.get('STRIPE_PAYMENT_LINK_ID_STARTER')
+  const organization = Deno.env.get('STRIPE_PAYMENT_LINK_ID_ORGANIZATION')
   const team = Deno.env.get('STRIPE_PAYMENT_LINK_ID_TEAM')
   const club = Deno.env.get('STRIPE_PAYMENT_LINK_ID_CLUB')
-  if (starter) map[starter] = 'starter'
   if (team) map[team] = 'team'
   if (club) map[club] = 'club'
+  if (organization) map[organization] = 'organization'
   return map[paymentLinkId] ?? null
 }
 
 function planFromMetadata(metadata: Stripe.Metadata | null | undefined): string | null {
   const plan = metadata?.plan_id ?? metadata?.planId
-  if (plan === 'starter' || plan === 'team' || plan === 'club') return plan
+  if (plan === 'team' || plan === 'club' || plan === 'organization') return plan
   return null
 }
 

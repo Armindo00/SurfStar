@@ -1,5 +1,10 @@
 import { useApp } from '../AppContext'
-import { athleteLimitMessage, canUseCustomTraining, getAllowedModes } from '../planUtils'
+import {
+  athleteLimitMessage,
+  canManageOrganizationCoaches,
+  canUseCustomTraining,
+  getAllowedModes,
+} from '../planUtils'
 import { formatPlanPrice, getPlan, type PlanId } from '../plans'
 import { TRAINING_MODE_LABELS } from '../types'
 
@@ -13,14 +18,16 @@ export function CoachHome() {
   const { auth, subscription, setView, beginDraftSession, logout } = useApp()
   const name = auth?.role === 'treinador' ? auth.name : 'Coach'
   const plan = subscription ? getPlan(subscription.planId) : null
-  const planId = subscription?.planId ?? 'starter'
+  const planId = subscription?.planId ?? 'team'
   const hasCustomTraining = canUseCustomTraining(planId)
+  const orgName = auth?.role === 'treinador' ? auth.organizationName : null
 
   return (
     <div className="dashboard">
       <header className="dashboard__hero">
         <p className="dashboard__hello">Hello,</p>
         <h1 className="dashboard__name">{name}</h1>
+        {orgName ? <p className="dashboard__org muted">{orgName}</p> : null}
         {plan ? (
           <p className="dashboard__plan muted">
             {plan.name} plan · {formatPlanPrice(plan)}/mo · {athleteLimitMessage(plan.id)}
@@ -51,6 +58,13 @@ export function CoachHome() {
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('manage-athletes')}>
           <span>Manage athletes</span>
+          <span aria-hidden="true">›</span>
+        </button>
+        <button type="button" className="action-list__item" onClick={() => setView('organization')}>
+          <span>
+            Team & coaches
+            {!canManageOrganizationCoaches(planId) ? ' · Team Academy' : ''}
+          </span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('manage-spots')}>
