@@ -1684,88 +1684,41 @@ body {
   .auth-hero {
     display: flex;
     align-items: center;
+    justify-content: center;
   }
 }
 
 .auth-hero__glow {
   position: absolute;
-  inset: auto -20% 10% -10%;
-  height: 55%;
-  background: radial-gradient(ellipse at center, rgba(201, 169, 98, 0.18), transparent 70%);
+  inset: 20% -15% auto -15%;
+  height: 50%;
+  background: radial-gradient(ellipse at center, rgba(201, 169, 98, 0.2), transparent 72%);
   pointer-events: none;
+}
+
+.auth-brand-mark {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.auth-brand-mark__slogan {
+  margin: 0;
+  font-size: clamp(0.82rem, 1.6vw, 0.95rem);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--landing-gold-light);
 }
 
 .auth-hero__inner {
   position: relative;
   z-index: 1;
   max-width: 32rem;
-}
-
-.auth-hero__logo {
-  margin-bottom: 1.25rem;
-}
-
-.auth-hero__eyebrow {
-  margin: 0 0 0.65rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--landing-gold-light);
-}
-
-.auth-hero__title {
-  margin: 0 0 0.85rem;
-  font-size: clamp(1.75rem, 3vw, 2.35rem);
-  line-height: 1.15;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--landing-text);
-}
-
-.auth-hero__subtitle {
-  margin: 0 0 1.35rem;
-  font-size: 1.02rem;
-  line-height: 1.55;
-  color: var(--landing-muted);
-}
-
-.auth-hero__bullets {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.65rem;
-}
-
-.auth-hero__bullets li {
-  position: relative;
-  padding-left: 1.35rem;
-  font-size: 0.92rem;
-  line-height: 1.45;
-  color: #d5deea;
-}
-
-.auth-hero__bullets li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.45rem;
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--landing-gold-light), var(--landing-gold));
-  box-shadow: 0 0 12px rgba(201, 169, 98, 0.45);
-}
-
-.auth-hero__secure {
-  margin: 1.5rem 0 0;
-  padding: 0.65rem 0.85rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(201, 169, 98, 0.22);
-  font-size: 0.8rem;
-  color: #c5d0df;
 }
 
 .auth-panel {
@@ -1809,11 +1762,8 @@ body {
 
 .auth-card__mobile-brand {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0.35rem;
-  margin-bottom: 1.15rem;
+  justify-content: center;
+  margin-bottom: 1.35rem;
 }
 
 @media (min-width: 960px) {
@@ -1826,6 +1776,65 @@ body {
   margin: 0;
   font-size: 0.82rem;
   color: #94a3b8;
+}
+
+.auth-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.auth-badge--role {
+  background: rgba(201, 169, 98, 0.18);
+  border: 1px solid rgba(201, 169, 98, 0.35);
+  color: var(--landing-gold-light);
+}
+
+.auth-badge--mode {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+}
+
+.auth-switch {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.auth-switch--muted {
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.auth-switch__btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--landing-gold-light);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.auth-switch__btn:hover {
+  color: #f5e6bc;
 }
 
 .auth-role-tabs,
@@ -1870,22 +1879,20 @@ body {
 }
 
 .auth-card__head {
-  margin-bottom: 1.15rem;
+  margin-bottom: 1rem;
+}
+
+.auth-card__head--compact {
+  margin-bottom: 0.85rem;
 }
 
 .auth-card__title {
-  margin: 0 0 0.35rem;
-  font-size: 1.45rem;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--landing-text) !important;
-}
-
-.auth-card__subtitle {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.45;
+  font-size: 1.2rem;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--landing-text) !important;
 }
 
 .auth-plan-banner {
@@ -2020,4 +2027,9 @@ body {
 
 .auth-page--loading .auth-card {
   text-align: center;
+}
+
+.auth-loading-text {
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
 }

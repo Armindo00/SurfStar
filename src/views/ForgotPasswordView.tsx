@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { AuthShell } from '../components/AuthShell'
-import { AppLogo } from '../components/AppLogo'
 import { useApp } from '../AppContext'
 
 export function ForgotPasswordView() {
@@ -27,30 +26,14 @@ export function ForgotPasswordView() {
   }
 
   return (
-    <AuthShell
-      onBack={openCoachSignIn}
-      backLabel="Sign in"
-      heroEyebrow="Account recovery"
-      heroTitle="Reset your password in seconds"
-      heroSubtitle="Enter the email linked to your coach account and we will send secure reset instructions."
-      heroBullets={[
-        'Link expires automatically for security',
-        'Works on any device where you use SurfStar',
-        'Contact support if you no longer have access to your email',
-      ]}
-      cloudMode
-    >
-      <div className="auth-card__mobile-brand">
-        <AppLogo size="lg" />
+    <AuthShell onBack={openCoachSignIn} backLabel="Sign in">
+      <div className="auth-badges">
+        <span className="auth-badge auth-badge--role">Coach</span>
+        <span className="auth-badge auth-badge--mode">Password reset</span>
       </div>
 
-      <header className="auth-card__head">
+      <header className="auth-card__head auth-card__head--compact">
         <h2 className="auth-card__title">Forgot password</h2>
-        <p className="auth-card__subtitle muted">
-          {sent
-            ? 'Check your inbox for the next step.'
-            : 'We will email you a link to choose a new password.'}
-        </p>
       </header>
 
       {sent ? (

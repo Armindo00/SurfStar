@@ -1,4 +1,4 @@
-type LogoSize = 'sm' | 'md' | 'lg' | 'xl'
+type LogoSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 
 type Props = {
   size?: LogoSize

@@ -165,11 +165,17 @@ export function LandingView() {
             <button type="button" className="btn btn--outline btn--small" onClick={openCoachSignIn}>
               Sign in
             </button>
+            <button type="button" className="btn btn--ghost btn--small" onClick={openCoachPlanSelection}>
+              Create account
+            </button>
           </div>
           <div className="landing-nav__auth-group">
             <span className="landing-nav__auth-label">Athlete</span>
             <button type="button" className="btn btn--outline btn--small" onClick={openAthleteSignIn}>
               Sign in
+            </button>
+            <button type="button" className="btn btn--ghost btn--small" onClick={openAthleteSignUp}>
+              Create account
             </button>
           </div>
         </div>
@@ -191,10 +197,19 @@ export function LandingView() {
               <p className="landing-hero__create-label">Create account</p>
               <div className="landing-hero__cta">
                 <button type="button" className="btn btn--gold btn--lg" onClick={openCoachPlanSelection}>
-                  I am a coach
+                  Create coach account
                 </button>
                 <button type="button" className="btn btn--outline btn--lg" onClick={openAthleteSignUp}>
-                  I am an athlete
+                  Create athlete account
+                </button>
+              </div>
+              <div className="landing-hero__signin-links">
+                <button type="button" className="landing-hero__signin-link" onClick={openCoachSignIn}>
+                  Coach sign in
+                </button>
+                <span aria-hidden="true">·</span>
+                <button type="button" className="landing-hero__signin-link" onClick={openAthleteSignIn}>
+                  Athlete sign in
                 </button>
               </div>
             </div>
@@ -496,8 +511,14 @@ export function LandingView() {
           <button type="button" className="landing-footer__btn" onClick={openCoachSignIn}>
             Coach sign in
           </button>
+          <button type="button" className="landing-footer__btn" onClick={openCoachPlanSelection}>
+            Create coach account
+          </button>
           <button type="button" className="landing-footer__btn" onClick={openAthleteSignIn}>
             Athlete sign in
+          </button>
+          <button type="button" className="landing-footer__btn" onClick={openAthleteSignUp}>
+            Create athlete account
           </button>
         </div>
         <p className="landing-footer__copy">© {new Date().getFullYear()} SurfStar</p>

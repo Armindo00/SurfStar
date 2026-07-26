@@ -1,6 +1,7 @@
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ToastProvider } from './components/ToastProvider'
 import { AppProvider, useApp } from './AppContext'
+import { AuthBrandMark } from './components/AuthShell'
 import { AppLogo } from './components/AppLogo'
 import { ChangePasswordView } from './views/ChangePasswordView'
 import { CheckoutView } from './views/CheckoutView'
@@ -65,10 +66,8 @@ function Shell() {
     return (
       <div className="auth-page auth-page--loading">
         <div className="auth-card">
-          <div className="auth-card__mobile-brand">
-            <AppLogo size="lg" />
-          </div>
-          <p className="muted">Loading SurfStar…</p>
+          <AuthBrandMark />
+          <p className="auth-loading-text muted">Loading SurfStar…</p>
         </div>
       </div>
     )

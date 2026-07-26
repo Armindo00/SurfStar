@@ -1,22 +1,64 @@
 import { useState, type FormEvent } from 'react'
 import { AuthShell } from '../components/AuthShell'
-import { AppLogo } from '../components/AppLogo'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { formatPlanPrice, getPlan } from '../plans'
 import { useApp } from '../AppContext'
 import type { AuthPublicView } from '../types'
 
-const COACH_BULLETS = [
-  'Live stats, heats, and full championship brackets',
-  'Team analytics with month-by-month evolution',
-  'Pair unlimited athletes with a simple code',
-]
-
-const ATHLETE_BULLETS = [
-  'Global stats that follow you across every coach',
-  'Session history, heat results, and season totals',
-  'One account — pair with as many coaches as you need',
-]
+const SCREEN_COPY: Record<
+  AuthPublicView,
+  {
+    roleLabel: string
+    modeLabel: string
+    title: string
+    submit: string
+    switchPrompt: string
+    switchActionLabel: string
+    otherRolePrompt: string
+    otherRoleActionLabel: string
+  }
+> = {
+  'coach-sign-in': {
+    roleLabel: 'Coach',
+    modeLabel: 'Sign in',
+    title: 'Coach sign in',
+    submit: 'Sign in',
+    switchPrompt: 'New coach?',
+    switchActionLabel: 'Create coach account',
+    otherRolePrompt: 'Are you an athlete?',
+    otherRoleActionLabel: 'Athlete sign in',
+  },
+  'coach-sign-up': {
+    roleLabel: 'Coach',
+    modeLabel: 'Create account',
+    title: 'Create coach account',
+    submit: 'Create coach account',
+    switchPrompt: 'Already have a coach account?',
+    switchActionLabel: 'Coach sign in',
+    otherRolePrompt: 'Are you an athlete?',
+    otherRoleActionLabel: 'Create athlete account',
+  },
+  'athlete-sign-in': {
+    roleLabel: 'Athlete',
+    modeLabel: 'Sign in',
+    title: 'Athlete sign in',
+    submit: 'Sign in',
+    switchPrompt: 'New athlete?',
+    switchActionLabel: 'Create athlete account',
+    otherRolePrompt: 'Are you a coach?',
+    otherRoleActionLabel: 'Coach sign in',
+  },
+  'athlete-sign-up': {
+    roleLabel: 'Athlete',
+    modeLabel: 'Create account',
+    title: 'Create athlete account',
+    submit: 'Create athlete account',
+    switchPrompt: 'Already have an athlete account?',
+    switchActionLabel: 'Athlete sign in',
+    otherRolePrompt: 'Are you a coach?',
+    otherRoleActionLabel: 'Create coach account',
+  },
+}
 
 export function LoginView() {
   const {
@@ -39,6 +81,27 @@ export function LoginView() {
   const isCoach = screen.startsWith('coach')
   const isRegister = screen.endsWith('sign-up')
 
+  const copy = (() => {
+    const base = SCREEN_COPY[screen]
+    const switchAction =
+      screen === 'coach-sign-in'
+        ? openCoachPlanSelection
+        : screen === 'coach-sign-up'
+          ? openCoachSignIn
+          : screen === 'athlete-sign-in'
+            ? openAthleteSignUp
+            : openAthleteSignIn
+    const otherRoleAction =
+      isCoach
+        ? screen === 'coach-sign-up'
+          ? openAthleteSignUp
+          : openAthleteSignIn
+        : screen === 'athlete-sign-up'
+          ? openCoachPlanSelection
+          : openCoachSignIn
+    return { ...base, switchAction, otherRoleAction }
+  })()
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -48,32 +111,18 @@ export function LoginView() {
 
   const selectedPlan = selectedPlanId && isCoach ? getPlan(selectedPlanId) : null
 
-  const switchRole = (coach: boolean) => {
+  const goToAlternateScreen = () => {
     setError('')
     setName('')
     setPasswordConfirm('')
-    if (coach) {
-      if (isRegister) openCoachPlanSelection()
-      else openCoachSignIn()
-    } else if (isRegister) {
-      openAthleteSignUp()
-    } else {
-      openAthleteSignIn()
-    }
+    copy.switchAction()
   }
 
-  const switchMode = (register: boolean) => {
+  const goToOtherRole = () => {
     setError('')
     setName('')
     setPasswordConfirm('')
-    if (isCoach) {
-      if (register) openCoachPlanSelection()
-      else openCoachSignIn()
-    } else if (register) {
-      openAthleteSignUp()
-    } else {
-      openAthleteSignIn()
-    }
+    copy.otherRoleAction()
   }
 
   const submit = async (e: FormEvent) => {
@@ -107,88 +156,15 @@ export function LoginView() {
     }
   }
 
-  const heroTitle = isCoach
-    ? 'Professional surf coaching, powered by data'
-    : 'Your surfing progress, measured and visible'
-
-  const heroSubtitle = isCoach
-    ? 'Run sessions, build brackets, and give athletes feedback backed by real numbers — not guesswork.'
-    : 'See every session, heat result, and season stat in one place — no matter which coach you train with.'
-
   return (
-    <AuthShell
-      onBack={openLanding}
-      backLabel="Home"
-      heroEyebrow={isCoach ? 'For coaches & schools' : 'For athletes'}
-      heroTitle={heroTitle}
-      heroSubtitle={heroSubtitle}
-      heroBullets={isCoach ? COACH_BULLETS : ATHLETE_BULLETS}
-      cloudMode={cloudMode}
-    >
-      <div className="auth-card__mobile-brand">
-        <AppLogo size="lg" />
-        <p className="auth-card__mobile-tagline">Surf stats for coaches and athletes</p>
+    <AuthShell onBack={openLanding} backLabel="Home">
+      <div className="auth-badges">
+        <span className="auth-badge auth-badge--role">{copy.roleLabel}</span>
+        <span className="auth-badge auth-badge--mode">{copy.modeLabel}</span>
       </div>
 
-      <div className="auth-role-tabs" role="tablist" aria-label="Account type">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={isCoach}
-          className={isCoach ? 'auth-role-tabs__btn auth-role-tabs__btn--on' : 'auth-role-tabs__btn'}
-          onClick={() => switchRole(true)}
-        >
-          Coach
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={!isCoach}
-          className={!isCoach ? 'auth-role-tabs__btn auth-role-tabs__btn--on' : 'auth-role-tabs__btn'}
-          onClick={() => switchRole(false)}
-        >
-          Athlete
-        </button>
-      </div>
-
-      <div className="auth-mode-tabs" role="tablist" aria-label="Sign in or register">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={!isRegister}
-          className={!isRegister ? 'auth-mode-tabs__btn auth-mode-tabs__btn--on' : 'auth-mode-tabs__btn'}
-          onClick={() => switchMode(false)}
-        >
-          Sign in
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={isRegister}
-          className={isRegister ? 'auth-mode-tabs__btn auth-mode-tabs__btn--on' : 'auth-mode-tabs__btn'}
-          onClick={() => switchMode(true)}
-        >
-          Create account
-        </button>
-      </div>
-
-      <header className="auth-card__head">
-        <h2 className="auth-card__title">
-          {isRegister
-            ? isCoach
-              ? 'Create your coach account'
-              : 'Create your athlete account'
-            : isCoach
-              ? 'Welcome back, coach'
-              : 'Welcome back'}
-        </h2>
-        <p className="auth-card__subtitle muted">
-          {isRegister
-            ? isCoach
-              ? 'Start your subscription after sign-up to unlock sessions and analytics.'
-              : 'Free for athletes — pair with your coach using a simple code.'
-            : 'Enter your credentials to continue to SurfStar.'}
-        </p>
+      <header className="auth-card__head auth-card__head--compact">
+        <h2 className="auth-card__title">{copy.title}</h2>
       </header>
 
       {selectedPlan ? (
@@ -266,19 +242,25 @@ export function LoginView() {
         <button type="submit" className="btn btn--primary btn--block btn--lg auth-submit" disabled={busy}>
           {busy
             ? 'Please wait…'
-            : isRegister
-              ? selectedPlan
-                ? `Create account · ${selectedPlan.name}`
-                : 'Create account'
-              : 'Sign in'}
+            : isRegister && selectedPlan
+              ? `Create account · ${selectedPlan.name}`
+              : copy.submit}
         </button>
       </form>
 
-      <footer className="auth-trust">
-        <span>Encrypted sign-in</span>
-        <span aria-hidden="true">·</span>
-        <span>Built for surf schools</span>
-      </footer>
+      <p className="auth-switch">
+        {copy.switchPrompt}{' '}
+        <button type="button" className="auth-switch__btn" onClick={goToAlternateScreen}>
+          {copy.switchActionLabel}
+        </button>
+      </p>
+
+      <p className="auth-switch auth-switch--muted">
+        {copy.otherRolePrompt}{' '}
+        <button type="button" className="auth-switch__btn" onClick={goToOtherRole}>
+          {copy.otherRoleActionLabel}
+        </button>
+      </p>
     </AuthShell>
   )
 }
