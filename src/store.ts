@@ -88,6 +88,9 @@ function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession 
         score: typeof w.score === 'number' ? Math.round(w.score * 100) / 100 : 0,
       })),
       interferences: h.interferences ?? [],
+      round: h.round,
+      advancesCount: h.advancesCount,
+      isFinal: h.isFinal ?? false,
     })),
     seaAnalysis: s.seaAnalysis
       ? {
@@ -96,6 +99,7 @@ function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession 
           logs: s.seaAnalysis.logs ?? [],
         }
       : null,
+    championship: s.championship ?? null,
     coachNotes: s.coachNotes ?? null,
     customTemplateId: s.customTemplateId ?? null,
     customTemplateName: s.customTemplateName ?? null,

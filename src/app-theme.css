@@ -1379,3 +1379,72 @@ body {
     display: none;
   }
 }
+
+.champ-bracket-card .page-title {
+  margin-bottom: 0.25rem;
+}
+
+.champ-winner-banner {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+}
+
+.champ-round + .champ-round {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.champ-round__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--landing-gold-light);
+}
+
+.champ-heat-item__advance,
+.champ-heat-item__lineup {
+  display: block;
+  margin-top: 0.2rem;
+  color: #a8b8cc;
+}
+
+.champ-advance-panel {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.champ-advance-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.champ-advance-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(8, 30, 58, 0.35);
+  color: #b8c5d6;
+  font-size: 0.88rem;
+}
+
+.champ-advance-list__on {
+  border: 1px solid rgba(201, 169, 98, 0.35);
+  color: #eef3f9;
+}
+
+.champ-advance-list strong {
+  color: var(--landing-gold-light);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

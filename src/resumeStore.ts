@@ -13,6 +13,7 @@ export type DraftSessionResume = {
   athleteIds: string[]
   heatDurationMinutes: HeatDurationMinutes
   customTemplateId: string
+  championshipHeatSize: import('./types').ChampionshipHeatSize
 }
 
 export type AppResumeState = {

@@ -12,13 +12,15 @@ import {
   heatIsFinished,
   heatIsRunning,
 } from '../heatUtils'
+import { getAdvancementSummary } from '../championshipUtils'
 import { HEAT_INTERFERENCE_LABELS, type HeatRecord } from '../types'
 
 type Props = {
   heat: HeatRecord
+  championshipHeatSize?: 2 | 4
 }
 
-export function HeatRunnerPanel({ heat }: Props) {
+export function HeatRunnerPanel({ heat, championshipHeatSize }: Props) {
   const { getAthlete, startHeatTimer, endHeat, logHeatWaveScore, setHeatInterference } = useApp()
   const [scoreAthleteId, setScoreAthleteId] = useState<string | null>(null)
   const [interferenceAthleteId, setInterferenceAthleteId] = useState<string | null>(null)
@@ -30,6 +32,10 @@ export function HeatRunnerPanel({ heat }: Props) {
   const canPenalize = heatStarted
 
   const totals = useMemo(() => heatAthleteTotals(heat), [heat])
+  const advancement = useMemo(() => {
+    if (!finished || !championshipHeatSize) return []
+    return getAdvancementSummary(heat, championshipHeatSize)
+  }, [championshipHeatSize, finished, heat])
 
   const scoreAthlete = scoreAthleteId ? getAthlete(scoreAthleteId) : undefined
   const interferenceAthlete = interferenceAthleteId ? getAthlete(interferenceAthleteId) : undefined
@@ -93,6 +99,23 @@ export function HeatRunnerPanel({ heat }: Props) {
               </div>
             )
           })}
+        </div>
+      ) : null}
+
+      {finished && advancement.length > 0 ? (
+        <div className="champ-advance-panel">
+          <p className="field-label">Advancement</p>
+          <ul className="champ-advance-list">
+            {advancement.map((row) => (
+              <li key={row.athleteId} className={row.advances ? 'champ-advance-list__on' : ''}>
+                <span>
+                  #{row.place} {getAthlete(row.athleteId)?.name ?? 'Athlete'}
+                </span>
+                <span>{formatHeatTotal(totals[row.athleteId] ?? 0)}</span>
+                {row.advances ? <strong>Advances</strong> : null}
+              </li>
+            ))}
+          </ul>
         </div>
       ) : null}
 

@@ -283,6 +283,20 @@ export type HeatRecord = {
   endedAt: string | null
   waveScores: HeatWaveScore[]
   interferences: HeatInterference[]
+  /** Bracket round (championship mode). */
+  round?: number
+  /** Surfers advancing to the next round from this heat. */
+  advancesCount?: number
+  /** True when this heat decides the champion (top 1 only). */
+  isFinal?: boolean
+}
+
+export type ChampionshipHeatSize = 2 | 4
+
+export type ChampionshipState = {
+  heatSize: ChampionshipHeatSize
+  status: 'active' | 'complete'
+  championAthleteId: string | null
 }
 
 export const SEA_ANALYSIS_DURATION_MINUTES = 30
@@ -339,6 +353,7 @@ export type TrainingSession = {
   comboEntries: SessionComboEntry[]
   heats: HeatRecord[]
   seaAnalysis: SeaAnalysisState | null
+  championship?: ChampionshipState | null
   customTemplateId?: string | null
   customTemplateName?: string | null
   customTemplateSnapshot?: CustomTrainingTemplate | null

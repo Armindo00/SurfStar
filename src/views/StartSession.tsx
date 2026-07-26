@@ -31,6 +31,7 @@ export function StartSession() {
     setDraftSpot,
     setDraftCondition,
     setDraftHeatDuration,
+    setDraftChampionshipHeatSize,
     setView,
   } = useApp()
 
@@ -39,6 +40,7 @@ export function StartSession() {
   const lockedModes = ALL_MODES.filter((mode) => !canUseTrainingMode(planId, mode))
 
   const showHeatDuration = draft.mode === 'heats' || draft.mode === 'campeonato'
+  const isCampeonato = draft.mode === 'campeonato'
   const isSeaAnalysis = draft.mode === 'sea-analysis'
   const isCustom = draft.mode === 'custom'
   const selectedTemplate = customTemplates.find((t) => t.id === draft.customTemplateId)
@@ -149,6 +151,31 @@ export function StartSession() {
                 </button>
               ))}
             </div>
+          </>
+        ) : null}
+
+        {isCampeonato ? (
+          <>
+            <p className="field-label">Surfers per heat</p>
+            <div className="chip-row chip-row--pro">
+              <button
+                type="button"
+                className={draft.championshipHeatSize === 2 ? 'chip chip--active' : 'chip'}
+                onClick={() => setDraftChampionshipHeatSize(2)}
+              >
+                2 · top 1 advances
+              </button>
+              <button
+                type="button"
+                className={draft.championshipHeatSize === 4 ? 'chip chip--active' : 'chip'}
+                onClick={() => setDraftChampionshipHeatSize(4)}
+              >
+                4 · top 2 advance
+              </button>
+            </div>
+            <p className="muted stats-panel__sub">
+              Select all athletes next — SurfStar builds quarterfinals, semifinals and the final from your total count (heats of 3 or 4).
+            </p>
           </>
         ) : null}
 

@@ -55,6 +55,7 @@ import type {
   Athlete,
   AthleteShareSettings,
   AuthSession,
+  ChampionshipHeatSize,
   ComboLevel,
   HeatDurationMinutes,
   HeatInterferenceType,
@@ -88,6 +89,7 @@ import {
   migrateLegacyLocalAthletes,
 } from './localPairing'
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
+import { buildInitialChampionshipHeats, processChampionshipRoundAdvance } from './championshipUtils'
 import type { PlanId } from './plans'
 import { getPlan, getStripePaymentLink, isStripeConfigured } from './plans'
 import {
@@ -132,6 +134,7 @@ type DraftSession = {
   athleteIds: string[]
   heatDurationMinutes: HeatDurationMinutes
   customTemplateId: string
+  championshipHeatSize: ChampionshipHeatSize
 }
 
 type AppContextValue = {
@@ -204,6 +207,7 @@ type AppContextValue = {
   setDraftSpot: (spotId: string) => void
   setDraftCondition: (condition: string) => void
   setDraftHeatDuration: (minutes: HeatDurationMinutes) => void
+  setDraftChampionshipHeatSize: (size: ChampionshipHeatSize) => void
   addDraftAthlete: (athleteId: string) => void
   removeDraftAthlete: (athleteId: string) => void
   resetDraft: () => void
@@ -287,6 +291,7 @@ const emptyDraft = (): DraftSession => ({
   athleteIds: [],
   heatDurationMinutes: 15,
   customTemplateId: store.getCustomTemplates()[0]?.id ?? '',
+  championshipHeatSize: 4,
 })
 
 function viewForAuth(session: AuthSession): AppView {
@@ -1637,6 +1642,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDraft((d) => ({ ...d, heatDurationMinutes: minutes }))
   }, [])
 
+  const setDraftChampionshipHeatSize = useCallback((size: ChampionshipHeatSize) => {
+    setDraft((d) => ({ ...d, championshipHeatSize: size }))
+  }, [])
+
   const addDraftAthlete = useCallback((athleteId: string) => {
     setDraft((d) => {
       if (d.athleteIds.includes(athleteId)) return d
@@ -1691,6 +1700,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const confirmAthletesAndStart = useCallback(() => {
     if (!draft.spotId || !draft.condition) return
     if (draft.mode !== 'sea-analysis' && draft.athleteIds.length === 0) return
+    if (draft.mode === 'campeonato' && draft.athleteIds.length < 2) {
+      showToast('Select at least 2 athletes for a championship.', 'error')
+      return
+    }
     if (auth?.role !== 'treinador') return
 
     const planId = subscription?.planId ?? 'starter'
@@ -1723,6 +1736,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ? buildHeatRecord(draft.athleteIds, draft.heatDurationMinutes, 'Heat')
         : null
 
+    const championshipHeats =
+      draft.mode === 'campeonato'
+        ? buildInitialChampionshipHeats(
+            draft.athleteIds,
+            draft.championshipHeatSize,
+            draft.heatDurationMinutes,
+          )
+        : []
+
     const session: TrainingSession = {
       id: crypto.randomUUID(),
       coachId: auth.coachId,
@@ -1734,10 +1756,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       athleteIds: draft.athleteIds,
       waves: [],
       comboEntries: [],
-      heats: initialHeat ? [initialHeat] : [],
+      heats: initialHeat ? [initialHeat] : championshipHeats,
       seaAnalysis:
         draft.mode === 'sea-analysis'
           ? { timerStartedAt: null, endedAt: null, logs: [] }
+          : null,
+      championship:
+        draft.mode === 'campeonato'
+          ? {
+              heatSize: draft.championshipHeatSize,
+              status: 'active',
+              championAthleteId: null,
+            }
           : null,
       customTemplateId: customTemplate?.id ?? null,
       customTemplateName: customTemplate?.name ?? null,
@@ -1754,7 +1784,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveSessionId(session.id)
     setActiveAthleteId(draft.athleteIds[0] ?? null)
     setActiveWaveId(null)
-    setActiveHeatId(initialHeat?.id ?? null)
+    setActiveHeatId(initialHeat?.id ?? championshipHeats[0]?.id ?? null)
     setView(viewForMode(draft.mode))
   }, [auth, customTemplates, draft, persistSessions, showToast, spots, subscription?.planId])
 
@@ -2041,14 +2071,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const endHeat = useCallback(
     (heatId: string) => {
       if (!activeSessionId) return
-      updateSession(activeSessionId, (s) => ({
-        ...s,
-        heats: s.heats.map((h) =>
-          h.id === heatId && !h.endedAt ? { ...h, endedAt: new Date().toISOString() } : h,
-        ),
-      }))
+      const session = trainingSessions.find((s) => s.id === activeSessionId)
+      if (!session) return
+
+      let heats = session.heats.map((h) =>
+        h.id === heatId && !h.endedAt ? { ...h, endedAt: new Date().toISOString() } : h,
+      )
+      let championship = session.championship ?? null
+      const endedHeat = heats.find((h) => h.id === heatId)
+
+      if (session.mode === 'campeonato' && championship?.status === 'active' && endedHeat) {
+        const duration = endedHeat.durationMinutes
+        const result = processChampionshipRoundAdvance(heats, championship, duration)
+        heats = result.heats
+        const nextChampionship = result.championship
+        championship = nextChampionship
+
+        if (nextChampionship.status === 'complete' && nextChampionship.championAthleteId) {
+          const name =
+            coachAthletes.find((a) => a.id === nextChampionship.championAthleteId)?.name ??
+            'Champion'
+          showToast(`${name} wins the championship!`, 'success')
+        } else if (result.advancedToNextRound) {
+          const nextHeat = heats.find(
+            (h) => !h.endedAt && h.round === (endedHeat.round ?? 1) + 1,
+          )
+          if (nextHeat) {
+            setActiveHeatId(nextHeat.id)
+            showToast(`${nextHeat.label} is ready.`, 'info')
+          }
+        }
+      }
+
+      updateSession(activeSessionId, (s) => ({ ...s, heats, championship }))
     },
-    [activeSessionId, updateSession],
+    [activeSessionId, coachAthletes, showToast, trainingSessions, updateSession],
   )
 
   const logHeatWaveScore = useCallback(
@@ -2424,6 +2481,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDraftSpot,
       setDraftCondition,
       setDraftHeatDuration,
+      setDraftChampionshipHeatSize,
       addDraftAthlete,
       removeDraftAthlete,
       resetDraft,
@@ -2538,6 +2596,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDraftSpot,
       setDraftCondition,
       setDraftHeatDuration,
+      setDraftChampionshipHeatSize,
       addDraftAthlete,
       removeDraftAthlete,
       resetDraft,

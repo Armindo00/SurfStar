@@ -50,13 +50,14 @@ export const TRAINING_HELP_GUIDES: TrainingHelpGuide[] = [
   {
     mode: 'campeonato',
     planLabel: 'Coach plan and above',
-    summary: 'Simulate a full contest with multiple heats in one session.',
+    summary:
+      'Full knockout contest — add all surfers, pick heat size (2 or 4), and SurfStar builds every round until the final.',
     steps: [
-      'Tap New session → choose Championship and set the default heat length.',
-      'Start the session — no athletes are required upfront.',
-      'Create Heat 1, add athletes, and run the heat. Finish it before starting the next.',
-      'Tap + New heat to add Heat 2, Heat 3, and so on through the contest.',
-      'Switch between heats from the list and review results when each heat closes.',
+      'Tap New session → Championship, set heat length and surfers per heat (2 = top 1 advances, 4 = top 2 advance).',
+      'Select all athletes in the contest and tap Start championship.',
+      'SurfStar splits the opening round into heats of 3 or 4 (e.g. quarterfinals with 8 surfers = 2 heats of 4).',
+      'Run each heat: score waves, end the heat — winners advance when the whole round is finished.',
+      'Continue through semifinals and final until a champion is crowned.',
     ],
   },
   {

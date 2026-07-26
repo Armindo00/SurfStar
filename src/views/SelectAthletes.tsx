@@ -1,4 +1,5 @@
 import { useApp } from '../AppContext'
+import { previewBracketRounds } from '../championshipUtils'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { MAX_HEAT_ATHLETES } from '../heatUtils'
 
@@ -13,7 +14,13 @@ export function SelectAthletes() {
   } = useApp()
 
   const heatCap = draft.mode === 'heats'
+  const isCampeonato = draft.mode === 'campeonato'
   const isSeaAnalysis = draft.mode === 'sea-analysis'
+
+  const bracketPreview =
+    isCampeonato && draft.athleteIds.length >= 2
+      ? previewBracketRounds(draft.athleteIds.length, draft.championshipHeatSize)
+      : []
 
   const toggleAthlete = (id: string) => {
     if (draft.athleteIds.includes(id)) removeDraftAthlete(id)
@@ -47,8 +54,16 @@ export function SelectAthletes() {
         <p className="muted">
           {heatCap
             ? `Select up to ${MAX_HEAT_ATHLETES} surfers for this heat.`
-            : 'Tap to select or deselect. You can pick multiple athletes.'}
+            : isCampeonato
+              ? 'Select everyone in today\'s contest. Heats will have 3 or 4 surfers depending on the total — SurfStar builds the full bracket.'
+              : 'Tap to select or deselect. You can pick multiple athletes.'}
         </p>
+
+        {bracketPreview.length > 0 ? (
+          <p className="muted stats-panel__sub">
+            Bracket preview: {bracketPreview.join(' → ')}
+          </p>
+        ) : null}
 
         <div className="athlete-grid">
           {activeCoachAthletes.length === 0 ? (
@@ -76,10 +91,10 @@ export function SelectAthletes() {
         <button
           type="button"
           className="btn btn--primary btn--block btn--lg"
-          disabled={draft.athleteIds.length === 0}
+          disabled={draft.athleteIds.length === 0 || (isCampeonato && draft.athleteIds.length < 2)}
           onClick={confirmAthletesAndStart}
         >
-          Start training
+          {isCampeonato ? 'Start championship' : 'Start training'}
         </button>
       </div>
     </div>
