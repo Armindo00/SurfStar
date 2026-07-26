@@ -6,7 +6,7 @@
   --landing-gold: #c9a962;
   --landing-gold-light: #e8d5a3;
   --landing-text: #f1f5f9;
-  --landing-muted: #94a3b8;
+  --landing-muted: #b8c5d6;
 
   --ss-bg-top: #050b18;
   --ss-bg-mid: #0a1628;
@@ -1032,40 +1032,18 @@ body {
 }
 
 /* App: residual white / pale panels from legacy light-theme CSS */
-.app-shell .wave-summary__item,
-.app-shell .catalog-list__item,
-.app-shell .team-analytics-list__item,
 .app-shell .kind-summary {
   color: var(--on-light-text) !important;
   border-color: var(--on-light-border) !important;
 }
 
-.app-shell .wave-summary__item strong,
-.app-shell .catalog-list__main strong,
-.app-shell .team-analytics-list__body strong,
 .app-shell .kind-summary strong {
   color: var(--on-light-text) !important;
 }
 
-.app-shell .wave-summary__item small,
-.app-shell .catalog-list__item .muted,
-.app-shell .team-analytics-list__body small,
 .app-shell .kind-summary__name,
 .app-shell .kind-summary .muted {
   color: var(--on-light-muted) !important;
-}
-
-.app-shell .team-analytics-list__chev {
-  color: var(--on-light-subtle) !important;
-}
-
-.app-shell :is(.catalog-list__item, .team-analytics-list__item) .btn--ghost {
-  color: var(--on-light-text) !important;
-  border-color: rgba(10, 22, 40, 0.22) !important;
-}
-
-.app-shell :is(.catalog-list__item, .team-analytics-list__item) .btn--ghost:hover {
-  background: rgba(10, 22, 40, 0.06) !important;
 }
 
 /* Form fields that still pick up pale App.css backgrounds */
@@ -1117,34 +1095,141 @@ body {
   color: #991b1b !important;
 }
 
-/* Custom training — light panels need dark text on dark app shell */
-.app-shell :is(.custom-rules-panel, .custom-editor__button-card) {
-  color: var(--on-light-text) !important;
-  border-color: var(--on-light-border) !important;
+/* Custom training — dark-native panels */
+.app-shell .custom-rules-panel,
+.app-shell .custom-editor__button-card {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
 }
 
 .app-shell :is(.custom-rules-panel, .custom-editor__button-card) .muted,
 .app-shell :is(.custom-rules-panel, .custom-editor__button-card) .stats-panel__sub,
 .app-shell :is(.custom-rules-panel, .custom-editor__button-card) .field--pro span,
 .app-shell :is(.custom-rules-panel, .custom-editor__button-card) .field-label {
-  color: var(--on-light-muted) !important;
+  color: #a8b8cc !important;
 }
 
 .app-shell :is(.custom-rules-panel, .custom-editor__button-card) strong,
 .app-shell .custom-editor__button-head strong {
-  color: var(--on-light-text) !important;
+  color: #f1f5f9 !important;
 }
 
 .app-shell .custom-editor__button-card .btn--ghost {
-  color: var(--on-light-text) !important;
-  border-color: rgba(10, 22, 40, 0.22) !important;
+  color: var(--landing-gold-light) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .app-shell .custom-rules-panel__notes {
-  color: var(--on-light-text) !important;
+  color: #dbe4ef !important;
 }
 
-/* Catalog / template lists — dark-native cards (no white leak on navy shell) */
+.app-shell .key--custom {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .key--custom.key--active {
+  background: rgba(201, 169, 98, 0.22) !important;
+  color: #f8fafc !important;
+}
+
+/* Wave summary rows — dark cards */
+.app-shell .wave-summary__item {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Condition chips — dark pills */
+.app-shell .condition-chip {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f1f5f9 !important;
+  box-shadow: none !important;
+}
+
+.app-shell .condition-chip__btn {
+  color: #a8b8cc !important;
+}
+
+.app-shell .condition-chip__btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Team analytics list — dark cards */
+.app-shell .team-analytics-list__item {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .team-analytics-list__body strong {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .team-analytics-list__body small {
+  color: #a8b8cc !important;
+}
+
+.app-shell .team-analytics-list__chev {
+  color: var(--landing-gold) !important;
+}
+
+.app-shell .team-analytics-list__avatar,
+.app-shell .team-analytics-hero__avatar {
+  background: rgba(201, 169, 98, 0.22) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+/* Heat results mobile cards */
+.app-shell .heat-results-card {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .heat-results-card__rank {
+  color: #a8b8cc !important;
+}
+
+.app-shell .heat-results-card__total {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .heat-results-card__wave {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .heat-results-card__wave-label {
+  color: #a8b8cc !important;
+}
+
+.app-shell .heat-results-card__wave--counting {
+  background: rgba(201, 169, 98, 0.15) !important;
+  border-color: rgba(201, 169, 98, 0.35) !important;
+}
+
+.app-shell .heat-results-card__wave--int-drop {
+  background: rgba(220, 38, 38, 0.18) !important;
+  border-color: rgba(248, 113, 113, 0.35) !important;
+}
+
+.app-shell .heat-results-legend__item--counting {
+  background: rgba(201, 169, 98, 0.18) !important;
+  color: var(--landing-gold-light) !important;
+  border-color: rgba(201, 169, 98, 0.35) !important;
+}
+
+.app-shell .heat-results-legend__item--int {
+  background: rgba(220, 38, 38, 0.18) !important;
+  color: #fecaca !important;
+  border-color: rgba(248, 113, 113, 0.35) !important;
+}
+
+/* Catalog / template lists — dark-native cards */
 .app-shell .catalog-list__item {
   background: rgba(255, 255, 255, 0.05) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
@@ -1165,7 +1250,10 @@ body {
   background: rgba(201, 169, 98, 0.18) !important;
 }
 
-.app-shell .catalog-list__item .btn--ghost {
-  color: var(--landing-gold-light) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
+.app-shell .field--check {
+  color: #dbe4ef !important;
+}
+
+.app-shell .field--check input {
+  accent-color: var(--landing-gold);
 }

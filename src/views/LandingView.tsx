@@ -7,8 +7,8 @@ import { useApp } from '../AppContext'
 
 const TRUST_STATS = [
   { value: 'Live stats', label: 'Success rates update during every session' },
+  { value: 'Custom modes', label: 'Build your own buttons, levels & rules' },
   { value: 'Sea analysis', label: 'Compare peaks and pick the best spot' },
-  { value: '6 months', label: 'Monthly evolution per athlete' },
   { value: 'Season', label: 'Totals, heat wins & full session history' },
 ]
 
@@ -17,6 +17,11 @@ const FEATURES = [
     icon: '◎',
     title: 'Wave-by-wave logging',
     text: 'Technical training and combos with success rates by maneuver, level, and side (frontside / backside).',
+  },
+  {
+    icon: '⚙',
+    title: 'Custom training',
+    text: 'Design your own session format — skill buttons, levels, success/fail tracking, timer, and rules. Every coach can train their way.',
   },
   {
     icon: '≋',
@@ -111,6 +116,10 @@ const FAQ = [
   {
     q: 'Can I see stats while training?',
     a: 'Yes. During technical or combo sessions, open Live stats to see success rate, waves, and maneuver breakdowns update in real time — then review monthly evolution and season totals in Team analytics.',
+  },
+  {
+    q: 'What is Custom training?',
+    a: 'Coach and Coach Premium plans let you create your own training templates: name your skill buttons, set levels, track success or fail, add a timer, and write your rules. Start a session with your template and log live on the beach.',
   },
 ]
 

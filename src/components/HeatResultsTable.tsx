@@ -28,6 +28,19 @@ function cellClass(state: ReturnType<typeof heatWaveCellState>): string {
   }
 }
 
+function mobileWaveClass(state: ReturnType<typeof heatWaveCellState>): string {
+  switch (state) {
+    case 'counting':
+      return 'heat-results-card__wave heat-results-card__wave--counting'
+    case 'int-half':
+      return 'heat-results-card__wave heat-results-card__wave--counting heat-results-card__wave--int-half'
+    case 'int-drop':
+      return 'heat-results-card__wave heat-results-card__wave--int-drop'
+    default:
+      return 'heat-results-card__wave'
+  }
+}
+
 export function HeatResultsTable({ heat, getAthleteName }: Props) {
   const waveColumns = maxWavesInHeat(heat)
 
@@ -55,7 +68,55 @@ export function HeatResultsTable({ heat, getAthleteName }: Props) {
           Interference
         </span>
       </div>
-      <div className="table-wrap">
+
+      <div className="heat-results-mobile" aria-label="Heat results by surfer">
+        {rows.map((row, rank) => {
+          const breakdown = heatResultBreakdown(heat, row.id)
+          return (
+            <article key={row.id} className="heat-results-card">
+              <header className="heat-results-card__head">
+                <div className="heat-results-card__identity">
+                  <span className="heat-results-card__rank">#{rank + 1}</span>
+                  <strong>{row.name}</strong>
+                </div>
+                <span className="heat-results-card__total">{formatHeatTotal(row.total)}</span>
+              </header>
+              {row.interference ? (
+                <p className="heat-int-badge heat-results-card__int">
+                  {HEAT_INTERFERENCE_LABELS[row.interference]}
+                </p>
+              ) : null}
+              <ul className="heat-results-card__waves">
+                {row.waves.length === 0 ? (
+                  <li className="heat-results-card__wave heat-results-card__wave--empty">No waves logged</li>
+                ) : (
+                  row.waves.map((wave, index) => {
+                    const state = heatWaveCellState(heat, row.id, wave)
+                    return (
+                      <li key={wave.id} className={mobileWaveClass(state)}>
+                        <span className="heat-results-card__wave-label">Wave {index + 1}</span>
+                        <span className="heat-results-card__wave-score">
+                          {formatWaveScoreCompact(wave.score)}
+                        </span>
+                        {state === 'int-half' && breakdown.rawSecondBest !== null ? (
+                          <span className="heat-results-card__wave-int">
+                            INT → {formatWaveScoreCompact(breakdown.rawSecondBest / 2)}
+                          </span>
+                        ) : null}
+                        {state === 'int-drop' ? (
+                          <span className="heat-results-card__wave-int">INT — dropped</span>
+                        ) : null}
+                      </li>
+                    )
+                  })
+                )}
+              </ul>
+            </article>
+          )
+        })}
+      </div>
+
+      <div className="table-wrap heat-results-table-wrap">
         <table className="data-table heat-results-table">
           <thead>
             <tr>

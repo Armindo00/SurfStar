@@ -1181,14 +1181,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteCustomTemplate = useCallback(
     (templateId: string) => {
-      persistCustomTemplates((prev) => prev.filter((t) => t.id !== templateId))
-      setDraft((d) => {
-        if (d.customTemplateId !== templateId) return d
-        const remaining = customTemplates.filter((t) => t.id !== templateId)
-        return { ...d, customTemplateId: remaining[0]?.id ?? '' }
+      let nextTemplateId = ''
+      persistCustomTemplates((prev) => {
+        const next = prev.filter((t) => t.id !== templateId)
+        nextTemplateId = next[0]?.id ?? ''
+        return next
       })
+      setDraft((d) =>
+        d.customTemplateId === templateId ? { ...d, customTemplateId: nextTemplateId } : d,
+      )
     },
-    [customTemplates, persistCustomTemplates],
+    [persistCustomTemplates],
   )
 
   const duplicateCustomTemplate = useCallback(

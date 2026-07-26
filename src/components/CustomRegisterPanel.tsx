@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { CustomAttemptModal } from './CustomAttemptModal'
 import { CustomTimer } from './CustomTimer'
 import { WaveRegisterSummary } from './WaveRegisterSummary'
@@ -68,6 +68,10 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
   const attemptsOnWave = openWave ? countWaveCustomAttempts(openWave) : 0
   const atMaxAttempts = maxAttempts !== null && attemptsOnWave >= maxAttempts
 
+  const handleTimerEnd = useCallback(() => {
+    endCustomTimer()
+  }, [endCustomTimer])
+
   const beginAttempt = (button: CustomButton) => {
     if (!canLog || atMaxAttempts) return
 
@@ -107,7 +111,7 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
         </div>
       </div>
 
-      {activeSession ? <CustomTimer session={activeSession} onTimeUp={() => endCustomTimer()} /> : null}
+      {activeSession ? <CustomTimer session={activeSession} onTimeUp={handleTimerEnd} /> : null}
 
       {timerEnabled && activeSession && !activeSession.customTimerStartedAt ? (
         <button type="button" className="btn btn--primary btn--block btn--lg" onClick={startCustomTimer}>
@@ -189,6 +193,10 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
             ))}
           </div>
         </>
+      ) : null}
+
+      {buttons.length === 0 ? (
+        <p className="muted">This template has no skill buttons. Edit the template to add buttons.</p>
       ) : null}
 
       <div className="register-panel__links">
