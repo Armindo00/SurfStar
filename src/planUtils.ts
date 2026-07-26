@@ -3,7 +3,7 @@ import { getPlan } from './plans'
 import type { TrainingMode } from './types'
 
 const STARTER_MODES: TrainingMode[] = ['tecnico', 'combos']
-const TEAM_MODES: TrainingMode[] = ['tecnico', 'combos', 'custom']
+const TEAM_MODES: TrainingMode[] = ['tecnico', 'combos', 'heats', 'campeonato']
 const CLUB_MODES: TrainingMode[] = ['tecnico', 'combos', 'custom', 'heats', 'campeonato', 'sea-analysis']
 
 export function getAllowedModes(planId: PlanId): TrainingMode[] {
@@ -27,6 +27,10 @@ export function canAccessTeamAnalytics(planId: PlanId): boolean {
   return planId === 'team' || planId === 'club'
 }
 
+export function canUseCustomTraining(planId: PlanId): boolean {
+  return canUseTrainingMode(planId, 'custom')
+}
+
 export function getMaxAthletes(planId: PlanId): number | null {
   return getPlan(planId).maxAthletes
 }
@@ -43,11 +47,20 @@ export function athleteLimitMessage(planId: PlanId): string {
   return `Up to ${max} athletes on ${getPlan(planId).name}`
 }
 
-export function planUpgradeHint(planId: PlanId, feature: 'analytics' | 'heats' | 'sea' | 'athletes'): string {
+export function planUpgradeHint(
+  planId: PlanId,
+  feature: 'analytics' | 'custom' | 'heats' | 'sea' | 'athletes',
+): string {
   if (feature === 'analytics' && !canAccessTeamAnalytics(planId)) {
     return 'Available on Coach plan and above.'
   }
-  if ((feature === 'heats' || feature === 'sea') && planId !== 'club') {
+  if (feature === 'custom' && !canUseCustomTraining(planId)) {
+    return 'Custom training templates are available on Coach Premium plan.'
+  }
+  if (feature === 'heats' && !canUseTrainingMode(planId, 'heats')) {
+    return 'Available on Coach plan and above.'
+  }
+  if (feature === 'sea' && planId !== 'club') {
     return 'Available on Coach Premium plan.'
   }
   if (feature === 'athletes' && planId === 'starter') {

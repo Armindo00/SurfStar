@@ -93,6 +93,7 @@ import { getPlan, getStripePaymentLink } from './plans'
 import {
   canAccessTeamAnalytics,
   canAddAthlete,
+  canUseCustomTraining,
   canUseTrainingMode,
   getAllowedModes,
 } from './planUtils'
@@ -1642,6 +1643,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         showToast('Team analytics requires Coach or Coach Premium plan.', 'error')
         return
       }
+      if (
+        next === 'manage-custom-templates' &&
+        subscription &&
+        !canUseCustomTraining(subscription.planId)
+      ) {
+        showToast('Custom training requires Coach Premium plan.', 'error')
+        setView('subscription')
+        return
+      }
       setView(next)
     },
     [showToast, subscription],
@@ -1665,7 +1675,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const planId = subscription?.planId ?? 'starter'
     if (!canUseTrainingMode(planId, draft.mode)) {
-      showToast('This training mode is not included in your plan.', 'error')
+      showToast(
+        draft.mode === 'custom'
+          ? 'Custom training requires Coach Premium plan.'
+          : 'This training mode is not included in your plan.',
+        'error',
+      )
       return
     }
 

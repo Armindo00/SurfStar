@@ -1,9 +1,23 @@
 import { useApp } from '../AppContext'
 import { canUseTrainingMode } from '../planUtils'
+import type { PlanId } from '../plans'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { HEAT_DURATIONS, TRAINING_MODE_LABELS, type TrainingMode } from '../types'
 
 const ALL_MODES: TrainingMode[] = ['tecnico', 'combos', 'custom', 'heats', 'campeonato', 'sea-analysis']
+
+function lockedModesHint(planId: PlanId, lockedModes: TrainingMode[]): string {
+  const labels = lockedModes.map((m) => TRAINING_MODE_LABELS[m]).join(', ')
+  const needsCoach = lockedModes.some((m) => m === 'heats' || m === 'campeonato')
+  const needsPremium = lockedModes.some((m) => m === 'custom' || m === 'sea-analysis')
+
+  if (planId === 'starter' && needsCoach && needsPremium) {
+    return `${labels} — Heats on Coach plan; Custom training & Sea analysis on Coach Premium.`
+  }
+  if (needsPremium) return `${labels} — available on Coach Premium plan.`
+  if (needsCoach) return `${labels} — available on Coach plan and above.`
+  return `${labels} — upgrade your plan to unlock.`
+}
 
 export function StartSession() {
   const {
@@ -59,9 +73,7 @@ export function StartSession() {
         </div>
 
         {lockedModes.length > 0 ? (
-          <p className="plan-lock-note muted">
-            {lockedModes.map((m) => TRAINING_MODE_LABELS[m]).join(', ')} — available on Coach Premium plan.
-          </p>
+          <p className="plan-lock-note muted">{lockedModesHint(planId, lockedModes)}</p>
         ) : null}
 
         {isCustom ? (

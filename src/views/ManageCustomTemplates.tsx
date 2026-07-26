@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { CustomTemplateEditor, normalizeEditorTemplate } from '../components/CustomTemplateEditor'
 import { ScreenHeader } from '../components/ScreenHeader'
-import { cloneCustomTemplate, createEmptyCustomTemplate } from '../customTrainingUtils'
 import { useApp } from '../AppContext'
+import { canUseCustomTraining, planUpgradeHint } from '../planUtils'
+import { cloneCustomTemplate, createEmptyCustomTemplate } from '../customTrainingUtils'
 import type { CustomTrainingTemplate } from '../types'
 
 export function ManageCustomTemplates() {
@@ -12,8 +13,12 @@ export function ManageCustomTemplates() {
     saveCustomTemplate,
     deleteCustomTemplate,
     duplicateCustomTemplate,
+    subscription,
     setView,
   } = useApp()
+
+  const planId = subscription?.planId ?? 'starter'
+  const hasAccess = canUseCustomTraining(planId)
 
   const [editing, setEditing] = useState<CustomTrainingTemplate | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -30,6 +35,29 @@ export function ManageCustomTemplates() {
 
   const startEdit = (template: CustomTrainingTemplate) => {
     setEditing(normalizeEditorTemplate(cloneCustomTemplate(template)))
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="ss-flow">
+        <ScreenHeader title="Custom training" onBack={() => setView('coach-home')} />
+        <div className="ss-card stats-panel">
+          <h2 className="stats-panel__title">Coach Premium feature</h2>
+          <p className="muted">
+            Build your own training templates — skill buttons, levels, success tracking, timer, and
+            rules — exclusive to Coach Premium.
+          </p>
+          <p className="muted">{planUpgradeHint(planId, 'custom')}</p>
+          <button
+            type="button"
+            className="btn btn--primary btn--block"
+            onClick={() => setView('subscription')}
+          >
+            Upgrade to Coach Premium
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (editing) {

@@ -7,7 +7,7 @@ import { useApp } from '../AppContext'
 
 const TRUST_STATS = [
   { value: 'Live stats', label: 'Success rates update during every session' },
-  { value: 'Custom modes', label: 'Build your own buttons, levels & rules' },
+  { value: 'Custom training', label: 'Coach Premium — your buttons, levels & rules' },
   { value: 'Sea analysis', label: 'Compare peaks and pick the best spot' },
   { value: 'Season', label: 'Totals, heat wins & full session history' },
 ]
@@ -21,7 +21,7 @@ const FEATURES = [
   {
     icon: '⚙',
     title: 'Custom training',
-    text: 'Design your own session format — skill buttons, levels, success/fail tracking, timer, and rules. Every coach can train their way.',
+    text: 'Coach Premium exclusive — design your own session format with skill buttons, levels, success/fail tracking, timer, and rules. Train exactly your way.',
   },
   {
     icon: '≋',
@@ -48,6 +48,13 @@ const FEATURES = [
     title: 'Heats & championship',
     text: 'Simulate heats, log interferences, and track results like a real contest.',
   },
+]
+
+const CUSTOM_TRAINING_BULLETS = [
+  'Name your own skill buttons and color-code them',
+  'Per-button levels plus optional success / fail tracking',
+  'Built-in timer with auto-start for timed drills',
+  'Wave-based or direct logging — your rules, your format',
 ]
 
 const SEA_ANALYSIS_BULLETS = [
@@ -119,7 +126,7 @@ const FAQ = [
   },
   {
     q: 'What is Custom training?',
-    a: 'Coach and Coach Premium plans let you create your own training templates: name your skill buttons, set levels, track success or fail, add a timer, and write your rules. Start a session with your template and log live on the beach.',
+    a: 'Coach Premium lets you create your own training templates: name your skill buttons, set levels, track success or fail, add a timer, and write your rules. Start a session with your template and log live on the beach.',
   },
 ]
 
@@ -146,6 +153,7 @@ export function LandingView() {
         </a>
         <nav className="landing-nav__menu" aria-label="Sections">
           <a href="#features">Features</a>
+          <a href="#custom-training">Custom training</a>
           <a href="#sea-analysis">Sea analysis</a>
           <a href="#analytics">Analytics</a>
           <a href="#how">How it works</a>
@@ -262,7 +270,7 @@ export function LandingView() {
               </ul>
               <p className="landing-sea__badge">
                 <span className="landing-showcase__pill">Coach Premium</span>
-                Included with heats & championship modes
+                Included with custom training & sea analysis
               </p>
             </div>
 
@@ -299,6 +307,64 @@ export function LandingView() {
                   <span>Small int.</span>
                   <span>Small</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-section landing-section--alt landing-sea" id="custom-training">
+          <div className="landing-sea__grid">
+            <div className="landing-sea__copy">
+              <p className="landing-eyebrow">Custom training</p>
+              <h2>Your drills. Your buttons. Your rules.</h2>
+              <p className="landing-sea__lead">
+                Go beyond built-in modes. Build templates that match how you actually coach — then run
+                them live on the beach with one tap per skill.
+              </p>
+              <ul className="landing-sea__bullets">
+                {CUSTOM_TRAINING_BULLETS.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <p className="landing-sea__badge">
+                <span className="landing-showcase__pill">Coach Premium</span>
+                Exclusive to the top plan — alongside sea analysis & unlimited athletes
+              </p>
+            </div>
+
+            <div className="landing-sea__preview" aria-hidden="true">
+              <div className="landing-showcase__glow" />
+              <div className="landing-showcase__card landing-sea__card">
+                <header className="landing-showcase__head">
+                  <span className="landing-showcase__pill">Custom training · Live register</span>
+                  <strong>Cutback focus · Carcavelos</strong>
+                </header>
+
+                <div className="landing-sea__types">
+                  <span>Cutback</span>
+                  <span>Re-entry</span>
+                  <span>Tube</span>
+                  <span>Layback</span>
+                </div>
+
+                <div className="landing-showcase__kpis">
+                  <div>
+                    <span>76%</span>
+                    <small>Success</small>
+                  </div>
+                  <div>
+                    <span>12:40</span>
+                    <small>Timer left</small>
+                  </div>
+                  <div>
+                    <span>18</span>
+                    <small>Logs</small>
+                  </div>
+                </div>
+
+                <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>
+                  Level 3 cutback · Success · Frontside
+                </p>
               </div>
             </div>
           </div>
@@ -423,6 +489,7 @@ export function LandingView() {
         </div>
         <div className="landing-footer__links">
           <a href="#features">Features</a>
+          <a href="#custom-training">Custom training</a>
           <a href="#sea-analysis">Sea analysis</a>
           <a href="#analytics">Analytics</a>
           <a href="#packs">Pricing</a>

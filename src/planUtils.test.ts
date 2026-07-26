@@ -12,9 +12,17 @@ describe('planUtils', () => {
     expect(canUseTrainingMode('starter', 'heats')).toBe(false)
   })
 
-  it('club allows all modes', () => {
+  it('team allows analytics, heats and championship but not custom training', () => {
+    expect(getAllowedModes('team')).toEqual(['tecnico', 'combos', 'heats', 'campeonato'])
+    expect(canUseTrainingMode('team', 'heats')).toBe(true)
+    expect(canUseTrainingMode('team', 'campeonato')).toBe(true)
+    expect(canUseTrainingMode('team', 'custom')).toBe(false)
+  })
+
+  it('club allows premium modes', () => {
     expect(canUseTrainingMode('club', 'sea-analysis')).toBe(true)
     expect(canUseTrainingMode('club', 'campeonato')).toBe(true)
+    expect(canUseTrainingMode('club', 'custom')).toBe(true)
   })
 
   it('enforces athlete limits', () => {

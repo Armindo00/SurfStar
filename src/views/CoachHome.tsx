@@ -1,11 +1,20 @@
 import { useApp } from '../AppContext'
-import { athleteLimitMessage } from '../planUtils'
-import { formatPlanPrice, getPlan } from '../plans'
+import { athleteLimitMessage, canUseCustomTraining, getAllowedModes } from '../planUtils'
+import { formatPlanPrice, getPlan, type PlanId } from '../plans'
+import { TRAINING_MODE_LABELS } from '../types'
+
+function sessionModesSubtitle(planId: PlanId): string {
+  return getAllowedModes(planId)
+    .map((mode) => TRAINING_MODE_LABELS[mode])
+    .join(', ')
+}
 
 export function CoachHome() {
   const { auth, subscription, setView, beginDraftSession, logout } = useApp()
   const name = auth?.role === 'treinador' ? auth.name : 'Coach'
   const plan = subscription ? getPlan(subscription.planId) : null
+  const planId = subscription?.planId ?? 'starter'
+  const hasCustomTraining = canUseCustomTraining(planId)
 
   return (
     <div className="dashboard">
@@ -27,7 +36,7 @@ export function CoachHome() {
         </span>
         <span>
           <strong>New session</strong>
-          <small>Technical, combos, custom, heats, sea analysis</small>
+          <small>{sessionModesSubtitle(planId)}</small>
         </span>
       </button>
 
@@ -51,9 +60,14 @@ export function CoachHome() {
         <button
           type="button"
           className="action-list__item"
-          onClick={() => setView('manage-custom-templates')}
+          onClick={() =>
+            hasCustomTraining ? setView('manage-custom-templates') : setView('subscription')
+          }
         >
-          <span>Custom training templates</span>
+          <span>
+            Custom training templates
+            {!hasCustomTraining ? ' · Coach Premium' : ''}
+          </span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('subscription')}>
