@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { formatPlanPrice, getPlan, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
+import { formatPlanPrice, getPlan, isStripeConfigured, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
 import { athleteLimitMessage } from '../planUtils'
 import { cloudOpenBillingPortal, isSubscriptionActive } from '../subscriptionApi'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -150,7 +150,9 @@ export function SubscriptionView() {
       <div className="ss-card stats-panel">
         <h2 className="stats-panel__title">Change plan</h2>
         <p className="muted subscription-manage__hint">
-          Switch anytime. Upgrades apply immediately; downgrades follow your billing cycle when paid via Stripe.
+          {cloudMode && !isStripeConfigured()
+            ? 'Switch anytime. Plans update instantly while Stripe is not active.'
+            : 'Switch anytime. Upgrades apply immediately; downgrades follow your billing cycle when paid via Stripe.'}
         </p>
         <div className="subscription-plan-picker">
           {SUBSCRIPTION_PLANS.map((item) => {

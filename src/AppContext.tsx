@@ -89,7 +89,7 @@ import {
 } from './localPairing'
 import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
 import type { PlanId } from './plans'
-import { getPlan, getStripePaymentLink } from './plans'
+import { getPlan, getStripePaymentLink, isStripeConfigured } from './plans'
 import {
   canAccessTeamAnalytics,
   canAddAthlete,
@@ -104,6 +104,7 @@ import {
   changeLocalSubscriptionPlan,
   cloudCancelSubscription,
   cloudChangeSubscriptionPlan,
+  cloudChangeSubscriptionPlanDirect,
   fetchCoachSubscription,
   isSubscriptionActive,
   startCoachCheckout,
@@ -679,8 +680,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: true as const }
       }
 
+      if (!isStripeConfigured()) {
+        const direct = await cloudChangeSubscriptionPlanDirect(planId)
+        if (!direct.ok) return direct
+        await refreshSubscription()
+        setSelectedPlanId(planId)
+        showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+        return { ok: true as const }
+      }
+
       const result = await cloudChangeSubscriptionPlan(planId)
-      if (!result.ok) return result
+      if (!result.ok) {
+        if (!getStripePaymentLink(planId)) {
+          const direct = await cloudChangeSubscriptionPlanDirect(planId)
+          if (!direct.ok) return direct
+          await refreshSubscription()
+          setSelectedPlanId(planId)
+          showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+          return { ok: true as const }
+        }
+        return result
+      }
 
       if (result.unchanged) {
         return { ok: true as const }

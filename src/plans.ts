@@ -89,3 +89,8 @@ export function getStripePaymentLink(planId: PlanId): string | null {
   const value = import.meta.env[envKey]
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }
+
+export function isStripeConfigured(): boolean {
+  const ids: PlanId[] = ['starter', 'team', 'club']
+  return ids.some((id) => Boolean(getStripePaymentLink(id)))
+}

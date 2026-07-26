@@ -220,6 +220,20 @@ export async function cloudCancelSubscription(): Promise<
   }
 }
 
+export async function cloudChangeSubscriptionPlanDirect(planId: PlanId): Promise<
+  { ok: true } | { ok: false; error: string }
+> {
+  try {
+    await cloudActivateDemoSubscription(planId)
+    return { ok: true }
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'Could not change plan.',
+    }
+  }
+}
+
 export async function cloudChangeSubscriptionPlan(planId: PlanId): Promise<
   | { ok: true; requiresCheckout?: boolean; portalUrl?: string; message?: string; unchanged?: boolean }
   | { ok: false; error: string }
