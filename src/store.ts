@@ -224,15 +224,22 @@ export const store = {
 export const authStore = {
   getSession() {
     try {
-      const raw = sessionStorage.getItem(AUTH_KEY)
+      const raw = localStorage.getItem(AUTH_KEY) ?? sessionStorage.getItem(AUTH_KEY)
       if (!raw) return null
-      return JSON.parse(raw) as import('./types').AuthSession
+      const session = JSON.parse(raw) as import('./types').AuthSession
+      // Migrate legacy sessionStorage sessions to localStorage (survives app restart).
+      if (!localStorage.getItem(AUTH_KEY) && sessionStorage.getItem(AUTH_KEY)) {
+        localStorage.setItem(AUTH_KEY, raw)
+        sessionStorage.removeItem(AUTH_KEY)
+      }
+      return session
     } catch {
       return null
     }
   },
   setSession(session: import('./types').AuthSession | null) {
-    if (!session) sessionStorage.removeItem(AUTH_KEY)
-    else sessionStorage.setItem(AUTH_KEY, JSON.stringify(session))
+    sessionStorage.removeItem(AUTH_KEY)
+    if (!session) localStorage.removeItem(AUTH_KEY)
+    else localStorage.setItem(AUTH_KEY, JSON.stringify(session))
   },
 }

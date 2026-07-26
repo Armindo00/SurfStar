@@ -363,7 +363,7 @@ async function upgradeStudentPassword(student: StudentAccount, password: string)
 export function AppProvider({ children }: { children: ReactNode }) {
   const cloudMode = isCloudEnabled()
   const { showToast } = useToast()
-  const [authReady, setAuthReady] = useState(true)
+  const [authReady, setAuthReady] = useState(!cloudMode)
   const [auth, setAuth] = useState<AuthSession | null>(() =>
     cloudMode ? null : authStore.getSession(),
   )
