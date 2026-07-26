@@ -165,17 +165,11 @@ export function LandingView() {
             <button type="button" className="btn btn--outline btn--small" onClick={openCoachSignIn}>
               Sign in
             </button>
-            <button type="button" className="btn btn--ghost btn--small" onClick={openCoachPlanSelection}>
-              Create account
-            </button>
           </div>
           <div className="landing-nav__auth-group">
             <span className="landing-nav__auth-label">Athlete</span>
             <button type="button" className="btn btn--outline btn--small" onClick={openAthleteSignIn}>
               Sign in
-            </button>
-            <button type="button" className="btn btn--ghost btn--small" onClick={openAthleteSignUp}>
-              Create account
             </button>
           </div>
         </div>

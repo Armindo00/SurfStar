@@ -157,7 +157,7 @@ export function LoginView() {
   }
 
   return (
-    <AuthShell onBack={openLanding} backLabel="Home">
+    <AuthShell onBack={openLanding} backLabel="Home" showTagline>
       <div className="auth-badges">
         <span className="auth-badge auth-badge--role">{copy.roleLabel}</span>
         <span className="auth-badge auth-badge--mode">{copy.modeLabel}</span>
