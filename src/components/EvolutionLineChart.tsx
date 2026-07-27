@@ -1,9 +1,10 @@
-import type { EvolutionMonthPoint } from '../teamAnalyticsStats'
+import type { EvolutionPoint } from '../teamAnalyticsStats'
 
 type Props = {
   title: string
   subtitle?: string
-  points: EvolutionMonthPoint[]
+  points: EvolutionPoint[]
+  periodColumnLabel?: string
 }
 
 function buildPath(
@@ -26,7 +27,12 @@ function buildPath(
   return segments.join(' ')
 }
 
-export function EvolutionLineChart({ title, subtitle, points }: Props) {
+export function EvolutionLineChart({
+  title,
+  subtitle,
+  points,
+  periodColumnLabel = 'Period',
+}: Props) {
   const width = 320
   const height = 180
   const padding = 28
@@ -103,7 +109,7 @@ export function EvolutionLineChart({ title, subtitle, points }: Props) {
                   : padding + (height - padding * 2) - (success / 100) * (height - padding * 2)
 
               return (
-                <g key={point.monthKey}>
+                <g key={point.periodKey}>
                   <text
                     x={x}
                     y={height - 8}
@@ -124,7 +130,7 @@ export function EvolutionLineChart({ title, subtitle, points }: Props) {
             <table className="data-table evolution-chart__table">
               <thead>
                 <tr>
-                  <th>Month</th>
+                  <th>{periodColumnLabel}</th>
                   <th>Sessions</th>
                   <th>Waves</th>
                   <th>Success</th>
@@ -134,7 +140,7 @@ export function EvolutionLineChart({ title, subtitle, points }: Props) {
               </thead>
               <tbody>
                 {points.map((point) => (
-                  <tr key={point.monthKey}>
+                  <tr key={point.periodKey}>
                     <td>{point.label}</td>
                     <td>{point.sessions}</td>
                     <td>{point.waves}</td>

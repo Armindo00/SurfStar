@@ -1,35 +1,25 @@
 import { useMemo, useState } from 'react'
-import { EvolutionLineChart } from '../components/EvolutionLineChart'
-import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessChart'
+import {
+  AthleteAnalyticsTopicSheet,
+  type AnalyticsTopic,
+} from '../components/AthleteAnalyticsTopicSheet'
 import { ScreenHeader } from '../components/ScreenHeader'
-import { SideCompareChart } from '../components/SideCompareChart'
 import { useApp } from '../AppContext'
 import { exportAthleteAnalyticsCsv } from '../exportCsv'
-import {
-  averageLevelHint,
-  averageLevelTrendLabel,
-  formatAverageLevelValue,
-  formatCombinedLevelSummary,
-} from '../sessionStats'
+import { formatAverageLevelValue, formatCombinedLevelSummary } from '../sessionStats'
 import { canAccessTeamAnalytics, planUpgradeHint } from '../planUtils'
 import {
   buildAthleteHeatDetails,
   buildAthleteSessionSummaries,
 } from '../athleteStats'
-import { formatSessionDate, resolveSessionSpotName } from '../sessionHistoryUtils'
-import { LEVELS } from '../sessionStats'
 import {
+  ANALYTICS_PERIOD_OPTIONS,
+  analyticsPeriodLabel,
+  buildAthletePeriodAnalytics,
   buildAthleteSixMonthAnalytics,
   TEAM_ANALYTICS_MONTHS,
+  type AnalyticsPeriod,
 } from '../teamAnalyticsStats'
-import {
-  COMBO_LEVEL_LABELS,
-  MANEUVER_LABELS,
-  TRAINING_MODE_LABELS,
-  type ManeuverKind,
-} from '../types'
-
-const KINDS: ManeuverKind[] = ['rail', 'top-turn', 'progressive']
 
 function RateBar({ value }: { value: number }) {
   return (
@@ -39,10 +29,22 @@ function RateBar({ value }: { value: number }) {
   )
 }
 
+type TopicTile = {
+  id: AnalyticsTopic
+  label: string
+  value: string
+  hint: string
+  accent?: boolean
+  success?: boolean
+  star?: boolean
+}
+
 export function TeamAnalyticsView() {
   const { coachAthletes, trainingSessions, auth, subscription, getSpot, setView } = useApp()
   const [search, setSearch] = useState('')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
+  const [period, setPeriod] = useState<AnalyticsPeriod>('6m')
+  const [activeTopic, setActiveTopic] = useState<AnalyticsTopic | null>(null)
 
   const planId = subscription?.planId ?? 'team'
   const hasAccess = canAccessTeamAnalytics(planId)
@@ -60,8 +62,8 @@ export function TeamAnalyticsView() {
 
   const analytics = useMemo(() => {
     if (!coachId || !selectedAthleteId) return null
-    return buildAthleteSixMonthAnalytics(trainingSessions, coachId, selectedAthleteId)
-  }, [coachId, selectedAthleteId, trainingSessions])
+    return buildAthletePeriodAnalytics(trainingSessions, coachId, selectedAthleteId, period)
+  }, [coachId, period, selectedAthleteId, trainingSessions])
 
   const heatDetails = useMemo(() => {
     if (!analytics || !selectedAthleteId) return []
@@ -72,6 +74,66 @@ export function TeamAnalyticsView() {
     if (!analytics || !selectedAthleteId) return []
     return buildAthleteSessionSummaries(analytics.sessions, selectedAthleteId)
   }, [analytics, selectedAthleteId])
+
+  const topicTiles = useMemo((): TopicTile[] => {
+    if (!analytics) return []
+
+    const general = analytics.general
+
+    return [
+      {
+        id: 'performance',
+        label: 'Performance',
+        value: formatAverageLevelValue(general.avgOverallManeuverLevel),
+        hint:
+          general.totalStars > 0
+            ? `${formatCombinedLevelSummary(general)} · ${general.totalStars} stars`
+            : formatCombinedLevelSummary(general),
+        accent: true,
+      },
+      {
+        id: 'volume',
+        label: 'Training volume',
+        value: String(general.totalTrainings),
+        hint: `${general.totalWaves} waves logged`,
+      },
+      {
+        id: 'wave-quality',
+        label: 'Wave quality',
+        value: general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`,
+        hint: `${general.withPotential} with potential`,
+        accent: true,
+      },
+      {
+        id: 'technical',
+        label: 'Technical',
+        value: analytics.technical
+          ? `${analytics.technical.overallSuccessRate}%`
+          : '—',
+        hint: analytics.technical
+          ? `Avg ${formatAverageLevelValue(analytics.technical.averageLevel)} · ${general.technicalStars} stars`
+          : 'No sessions in period',
+      },
+      {
+        id: 'combos',
+        label: 'Combos',
+        value: analytics.combo ? `${analytics.combo.overallSuccessRate}%` : '—',
+        hint: analytics.combo
+          ? `Avg ${formatAverageLevelValue(analytics.combo.averageLevel)} · ${general.comboStars} stars`
+          : 'No sessions in period',
+      },
+      {
+        id: 'competition',
+        label: 'Competition',
+        value: String(general.heatWins),
+        hint:
+          general.heatParticipations > 0
+            ? `${general.heatParticipations} heats · avg ${general.avgHeatScore?.toFixed(2) ?? '—'}`
+            : 'No heats in period',
+        success: general.heatWins > 0,
+      },
+    ]
+  }, [analytics])
 
   if (!hasAccess) {
     return (
@@ -92,6 +154,7 @@ export function TeamAnalyticsView() {
 
   if (selectedAthlete && analytics) {
     const general = analytics.general
+    const periodLabel = analyticsPeriodLabel(period)
 
     return (
       <div className="ss-flow stats-page">
@@ -100,6 +163,8 @@ export function TeamAnalyticsView() {
           onBack={() => {
             setSelectedAthleteId(null)
             setSearch('')
+            setActiveTopic(null)
+            setPeriod('6m')
           }}
         />
 
@@ -110,7 +175,7 @@ export function TeamAnalyticsView() {
           <div className="team-analytics-hero__copy">
             <h2 className="page-title">{selectedAthlete.name}</h2>
             <p className="muted">
-              Last {TEAM_ANALYTICS_MONTHS} months · {analytics.sessions.length} completed session
+              {periodLabel} · {analytics.sessions.length} completed session
               {analytics.sessions.length === 1 ? '' : 's'}
             </p>
           </div>
@@ -123,180 +188,105 @@ export function TeamAnalyticsView() {
           </button>
         </div>
 
-        <div className="kpi-grid">
-          <article className="kpi-card kpi-card--accent">
-            <span className="kpi-card__label">Avg level · technical + combos</span>
-            <strong className="kpi-card__value">
-              {formatAverageLevelValue(general.avgOverallManeuverLevel)}
-            </strong>
-            <small className="kpi-card__hint">{formatCombinedLevelSummary(general)}</small>
-            {general.avgOverallManeuverLevel !== null ? (
-              <small className="kpi-card__hint">
-                {averageLevelHint(general.avgOverallManeuverLevel)} ·{' '}
-                {averageLevelTrendLabel(general.avgOverallManeuverLevel)}
-              </small>
-            ) : null}
-          </article>
-          <article className="kpi-card">
-            <span className="kpi-card__label">Trainings</span>
-            <strong className="kpi-card__value">{general.totalTrainings}</strong>
-          </article>
-          <article className="kpi-card">
-            <span className="kpi-card__label">Waves</span>
-            <strong className="kpi-card__value">{general.totalWaves}</strong>
-          </article>
-          <article className="kpi-card kpi-card--accent">
-            <span className="kpi-card__label">With potential</span>
-            <strong className="kpi-card__value">
-              {general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`}
-            </strong>
-            {general.withPotentialRate !== null ? <RateBar value={general.withPotentialRate} /> : null}
-          </article>
-          <article className="kpi-card kpi-card--success">
-            <span className="kpi-card__label">Stars landed</span>
-            <strong className="kpi-card__value">{general.totalStars}</strong>
-            <small className="kpi-card__hint">
-              Tech {general.technicalStars} · Combo {general.comboStars}
-            </small>
-          </article>
-          <article className="kpi-card">
-            <span className="kpi-card__label">Heat wins</span>
-            <strong className="kpi-card__value">{general.heatWins}</strong>
-            <small className="kpi-card__hint">{general.heatParticipations} heats</small>
-          </article>
-          <article className="kpi-card">
-            <span className="kpi-card__label">Avg. heat score</span>
-            <strong className="kpi-card__value">
-              {general.avgHeatScore === null ? '—' : general.avgHeatScore.toFixed(2)}
-            </strong>
-          </article>
-        </div>
-
-        <div className="ss-card stats-panel">
-          <EvolutionLineChart
-            title="Evolution (6 months)"
-            subtitle="Monthly success rate, combined avg level (technical + combos), and potential"
-            points={analytics.monthlyEvolution}
-          />
-        </div>
-
-        {analytics.technical ? (
-          <>
-            <div className="ss-card stats-panel">
-              <h2 className="stats-panel__title">Technical training — overview</h2>
-              <div className="kpi-grid team-analytics-inline-kpi">
-                <article className="kpi-card kpi-card--compact">
-                  <span className="kpi-card__label">Avg technical level</span>
-                  <strong className="kpi-card__value">
-                    {formatAverageLevelValue(analytics.technical.averageLevel)}
-                  </strong>
-                </article>
-              </div>
-              <SideCompareChart
-                title="All maneuvers"
-                overallRate={analytics.technical.overallSuccessRate}
-                bySide={analytics.technical.bySide}
-              />
-            </div>
-
-            {KINDS.map((kind) => (
-              <div key={kind} className="ss-card stats-panel">
-                <header className="stats-panel__head">
-                  <h2 className="stats-panel__title">{MANEUVER_LABELS[kind]}</h2>
-                  <span className="stats-badge">
-                    {analytics.technical!.byKind[kind].successes}/
-                    {analytics.technical!.byKind[kind].total} ·{' '}
-                    {analytics.technical!.byKind[kind].rate}%
-                  </span>
-                </header>
-                <ManeuverLevelSuccessChart byLevel={analytics.technical!.byKind[kind].byLevel} />
-              </div>
+        <div className="ss-card analytics-period-bar">
+          <div className="analytics-period-bar__copy">
+            <span className="analytics-period-bar__label">Time range</span>
+            <p className="muted">Choose how far back to analyze this athlete.</p>
+          </div>
+          <div className="chip-row chip-row--pro analytics-period-bar__chips" role="tablist" aria-label="Time range">
+            {ANALYTICS_PERIOD_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                role="tab"
+                aria-selected={period === option.id}
+                className={`chip ${period === option.id ? 'chip--active' : ''}`}
+                onClick={() => {
+                  setPeriod(option.id)
+                  setActiveTopic(null)
+                }}
+              >
+                {option.label}
+              </button>
             ))}
-          </>
-        ) : null}
+          </div>
+        </div>
 
-        {analytics.combo ? (
-          <div className="ss-card stats-panel">
-            <h2 className="stats-panel__title">Combos — overview</h2>
-            <div className="kpi-grid team-analytics-inline-kpi">
-              <article className="kpi-card kpi-card--compact">
-                <span className="kpi-card__label">Avg combo level</span>
-                <strong className="kpi-card__value">
-                  {formatAverageLevelValue(analytics.combo.averageLevel)}
+        {analytics.sessions.length === 0 ? (
+          <div className="ss-card stats-panel analytics-empty-period">
+            <h2 className="stats-panel__title">No data in this period</h2>
+            <p className="muted">
+              {selectedAthlete.name} has no completed sessions in the last {periodLabel}. Try a
+              longer time range.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="analytics-overview-strip">
+              <article className="analytics-overview-strip__item analytics-overview-strip__item--accent">
+                <span>Avg level</span>
+                <strong>{formatAverageLevelValue(general.avgOverallManeuverLevel)}</strong>
+              </article>
+              <article className="analytics-overview-strip__item">
+                <span>Sessions</span>
+                <strong>{general.totalTrainings}</strong>
+              </article>
+              <article className="analytics-overview-strip__item">
+                <span>Potential</span>
+                <strong>
+                  {general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`}
                 </strong>
               </article>
+              <article className="analytics-overview-strip__item">
+                <span>Stars</span>
+                <strong>{general.totalStars}</strong>
+              </article>
             </div>
-            <SideCompareChart
-              title="All combo levels"
-              overallRate={analytics.combo.overallSuccessRate}
-              bySide={analytics.combo.bySide}
-            />
-            <div className="side-chart-stack">
-              {LEVELS.map((lvl) => {
-                const row = analytics.combo!.byLevel[lvl]
-                return (
-                  <SideCompareChart
-                    key={String(lvl)}
-                    title={COMBO_LEVEL_LABELS[lvl]}
-                    subtitle={`${row.successes}/${row.attempts} successes overall`}
-                    overallRate={row.rate}
-                    bySide={row.bySide}
-                  />
-                )
-              })}
-            </div>
-          </div>
-        ) : null}
 
-        {heatDetails.length > 0 ? (
-          <div className="ss-card stats-panel">
-            <h2 className="stats-panel__title">Heat results</h2>
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Heat</th>
-                    <th>Score</th>
-                    <th>Place</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {heatDetails.map((row) => (
-                    <tr key={`${row.sessionId}-${row.heatLabel}`}>
-                      <td>{formatSessionDate(row.sessionEndedAt)}</td>
-                      <td>{row.heatLabel}</td>
-                      <td>{row.total.toFixed(2)}</td>
-                      <td>
-                        #{row.placement}
-                        {row.won ? ' · Win' : ''}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : null}
-
-        {sessionSummaries.length > 0 ? (
-          <div className="ss-card stats-panel">
-            <h2 className="stats-panel__title">Sessions in this period</h2>
-            <ul className="team-analytics-sessions">
-              {sessionSummaries.map(({ session, headline }) => (
-                <li key={session.id} className="team-analytics-sessions__item">
-                  <div>
-                    <strong>{TRAINING_MODE_LABELS[session.mode]}</strong>
-                    <small>
-                      {formatSessionDate(session.endedAt ?? session.startedAt)} ·{' '}
-                      {resolveSessionSpotName(session, getSpot)} · {session.condition || '—'}
-                    </small>
-                  </div>
-                  <span>{headline}</span>
-                </li>
+            <div className="analytics-topic-grid">
+              {topicTiles.map((tile) => (
+                <button
+                  key={tile.id}
+                  type="button"
+                  className={[
+                    'analytics-topic-tile',
+                    tile.accent ? 'analytics-topic-tile--accent' : '',
+                    tile.success ? 'analytics-topic-tile--success' : '',
+                    tile.star ? 'analytics-topic-tile--star' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={() => setActiveTopic(tile.id)}
+                >
+                  <span className="analytics-topic-tile__label">{tile.label}</span>
+                  <strong className="analytics-topic-tile__value">{tile.value}</strong>
+                  <small className="analytics-topic-tile__hint">{tile.hint}</small>
+                  {tile.id === 'wave-quality' && general.withPotentialRate !== null ? (
+                    <RateBar value={general.withPotentialRate} />
+                  ) : null}
+                  <span className="analytics-topic-tile__chev" aria-hidden="true">
+                    ›
+                  </span>
+                </button>
               ))}
-            </ul>
-          </div>
+            </div>
+
+            <p className="muted analytics-topic-grid__footnote">
+              Tap a topic to open a detailed breakdown for the selected period.
+            </p>
+          </>
+        )}
+
+        {activeTopic && analytics ? (
+          <AthleteAnalyticsTopicSheet
+            topic={activeTopic}
+            period={period}
+            analytics={analytics}
+            heatDetails={heatDetails}
+            sessionSummaries={sessionSummaries}
+            getSpot={getSpot}
+            onClose={() => setActiveTopic(null)}
+          />
         ) : null}
       </div>
     )
@@ -309,8 +299,7 @@ export function TeamAnalyticsView() {
       <div className="ss-card team-analytics-intro">
         <h2 className="page-title">Pick an athlete</h2>
         <p className="muted">
-          Search by name and open the last {TEAM_ANALYTICS_MONTHS} months of stats with an evolution
-          chart.
+          Search by name and open stats with overview cards and detailed breakdowns by topic.
         </p>
 
         <label className="field field--pro team-analytics-search">
@@ -353,8 +342,8 @@ export function TeamAnalyticsView() {
                   <span className="team-analytics-list__body">
                     <strong>{athlete.name}</strong>
                     <small>
-                      {preview.sessions.length} session{preview.sessions.length === 1 ? '' : 's'} ·{' '}
-                      {preview.general.totalWaves} waves ·{' '}
+                      Last {TEAM_ANALYTICS_MONTHS} months · {preview.sessions.length} session
+                      {preview.sessions.length === 1 ? '' : 's'} · {preview.general.totalWaves} waves ·{' '}
                       {preview.general.withPotentialRate === null
                         ? '—'
                         : `${preview.general.withPotentialRate}% potential`}

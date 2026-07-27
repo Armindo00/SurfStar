@@ -1,4 +1,5 @@
-import type { AthleteSixMonthAnalytics } from './teamAnalyticsStats'
+import type { AthletePeriodAnalytics } from './teamAnalyticsStats'
+import { analyticsPeriodLabel } from './teamAnalyticsStats'
 import type { Athlete, SurfSpot, TrainingSession } from './types'
 import {
   athleteNamesForSession,
@@ -55,16 +56,20 @@ export function exportSessionsCsv(
 
 export function exportAthleteAnalyticsCsv(
   athleteName: string,
-  analytics: AthleteSixMonthAnalytics,
+  analytics: AthletePeriodAnalytics,
 ) {
+  const periodLabel = analyticsPeriodLabel(analytics.period)
+  const evolutionColumn =
+    analytics.period === '6m' ? 'Month' : analytics.period === '1m' ? 'Week' : 'Day'
+
   const rows: string[][] = [
     ['Athlete', athleteName],
-    ['Period', `Last ${analytics.monthlyEvolution.length} months`],
+    ['Period', `Last ${periodLabel}`],
     [],
-    ['Month', 'Sessions', 'Success rate %', 'Avg level (tech + combos)', 'Potential rate %', 'Waves'],
+    [evolutionColumn, 'Sessions', 'Success rate %', 'Avg level (tech + combos)', 'Potential rate %', 'Waves'],
   ]
 
-  for (const point of analytics.monthlyEvolution) {
+  for (const point of analytics.evolution) {
     rows.push([
       point.label,
       String(point.sessions),
