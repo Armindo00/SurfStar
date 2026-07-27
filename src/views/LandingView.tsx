@@ -61,10 +61,10 @@ const PREMIUM_SPOTLIGHTS = [
     id: 'custom',
     eyebrow: 'Coach Premium',
     title: 'Custom training',
-    lead: 'Build templates that match how you actually coach — then run them live with one tap per skill.',
+    lead: 'SurfStar goes from fixed drills to your coaching workspace — create training with your own objectives, rules, skills, and levels, then run it live on the beach.',
     bullets: [
-      'Name your own skill buttons and color-code them',
-      'Per-button levels plus success / fail tracking',
+      'Define objectives and rules that match how you actually coach',
+      'Name your skill buttons, set levels, and track success / fail',
       'Built-in timer with auto-start for timed drills',
     ],
     preview: {
@@ -83,16 +83,16 @@ const PREMIUM_SPOTLIGHTS = [
     id: 'sea',
     eyebrow: 'Coach Premium',
     title: 'Sea analysis',
-    lead: 'Run a 30-minute session, log what you see on both peaks, and get a clear recommendation.',
+    lead: 'The sea is rarely predictable — coaches face tough, shifting conditions every session. Sea analysis scores each peak using wave count × wave type × frequency, so you can choose the right strategy for each athlete.',
     bullets: [
-      'Log wave types on Peak 1 and Peak 2 in real time',
-      'Wave score + arrival rate = recommended peak',
-      'Full timeline with edit and delete for mistakes',
+      'Compare two peaks with a calculated score — not guesswork alone',
+      'Wave count, wave type, and arrival frequency combined into one recommendation',
+      'Full timeline of every wave-type interval — review, edit, or delete anytime',
     ],
     preview: {
       pill: 'Sea analysis · 18:42 left',
       spot: 'Supertubos · Offshore',
-      recommend: { peak: 'Peak 1', note: 'Stronger sets and faster arrivals on Peak 1' },
+      recommend: { peak: 'Peak 1', note: 'Higher score from wave count × type × frequency on Peak 1' },
       peaks: [
         { name: 'Peak 1', score: '42 pts', obs: '18 observations' },
         { name: 'Peak 2', score: '31 pts', obs: '14 observations' },
@@ -456,7 +456,7 @@ export function LandingView() {
             <p className="landing-eyebrow">Coach Premium</p>
             <h2>Advanced coaching tools</h2>
             <p className="landing-section__sub">
-              Custom training and sea analysis — exclusive to the top plan.
+              From predefined sessions to a real work tool — custom training and sea analysis on Coach Premium.
             </p>
           </div>
 
