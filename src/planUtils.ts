@@ -29,6 +29,11 @@ export function canUseCustomTraining(planId: PlanId): boolean {
   return canUseTrainingMode(planId, 'custom')
 }
 
+/** Post-session psychology questionnaire — Coach Premium & Team Academy only. */
+export function canUsePsychologyCheckins(planId: PlanId): boolean {
+  return planId === 'club' || planId === 'organization'
+}
+
 export function canManageOrganizationCoaches(planId: PlanId): boolean {
   return planId === 'organization'
 }
@@ -66,7 +71,7 @@ export function coachSeatLimitMessage(planId: PlanId): string {
 
 export function planUpgradeHint(
   planId: PlanId,
-  feature: 'analytics' | 'custom' | 'heats' | 'sea' | 'athletes' | 'coaches',
+  feature: 'analytics' | 'custom' | 'heats' | 'sea' | 'athletes' | 'coaches' | 'psychology',
 ): string {
   if (feature === 'analytics' && !canAccessTeamAnalytics(planId)) {
     return 'Available on Coach plan and above.'
@@ -85,6 +90,9 @@ export function planUpgradeHint(
   }
   if (feature === 'coaches' && !canManageOrganizationCoaches(planId)) {
     return 'Multiple coach accounts are available on the Team Academy plan.'
+  }
+  if (feature === 'psychology' && !canUsePsychologyCheckins(planId)) {
+    return 'Psychology check-ins are available on Coach Premium and Team Academy plans.'
   }
   return 'Upgrade your plan to unlock this feature.'
 }

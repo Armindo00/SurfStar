@@ -9,7 +9,7 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 import { exportAthleteAnalyticsCsv } from '../exportCsv'
 import { formatAverageLevelValue, formatCombinedLevelSummary } from '../sessionStats'
-import { canAccessTeamAnalytics, planUpgradeHint } from '../planUtils'
+import { canAccessTeamAnalytics, canUsePsychologyCheckins, planUpgradeHint } from '../planUtils'
 import { buildAthleteSessionSummaries } from '../athleteStats'
 import { buildAthleteHeatAnalytics } from '../heatAnalyticsStats'
 import {
@@ -51,6 +51,7 @@ export function TeamAnalyticsView() {
 
   const planId = subscription?.planId ?? 'team'
   const hasAccess = canAccessTeamAnalytics(planId)
+  const psychologyAvailable = canUsePsychologyCheckins(planId)
   const coachId = auth?.role === 'treinador' ? auth.coachId : null
 
   const filteredAthletes = useMemo(() => {
@@ -259,20 +260,22 @@ export function TeamAnalyticsView() {
           >
             Training stats
           </button>
-          <button
-            type="button"
-            className={
-              profileSection === 'psychology'
-                ? 'admin-tabs__btn admin-tabs__btn--active'
-                : 'admin-tabs__btn'
-            }
-            onClick={() => {
-              setProfileSection('psychology')
-              setActiveTopic(null)
-            }}
-          >
-            Psychology
-          </button>
+          {psychologyAvailable ? (
+            <button
+              type="button"
+              className={
+                profileSection === 'psychology'
+                  ? 'admin-tabs__btn admin-tabs__btn--active'
+                  : 'admin-tabs__btn'
+              }
+              onClick={() => {
+                setProfileSection('psychology')
+                setActiveTopic(null)
+              }}
+            >
+              Psychology
+            </button>
+          ) : null}
           <button
             type="button"
             className={
@@ -292,12 +295,19 @@ export function TeamAnalyticsView() {
         {profileSection === 'material' ? (
           <AthleteMaterialPanel athleteId={selectedAthlete.id} />
         ) : profileSection === 'psychology' ? (
-          <AthletePsychologyPanel
-            athleteId={selectedAthlete.id}
-            coachId={coachId}
-            period={period}
-            sessions={analytics.sessions}
-          />
+          psychologyAvailable ? (
+            <AthletePsychologyPanel
+              athleteId={selectedAthlete.id}
+              coachId={coachId}
+              period={period}
+              sessions={analytics.sessions}
+            />
+          ) : (
+            <div className="ss-card stats-panel analytics-empty-period">
+              <h2 className="stats-panel__title">Psychology check-ins</h2>
+              <p className="muted">{planUpgradeHint(planId, 'psychology')}</p>
+            </div>
+          )
         ) : analytics.sessions.length === 0 ? (
           <div className="ss-card stats-panel analytics-empty-period">
             <h2 className="stats-panel__title">No data in this period</h2>

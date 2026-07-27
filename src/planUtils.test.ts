@@ -4,6 +4,7 @@ import {
   canAddAthlete,
   canAddCoach,
   canManageOrganizationCoaches,
+  canUsePsychologyCheckins,
   canUseTrainingMode,
   getAllowedModes,
   getMaxCoaches,
@@ -47,5 +48,11 @@ describe('planUtils', () => {
   it('gates team analytics by plan', () => {
     expect(canAccessTeamAnalytics('team')).toBe(true)
     expect(canAccessTeamAnalytics('organization')).toBe(true)
+  })
+
+  it('gates psychology check-ins to premium plans', () => {
+    expect(canUsePsychologyCheckins('team')).toBe(false)
+    expect(canUsePsychologyCheckins('club')).toBe(true)
+    expect(canUsePsychologyCheckins('organization')).toBe(true)
   })
 })

@@ -1,14 +1,13 @@
-import { MENTAL_STATES, mentalStateLabel } from './mentalState'
+import {
+  averagePsychologyScore,
+  isPsychologySurveyScores,
+  PSYCHOLOGY_SURVEY_KEYS,
+  PSYCHOLOGY_SURVEY_QUESTIONS,
+  psychologyQuestionLabel,
+  type PsychologySurveyKey,
+} from './psychologySurvey'
 import { TEAM_ANALYTICS_MONTHS, type AnalyticsPeriod } from './teamAnalyticsStats'
-import type { MentalState, SessionAthleteFeedback, TrainingSession } from './types'
-
-export const POSITIVE_MENTAL_STATES: MentalState[] = ['focused', 'motivated', 'confident']
-export const CHALLENGING_MENTAL_STATES: MentalState[] = [
-  'tired',
-  'anxious',
-  'demotivated',
-  'frustrated',
-]
+import type { SessionAthleteFeedback, TrainingSession } from './types'
 
 function periodCutoff(period: AnalyticsPeriod): Date {
   const cutoff = new Date()
@@ -28,13 +27,13 @@ function periodCutoff(period: AnalyticsPeriod): Date {
 export type AthletePsychologyTimelineRow = {
   feedback: SessionAthleteFeedback
   session: TrainingSession | undefined
+  averageScore: number | null
 }
 
-export type MentalStateCount = {
-  state: MentalState
+export type PsychologyQuestionAverage = {
+  key: PsychologySurveyKey
   label: string
-  count: number
-  rate: number
+  average: number
 }
 
 export type AthletePsychologyAnalytics = {
@@ -42,13 +41,11 @@ export type AthletePsychologyAnalytics = {
   checkIns: number
   sessionsInPeriod: number
   feedbackRate: number | null
-  positiveRate: number | null
-  challengingRate: number | null
-  dominantState: MentalState | null
-  dominantStateLabel: string | null
-  byState: MentalStateCount[]
+  averageOverall: number | null
+  byQuestion: PsychologyQuestionAverage[]
   timeline: AthletePsychologyTimelineRow[]
   notesCount: number
+  legacyCheckIns: number
 }
 
 export function filterAthleteFeedbackByPeriod(
@@ -69,6 +66,10 @@ export function filterAthleteFeedbackByPeriod(
     .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
 }
 
+export function feedbackHasPsychologySurvey(feedback: SessionAthleteFeedback): boolean {
+  return isPsychologySurveyScores(feedback.psychologyScores)
+}
+
 export function buildAthletePsychologyAnalytics(
   feedback: SessionAthleteFeedback[],
   sessions: TrainingSession[],
@@ -78,47 +79,49 @@ export function buildAthletePsychologyAnalytics(
 ): AthletePsychologyAnalytics {
   const rows = filterAthleteFeedbackByPeriod(feedback, coachId, athleteId, period)
   const sessionMap = new Map(sessions.map((session) => [session.id, session]))
+  const surveyRows = rows.filter(feedbackHasPsychologySurvey)
+  const legacyCheckIns = rows.length - surveyRows.length
 
-  const counts = new Map<MentalState, number>()
-  for (const state of MENTAL_STATES) counts.set(state.id, 0)
+  const totals = Object.fromEntries(
+    PSYCHOLOGY_SURVEY_KEYS.map((key) => [key, 0]),
+  ) as Record<PsychologySurveyKey, number>
 
-  let positiveCount = 0
-  let challengingCount = 0
   let notesCount = 0
+  let overallSum = 0
 
-  for (const row of rows) {
-    counts.set(row.mentalState, (counts.get(row.mentalState) ?? 0) + 1)
-    if (POSITIVE_MENTAL_STATES.includes(row.mentalState)) positiveCount += 1
-    if (CHALLENGING_MENTAL_STATES.includes(row.mentalState)) challengingCount += 1
+  for (const row of surveyRows) {
+    const scores = row.psychologyScores!
+    overallSum += averagePsychologyScore(scores)
+    for (const key of PSYCHOLOGY_SURVEY_KEYS) {
+      totals[key] += scores[key]
+    }
     if (row.writtenNote?.trim()) notesCount += 1
   }
 
-  const checkIns = rows.length
-  const byState = MENTAL_STATES.map(({ id, label }) => ({
-    state: id,
-    label,
-    count: counts.get(id) ?? 0,
-    rate: checkIns ? Math.round(((counts.get(id) ?? 0) / checkIns) * 100) : 0,
-  })).filter((entry) => entry.count > 0)
-
-  byState.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
-
-  const dominant = byState[0] ?? null
+  const checkIns = surveyRows.length
+  const byQuestion = PSYCHOLOGY_SURVEY_QUESTIONS.map((question) => ({
+    key: question.id,
+    label: question.label,
+    average: checkIns ? Math.round((totals[question.id] / checkIns) * 10) / 10 : 0,
+  }))
 
   return {
     period,
     checkIns,
     sessionsInPeriod: sessions.length,
-    feedbackRate: sessions.length ? Math.round((checkIns / sessions.length) * 100) : null,
-    positiveRate: checkIns ? Math.round((positiveCount / checkIns) * 100) : null,
-    challengingRate: checkIns ? Math.round((challengingCount / checkIns) * 100) : null,
-    dominantState: dominant?.state ?? null,
-    dominantStateLabel: dominant ? mentalStateLabel(dominant.state) : null,
-    byState,
+    feedbackRate: sessions.length ? Math.round((rows.length / sessions.length) * 100) : null,
+    averageOverall: checkIns ? Math.round((overallSum / checkIns) * 10) / 10 : null,
+    byQuestion,
     timeline: rows.map((entry) => ({
       feedback: entry,
       session: sessionMap.get(entry.sessionId),
+      averageScore: feedbackHasPsychologySurvey(entry)
+        ? averagePsychologyScore(entry.psychologyScores!)
+        : null,
     })),
     notesCount,
+    legacyCheckIns,
   }
 }
+
+export { psychologyQuestionLabel }

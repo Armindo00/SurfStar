@@ -1,10 +1,12 @@
 import { getSupabase } from './lib/supabase'
+import { isPsychologySurveyScores } from './psychologySurvey'
 import type {
   AthleteBoard,
   AthleteFin,
   EquipmentEvaluation,
   EquipmentType,
   MentalState,
+  PsychologySurveyScores,
   SessionAthleteFeedback,
 } from './types'
 
@@ -52,7 +54,8 @@ type FeedbackRow = {
   coach_id: string
   board_id: string | null
   fin_id: string | null
-  mental_state: MentalState
+  mental_state: MentalState | null
+  psychology_scores: PsychologySurveyScores | null
   written_note: string | null
   submitted_at: string
 }
@@ -101,6 +104,10 @@ function mapEvaluation(row: EvaluationRow): EquipmentEvaluation {
 }
 
 function mapFeedback(row: FeedbackRow): SessionAthleteFeedback {
+  const psychologyScores = isPsychologySurveyScores(row.psychology_scores)
+    ? row.psychology_scores
+    : null
+
   return {
     id: row.id,
     sessionId: row.session_id,
@@ -109,6 +116,7 @@ function mapFeedback(row: FeedbackRow): SessionAthleteFeedback {
     boardId: row.board_id,
     finId: row.fin_id,
     mentalState: row.mental_state,
+    psychologyScores,
     writtenNote: row.written_note,
     submittedAt: row.submitted_at,
   }
@@ -247,9 +255,7 @@ export async function cloudSubmitSessionFeedback(input: {
   sessionId: string
   athleteId: string
   coachId: string
-  boardId: string | null
-  finId: string | null
-  mentalState: MentalState
+  psychologyScores: PsychologySurveyScores
   writtenNote: string | null
 }): Promise<SessionAthleteFeedback> {
   const supabase = getSupabase()
@@ -260,9 +266,10 @@ export async function cloudSubmitSessionFeedback(input: {
         session_id: input.sessionId,
         athlete_id: input.athleteId,
         coach_id: input.coachId,
-        board_id: input.boardId,
-        fin_id: input.finId,
-        mental_state: input.mentalState,
+        board_id: null,
+        fin_id: null,
+        mental_state: null,
+        psychology_scores: input.psychologyScores,
         written_note: input.writtenNote?.trim() || null,
         submitted_at: new Date().toISOString(),
       },

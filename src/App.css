@@ -6980,6 +6980,60 @@ a:focus:not(:focus-visible) {
   margin-top: 0.85rem;
 }
 
+.psych-survey-list {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1rem 0;
+}
+
+.psych-survey-row__label {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.psych-survey-row__scale {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.psych-survey-row__btn {
+  min-height: 2.25rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 0.55rem;
+  background: #fff;
+  font-weight: 700;
+  color: var(--ss-text);
+}
+
+.psych-survey-row__btn--active {
+  border-color: var(--ss-accent);
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--ss-accent-strong);
+}
+
+.psych-survey-summary {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.psych-survey-summary li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.84rem;
+}
+
+.psych-survey-summary span {
+  color: var(--ss-muted);
+}
+
 .insights-tabs {
   margin-bottom: 0.75rem;
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../AppContext'
-import { athleteLimitMessage } from '../planUtils'
+import { athleteLimitMessage, canUsePsychologyCheckins, planUpgradeHint } from '../planUtils'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { ScreenHeader } from '../components/ScreenHeader'
 import type { AthleteShareSettings } from '../types'
@@ -29,6 +29,16 @@ const SHARE_OPTIONS: { key: keyof AthleteShareSettings; label: string; hint: str
   },
 ]
 
+const PSYCHOLOGY_SHARE_OPTION: {
+  key: 'psychologyCheckins'
+  label: string
+  hint: string
+} = {
+  key: 'psychologyCheckins',
+  label: 'Psychology check-ins',
+  hint: 'After each session, ask this athlete for a quick 0–5 wellbeing questionnaire.',
+}
+
 export function ManageAthletes() {
   const {
     coachAthletes,
@@ -52,6 +62,7 @@ export function ManageAthletes() {
 
   const pendingLinks = coachLinks.filter((l) => l.status === 'pending')
   const planId = subscription?.planId ?? 'team'
+  const psychologyCheckinsAvailable = canUsePsychologyCheckins(planId)
   const activeCount = coachAthletes.filter((a) => !a.blocked).length
 
   const submitCode = async () => {
@@ -242,6 +253,25 @@ export function ManageAthletes() {
                           </span>
                         </label>
                       ))}
+                      {psychologyCheckinsAvailable ? (
+                        <label className="athlete-share-option athlete-share-option--highlight">
+                          <input
+                            type="checkbox"
+                            checked={shareSettings.psychologyCheckins}
+                            onChange={(e) =>
+                              toggleShare(a.linkId!, 'psychologyCheckins', e.target.checked)
+                            }
+                          />
+                          <span>
+                            <strong>{PSYCHOLOGY_SHARE_OPTION.label}</strong>
+                            <small>{PSYCHOLOGY_SHARE_OPTION.hint}</small>
+                          </span>
+                        </label>
+                      ) : (
+                        <p className="muted athlete-share-panel__upgrade">
+                          {planUpgradeHint(planId, 'psychology')}
+                        </p>
+                      )}
                     </div>
                   ) : null}
                 </li>

@@ -65,7 +65,6 @@ import type {
   HeatDurationMinutes,
   HeatInterferenceType,
   HeatRecord,
-  MentalState,
   PublicView,
   SeaPeak,
   SeaWaveType,
@@ -88,6 +87,7 @@ import type {
   WaveSide,
 } from './types'
 import { DEFAULT_ATHLETE_SHARE_SETTINGS, normalizeAthleteShareSettings } from './types'
+import { coachIdsWithPsychologyCheckins, linkHasPsychologyCheckins } from './psychologyCheckins'
 import {
   backfillLocalLinks,
   buildCoachAthletesFromLinks,
@@ -110,8 +110,10 @@ import {
   canAddAthlete,
   canAddCoach,
   canUseCustomTraining,
+  canUsePsychologyCheckins,
   canUseTrainingMode,
   getAllowedModes,
+  planUpgradeHint,
 } from './planUtils'
 import {
   activateCoachSubscription,
@@ -379,9 +381,7 @@ type AppContextValue = {
   submitSessionFeedback: (input: {
     sessionId: string
     coachId: string
-    boardId: string | null
-    finId: string | null
-    mentalState: MentalState
+    psychologyScores: import('./psychologySurvey').PsychologySurveyScores
     writtenNote: string | null
   }) => Promise<{ ok: true } | { ok: false; error: string }>
   skipSessionFeedback: (sessionId: string) => void
@@ -1645,7 +1645,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateAthleteShareSettings = useCallback(
     (linkId: string, shareSettings: AthleteShareSettings) => {
       if (auth?.role !== 'treinador') return
+      const planId = subscription?.planId ?? 'team'
       const normalized = normalizeAthleteShareSettings(shareSettings)
+      if (normalized.psychologyCheckins && !canUsePsychologyCheckins(planId)) {
+        showToast(planUpgradeHint(planId, 'psychology'), 'error')
+        return
+      }
+      if (!canUsePsychologyCheckins(planId)) {
+        normalized.psychologyCheckins = false
+      }
 
       if (cloudMode) {
         void cloudUpdateLinkShareSettings(linkId, normalized).then((result) => {
@@ -1666,7 +1674,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCoachLinks(nextPairings.filter((l) => l.organizationId === auth.organizationId))
       setAthletes(buildCoachAthletesFromLinks(nextPairings, store.getAthletes()))
     },
-    [auth, cloudMode, refreshPairingData, showToast],
+    [auth, cloudMode, refreshPairingData, showToast, subscription?.planId],
   )
 
   const setAthleteBlocked = useCallback(
@@ -2845,8 +2853,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return coachAthletes.find((a) => a.id === insightsAthleteId) ?? null
   }, [coachAthletes, insightsAthleteId])
 
+  const psychologyCoachIds = useMemo(
+    () => coachIdsWithPsychologyCheckins(athleteLinks),
+    [athleteLinks],
+  )
+
   const pendingSessionFeedback = useMemo(() => {
     if (auth?.role !== 'atleta') return []
+    if (psychologyCoachIds.size === 0) return []
     const answered = new Set(sessionAthleteFeedback.map((row) => row.sessionId))
     const skipped = new Set(skippedFeedbackSessionIds)
     return trainingSessions
@@ -2854,6 +2868,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         (session) =>
           Boolean(session.endedAt) &&
           session.athleteIds.includes(auth.athleteId) &&
+          psychologyCoachIds.has(session.coachId) &&
           !answered.has(session.id) &&
           !skipped.has(session.id),
       )
@@ -2862,7 +2877,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           new Date(b.endedAt ?? b.startedAt).getTime() -
           new Date(a.endedAt ?? a.startedAt).getTime(),
       )
-  }, [auth, sessionAthleteFeedback, skippedFeedbackSessionIds, trainingSessions])
+  }, [
+    auth,
+    psychologyCoachIds,
+    sessionAthleteFeedback,
+    skippedFeedbackSessionIds,
+    trainingSessions,
+  ])
 
   const openCoachAthleteInsights = useCallback(
     async (athleteId: string) => {
@@ -3038,13 +3059,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async (input: {
       sessionId: string
       coachId: string
-      boardId: string | null
-      finId: string | null
-      mentalState: MentalState
+      psychologyScores: import('./psychologySurvey').PsychologySurveyScores
       writtenNote: string | null
     }) => {
       if (!auth || auth.role !== 'atleta') {
         return { ok: false as const, error: 'Sign in as athlete first.' }
+      }
+      const link = athleteLinks.find(
+        (row) => row.coachId === input.coachId && row.status === 'active',
+      )
+      if (!link || !linkHasPsychologyCheckins(link)) {
+        return {
+          ok: false as const,
+          error: 'Psychology check-in is not enabled for this coach.',
+        }
       }
       try {
         if (cloudMode) {
@@ -3052,9 +3080,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             sessionId: input.sessionId,
             athleteId: auth.athleteId,
             coachId: input.coachId,
-            boardId: input.boardId,
-            finId: input.finId,
-            mentalState: input.mentalState,
+            psychologyScores: input.psychologyScores,
             writtenNote: input.writtenNote,
           })
           setSessionAthleteFeedback((prev) => [saved, ...prev.filter((row) => row.id !== saved.id)])
@@ -3064,9 +3090,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             sessionId: input.sessionId,
             athleteId: auth.athleteId,
             coachId: input.coachId,
-            boardId: input.boardId,
-            finId: input.finId,
-            mentalState: input.mentalState,
+            psychologyScores: input.psychologyScores,
             writtenNote: input.writtenNote,
             submittedAt: new Date().toISOString(),
           })
@@ -3080,7 +3104,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [auth, cloudMode],
+    [athleteLinks, auth, cloudMode],
   )
 
   const skipSessionFeedback = useCallback((sessionId: string) => {

@@ -1359,6 +1359,18 @@ body {
   color: #fca5a5 !important;
 }
 
+.app-shell .psych-survey-row__btn {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .psych-survey-row__btn--active {
+  background: rgba(56, 189, 248, 0.18) !important;
+  border-color: rgba(125, 211, 252, 0.45) !important;
+  color: #7dd3fc !important;
+}
+
 /* Heat results mobile cards */
 .app-shell .heat-results-card {
   background: rgba(0, 0, 0, 0.28) !important;

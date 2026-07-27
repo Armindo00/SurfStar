@@ -1,3 +1,7 @@
+import type { PsychologySurveyScores } from './psychologySurvey'
+
+export type { PsychologySurveyScores } from './psychologySurvey'
+
 export type UserRole = 'treinador' | 'atleta'
 
 export type PublicView =
@@ -118,9 +122,11 @@ export type SessionAthleteFeedback = {
   sessionId: string
   athleteId: string
   coachId: string
-  boardId: string | null
-  finId: string | null
-  mentalState: MentalState
+  boardId?: string | null
+  finId?: string | null
+  /** @deprecated Legacy single-state check-in */
+  mentalState?: MentalState | null
+  psychologyScores?: PsychologySurveyScores | null
   writtenNote: string | null
   submittedAt: string
 }
@@ -181,6 +187,8 @@ export type AthleteShareSettings = {
   comboStats: boolean
   sessionHistory: boolean
   heatDetails: boolean
+  /** Coach enables post-session 0–5 psychology questionnaire for this athlete. */
+  psychologyCheckins: boolean
 }
 
 export const DEFAULT_ATHLETE_SHARE_SETTINGS: AthleteShareSettings = {
@@ -188,6 +196,7 @@ export const DEFAULT_ATHLETE_SHARE_SETTINGS: AthleteShareSettings = {
   comboStats: true,
   sessionHistory: true,
   heatDetails: true,
+  psychologyCheckins: false,
 }
 
 export function normalizeAthleteShareSettings(
@@ -198,7 +207,8 @@ export function normalizeAthleteShareSettings(
     ('technicalStats' in raw ||
       'comboStats' in raw ||
       'sessionHistory' in raw ||
-      'heatDetails' in raw)
+      'heatDetails' in raw ||
+      'psychologyCheckins' in raw)
 
   if (!hasAnyKey) {
     return { ...DEFAULT_ATHLETE_SHARE_SETTINGS }
@@ -209,6 +219,7 @@ export function normalizeAthleteShareSettings(
     comboStats: raw?.comboStats ?? DEFAULT_ATHLETE_SHARE_SETTINGS.comboStats,
     sessionHistory: raw?.sessionHistory ?? DEFAULT_ATHLETE_SHARE_SETTINGS.sessionHistory,
     heatDetails: raw?.heatDetails ?? DEFAULT_ATHLETE_SHARE_SETTINGS.heatDetails,
+    psychologyCheckins: raw?.psychologyCheckins ?? DEFAULT_ATHLETE_SHARE_SETTINGS.psychologyCheckins,
   }
 }
 
