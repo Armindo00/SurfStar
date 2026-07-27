@@ -5,6 +5,7 @@ import type {
   TrainingMode,
   TrainingSession,
 } from './types'
+import { resolveSessionMode, sessionFlowViewForMode } from './sessionModeUtils'
 
 export type DraftSessionResume = {
   mode: TrainingMode
@@ -58,20 +59,7 @@ const COACH_NAV_VIEWS: AppView[] = [
 ]
 
 function viewForMode(mode: TrainingMode): AppView {
-  switch (mode) {
-    case 'combos':
-      return 'combos'
-    case 'heats':
-      return 'heats'
-    case 'campeonato':
-      return 'campeonato'
-    case 'sea-analysis':
-      return 'sea-analysis'
-    case 'custom':
-      return 'custom'
-    default:
-      return 'training'
-  }
+  return sessionFlowViewForMode(mode)
 }
 
 function resumeKey(userKey: string) {
@@ -149,7 +137,7 @@ export function validateAndNormalizeResume(
         activeAthleteId = session.athleteIds[0] ?? null
       }
       if (!SESSION_VIEWS.includes(view)) {
-        view = viewForMode(session.mode)
+        view = viewForMode(resolveSessionMode(session))
       }
     }
   } else {
@@ -168,7 +156,9 @@ export function validateAndNormalizeResume(
   }
 
   if (!COACH_NAV_VIEWS.includes(view) && view !== 'athlete-portal') {
-    view = activeSessionId ? viewForMode(sessions.find((s) => s.id === activeSessionId)!.mode) : 'coach-home'
+    view = activeSessionId
+      ? viewForMode(resolveSessionMode(sessions.find((s) => s.id === activeSessionId)!))
+      : 'coach-home'
   }
 
   return {

@@ -1,4 +1,5 @@
 import { createDefaultConditions, createDefaultSpots } from './defaults'
+import { resolveSessionMode } from './sessionModeUtils'
 import type {
   Athlete,
   CoachAccount,
@@ -158,7 +159,7 @@ function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession 
     ...s,
     coachId: s.coachId ?? '',
     organizationId: s.organizationId,
-    mode: s.mode ?? 'tecnico',
+    mode: resolveSessionMode(s),
     spotName,
     comboEntries: s.comboEntries ?? [],
     heats: (s.heats ?? []).map((h) => ({

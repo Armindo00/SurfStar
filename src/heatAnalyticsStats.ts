@@ -4,6 +4,7 @@ import {
   heatWaveElapsedMs,
   type HeatResultBreakdown,
 } from './heatUtils'
+import { isHeatLikeSession } from './sessionModeUtils'
 import type { HeatRecord, TrainingSession } from './types'
 
 /** Wave score considered a strong / major scoring wave (0–10 scale). */
@@ -246,7 +247,7 @@ function buildHeatAthleteLiveStats(heat: HeatRecord): HeatAthleteLiveStats[] {
 }
 
 export function buildHeatLiveSnapshots(session: TrainingSession): HeatLiveSnapshot[] {
-  if (session.mode !== 'heats' && session.mode !== 'campeonato') return []
+  if (!isHeatLikeSession(session)) return []
 
   return session.heats
     .filter((heat) => heat.athleteIds.length > 0)

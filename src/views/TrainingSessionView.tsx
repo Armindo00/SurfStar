@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { TechnicalRegisterPanel } from '../components/TechnicalRegisterPanel'
 import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { computeWaveStats } from '../sessionStats'
+import { resolveSessionMode, sessionFlowViewForMode } from '../sessionModeUtils'
 import { useApp } from '../AppContext'
 import type { ManeuverKind } from '../types'
 
@@ -33,13 +34,28 @@ export function TrainingSessionView() {
 
   const focusedAthlete = focusAthleteId ? getAthlete(focusAthleteId) : undefined
 
-  if (!activeSession || activeSession.mode !== 'tecnico') {
+  if (!activeSession) {
     return (
       <div className="ss-flow">
-        <p className="muted">No active technical session.</p>
+        <p className="muted">No active session.</p>
         <button type="button" className="btn" onClick={() => setView('coach-home')}>
           Back
         </button>
+      </div>
+    )
+  }
+
+  const sessionMode = resolveSessionMode(activeSession)
+
+  useEffect(() => {
+    if (sessionMode === 'tecnico') return
+    setView(sessionFlowViewForMode(sessionMode))
+  }, [sessionMode, setView])
+
+  if (sessionMode !== 'tecnico') {
+    return (
+      <div className="ss-flow">
+        <p className="muted">Opening the correct session view…</p>
       </div>
     )
   }

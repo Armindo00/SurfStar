@@ -5,10 +5,7 @@ import { SideCompareChart } from '../components/SideCompareChart'
 import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessChart'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
-import {
-  buildHeatLiveSnapshots,
-  EARLY_HEAT_TOTAL_TARGET,
-} from '../heatAnalyticsStats'
+import { buildHeatLiveSnapshots } from '../heatAnalyticsStats'
 import {
   formatHeatElapsedMinutes,
   formatHeatTotal,
@@ -16,7 +13,14 @@ import {
   heatIsFinished,
   heatIsRunning,
 } from '../heatUtils'
+import {
+  isHeatLikeSession,
+  liveStatsBackView,
+  liveStatsTitle,
+  resolveSessionMode,
+} from '../sessionModeUtils'
 import { COMBO_LEVEL_LABELS, MANEUVER_LABELS, type ManeuverKind } from '../types'
+import { EARLY_HEAT_TOTAL_TARGET } from '../heatAnalyticsStats'
 
 const KINDS: ManeuverKind[] = ['rail', 'top-turn', 'progressive']
 
@@ -34,14 +38,6 @@ function heatStatusLabel(running: boolean, finished: boolean): string {
   return 'Not started'
 }
 
-function sessionStatsBackView(mode: string): 'combos' | 'custom' | 'heats' | 'campeonato' | 'training' {
-  if (mode === 'combos') return 'combos'
-  if (mode === 'custom') return 'custom'
-  if (mode === 'heats') return 'heats'
-  if (mode === 'campeonato') return 'campeonato'
-  return 'training'
-}
-
 export function SessionStatsView() {
   const { activeSession, activeAthleteId, setView, getAthlete } = useApp()
 
@@ -54,13 +50,13 @@ export function SessionStatsView() {
     )
   }
 
-  const backView = sessionStatsBackView(activeSession.mode)
+  const sessionMode = resolveSessionMode(activeSession)
+  const backView = liveStatsBackView(activeSession)
   const athleteName = activeAthleteId ? getAthlete(activeAthleteId)?.name : 'All athletes'
 
-  if (activeSession.mode === 'heats' || activeSession.mode === 'campeonato') {
+  if (isHeatLikeSession(activeSession)) {
     const snapshots = buildHeatLiveSnapshots(activeSession)
-    const title =
-      activeSession.mode === 'campeonato' ? 'Live stats · Championship' : 'Live stats · Heat'
+    const title = liveStatsTitle(activeSession)
 
     return (
       <div className="ss-flow stats-page">
@@ -181,7 +177,7 @@ export function SessionStatsView() {
     )
   }
 
-  if (activeSession.mode === 'custom') {
+  if (sessionMode === 'custom') {
     const stats = computeCustomSessionStats(activeSession, activeAthleteId)
     const templateName = activeSession.customTemplateName ?? 'Custom training'
 
@@ -252,7 +248,7 @@ export function SessionStatsView() {
     )
   }
 
-  if (activeSession.mode === 'combos') {
+  if (sessionMode === 'combos') {
     const stats = computeComboSessionStats(activeSession, activeAthleteId)
 
     return (
@@ -314,6 +310,20 @@ export function SessionStatsView() {
               )
             })}
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (sessionMode !== 'tecnico') {
+    return (
+      <div className="ss-flow stats-page">
+        <ScreenHeader title={liveStatsTitle(activeSession)} onBack={() => setView(backView)} />
+        <div className="ss-card stats-panel">
+          <p className="muted">Live stats are not available for this session type.</p>
+          <button type="button" className="btn btn--primary btn--block" onClick={() => setView(backView)}>
+            Back to session
+          </button>
         </div>
       </div>
     )

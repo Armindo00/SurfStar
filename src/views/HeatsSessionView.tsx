@@ -2,13 +2,15 @@ import { HeatRunnerPanel } from '../components/HeatRunnerPanel'
 import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
+import { resolveSessionMode } from '../sessionModeUtils'
 
 export function HeatsSessionView() {
   const { activeSession, setView } = useApp()
 
   const heat = activeSession?.heats[0]
+  const sessionMode = activeSession ? resolveSessionMode(activeSession) : null
 
-  if (!activeSession || activeSession.mode !== 'heats') {
+  if (!activeSession || sessionMode !== 'heats') {
     return (
       <div className="ss-flow">
         <p className="muted">No active heats session.</p>

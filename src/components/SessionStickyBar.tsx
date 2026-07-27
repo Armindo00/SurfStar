@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useApp } from '../AppContext'
 import { canEndHeatBasedSession } from '../heatUtils'
+import { liveStatsButtonLabel } from '../sessionModeUtils'
 
 export function SessionStickyBar() {
   const { activeSession, cancelActiveSession, openEndSessionSheet, setView } = useApp()
   const [confirmCancel, setConfirmCancel] = useState(false)
 
   const canEndSession = activeSession ? canEndHeatBasedSession(activeSession) : true
+  const statsLabel = activeSession ? liveStatsButtonLabel(activeSession) : 'Live stats'
 
   const handleCancel = () => {
     if (!confirmCancel) {
@@ -30,7 +32,7 @@ export function SessionStickyBar() {
           className="btn btn--ghost btn--small session-sticky-bar__stats"
           onClick={() => setView('session-stats')}
         >
-          Live stats
+          {statsLabel}
         </button>
         <div className="session-sticky-bar__primary">
           <button
