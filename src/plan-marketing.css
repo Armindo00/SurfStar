@@ -1,4 +1,85 @@
 /* Landing enrichments */
+
+.landing-value-grid {
+  display: grid;
+  gap: 1rem;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .landing-value-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.15rem;
+  }
+}
+
+.landing-value-card {
+  padding: 1.35rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-value-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background: rgba(201, 169, 98, 0.15);
+  color: #e8d5a3;
+  font-size: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.landing-value-card__label {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7eb8e8;
+}
+
+.landing-value-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.landing-value-card__lead {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #b8c5d6;
+}
+
+.landing-value-card__benefits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.landing-value-card__benefits li {
+  position: relative;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #cbd5e1;
+}
+
+.landing-value-card__benefits li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #c9a962;
+  font-weight: 700;
+}
+
 .landing-hero__visual {
   min-width: 0;
 }

@@ -10,26 +10,26 @@ const WHATS_NEW = [
   {
     tag: 'New',
     title: 'Athlete gear quiver',
-    text: 'Boards and fins with dimensions, volume, and setup — all in one place.',
+    text: 'Athletes add their boards and fins — coaches review and rate the quiver from the athlete profile.',
     audience: 'Athlete',
   },
   {
     tag: 'New',
     title: 'Post-session wellbeing',
-    text: 'Quick check-in after training: gear used, mental state, and optional notes.',
+    text: 'Athletes complete a quick check-in after training — coaches see mental state trends across sessions and the full season.',
     audience: 'Athlete',
   },
   {
     tag: 'New',
-    title: 'Coach gear insights',
-    text: 'Rate equipment speed, control, and release. Track wellbeing over time.',
+    title: 'Combo training',
+    text: 'Log linked maneuver sequences by level — track success rates on full combos, not just single moves.',
     audience: 'Coach',
   },
   {
     tag: 'New',
-    title: 'Contact SurfStar',
-    text: 'Send feedback, report bugs, or ask for help — directly from the app.',
-    audience: 'Everyone',
+    title: 'Heats & championships',
+    text: 'Simulate contest heats, run championship brackets, and review competition stats — scores, placement, and heat timing.',
+    audience: 'Coach',
   },
 ]
 
@@ -52,7 +52,7 @@ const PILLARS = [
   {
     icon: '◆',
     title: 'Season analytics',
-    text: 'Monthly evolution charts plus full season totals for every athlete.',
+    text: 'Coaches access full stats for the last 6 months, 1 month, and 1 week — per athlete or for the whole team.',
   },
 ]
 
@@ -104,71 +104,41 @@ const PREMIUM_SPOTLIGHTS = [
 
 type SpotlightId = (typeof PREMIUM_SPOTLIGHTS)[number]['id']
 
-const FEATURE_GROUPS = [
+const VALUE_GROUPS = [
   {
     id: 'coach',
-    label: 'For coaches',
-    shortLabel: 'Coaches',
-    items: [
-      {
-        icon: '◎',
-        title: 'Wave-by-wave logging',
-        text: 'Technical training and combos with success rates by maneuver, level, and side.',
-      },
-      {
-        icon: '★',
-        title: 'Heats & championship',
-        text: 'Simulate heats, log interferences, and track results like a real contest.',
-      },
-      {
-        icon: '↓',
-        title: 'CSV export',
-        text: 'Export session data for reports, sharing, or your own analysis.',
-      },
+    icon: '◎',
+    label: 'Coaches',
+    headline: 'Coach with data, not guesswork',
+    lead: 'One subscription covers your athletes — log on the beach and back every decision with real numbers.',
+    benefits: [
+      'Live success rates during training — adjust focus before the session ends',
+      'Heats, championships, and contest-style stats your athletes understand',
+      'Season analytics and CSV export for reports, parents, or sponsors',
     ],
   },
   {
     id: 'athlete',
-    label: 'For athletes',
-    shortLabel: 'Athletes',
-    items: [
-      {
-        icon: '⇄',
-        title: 'Multi-coach pairing',
-        text: 'Link to several coaches with a code and control what each one sees.',
-      },
-      {
-        icon: '🏄',
-        title: 'Gear quiver',
-        text: 'Register boards and fins — length, width, thickness, and liters.',
-      },
-      {
-        icon: '◌',
-        title: 'Session wellbeing',
-        text: 'Post-training questionnaire: gear used, mental state, and notes.',
-      },
+    icon: '🏄',
+    label: 'Athletes',
+    headline: 'Your progress, free forever',
+    lead: 'Join with a coach code at no cost — keep your quiver, sessions, and shared stats in one app.',
+    benefits: [
+      'Pair with several coaches and control what each one sees',
+      'Add your board and fin quiver — coaches review and rate your gear',
+      'See the stats your coach chooses to share after every session',
     ],
   },
   {
     id: 'team',
-    label: 'For the team',
-    shortLabel: 'Teams',
-    items: [
-      {
-        icon: '▣',
-        title: 'Live stats',
-        text: 'Open stats mid-session — waves, success %, and breakdowns update instantly.',
-      },
-      {
-        icon: '◆',
-        title: 'Monthly evolution',
-        text: 'Six-month charts for sessions, success trends, and potential rate.',
-      },
-      {
-        icon: '☎',
-        title: 'Help & contact',
-        text: 'In-app guides plus a direct line to the SurfStar team for support.',
-      },
+    icon: '◆',
+    label: 'Teams & academies',
+    headline: 'One platform for the whole squad',
+    lead: 'From small squads to federations — coaches, athletes, and analytics stay in sync.',
+    benefits: [
+      'Athletes join free — only the coach subscribes',
+      'Six-month team trends and per-athlete profiles in one hub',
+      'Team Academy: up to 5 coaches, shared roster, every Premium tool',
     ],
   },
 ]
@@ -282,7 +252,6 @@ export function LandingView() {
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [spotlightTab, setSpotlightTab] = useState<SpotlightId>('custom')
-  const [featureTab, setFeatureTab] = useState(FEATURE_GROUPS[0].id)
 
   const activeSpotlight = PREMIUM_SPOTLIGHTS.find((item) => item.id === spotlightTab) ?? PREMIUM_SPOTLIGHTS[0]
 
@@ -532,53 +501,29 @@ export function LandingView() {
         </section>
 
         <section className="landing-section" id="features">
-          <div className="landing-section__head">
-            <p className="landing-eyebrow">Features</p>
+          <div className="landing-section__head landing-section__head--center">
+            <p className="landing-eyebrow">Why SurfStar</p>
             <h2>Built for coaches, athletes, and teams</h2>
-            <p className="landing-section__sub landing-section__sub--desktop">
-              Organized by role — everything you need without the clutter.
+            <p className="landing-section__sub">
+              Coaches subscribe — athletes join free. Everyone gets clearer feedback and a stronger season.
             </p>
           </div>
 
-          <div className="landing-features__tabs" role="tablist" aria-label="Features by role">
-            {FEATURE_GROUPS.map((group) => (
-              <button
-                key={group.id}
-                type="button"
-                role="tab"
-                id={`features-tab-${group.id}`}
-                aria-selected={featureTab === group.id}
-                aria-controls={`features-panel-${group.id}`}
-                className={featureTab === group.id ? 'landing-features__tab landing-features__tab--active' : 'landing-features__tab'}
-                onClick={() => setFeatureTab(group.id)}
-              >
-                <span className="landing-features__tab-short">{group.shortLabel}</span>
-                <span className="landing-features__tab-full">{group.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="landing-features__panels">
-            {FEATURE_GROUPS.map((group) => (
-              <div
-                key={group.id}
-                id={`features-panel-${group.id}`}
-                role="tabpanel"
-                aria-labelledby={`features-tab-${group.id}`}
-                className="landing-features__panel"
-                hidden={featureTab !== group.id}
-              >
-                <p className="landing-features__panel-label">{group.label}</p>
-                {group.items.map((feature) => (
-                  <article key={feature.title} className="landing-feature">
-                    <span className="landing-feature__icon" aria-hidden="true">
-                      {feature.icon}
-                    </span>
-                    <h3>{feature.title}</h3>
-                    <p>{feature.text}</p>
-                  </article>
-                ))}
-              </div>
+          <div className="landing-value-grid">
+            {VALUE_GROUPS.map((group) => (
+              <article key={group.id} className="landing-value-card">
+                <span className="landing-value-card__icon" aria-hidden="true">
+                  {group.icon}
+                </span>
+                <p className="landing-value-card__label">{group.label}</p>
+                <h3>{group.headline}</h3>
+                <p className="landing-value-card__lead">{group.lead}</p>
+                <ul className="landing-value-card__benefits">
+                  {group.benefits.map((benefit) => (
+                    <li key={benefit}>{benefit}</li>
+                  ))}
+                </ul>
+              </article>
             ))}
           </div>
         </section>
