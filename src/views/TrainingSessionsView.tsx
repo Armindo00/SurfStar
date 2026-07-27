@@ -1,5 +1,6 @@
 import { useApp } from '../AppContext'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { exportSessionsCsv } from '../exportCsv'
 import {
   athleteNamesForSession,
   buildCoachSessionHeadline,
@@ -17,14 +18,27 @@ export function TrainingSessionsView() {
       <ScreenHeader title="Past sessions" onBack={() => setView('coach-home')} />
 
       <div className="ss-card history-intro">
-        <h2 className="page-title">Session history</h2>
-        <p className="muted">
-          Completed trainings saved to your account. Tap a session for full stats and coach notes.
-        </p>
-        <p className="history-intro__count">
-          <strong>{completedCoachSessions.length}</strong> completed session
-          {completedCoachSessions.length === 1 ? '' : 's'}
-        </p>
+        <div className="history-intro__head">
+          <div>
+            <h2 className="page-title">Session history</h2>
+            <p className="muted">
+              Completed trainings saved to your account. Tap a session for full stats and coach notes.
+            </p>
+            <p className="history-intro__count">
+              <strong>{completedCoachSessions.length}</strong> completed session
+              {completedCoachSessions.length === 1 ? '' : 's'}
+            </p>
+          </div>
+          {completedCoachSessions.length > 0 ? (
+            <button
+              type="button"
+              className="btn btn--secondary btn--small history-intro__export"
+              onClick={() => exportSessionsCsv(completedCoachSessions, getAthlete, getSpot)}
+            >
+              Export CSV
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {completedCoachSessions.length === 0 ? (

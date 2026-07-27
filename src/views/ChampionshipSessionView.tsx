@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { ChampionshipBracketBoard } from '../components/ChampionshipBracketBoard'
 import { ChampionshipRoundRunner } from '../components/ChampionshipRoundRunner'
 import { HeatRunnerPanel } from '../components/HeatRunnerPanel'
-import { SessionTools } from '../components/SessionTools'
+import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 import {
@@ -84,7 +84,7 @@ export function ChampionshipSessionView() {
       : null
 
   return (
-    <div className="ss-flow ss-flow--training">
+    <div className="ss-flow ss-flow--training ss-flow--with-sticky">
       <ScreenHeader title="Championship" onBack={() => setView('coach-home')} />
 
       <div className="ss-card champ-bracket-card">
@@ -149,7 +149,7 @@ export function ChampionshipSessionView() {
         </div>
       ) : null}
 
-      <SessionTools />
+      <SessionStickyBar />
     </div>
   )
 }

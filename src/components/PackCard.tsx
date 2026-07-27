@@ -24,9 +24,6 @@ export function PackCard({ planId, billingInterval = 'monthly', selected, onSele
   const includedFeatures = visibleFeatures.filter((feature) =>
     planHasComparisonFeature(planId, feature),
   )
-  const excludedFeatures = visibleFeatures.filter(
-    (feature) => !planHasComparisonFeature(planId, feature),
-  )
 
   return (
     <article
@@ -65,17 +62,6 @@ export function PackCard({ planId, billingInterval = 'monthly', selected, onSele
           <li key={feature.label} className="pack-card__feature pack-card__feature--yes">
             <span className="pack-card__mark" aria-hidden="true">
               ✓
-            </span>
-            {feature.label}
-          </li>
-        ))}
-        {includedFeatures.length > 0 && excludedFeatures.length > 0 ? (
-          <li className="pack-card__features-divider" aria-hidden="true" />
-        ) : null}
-        {excludedFeatures.map((feature) => (
-          <li key={feature.label} className="pack-card__feature pack-card__feature--no">
-            <span className="pack-card__mark" aria-hidden="true">
-              ✗
             </span>
             {feature.label}
           </li>

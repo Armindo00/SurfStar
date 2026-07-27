@@ -4,6 +4,7 @@ import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessCha
 import { ScreenHeader } from '../components/ScreenHeader'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { useApp } from '../AppContext'
+import { exportAthleteAnalyticsCsv } from '../exportCsv'
 import { canAccessTeamAnalytics, planUpgradeHint } from '../planUtils'
 import {
   buildAthleteHeatDetails,
@@ -100,13 +101,20 @@ export function TeamAnalyticsView() {
           <span className="team-analytics-hero__avatar" aria-hidden="true">
             {selectedAthlete.name.charAt(0).toUpperCase()}
           </span>
-          <div>
+          <div className="team-analytics-hero__copy">
             <h2 className="page-title">{selectedAthlete.name}</h2>
             <p className="muted">
               Last {TEAM_ANALYTICS_MONTHS} months · {analytics.sessions.length} completed session
               {analytics.sessions.length === 1 ? '' : 's'}
             </p>
           </div>
+          <button
+            type="button"
+            className="btn btn--secondary btn--small team-analytics-hero__export"
+            onClick={() => exportAthleteAnalyticsCsv(selectedAthlete.name, analytics)}
+          >
+            Export CSV
+          </button>
         </div>
 
         <div className="kpi-grid">

@@ -3,11 +3,14 @@ import { AuthShell } from '../components/AuthShell'
 import { useApp } from '../AppContext'
 
 export function ForgotPasswordView() {
-  const { requestPasswordReset, openCoachSignIn } = useApp()
+  const { requestPasswordReset, forgotPasswordRole, openCoachSignIn, openAthleteSignIn } = useApp()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
+
+  const isCoach = forgotPasswordRole === 'treinador'
+  const back = isCoach ? openCoachSignIn : openAthleteSignIn
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -26,14 +29,17 @@ export function ForgotPasswordView() {
   }
 
   return (
-    <AuthShell onBack={openCoachSignIn} backLabel="Sign in">
+    <AuthShell onBack={back} backLabel="Sign in">
       <div className="auth-badges">
-        <span className="auth-badge auth-badge--role">Coach</span>
+        <span className="auth-badge auth-badge--role">{isCoach ? 'Coach' : 'Athlete'}</span>
         <span className="auth-badge auth-badge--mode">Password reset</span>
       </div>
 
       <header className="auth-card__head auth-card__head--compact">
         <h2 className="auth-card__title">Forgot password</h2>
+        <p className="muted auth-card__lead">
+          Enter your account email and we&apos;ll send reset instructions if it exists.
+        </p>
       </header>
 
       {sent ? (

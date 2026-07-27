@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ComboRegisterPanel } from '../components/ComboRegisterPanel'
-import { SessionTools } from '../components/SessionTools'
+import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { computeWaveStats } from '../sessionStats'
 import { useApp } from '../AppContext'
@@ -57,7 +57,7 @@ export function CombosSessionView() {
 
   if (focusAthleteId && focusedAthlete && activeAthleteId === focusAthleteId) {
     return (
-      <div className="ss-flow ss-flow--training">
+      <div className="ss-flow ss-flow--training ss-flow--with-sticky">
         <ScreenHeader title="Combos" onBack={backToGrid} />
         <div className="ss-card">
           <ComboRegisterPanel
@@ -72,7 +72,7 @@ export function CombosSessionView() {
   }
 
   return (
-    <div className="ss-flow ss-flow--training">
+    <div className="ss-flow ss-flow--training ss-flow--with-sticky">
       <ScreenHeader title="Combos" onBack={() => setView('coach-home')} />
 
       <div className="ss-card">
@@ -102,7 +102,7 @@ export function CombosSessionView() {
         </div>
       </div>
 
-      <SessionTools />
+      <SessionStickyBar />
     </div>
   )
 }

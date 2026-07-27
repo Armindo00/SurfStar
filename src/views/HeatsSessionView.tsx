@@ -1,5 +1,5 @@
 import { HeatRunnerPanel } from '../components/HeatRunnerPanel'
-import { SessionTools } from '../components/SessionTools'
+import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 
@@ -31,14 +31,14 @@ export function HeatsSessionView() {
   }
 
   return (
-    <div className="ss-flow ss-flow--training">
+    <div className="ss-flow ss-flow--training ss-flow--with-sticky">
       <ScreenHeader title="Heats" onBack={() => setView('coach-home')} />
 
       <div className="ss-card">
         <HeatRunnerPanel heat={heat} />
       </div>
 
-      <SessionTools />
+      <SessionStickyBar />
     </div>
   )
 }

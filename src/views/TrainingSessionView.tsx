@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { TechnicalRegisterPanel } from '../components/TechnicalRegisterPanel'
-import { SessionTools } from '../components/SessionTools'
+import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { computeWaveStats } from '../sessionStats'
 import { useApp } from '../AppContext'
@@ -57,7 +57,7 @@ export function TrainingSessionView() {
 
   if (focusAthleteId && focusedAthlete && activeAthleteId === focusAthleteId) {
     return (
-      <div className="ss-flow ss-flow--training">
+      <div className="ss-flow ss-flow--training ss-flow--with-sticky">
         <ScreenHeader title="Technical training" onBack={backToGrid} />
         <div className="ss-card">
           <TechnicalRegisterPanel
@@ -72,7 +72,7 @@ export function TrainingSessionView() {
   }
 
   return (
-    <div className="ss-flow ss-flow--training">
+    <div className="ss-flow ss-flow--training ss-flow--with-sticky">
       <ScreenHeader title="Technical training" onBack={() => setView('coach-home')} />
 
       <div className="ss-card">
@@ -102,7 +102,7 @@ export function TrainingSessionView() {
         </div>
       </div>
 
-      <SessionTools />
+      <SessionStickyBar />
     </div>
   )
 }

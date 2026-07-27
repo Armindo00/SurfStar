@@ -8,6 +8,8 @@ const PATHS: Record<PublicView, string> = {
   'athlete-sign-up': '/signup/athlete',
   checkout: '/checkout',
   'team-academy-request': '/team-academy',
+  privacy: '/privacy',
+  terms: '/terms',
 }
 
 export function pathForPublicView(view: PublicView): string {
@@ -21,6 +23,8 @@ export function publicViewFromPath(pathname: string): PublicView {
   if (pathname === '/signup/athlete') return 'athlete-sign-up'
   if (pathname === '/checkout') return 'checkout'
   if (pathname === '/team-academy') return 'team-academy-request'
+  if (pathname === '/privacy') return 'privacy'
+  if (pathname === '/terms') return 'terms'
   if (pathname === '/forgot-password') return 'coach-sign-in'
   return 'landing'
 }

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { PackCard } from '../components/PackCard'
 import { AppLogo } from '../components/AppLogo'
@@ -140,7 +140,20 @@ export function LandingView() {
     openAthleteSignUp,
     openCoachSignIn,
     openCoachPlanSelection,
+    openPrivacy,
+    openTerms,
   } = useApp()
+
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
+  useEffect(() => {
+    if (!mobileNavOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileNavOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [mobileNavOpen])
 
   useEffect(() => {
     if (window.location.hash === '#packs') {
@@ -154,6 +167,15 @@ export function LandingView() {
         <a className="landing-nav__brand" href="#top">
           <AppLogo size="md" />
         </a>
+        <button
+          type="button"
+          className="landing-nav__toggle btn btn--outline btn--small"
+          aria-expanded={mobileNavOpen}
+          aria-controls="landing-mobile-nav"
+          onClick={() => setMobileNavOpen((open) => !open)}
+        >
+          {mobileNavOpen ? 'Close' : 'Menu'}
+        </button>
         <nav className="landing-nav__menu" aria-label="Sections">
           <a href="#features">Features</a>
           <a href="#custom-training">Custom training</a>
@@ -177,6 +199,40 @@ export function LandingView() {
           </div>
         </div>
       </header>
+
+      {mobileNavOpen ? (
+        <nav id="landing-mobile-nav" className="landing-mobile-nav" aria-label="Mobile navigation">
+          <a href="#features" onClick={() => setMobileNavOpen(false)}>
+            Features
+          </a>
+          <a href="#custom-training" onClick={() => setMobileNavOpen(false)}>
+            Custom training
+          </a>
+          <a href="#sea-analysis" onClick={() => setMobileNavOpen(false)}>
+            Sea analysis
+          </a>
+          <a href="#analytics" onClick={() => setMobileNavOpen(false)}>
+            Analytics
+          </a>
+          <a href="#how" onClick={() => setMobileNavOpen(false)}>
+            How it works
+          </a>
+          <a href="#packs" onClick={() => setMobileNavOpen(false)}>
+            Pricing
+          </a>
+          <div className="landing-mobile-nav__auth">
+            <button type="button" className="btn btn--outline btn--block" onClick={openCoachSignIn}>
+              Coach sign in
+            </button>
+            <button type="button" className="btn btn--gold btn--block" onClick={openCoachPlanSelection}>
+              Create coach account
+            </button>
+            <button type="button" className="btn btn--outline btn--block" onClick={openAthleteSignIn}>
+              Athlete sign in
+            </button>
+          </div>
+        </nav>
+      ) : null}
 
       <main id="top">
         <section className="landing-hero">
@@ -526,6 +582,12 @@ export function LandingView() {
           </button>
           <button type="button" className="landing-footer__btn" onClick={openAthleteSignUp}>
             Create athlete account
+          </button>
+          <button type="button" className="landing-footer__btn" onClick={openPrivacy}>
+            Privacy Policy
+          </button>
+          <button type="button" className="landing-footer__btn" onClick={openTerms}>
+            Terms of Service
           </button>
         </div>
         <p className="landing-footer__copy">© {new Date().getFullYear()} SurfStar</p>

@@ -43,8 +43,8 @@ export function ChangePasswordView() {
           <div>
             <h1>Set your password</h1>
             <p>
-              Your coach created your account. Choose a new password before continuing — you will use
-              this password from now on.
+              For security, choose a new password before continuing. You will use this password to sign in
+              from now on.
             </p>
           </div>
         </div>

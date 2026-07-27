@@ -14,6 +14,7 @@ import { AppLogo } from '../components/AppLogo'
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { useApp } from '../AppContext'
 import { buildStripeCheckoutUrl, isSubscriptionActive } from '../subscriptionApi'
+import { isDemoSubscriptionEnabled } from '../config'
 
 export function CheckoutView() {
   const {
@@ -42,6 +43,7 @@ export function CheckoutView() {
   const isPending = subscription?.status === 'pending'
   const isActive = isSubscriptionActive(subscription)
   const approvalBlocked = isApprovalRequiredPlan(rawPlanId)
+  const demoActivationAllowed = !cloudMode || isDemoSubscriptionEnabled()
 
   useEffect(() => {
     if (!awaitingPayment && !isPending) return
@@ -70,6 +72,10 @@ export function CheckoutView() {
     setBusy(true)
     try {
       if (!stripeLink) {
+        if (!demoActivationAllowed) {
+          setError('Online payment is not configured yet. Contact support to activate your plan.')
+          return
+        }
         await handleActivateWithoutStripe()
         return
       }
@@ -184,9 +190,9 @@ export function CheckoutView() {
               type="button"
               className="btn btn--gold btn--block btn--lg"
               onClick={() => void handlePay()}
-              disabled={busy}
+              disabled={busy || (!stripeLink && !demoActivationAllowed)}
             >
-              {busy ? 'Processing…' : stripeLink ? 'Pay with Stripe' : `Activate ${plan.name}`}
+              {busy ? 'Processing…' : stripeLink ? 'Pay with Stripe' : demoActivationAllowed ? `Activate ${plan.name}` : 'Payment unavailable'}
             </button>
           )
         ) : null}
@@ -194,9 +200,11 @@ export function CheckoutView() {
         <p className="checkout-note muted">
           {stripeLink
             ? 'Secure payment via Stripe. Cancel anytime from the billing portal.'
-            : cloudMode
-              ? 'No Stripe configured — direct activation (demo mode on Supabase).'
-              : 'Local mode: subscription is stored on this device.'}
+            : demoActivationAllowed
+              ? cloudMode
+                ? 'Demo activation enabled — for testing only. Configure Stripe for production billing.'
+                : 'Local mode: subscription is stored on this device.'
+              : 'Stripe billing is required to activate your subscription in production.'}
         </p>
 
         <button type="button" className="btn btn--ghost btn--block" onClick={logout}>

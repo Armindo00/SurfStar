@@ -11,6 +11,7 @@ import {
   type AdminPlanRequest,
 } from '../adminApi'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { SkeletonCard } from '../components/Skeleton'
 import { useToast } from '../components/ToastProvider'
 import { getPlan, type PlanId } from '../plans'
 import { useApp } from '../AppContext'
@@ -19,7 +20,7 @@ type AdminTab = 'dashboard' | 'requests' | 'accounts'
 
 function formatDate(value: string | null): string {
   if (!value) return '—'
-  return new Date(value).toLocaleString('pt-PT', {
+  return new Date(value).toLocaleString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -49,13 +50,16 @@ export function AdminView() {
   const [accountSearch, setAccountSearch] = useState('')
   const [blockedOnly, setBlockedOnly] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({})
 
   const isAdmin = auth?.role === 'treinador' && auth.isPlatformAdmin
 
   const loadDashboard = useCallback(async () => {
+    setLoading(true)
     const result = await adminFetchDashboard()
+    setLoading(false)
     if (!result.ok) {
       setError(result.error)
       return
@@ -64,7 +68,9 @@ export function AdminView() {
   }, [])
 
   const loadRequests = useCallback(async () => {
+    setLoading(true)
     const result = await adminFetchPlanRequests(requestFilter === 'all' ? null : requestFilter)
+    setLoading(false)
     if (!result.ok) {
       setError(result.error)
       return
@@ -73,11 +79,13 @@ export function AdminView() {
   }, [requestFilter])
 
   const loadAccounts = useCallback(async () => {
+    setLoading(true)
     const result = await adminFetchAccounts({
       role: accountRole === 'all' ? null : accountRole,
       search: accountSearch.trim() || undefined,
       blockedOnly,
     })
+    setLoading(false)
     if (!result.ok) {
       setError(result.error)
       return
@@ -102,7 +110,7 @@ export function AdminView() {
         setError(result.error)
         return
       }
-      showToast(result.message ?? (action === 'approve' ? 'Pedido aprovado.' : 'Pedido rejeitado.'), 'success')
+      showToast(result.message ?? (action === 'approve' ? 'Request approved.' : 'Request rejected.'), 'success')
       await loadRequests()
       await loadDashboard()
     } finally {
@@ -119,7 +127,7 @@ export function AdminView() {
         setError(result.error)
         return
       }
-      showToast(account.blocked ? 'Conta desbloqueada.' : 'Conta bloqueada.', 'success')
+      showToast(account.blocked ? 'Account unblocked.' : 'Account blocked.', 'success')
       await loadAccounts()
       await loadDashboard()
     } finally {
@@ -140,7 +148,7 @@ export function AdminView() {
         setError(result.error)
         return
       }
-      showToast(`Plano ${planLabel(planId)} ativado.`, 'success')
+      showToast(`${planLabel(planId)} plan activated.`, 'success')
       await loadAccounts()
     } finally {
       setBusyId(null)
@@ -151,7 +159,7 @@ export function AdminView() {
     return (
       <div className="admin-page">
         <ScreenHeader title="Admin" onBack={() => setView('coach-home')} />
-        <p className="muted admin-page__hint">O painel admin só está disponível em modo cloud (Supabase).</p>
+        <p className="muted admin-page__hint">The admin panel is only available in cloud mode (Supabase).</p>
       </div>
     )
   }
@@ -160,21 +168,21 @@ export function AdminView() {
     return (
       <div className="admin-page">
         <ScreenHeader title="Admin" onBack={() => setView('coach-home')} />
-        <p className="muted admin-page__hint">Não tens permissões de administrador.</p>
+        <p className="muted admin-page__hint">You do not have platform administrator permissions.</p>
       </div>
     )
   }
 
   return (
     <div className="admin-page">
-      <ScreenHeader title="Admin SurfStar" onBack={() => setView('coach-home')} />
+      <ScreenHeader title="SurfStar Admin" onBack={() => setView('coach-home')} />
 
-      <nav className="admin-tabs" aria-label="Secções admin">
+      <nav className="admin-tabs" aria-label="Admin sections">
         {(
           [
-            ['dashboard', 'Resumo'],
+            ['dashboard', 'Overview'],
             ['requests', 'Team Academy'],
-            ['accounts', 'Contas'],
+            ['accounts', 'Accounts'],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -193,53 +201,55 @@ export function AdminView() {
 
       {error ? <p className="login-error admin-page__error">{error}</p> : null}
 
-      {tab === 'dashboard' && stats ? (
+      {loading ? <SkeletonCard lines={5} /> : null}
+
+      {!loading && tab === 'dashboard' && stats ? (
         <div className="admin-stats">
           <div className="admin-stat-card">
             <strong>{stats.coaches}</strong>
-            <span>Treinadores</span>
+            <span>Coaches</span>
           </div>
           <div className="admin-stat-card">
             <strong>{stats.athletes}</strong>
-            <span>Atletas</span>
+            <span>Athletes</span>
           </div>
           <div className="admin-stat-card">
             <strong>{stats.organizations}</strong>
-            <span>Organizações</span>
+            <span>Organizations</span>
           </div>
           <div className="admin-stat-card admin-stat-card--highlight">
             <strong>{stats.pending_requests}</strong>
-            <span>Pedidos pendentes</span>
+            <span>Pending requests</span>
           </div>
           <div className="admin-stat-card">
             <strong>{stats.blocked_accounts}</strong>
-            <span>Contas bloqueadas</span>
+            <span>Blocked accounts</span>
           </div>
         </div>
       ) : null}
 
-      {tab === 'requests' ? (
+      {!loading && tab === 'requests' ? (
         <div className="admin-panel">
           <div className="admin-toolbar">
             <label className="field field--pro admin-toolbar__field">
-              <span>Estado</span>
+              <span>Status</span>
               <select
                 value={requestFilter}
                 onChange={(e) => setRequestFilter(e.target.value as typeof requestFilter)}
               >
-                <option value="pending">Pendentes</option>
-                <option value="approved">Aprovados</option>
-                <option value="rejected">Rejeitados</option>
-                <option value="all">Todos</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="all">All</option>
               </select>
             </label>
             <button type="button" className="btn btn--secondary btn--small" onClick={() => void loadRequests()}>
-              Atualizar
+              Refresh
             </button>
           </div>
 
           {requests.length === 0 ? (
-            <p className="muted">Sem pedidos neste filtro.</p>
+            <p className="muted">No requests match this filter.</p>
           ) : (
             <div className="admin-list">
               {requests.map((request) => (
@@ -255,25 +265,25 @@ export function AdminView() {
                   </div>
                   <dl className="admin-meta">
                     <div>
-                      <dt>Data</dt>
+                      <dt>Submitted</dt>
                       <dd>{formatDate(request.created_at)}</dd>
                     </div>
                     <div>
-                      <dt>Treinadores</dt>
+                      <dt>Coaches</dt>
                       <dd>{request.coaches_count ?? '—'}</dd>
                     </div>
                     <div>
-                      <dt>Conta registada</dt>
-                      <dd>{request.coach_registered ? 'Sim' : 'Ainda não'}</dd>
+                      <dt>Account registered</dt>
+                      <dd>{request.coach_registered ? 'Yes' : 'Not yet'}</dd>
                     </div>
                   </dl>
                   {request.message ? <p className="admin-card__message">{request.message}</p> : null}
-                  {request.notes ? <p className="muted admin-card__notes">Notas: {request.notes}</p> : null}
+                  {request.notes ? <p className="muted admin-card__notes">Notes: {request.notes}</p> : null}
 
                   {request.status === 'pending' ? (
                     <>
                       <label className="field field--pro">
-                        <span>Notas internas (opcional)</span>
+                        <span>Internal notes (optional)</span>
                         <textarea
                           rows={2}
                           value={notesDraft[request.id] ?? ''}
@@ -289,7 +299,7 @@ export function AdminView() {
                           disabled={busyId === request.id}
                           onClick={() => void reviewRequest(request, 'approve')}
                         >
-                          Aprovar
+                          Approve
                         </button>
                         <button
                           type="button"
@@ -297,7 +307,7 @@ export function AdminView() {
                           disabled={busyId === request.id}
                           onClick={() => void reviewRequest(request, 'reject')}
                         >
-                          Rejeitar
+                          Reject
                         </button>
                       </div>
                     </>
@@ -309,23 +319,23 @@ export function AdminView() {
         </div>
       ) : null}
 
-      {tab === 'accounts' ? (
+      {!loading && tab === 'accounts' ? (
         <div className="admin-panel">
           <div className="admin-toolbar admin-toolbar--wrap">
             <label className="field field--pro admin-toolbar__field">
-              <span>Pesquisar</span>
+              <span>Search</span>
               <input
                 value={accountSearch}
                 onChange={(e) => setAccountSearch(e.target.value)}
-                placeholder="Nome ou email"
+                placeholder="Name or email"
               />
             </label>
             <label className="field field--pro admin-toolbar__field">
-              <span>Tipo</span>
+              <span>Role</span>
               <select value={accountRole} onChange={(e) => setAccountRole(e.target.value as typeof accountRole)}>
-                <option value="all">Todos</option>
-                <option value="treinador">Treinadores</option>
-                <option value="atleta">Atletas</option>
+                <option value="all">All</option>
+                <option value="treinador">Coaches</option>
+                <option value="atleta">Athletes</option>
               </select>
             </label>
             <label className="field field--pro admin-toolbar__check">
@@ -334,15 +344,15 @@ export function AdminView() {
                 checked={blockedOnly}
                 onChange={(e) => setBlockedOnly(e.target.checked)}
               />
-              <span>Só bloqueados</span>
+              <span>Blocked only</span>
             </label>
             <button type="button" className="btn btn--secondary btn--small" onClick={() => void loadAccounts()}>
-              Pesquisar
+              Search
             </button>
           </div>
 
           {accounts.length === 0 ? (
-            <p className="muted">Nenhuma conta encontrada.</p>
+            <p className="muted">No accounts found.</p>
           ) : (
             <div className="admin-list">
               {accounts.map((account) => (
@@ -351,28 +361,28 @@ export function AdminView() {
                     <div>
                       <h2>{account.name}</h2>
                       <p className="muted">
-                        {account.email} · {account.role === 'treinador' ? 'Treinador' : 'Atleta'}
+                        {account.email} · {account.role === 'treinador' ? 'Coach' : 'Athlete'}
                       </p>
                     </div>
                     <div className="admin-card__badges">
                       {account.is_platform_admin ? <span className="admin-badge admin-badge--admin">Admin</span> : null}
-                      {account.blocked ? <span className="admin-badge admin-badge--blocked">Bloqueado</span> : null}
+                      {account.blocked ? <span className="admin-badge admin-badge--blocked">Blocked</span> : null}
                     </div>
                   </div>
                   <dl className="admin-meta">
                     <div>
-                      <dt>Plano</dt>
+                      <dt>Plan</dt>
                       <dd>
                         {planLabel(account.plan_id)}
                         {account.plan_status ? ` (${account.plan_status})` : ''}
                       </dd>
                     </div>
                     <div>
-                      <dt>Organização</dt>
+                      <dt>Organization</dt>
                       <dd>{account.organization_name ?? '—'}</dd>
                     </div>
                     <div>
-                      <dt>Registo</dt>
+                      <dt>Registered</dt>
                       <dd>{formatDate(account.created_at)}</dd>
                     </div>
                   </dl>
@@ -384,7 +394,7 @@ export function AdminView() {
                         disabled={busyId === account.profile_id}
                         onClick={() => void toggleBlocked(account)}
                       >
-                        {account.blocked ? 'Desbloquear' : 'Bloquear'}
+                        {account.blocked ? 'Unblock' : 'Block'}
                       </button>
                     ) : null}
                     {account.role === 'treinador' && !account.is_platform_admin ? (
@@ -395,7 +405,7 @@ export function AdminView() {
                           disabled={busyId === account.profile_id}
                           onClick={() => void activatePlan(account, 'team')}
                         >
-                          Ativar Coach
+                          Activate Coach
                         </button>
                         <button
                           type="button"
@@ -403,7 +413,7 @@ export function AdminView() {
                           disabled={busyId === account.profile_id}
                           onClick={() => void activatePlan(account, 'club')}
                         >
-                          Ativar Premium
+                          Activate Premium
                         </button>
                         <button
                           type="button"
@@ -411,7 +421,7 @@ export function AdminView() {
                           disabled={busyId === account.profile_id}
                           onClick={() => void activatePlan(account, 'organization')}
                         >
-                          Ativar Team Academy
+                          Activate Team Academy
                         </button>
                       </>
                     ) : null}

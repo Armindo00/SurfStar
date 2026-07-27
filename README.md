@@ -1,17 +1,20 @@
 # SurfStar
 
-Plataforma de estatísticas de surf para treinadores e atletas — sessões onda a onda, team analytics, heats, pairing multi-treinador e subscrições.
+Surf statistics platform for coaches and athletes — wave-by-wave sessions, team analytics, heats, multi-coach pairing, and subscriptions.
 
 **Live:** https://surf-star.vercel.app
 
-## Funcionalidades
+## Features
 
-- Treino técnico, combos, heats, campeonato, análise de mar
-- Pairing por código (atletas grátis)
-- Team analytics (6 meses)
-- Packs Starter / Team / Club com limites aplicados
-- Checkout Stripe + webhook Supabase
-- Modo local (sem cloud) para desenvolvimento
+- Technical training, combos, heats, championship, sea analysis, custom training (Coach Premium)
+- Live session stats on the beach
+- Athlete pairing by code (athletes join free)
+- Team analytics with 6-month evolution charts
+- Plans: **Coach** (€49/mo) · **Coach Premium** (€89/mo) · **Team Academy** (€179/mo, approval-only)
+- Annual billing with 2 months free
+- Stripe checkout + Supabase webhook
+- Platform admin panel for Team Academy approvals and account management
+- Local mode (no cloud) for development
 
 ## Quick start
 
@@ -20,38 +23,40 @@ npm install
 npm run dev
 ```
 
-Telemóvel na mesma rede:
+Test on your phone (same Wi‑Fi):
 
 ```bash
 npm run dev:phone
 ```
 
-## Cloud (produção)
+## Cloud (production)
 
-1. Copia `.env.example` → `.env` e preenche Supabase + Stripe links
-2. Corre as migrations SQL — ver [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md)
+1. Copy `.env.example` → `.env` and fill Supabase + Stripe payment links
+2. Run SQL migrations — see [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md)
 3. Deploy webhook: `supabase/functions/stripe-webhook`
-4. Deploy frontend (Vercel) com as env vars `VITE_*`
+4. Deploy frontend (Vercel) with `VITE_*` env vars
 
-Ver [`DEPLOY_WEB.md`](DEPLOY_WEB.md) para passos detalhados.
+See [`DEPLOY_WEB.md`](DEPLOY_WEB.md) for detailed steps.
 
 ## Scripts
 
-| Comando | Descrição |
-|---------|-----------|
+| Command | Description |
+|---------|-------------|
 | `npm run dev` | Dev server |
-| `npm run build` | Build produção |
-| `npm test` | Testes (plan limits) |
+| `npm run build` | Production build |
+| `npm test` | Unit tests |
 | `npm run lint` | ESLint |
 
-## Planos
+## Plans
 
-| Pack | Atletas | Modos extra |
-|------|---------|-------------|
-| Starter | 5 | Técnico, combos |
-| Team | 20 | + Team analytics |
-| Club | ∞ | + Heats, campeonato, mar |
+| Plan | Price | Athletes | Highlights |
+|------|-------|----------|------------|
+| Coach | €49/mo | 20 | Technical, combos, sea analysis, team analytics |
+| Coach Premium | €89/mo | 50 | + Custom training, heats, championship |
+| Team Academy | €179/mo | Unlimited | + Multi-coach organization (by approval) |
 
-## Licença
+Annual: €490 / €890 / €1790 (2 months free).
+
+## License
 
 Private — SurfStar

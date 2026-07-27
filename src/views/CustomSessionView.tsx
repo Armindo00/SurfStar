@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { CustomRegisterPanel } from '../components/CustomRegisterPanel'
-import { SessionTools } from '../components/SessionTools'
+import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { computeCustomSessionStats } from '../customTrainingStats'
 import { useApp } from '../AppContext'
@@ -53,7 +53,7 @@ export function CustomSessionView() {
 
   if (focusAthleteId && focusedAthlete && activeAthleteId === focusAthleteId) {
     return (
-      <div className="ss-flow ss-flow--training">
+      <div className="ss-flow ss-flow--training ss-flow--with-sticky">
         <ScreenHeader title={templateName} onBack={backToGrid} />
         <div className="ss-card">
           <CustomRegisterPanel athleteName={focusedAthlete.name} onBack={backToGrid} />
@@ -63,7 +63,7 @@ export function CustomSessionView() {
   }
 
   return (
-    <div className="ss-flow ss-flow--training">
+    <div className="ss-flow ss-flow--training ss-flow--with-sticky">
       <ScreenHeader title={templateName} onBack={() => setView('coach-home')} />
 
       <div className="ss-card">
@@ -95,7 +95,7 @@ export function CustomSessionView() {
         ) : null}
       </div>
 
-      <SessionTools />
+      <SessionStickyBar />
     </div>
   )
 }

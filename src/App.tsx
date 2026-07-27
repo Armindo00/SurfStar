@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ToastProvider } from './components/ToastProvider'
 import { AppProvider, useApp } from './AppContext'
@@ -9,6 +10,7 @@ import { LandingView } from './views/LandingView'
 import { SubscriptionView } from './views/SubscriptionView'
 import { TeamAcademyRequestView } from './views/TeamAcademyRequestView'
 import { AdminView } from './views/AdminView'
+import { LegalPageView } from './views/LegalPageView'
 import { AthletePortal } from './views/AthletePortal'
 import { CoachHome } from './views/CoachHome'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
@@ -38,7 +40,13 @@ import './app-theme.css'
 
 function AppHeader() {
   const { auth, logout, role, setView } = useApp()
+  const [menuOpen, setMenuOpen] = useState(false)
   if (!auth) return null
+
+  const go = (next: Parameters<typeof setView>[0]) => {
+    setMenuOpen(false)
+    setView(next)
+  }
 
   return (
     <header className="app-brandbar">
@@ -48,17 +56,36 @@ function AppHeader() {
           <small>{role === 'treinador' ? 'Coach' : 'Athlete'}</small>
         </div>
       </div>
-      <div className="app-brandbar__user">
+      <button
+        type="button"
+        className="app-brandbar__menu-btn btn btn--ghost btn--small"
+        aria-expanded={menuOpen}
+        aria-controls="app-brandbar-menu"
+        onClick={() => setMenuOpen((open) => !open)}
+      >
+        {menuOpen ? 'Close' : 'Menu'}
+      </button>
+      <div
+        id="app-brandbar-menu"
+        className={menuOpen ? 'app-brandbar__user app-brandbar__user--open' : 'app-brandbar__user'}
+      >
         <span className="app-brandbar__name">{auth.name}</span>
         {auth.role === 'treinador' && auth.isPlatformAdmin ? (
-          <button type="button" className="btn btn--ghost btn--small" onClick={() => setView('admin')}>
+          <button type="button" className="btn btn--ghost btn--small" onClick={() => go('admin')}>
             Admin
           </button>
         ) : null}
-        <button type="button" className="btn btn--ghost btn--small" onClick={() => setView('help')}>
+        <button type="button" className="btn btn--ghost btn--small" onClick={() => go('help')}>
           Help
         </button>
-        <button type="button" className="btn btn--ghost btn--small" onClick={logout}>
+        <button
+          type="button"
+          className="btn btn--ghost btn--small"
+          onClick={() => {
+            setMenuOpen(false)
+            logout()
+          }}
+        >
           Sign out
         </button>
       </div>
@@ -89,6 +116,12 @@ function Shell() {
     }
     if (publicView === 'team-academy-request') {
       return <TeamAcademyRequestView />
+    }
+    if (publicView === 'privacy') {
+      return <LegalPageView page="privacy" />
+    }
+    if (publicView === 'terms') {
+      return <LegalPageView page="terms" />
     }
     if (isAuthPublicView(publicView)) {
       return <LoginView />

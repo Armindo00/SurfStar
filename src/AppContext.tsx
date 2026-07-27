@@ -164,13 +164,16 @@ type AppContextValue = {
   hasActiveSubscription: boolean
   selectPlan: (planId: PlanId, options?: { goToLogin?: boolean }) => void
   openLanding: () => void
+  openPrivacy: () => void
+  openTerms: () => void
   openCoachSignIn: () => void
   openCoachPlanSelection: () => void
   openCoachSignUp: () => void
   openAthleteSignIn: () => void
   openAthleteSignUp: () => void
   openTeamAcademyRequest: () => void
-  openForgotPassword: () => void
+  openForgotPassword: (role?: UserRole) => void
+  forgotPasswordRole: UserRole
   requestPasswordReset: (email: string) => Promise<{ ok: true } | { ok: false; error: string }>
   startCheckout: () => Promise<{ ok: true } | { ok: false; error: string }>
   activateDemoSubscription: () => Promise<{ ok: true } | { ok: false; error: string }>
@@ -405,6 +408,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [selectedBillingInterval, setSelectedBillingInterval] = useState<BillingInterval>('monthly')
   const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
   const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([])
+  const [forgotPasswordRole, setForgotPasswordRole] = useState<UserRole>('treinador')
   const [view, setView] = useState<AppView>('coach-home')
   const [athletes, setAthletes] = useState<Athlete[]>(() =>
     cloudMode ? [] : migrateLegacyLocalAthletes(store.getAthletes()),
@@ -515,11 +519,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [coachAthletes],
   )
 
+  const saveToastTimerRef = useRef<number | null>(null)
+
   const syncSessionsToCloud = useCallback(
     (next: TrainingSession[], session: AuthSession | null = auth) => {
       if (cloudMode && session?.role === 'treinador') {
         void cloudSaveTrainingSessions(session.organizationId, session.coachId, next).then((result) => {
-          if (!result.ok) showToast(`Failed to save sessions: ${result.error}`, 'error')
+          if (!result.ok) {
+            showToast(`Failed to save sessions: ${result.error}`, 'error')
+            return
+          }
+          if (saveToastTimerRef.current) window.clearTimeout(saveToastTimerRef.current)
+          saveToastTimerRef.current = window.setTimeout(() => {
+            showToast('All changes saved', 'success')
+            saveToastTimerRef.current = null
+          }, 1200)
         })
       }
     },
@@ -633,6 +647,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPublicView('landing')
   }, [setPublicView])
 
+  const openPrivacy = useCallback(() => {
+    setPublicView('privacy')
+  }, [setPublicView])
+
+  const openTerms = useCallback(() => {
+    setPublicView('terms')
+  }, [setPublicView])
+
   const openCoachSignIn = useCallback(() => {
     setPublicView('coach-sign-in')
   }, [setPublicView])
@@ -669,7 +691,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPublicView('team-academy-request')
   }, [setPublicView])
 
-  const openForgotPassword = useCallback(() => {
+  const openForgotPassword = useCallback((role: UserRole = 'treinador') => {
+    setForgotPasswordRole(role)
     window.history.pushState({}, '', '/forgot-password')
   }, [])
 
@@ -2648,6 +2671,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       hasActiveSubscription,
       selectPlan,
       openLanding,
+      openPrivacy,
+      openTerms,
       openCoachSignIn,
       openCoachPlanSelection,
       openCoachSignUp,
@@ -2655,6 +2680,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openAthleteSignUp,
       openTeamAcademyRequest,
       openForgotPassword,
+      forgotPasswordRole,
       requestPasswordReset,
       startCheckout,
       activateDemoSubscription,
@@ -2773,6 +2799,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       hasActiveSubscription,
       selectPlan,
       openLanding,
+      openPrivacy,
+      openTerms,
       openCoachSignIn,
       openCoachPlanSelection,
       openCoachSignUp,
@@ -2780,6 +2808,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openAthleteSignUp,
       openTeamAcademyRequest,
       openForgotPassword,
+      forgotPasswordRole,
       requestPasswordReset,
       startCheckout,
       activateDemoSubscription,

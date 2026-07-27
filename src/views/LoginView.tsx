@@ -234,8 +234,12 @@ export function LoginView() {
 
         {error ? <p className="auth-alert auth-alert--error">{error}</p> : null}
 
-        {!isRegister && cloudMode && isCoach ? (
-          <button type="button" className="auth-forgot" onClick={openForgotPassword}>
+        {!isRegister && cloudMode ? (
+          <button
+            type="button"
+            className="auth-forgot"
+            onClick={() => openForgotPassword(isCoach ? 'treinador' : 'atleta')}
+          >
             Forgot password?
           </button>
         ) : null}
