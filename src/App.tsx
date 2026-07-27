@@ -42,6 +42,7 @@ import { TrainingSessionView } from './views/TrainingSessionView'
 import { isAuthPublicView, isForgotPasswordPath } from './routing'
 import './App.css'
 import './app-theme.css'
+import './plan-marketing.css'
 
 function AppHeader() {
   const { auth, logout, role, setView } = useApp()

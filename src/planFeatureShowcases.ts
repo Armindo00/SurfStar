@@ -20,6 +20,7 @@ export type FeatureShowcase = {
   lead: string
   bullets: string[]
   plans: PlanId[]
+  category: 'Training' | 'Analytics' | 'Athlete' | 'Organization'
 }
 
 export const FEATURE_SHOWCASES: FeatureShowcase[] = [
@@ -33,6 +34,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Works with multiple athletes in the same session',
     ],
     plans: ['team', 'club', 'organization'],
+    category: 'Training',
   },
   {
     id: 'technical-training',
@@ -44,6 +46,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'CSV export for reports and external analysis',
     ],
     plans: ['team', 'club', 'organization'],
+    category: 'Training',
   },
   {
     id: 'heats-championship',
@@ -55,6 +58,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Championship mode with parallel or sequential heats',
     ],
     plans: ['team', 'club', 'organization'],
+    category: 'Training',
   },
   {
     id: 'team-analytics',
@@ -66,6 +70,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Per-athlete profile with training, psychology, and gear',
     ],
     plans: ['team', 'club', 'organization'],
+    category: 'Analytics',
   },
   {
     id: 'gear-quiver',
@@ -77,6 +82,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Coaches see gear from the athlete profile',
     ],
     plans: ['team', 'club', 'organization'],
+    category: 'Athlete',
   },
   {
     id: 'equipment-ratings',
@@ -88,6 +94,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Gear & wellbeing panel for coaches',
     ],
     plans: ['team', 'club', 'organization'],
+    category: 'Athlete',
   },
   {
     id: 'athlete-sharing',
@@ -99,6 +106,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Multi-coach pairing supported',
     ],
     plans: ['team', 'club', 'organization'],
+    category: 'Athlete',
   },
   {
     id: 'custom-training',
@@ -110,6 +118,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Built-in timer with auto-start for drills',
     ],
     plans: ['club', 'organization'],
+    category: 'Training',
   },
   {
     id: 'sea-analysis',
@@ -121,6 +130,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Full timeline with edit and delete',
     ],
     plans: ['club', 'organization'],
+    category: 'Training',
   },
   {
     id: 'psychology-checkins',
@@ -132,6 +142,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Wellbeing trends in the athlete profile',
     ],
     plans: ['club', 'organization'],
+    category: 'Athlete',
   },
   {
     id: 'multi-coach',
@@ -143,6 +154,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Admin controls for membership',
     ],
     plans: ['organization'],
+    category: 'Organization',
   },
   {
     id: 'organization-roster',
@@ -154,6 +166,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
       'Priority support from SurfStar',
     ],
     plans: ['organization'],
+    category: 'Organization',
   },
 ]
 
@@ -191,31 +204,3 @@ export const PLAN_MARKETING_PROFILES: Record<PlanId, PlanMarketingProfile> = {
     heroImage: 'organization-roster',
   },
 }
-
-export type PlanPickerCard = {
-  icon: string
-  title: string
-  text: string
-  planId: PlanId
-}
-
-export const LANDING_PLAN_PICKER: PlanPickerCard[] = [
-  {
-    icon: '◎',
-    title: 'Coach',
-    text: 'Live stats, heats, analytics, and gear tracking for up to 20 athletes.',
-    planId: 'team',
-  },
-  {
-    icon: '★',
-    title: 'Coach Premium',
-    text: 'Unlimited athletes, custom training, sea analysis, and psychology check-ins.',
-    planId: 'club',
-  },
-  {
-    icon: '◆',
-    title: 'Team Academy',
-    text: 'Up to 5 coaches, shared roster, and every Premium feature for your academy.',
-    planId: 'organization',
-  },
-]

@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import { AppLogo } from '../components/AppLogo'
-import { LANDING_PLAN_PICKER } from '../planFeatureShowcases'
+import { PlanFeaturePreview } from '../components/PlanFeaturePreview'
+import {
+  LANDING_CAPABILITIES,
+  LANDING_PLAN_PICKER,
+  LANDING_STATS,
+  LANDING_STEPS,
+  LANDING_TRAINING_MODES,
+} from '../landingContent'
 import { formatPlanPrice, formatPlanPriceSuffix, getPlan, SUBSCRIPTION_PLANS } from '../plans'
 import { scrollToPricingSection } from '../routing'
 import { useApp } from '../AppContext'
@@ -12,7 +19,7 @@ const FAQ = [
   },
   {
     q: 'How do I see what each plan includes?',
-    a: 'Tap Coach, Coach Premium, or Team Academy below — each plan opens its own page with previews and full explanations.',
+    a: 'Tap any plan card below — each opens a dedicated page with app previews, explanations, price, and subscribe button.',
   },
   {
     q: 'What is the psychology check-in?',
@@ -25,6 +32,8 @@ const FAQ = [
 ]
 
 const NAV_LINKS = [
+  { href: '#features', label: 'Features' },
+  { href: '#modes', label: 'Training modes' },
   { href: '#plans', label: 'Plans' },
   { href: '#faq', label: 'FAQ' },
 ]
@@ -123,8 +132,8 @@ export function LandingView() {
               <span className="landing-accent">coaches who demand more</span>
             </h1>
             <p className="landing-hero__lead">
-              Live stats, gear quiver, psychology check-ins, and season analytics — pick a plan
-              below to see exactly what each package includes.
+              Log every wave on the beach, track gear and wellbeing, and review season analytics —
+              built for coaches, athletes, and academies.
             </p>
 
             <div className="landing-hero__create">
@@ -140,40 +149,102 @@ export function LandingView() {
 
             <ul className="landing-hero__checks">
               <li>Live stats during every session</li>
-              <li>Gear quiver & wellbeing check-ins</li>
+              <li>Gear quiver & psychology check-ins</li>
               <li>Athletes included free</li>
               <li>Cancel anytime</li>
             </ul>
           </div>
 
-          <div className="landing-showcase landing-showcase--desktop" aria-hidden="true">
-            <div className="landing-showcase__glow" />
-            <div className="landing-showcase__card">
-              <header className="landing-showcase__head">
-                <span className="landing-showcase__pill">Live stats · Active session</span>
-                <strong>Carcavelos · Technical training</strong>
-              </header>
-              <div className="landing-showcase__kpis">
-                <div><span>87%</span><small>Success</small></div>
-                <div><span>24</span><small>Waves</small></div>
-                <div><span>3</span><small>Athletes</small></div>
-              </div>
-              <div className="landing-showcase__bars">
-                <div className="landing-showcase__bar"><span>Rail</span><div><i style={{ width: '82%' }} /></div></div>
-                <div className="landing-showcase__bar"><span>Top turn</span><div><i style={{ width: '74%' }} /></div></div>
-                <div className="landing-showcase__bar"><span>Progressive</span><div><i style={{ width: '91%' }} /></div></div>
-              </div>
-            </div>
+          <div className="landing-hero__visual">
+            <PlanFeaturePreview variant="live-stats" size="hero" />
           </div>
         </section>
 
-        <section className="landing-section" id="plans">
+        <section className="landing-stats-strip" aria-label="Key metrics">
+          {LANDING_STATS.map((stat) => (
+            <article key={stat.label} className="landing-stats-strip__item">
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </article>
+          ))}
+        </section>
+
+        <section className="landing-section" id="features">
+          <div className="landing-section__head landing-section__head--center">
+            <p className="landing-eyebrow">Platform capabilities</p>
+            <h2>Everything you need on the beach and after</h2>
+            <p className="landing-section__sub">
+              Real app previews — tap a plan below to see which package includes each feature.
+            </p>
+          </div>
+
+          <div className="landing-capabilities">
+            {LANDING_CAPABILITIES.map((item, index) => (
+              <article
+                key={item.id}
+                className={index % 2 === 1 ? 'landing-capability landing-capability--reverse' : 'landing-capability'}
+              >
+                <div className="landing-capability__copy">
+                  <span className="landing-capability__tag">{item.tag}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </div>
+                <div className="landing-capability__preview">
+                  <PlanFeaturePreview variant={item.id} />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-section landing-section--alt" id="modes">
+          <div className="landing-section__head landing-section__head--center">
+            <p className="landing-eyebrow">Training modes</p>
+            <h2>Six ways to log a session</h2>
+            <p className="landing-section__sub">
+              From technical maneuvers to championship heats — every mode feeds your analytics.
+            </p>
+          </div>
+          <div className="landing-modes-grid">
+            {LANDING_TRAINING_MODES.map((mode) => (
+              <article
+                key={mode.name}
+                className={mode.premium ? 'landing-mode-card landing-mode-card--premium' : 'landing-mode-card'}
+              >
+                <span className="landing-mode-card__icon">{mode.icon}</span>
+                <h3>{mode.name}</h3>
+                <p>{mode.desc}</p>
+                {mode.premium ? <span className="landing-mode-card__badge">Premium</span> : null}
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-section" id="how">
+          <div className="landing-section__head landing-section__head--center">
+            <p className="landing-eyebrow">How it works</p>
+            <h2>Get started in three steps</h2>
+          </div>
+          <ol className="landing-steps landing-steps--compact">
+            {LANDING_STEPS.map((step) => (
+              <li key={step.step} className="landing-step">
+                <span className="landing-step__num">{step.step}</span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="landing-section landing-section--alt" id="plans">
           <div className="landing-section__head landing-section__head--center">
             <p className="landing-eyebrow">Pricing & features</p>
             <h2>What does each package include?</h2>
             <p className="landing-section__sub">
-              Choose a plan to open its dedicated page — features, app previews, price, and subscribe
-              button. Each plan is explained separately.
+              Each plan opens its own page — full feature list, app previews, price, and subscribe
+              button. No mixing plans on one screen.
             </p>
           </div>
 
@@ -191,31 +262,41 @@ export function LandingView() {
                         : 'plan-picker-card'
                   }
                 >
-                  <span className="plan-picker-card__icon" aria-hidden="true">
-                    {entry.icon}
-                  </span>
-                  <h3>{entry.title}</h3>
-                  <p className="plan-picker-card__text">{entry.text}</p>
-                  <p className="plan-picker-card__price">
-                    <strong>{formatPlanPrice(plan, selectedBillingInterval)}</strong>
-                    <span>{formatPlanPriceSuffix(selectedBillingInterval)}</span>
-                  </p>
-                  <button
-                    type="button"
-                    className={
-                      plan.highlighted ? 'btn btn--gold btn--block' : 'btn btn--secondary btn--block'
-                    }
-                    onClick={() => openPlanDetail(entry.planId)}
-                  >
-                    See {entry.title} features
-                  </button>
+                  <div className="plan-picker-card__preview">
+                    <PlanFeaturePreview variant={entry.previewId} framed={false} />
+                  </div>
+                  <div className="plan-picker-card__body">
+                    <span className="plan-picker-card__icon" aria-hidden="true">
+                      {entry.icon}
+                    </span>
+                    <h3>{entry.title}</h3>
+                    <p className="plan-picker-card__text">{entry.text}</p>
+                    <ul className="plan-picker-card__highlights">
+                      {entry.highlights.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                    <p className="plan-picker-card__price">
+                      <strong>{formatPlanPrice(plan, selectedBillingInterval)}</strong>
+                      <span>{formatPlanPriceSuffix(selectedBillingInterval)}</span>
+                    </p>
+                    <button
+                      type="button"
+                      className={
+                        plan.highlighted ? 'btn btn--gold btn--block' : 'btn btn--secondary btn--block'
+                      }
+                      onClick={() => openPlanDetail(entry.planId)}
+                    >
+                      See {entry.title} features
+                    </button>
+                  </div>
                 </article>
               )
             })}
           </div>
         </section>
 
-        <section className="landing-section landing-section--alt" id="faq">
+        <section className="landing-section" id="faq">
           <div className="landing-section__head">
             <p className="landing-eyebrow">FAQ</p>
             <h2>Common questions</h2>
