@@ -128,7 +128,7 @@ export function EvolutionLineChart({ title, subtitle, points }: Props) {
                   <th>Sessions</th>
                   <th>Waves</th>
                   <th>Success</th>
-                  <th>Avg level</th>
+                  <th>Avg level (T+C)</th>
                   <th>Potential</th>
                 </tr>
               </thead>

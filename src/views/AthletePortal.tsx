@@ -18,6 +18,7 @@ import {
   averageLevelHint,
   averageLevelTrendLabel,
   formatAverageLevelValue,
+  formatCombinedLevelSummary,
 } from '../sessionStats'
 import { LEVELS } from '../sessionStats'
 import { buildAthleteMonthlyEvolution } from '../teamAnalyticsStats'
@@ -228,6 +229,8 @@ export function AthletePortal() {
     avgComboLevel: null,
     avgOverallManeuverLevel: null,
     totalManeuverAttempts: 0,
+    technicalAttemptCount: 0,
+    comboAttemptCount: 0,
   }
 
   return (
@@ -375,24 +378,16 @@ export function AthletePortal() {
             )}
           </article>
           <article className="kpi-card kpi-card--accent">
-            <span className="kpi-card__label">Avg maneuver level</span>
+            <span className="kpi-card__label">Avg level · technical + combos</span>
             <strong className="kpi-card__value">
               {formatAverageLevelValue(stats.avgOverallManeuverLevel)}
             </strong>
+            <small className="kpi-card__hint">{formatCombinedLevelSummary(stats)}</small>
             {stats.avgOverallManeuverLevel !== null ? (
-              <>
-                <small className="kpi-card__hint">{averageLevelHint(stats.avgOverallManeuverLevel)}</small>
-                <small className="kpi-card__hint">{averageLevelTrendLabel(stats.avgOverallManeuverLevel)}</small>
-                {(stats.avgTechnicalManeuverLevel !== null || stats.avgComboLevel !== null) && (
-                  <small className="kpi-card__hint">
-                    {stats.avgTechnicalManeuverLevel !== null
-                      ? `Technical ${formatAverageLevelValue(stats.avgTechnicalManeuverLevel)}`
-                      : ''}
-                    {stats.avgTechnicalManeuverLevel !== null && stats.avgComboLevel !== null ? ' · ' : ''}
-                    {stats.avgComboLevel !== null ? `Combo ${formatAverageLevelValue(stats.avgComboLevel)}` : ''}
-                  </small>
-                )}
-              </>
+              <small className="kpi-card__hint">
+                {averageLevelHint(stats.avgOverallManeuverLevel)} ·{' '}
+                {averageLevelTrendLabel(stats.avgOverallManeuverLevel)}
+              </small>
             ) : (
               <small className="kpi-card__hint">{averageLevelHint(null)}</small>
             )}
@@ -409,7 +404,7 @@ export function AthletePortal() {
         {monthlyEvolution.some((point) => point.avgManeuverLevel !== null || point.successRate !== null) ? (
           <EvolutionLineChart
             title="Your evolution (6 months)"
-            subtitle="Track whether your average maneuver level is rising over time"
+            subtitle="Track whether your combined avg level (technical + combos) is rising"
             points={monthlyEvolution}
           />
         ) : null}

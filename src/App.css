@@ -1627,6 +1627,19 @@ body {
   color: #a16207;
 }
 
+.kpi-card--compact {
+  padding: 0.65rem 0.85rem;
+}
+
+.kpi-card--compact .kpi-card__value {
+  font-size: 1.2rem;
+}
+
+.team-analytics-inline-kpi {
+  margin-bottom: 1rem;
+  max-width: 16rem;
+}
+
 .stats-panel {
   margin: 0 0 1rem;
   padding: 1.15rem 1.25rem;

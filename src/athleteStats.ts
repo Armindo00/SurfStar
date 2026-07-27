@@ -29,6 +29,8 @@ export type AthleteGeneralStats = {
   /** Combined average across technical maneuvers and combo attempts */
   avgOverallManeuverLevel: number | null
   totalManeuverAttempts: number
+  technicalAttemptCount: number
+  comboAttemptCount: number
 }
 
 export type AthleteHeatDetail = {
@@ -179,6 +181,8 @@ export function computeAthleteGeneralStats(
     avgComboLevel,
     avgOverallManeuverLevel,
     totalManeuverAttempts,
+    technicalAttemptCount: maneuvers.length,
+    comboAttemptCount: comboAttempts.length,
   }
 }
 

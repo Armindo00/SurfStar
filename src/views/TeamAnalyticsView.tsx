@@ -9,6 +9,7 @@ import {
   averageLevelHint,
   averageLevelTrendLabel,
   formatAverageLevelValue,
+  formatCombinedLevelSummary,
 } from '../sessionStats'
 import { canAccessTeamAnalytics, planUpgradeHint } from '../planUtils'
 import {
@@ -124,15 +125,17 @@ export function TeamAnalyticsView() {
 
         <div className="kpi-grid">
           <article className="kpi-card kpi-card--accent">
-            <span className="kpi-card__label">Avg maneuver level</span>
+            <span className="kpi-card__label">Avg level · technical + combos</span>
             <strong className="kpi-card__value">
               {formatAverageLevelValue(general.avgOverallManeuverLevel)}
             </strong>
-            <small className="kpi-card__hint">
-              {general.avgOverallManeuverLevel === null
-                ? averageLevelHint(null)
-                : `${averageLevelHint(general.avgOverallManeuverLevel)} · ${averageLevelTrendLabel(general.avgOverallManeuverLevel)}`}
-            </small>
+            <small className="kpi-card__hint">{formatCombinedLevelSummary(general)}</small>
+            {general.avgOverallManeuverLevel !== null ? (
+              <small className="kpi-card__hint">
+                {averageLevelHint(general.avgOverallManeuverLevel)} ·{' '}
+                {averageLevelTrendLabel(general.avgOverallManeuverLevel)}
+              </small>
+            ) : null}
           </article>
           <article className="kpi-card">
             <span className="kpi-card__label">Trainings</span>
@@ -172,7 +175,7 @@ export function TeamAnalyticsView() {
         <div className="ss-card stats-panel">
           <EvolutionLineChart
             title="Evolution (6 months)"
-            subtitle="Monthly success rate, average maneuver level, and waves with potential"
+            subtitle="Monthly success rate, combined avg level (technical + combos), and potential"
             points={analytics.monthlyEvolution}
           />
         </div>
@@ -181,6 +184,14 @@ export function TeamAnalyticsView() {
           <>
             <div className="ss-card stats-panel">
               <h2 className="stats-panel__title">Technical training — overview</h2>
+              <div className="kpi-grid team-analytics-inline-kpi">
+                <article className="kpi-card kpi-card--compact">
+                  <span className="kpi-card__label">Avg technical level</span>
+                  <strong className="kpi-card__value">
+                    {formatAverageLevelValue(analytics.technical.averageLevel)}
+                  </strong>
+                </article>
+              </div>
               <SideCompareChart
                 title="All maneuvers"
                 overallRate={analytics.technical.overallSuccessRate}
@@ -207,6 +218,14 @@ export function TeamAnalyticsView() {
         {analytics.combo ? (
           <div className="ss-card stats-panel">
             <h2 className="stats-panel__title">Combos — overview</h2>
+            <div className="kpi-grid team-analytics-inline-kpi">
+              <article className="kpi-card kpi-card--compact">
+                <span className="kpi-card__label">Avg combo level</span>
+                <strong className="kpi-card__value">
+                  {formatAverageLevelValue(analytics.combo.averageLevel)}
+                </strong>
+              </article>
+            </div>
             <SideCompareChart
               title="All combo levels"
               overallRate={analytics.combo.overallSuccessRate}

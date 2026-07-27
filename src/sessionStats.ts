@@ -44,6 +44,7 @@ export type SessionStatsSnapshot = {
   totalManeuvers: number
   successfulManeuvers: number
   overallSuccessRate: number
+  averageLevel: number | null
   bySide: SidePairStats
   byKind: Record<ManeuverKind, MoveStats>
 }
@@ -53,6 +54,7 @@ export type ComboSessionStatsSnapshot = {
   totalAttempts: number
   successfulAttempts: number
   overallSuccessRate: number
+  averageLevel: number | null
   bySide: SidePairStats
   byLevel: Record<ComboLevel, LevelWithSideStats>
 }
@@ -77,8 +79,33 @@ export function formatAverageLevelValue(avg: number | null): string {
 }
 
 export function averageLevelHint(avg: number | null): string {
-  if (avg === null) return 'No maneuver attempts logged yet'
-  return 'All attempts incl. misses · scale 1–4 (★ = 4)'
+  if (avg === null) return 'No technical or combo attempts logged yet'
+  return 'Technical maneuvers + combos, all attempts incl. misses · scale 1–4 (★ = 4)'
+}
+
+export function formatCombinedLevelSummary(input: {
+  avgTechnicalManeuverLevel: number | null
+  avgComboLevel: number | null
+  avgOverallManeuverLevel: number | null
+}): string {
+  const hasTechnical = input.avgTechnicalManeuverLevel !== null
+  const hasCombo = input.avgComboLevel !== null
+
+  if (!hasTechnical && !hasCombo) return averageLevelHint(null)
+
+  const parts: string[] = []
+  if (hasTechnical) {
+    parts.push(`Technical ${formatAverageLevelValue(input.avgTechnicalManeuverLevel)}`)
+  }
+  if (hasCombo) {
+    parts.push(`Combos ${formatAverageLevelValue(input.avgComboLevel)}`)
+  }
+
+  if (hasTechnical && hasCombo && input.avgOverallManeuverLevel !== null) {
+    return `${parts.join(' · ')} → Combined ${formatAverageLevelValue(input.avgOverallManeuverLevel)}`
+  }
+
+  return parts.join(' · ')
 }
 
 export function averageLevelTrendLabel(avg: number | null): string | null {
@@ -189,6 +216,7 @@ export function computeSessionStats(
     totalManeuvers,
     successfulManeuvers,
     overallSuccessRate: rate(successfulManeuvers, totalManeuvers),
+    averageLevel: averageLevelFromLogs(logs),
     bySide: tallySidePair(logs),
     byKind,
   }
@@ -257,6 +285,7 @@ export function computeComboSessionStats(
     totalAttempts: tally.total,
     successfulAttempts: tally.successes,
     overallSuccessRate: tally.overallSuccessRate,
+    averageLevel: averageLevelFromLogs(logs),
     byLevel: tally.byLevel,
     bySide: tally.bySide,
   }
