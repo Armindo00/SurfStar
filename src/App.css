@@ -4043,16 +4043,18 @@ body {
 
 .evolution-chart__line--success {
   stroke: #0ea5e9;
+  stroke-width: 2;
 }
 
 .evolution-chart__line--potential {
   stroke: #f59e0b;
   stroke-dasharray: 6 4;
+  stroke-width: 2.75;
 }
 
 .evolution-chart__line--level {
   stroke: #8b5cf6;
-  stroke-width: 2;
+  stroke-width: 2.75;
 }
 
 .evolution-chart__area--success {
@@ -4064,6 +4066,28 @@ body {
   fill: #0ea5e9;
   stroke: white;
   stroke-width: 1.5;
+}
+
+.evolution-chart__dot--potential {
+  fill: #f59e0b;
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+.evolution-chart__dot--level {
+  fill: #8b5cf6;
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+.evolution-chart__tick--level {
+  fill: #7c3aed;
+  font-weight: 600;
+}
+
+.evolution-chart__hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
 }
 
 .evolution-chart__empty {
