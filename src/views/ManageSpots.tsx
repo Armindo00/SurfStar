@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { useToast } from '../components/ToastProvider'
 import { useApp } from '../AppContext'
 
 type Tab = 'spots' | 'conditions'
@@ -17,6 +18,7 @@ export function ManageSpots() {
     removeCondition,
     setView,
   } = useApp()
+  const { showToast } = useToast()
 
   const [tab, setTab] = useState<Tab>('spots')
   const [spotName, setSpotName] = useState('')
@@ -27,45 +29,39 @@ export function ManageSpots() {
   const [editingConditionName, setEditingConditionName] = useState('')
   const [deleteSpotId, setDeleteSpotId] = useState<string | null>(null)
   const [deleteCondition, setDeleteCondition] = useState<string | null>(null)
-  const [feedback, setFeedback] = useState('')
-
-  const showFeedback = (message: string) => {
-    setFeedback(message)
-    window.setTimeout(() => setFeedback(''), 2500)
-  }
 
   const submitSpot = () => {
     const trimmed = spotName.trim()
     if (!trimmed) return
     addSpot(trimmed)
     setSpotName('')
-    showFeedback('Spot added.')
+    showToast('Spot added.', 'success')
   }
 
   const submitCondition = () => {
     const trimmed = conditionName.trim()
     if (!trimmed) return
     if (conditions.includes(trimmed)) {
-      showFeedback('This condition already exists.')
+      showToast('This condition already exists.', 'info')
       return
     }
     addCondition(trimmed)
     setConditionName('')
-    showFeedback('Condition added.')
+    showToast('Condition added.', 'success')
   }
 
   const saveSpotEdit = (spotId: string) => {
     updateSpotName(spotId, editingSpotName)
     setEditingSpotId(null)
     setEditingSpotName('')
-    showFeedback('Spot updated.')
+    showToast('Spot updated.', 'success')
   }
 
   const saveConditionEdit = (current: string) => {
     updateConditionName(current, editingConditionName)
     setEditingCondition(null)
     setEditingConditionName('')
-    showFeedback('Condition updated.')
+    showToast('Condition updated.', 'success')
   }
 
   return (
@@ -78,7 +74,6 @@ export function ManageSpots() {
           Manage surf spots and sea conditions used when starting a session. These appear as quick
           picks on the start screen.
         </p>
-        {feedback ? <p className="login-success">{feedback}</p> : null}
       </div>
 
       <div className="login-tabs spots-tabs" role="tablist">
@@ -278,8 +273,8 @@ export function ManageSpots() {
           title="Delete spot?"
           message="Past sessions keep this spot in their history. You need at least one spot."
           onConfirm={() => {
-            if (removeSpot(deleteSpotId)) showFeedback('Spot removed.')
-            else showFeedback('Keep at least one spot.')
+            if (removeSpot(deleteSpotId)) showToast('Spot removed.', 'success')
+            else showToast('Keep at least one spot.', 'info')
             setDeleteSpotId(null)
           }}
           onCancel={() => setDeleteSpotId(null)}
@@ -291,8 +286,8 @@ export function ManageSpots() {
           title="Delete condition?"
           message="Past sessions keep the old label. You need at least one condition."
           onConfirm={() => {
-            if (removeCondition(deleteCondition)) showFeedback('Condition removed.')
-            else showFeedback('Keep at least one condition.')
+            if (removeCondition(deleteCondition)) showToast('Condition removed.', 'success')
+            else showToast('Keep at least one condition.', 'info')
             setDeleteCondition(null)
           }}
           onCancel={() => setDeleteCondition(null)}

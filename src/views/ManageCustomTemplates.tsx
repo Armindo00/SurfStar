@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { CustomTemplateEditor, normalizeEditorTemplate } from '../components/CustomTemplateEditor'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { useToast } from '../components/ToastProvider'
 import { useApp } from '../AppContext'
 import { canUseCustomTraining, planUpgradeHint } from '../planUtils'
 import { cloneCustomTemplate, createEmptyCustomTemplate } from '../customTrainingUtils'
@@ -16,18 +17,13 @@ export function ManageCustomTemplates() {
     subscription,
     setView,
   } = useApp()
+  const { showToast } = useToast()
 
   const planId = subscription?.planId ?? 'team'
   const hasAccess = canUseCustomTraining(planId)
 
   const [editing, setEditing] = useState<CustomTrainingTemplate | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [feedback, setFeedback] = useState('')
-
-  const showFeedback = (message: string) => {
-    setFeedback(message)
-    window.setTimeout(() => setFeedback(''), 2500)
-  }
 
   const startNew = () => {
     setEditing(createEmptyCustomTemplate())
@@ -73,7 +69,7 @@ export function ManageCustomTemplates() {
           onSave={(template) => {
             saveCustomTemplate(template)
             setEditing(null)
-            showFeedback('Template saved.')
+            showToast('Template saved.', 'success')
           }}
         />
       </div>
@@ -90,7 +86,6 @@ export function ManageCustomTemplates() {
           Build personalized sessions with your own buttons, levels, success tracking, timer, and
           rules. Each template can reflect how you coach — beyond the built-in SurfStar modes.
         </p>
-        {feedback ? <p className="login-success">{feedback}</p> : null}
         <button type="button" className="btn btn--primary btn--block" onClick={startNew}>
           + Create template
         </button>
@@ -132,7 +127,7 @@ export function ManageCustomTemplates() {
                   className="btn btn--ghost btn--small"
                   onClick={() => {
                     duplicateCustomTemplate(template.id)
-                    showFeedback('Template duplicated.')
+                    showToast('Template duplicated.', 'success')
                   }}
                 >
                   Duplicate
@@ -157,7 +152,7 @@ export function ManageCustomTemplates() {
           onConfirm={() => {
             deleteCustomTemplate(deleteId)
             setDeleteId(null)
-            showFeedback('Template removed.')
+            showToast('Template removed.', 'success')
           }}
           onCancel={() => setDeleteId(null)}
         />

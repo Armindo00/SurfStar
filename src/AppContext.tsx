@@ -2161,15 +2161,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const sessionId = activeSessionId
       const trimmedNotes = coachNotes.trim()
 
-      updateSession(sessionId, (s) => ({
-        ...s,
-        endedAt: new Date().toISOString(),
-        coachNotes: trimmedNotes || null,
-        spotName:
-          s.spotName?.trim() ||
-          spots.find((spot) => spot.id === s.spotId)?.name?.trim() ||
-          '',
-      }))
+      updateSession(sessionId, (s) => {
+        const endedAt = new Date().toISOString()
+        const seaAnalysis =
+          s.mode === 'sea-analysis' && s.seaAnalysis && !s.seaAnalysis.endedAt
+            ? { ...s.seaAnalysis, endedAt }
+            : s.seaAnalysis
+
+        return {
+          ...s,
+          endedAt,
+          coachNotes: trimmedNotes || null,
+          spotName:
+            s.spotName?.trim() ||
+            spots.find((spot) => spot.id === s.spotId)?.name?.trim() ||
+            '',
+          seaAnalysis,
+        }
+      })
 
       setEndSessionSheetOpen(false)
       setActiveWaveId(null)

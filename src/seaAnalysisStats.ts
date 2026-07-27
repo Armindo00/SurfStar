@@ -90,13 +90,39 @@ function logElapsed(state: SeaAnalysisState, log: SeaAnalysisLog): number {
   return new Date(log.at).getTime() - new Date(state.timerStartedAt).getTime()
 }
 
-function observationWindowMs(state: SeaAnalysisState, sorted: SeaAnalysisLog[]): number {
+function resolveAnalysisEndMs(
+  state: SeaAnalysisState,
+  options?: { frozenAt?: string | null; now?: number },
+): number | null {
+  if (state.endedAt) return new Date(state.endedAt).getTime()
+  if (options?.frozenAt) return new Date(options.frozenAt).getTime()
+  if (!state.timerStartedAt) return null
+
+  const scheduledEnd = new Date(state.timerStartedAt).getTime() + seaAnalysisDurationMs()
+  const now = options?.now ?? Date.now()
+  if (now >= scheduledEnd) return scheduledEnd
+
+  return null
+}
+
+function observationWindowMs(
+  state: SeaAnalysisState,
+  sorted: SeaAnalysisLog[],
+  options?: { frozenAt?: string | null; now?: number },
+): number {
   if (!state.timerStartedAt) return 0
   const start = new Date(state.timerStartedAt).getTime()
-  let end = state.endedAt ? new Date(state.endedAt).getTime() : Date.now()
+  const frozenEnd = resolveAnalysisEndMs(state, options)
+
+  if (frozenEnd !== null) {
+    return Math.max(1, frozenEnd - start)
+  }
+
+  const now = options?.now ?? Date.now()
+  let end = now
   if (sorted.length > 0) {
     const last = new Date(sorted[sorted.length - 1].at).getTime()
-    if (!state.endedAt) end = Math.max(end, last)
+    end = Math.max(end, last)
   }
   return Math.max(1, end - start)
 }
@@ -170,8 +196,9 @@ function computePeakRecommendation(
   sorted: SeaAnalysisLog[],
   counts: SeaCountGrid,
   peakTotals: Record<SeaPeak, number>,
+  options?: { frozenAt?: string | null; now?: number },
 ): PeakRecommendation {
-  const windowMs = observationWindowMs(state, sorted)
+  const windowMs = observationWindowMs(state, sorted, options)
 
   const raw: Record<SeaPeak, PeakScoreDetail> = {
     'peak-1': {
@@ -246,7 +273,10 @@ function computePeakRecommendation(
   return { recommended, tie, scores: raw, summary }
 }
 
-export function computeSeaAnalysisStats(state: SeaAnalysisState): SeaAnalysisStats {
+export function computeSeaAnalysisStats(
+  state: SeaAnalysisState,
+  options?: { frozenAt?: string | null; now?: number },
+): SeaAnalysisStats {
   const counts = emptyCounts()
   const peakTotals: Record<SeaPeak, number> = { 'peak-1': 0, 'peak-2': 0 }
   const typeTotals: Record<SeaWaveType, number> = {
@@ -295,7 +325,7 @@ export function computeSeaAnalysisStats(state: SeaAnalysisState): SeaAnalysisSta
     waveType: log.waveType,
   }))
 
-  const recommendation = computePeakRecommendation(state, sorted, counts, peakTotals)
+  const recommendation = computePeakRecommendation(state, sorted, counts, peakTotals, options)
 
   return {
     totalObservations: sorted.length,

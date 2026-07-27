@@ -273,7 +273,7 @@ export function SessionHistoryDetailView() {
       {historySession.mode === 'sea-analysis' && historySession.seaAnalysis ? (
         <div className="ss-card stats-panel">
           <h2 className="stats-panel__title">Sea analysis results</h2>
-          <SeaAnalysisStatsPanel state={historySession.seaAnalysis} readOnly />
+          <SeaAnalysisStatsPanel state={historySession.seaAnalysis} readOnly frozenAt={historySession.endedAt} />
         </div>
       ) : null}
     </div>

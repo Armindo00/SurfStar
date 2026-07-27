@@ -102,7 +102,7 @@ export function AthleteAnalyticsTopicSheet({
   return (
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
       <div
-        className="modal sheet sheet--tall analytics-topic-sheet"
+        className="modal sheet sheet--tall analytics-topic-sheet team-analytics-page"
         role="dialog"
         aria-modal="true"
         aria-labelledby="analytics-topic-title"

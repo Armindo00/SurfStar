@@ -16,14 +16,19 @@ import {
 type Props = {
   state: SeaAnalysisState
   readOnly?: boolean
+  /** Session end time — freezes scores for completed sessions saved without seaAnalysis.endedAt */
+  frozenAt?: string | null
 }
 
-export function SeaAnalysisStatsPanel({ state, readOnly = false }: Props) {
+export function SeaAnalysisStatsPanel({ state, readOnly = false, frozenAt = null }: Props) {
   const { updateSeaAnalysisLog, deleteSeaAnalysisLog } = useApp()
   const [editLog, setEditLog] = useState<SeaAnalysisLog | null>(null)
   const [deleteLogId, setDeleteLogId] = useState<string | null>(null)
 
-  const stats = useMemo(() => computeSeaAnalysisStats(state), [state])
+  const stats = useMemo(
+    () => computeSeaAnalysisStats(state, { frozenAt }),
+    [state, frozenAt],
+  )
   const rec = stats.recommendation
 
   const deleteLog = deleteLogId ? state.logs.find((l) => l.id === deleteLogId) : undefined

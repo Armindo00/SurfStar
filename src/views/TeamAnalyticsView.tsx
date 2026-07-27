@@ -175,7 +175,7 @@ export function TeamAnalyticsView() {
     const periodLabel = analyticsPeriodLabel(period)
 
     return (
-      <div className="ss-flow stats-page">
+      <div className="ss-flow stats-page team-analytics-page">
         <ScreenHeader
           title="Team analytics"
           onBack={() => {
@@ -311,7 +311,7 @@ export function TeamAnalyticsView() {
   }
 
   return (
-    <div className="ss-flow">
+    <div className="ss-flow team-analytics-page">
       <ScreenHeader title="Team analytics" onBack={() => setView('coach-home')} />
 
       <div className="ss-card team-analytics-intro">
