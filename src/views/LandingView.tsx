@@ -1,17 +1,9 @@
 import { useEffect, useState } from 'react'
-import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
-import { PackCard } from '../components/PackCard'
 import { AppLogo } from '../components/AppLogo'
-import { LANDING_HIGHLIGHTS, getTopPlanFeatures, PLAN_MARKETING_PROFILES } from '../planMarketing'
-import { SUBSCRIPTION_PLANS, formatPlanPrice, formatPlanPriceSuffix, getPlan } from '../plans'
+import { LANDING_PLAN_PICKER } from '../planFeatureShowcases'
+import { formatPlanPrice, formatPlanPriceSuffix, getPlan, SUBSCRIPTION_PLANS } from '../plans'
 import { scrollToPricingSection } from '../routing'
 import { useApp } from '../AppContext'
-
-const STEPS = [
-  { step: '01', title: 'Pick your plan', text: 'Tap a plan below to see everything included — then subscribe.' },
-  { step: '02', title: 'Set up your team', text: 'Create spots, invite athletes by code, and start logging.' },
-  { step: '03', title: 'Review with data', text: 'Live stats on the beach, gear tracking, wellbeing, and season analytics.' },
-]
 
 const FAQ = [
   {
@@ -19,12 +11,12 @@ const FAQ = [
     a: 'No. Only the coach subscribes. Athletes join free with a pairing code.',
   },
   {
-    q: 'What is the psychology check-in?',
-    a: 'On Coach Premium and Team Academy, coaches can opt in individual athletes for a quick 0–5 questionnaire after each session. Athletes who are not interested simply do not get prompted.',
+    q: 'How do I see what each plan includes?',
+    a: 'Tap Coach, Coach Premium, or Team Academy below — each plan opens its own page with previews and full explanations.',
   },
   {
-    q: 'Can athletes manage their gear?',
-    a: 'Yes. Every athlete can register boards and fins in their quiver. Coaches can rate equipment and track performance over time.',
+    q: 'What is the psychology check-in?',
+    a: 'On Coach Premium and Team Academy, coaches can opt in individual athletes for a quick 0–5 questionnaire after each session.',
   },
   {
     q: 'Does it work on mobile?',
@@ -33,18 +25,14 @@ const FAQ = [
 ]
 
 const NAV_LINKS = [
-  { href: '#highlights', label: 'Features' },
   { href: '#plans', label: 'Plans' },
-  { href: '#packs', label: 'Pricing' },
   { href: '#faq', label: 'FAQ' },
 ]
 
 export function LandingView() {
   const {
-    selectPlan,
     openPlanDetail,
     selectedBillingInterval,
-    setBillingInterval,
     openAthleteSignIn,
     openAthleteSignUp,
     openCoachSignIn,
@@ -66,7 +54,7 @@ export function LandingView() {
   }, [mobileNavOpen])
 
   useEffect(() => {
-    if (window.location.hash === '#packs') {
+    if (window.location.hash === '#packs' || window.location.hash === '#plans') {
       requestAnimationFrame(() => scrollToPricingSection())
     }
   }, [])
@@ -135,15 +123,15 @@ export function LandingView() {
               <span className="landing-accent">coaches who demand more</span>
             </h1>
             <p className="landing-hero__lead">
-              Live stats on the beach, gear quiver management, optional psychology check-ins, and
-              season analytics for your whole team.
+              Live stats, gear quiver, psychology check-ins, and season analytics — pick a plan
+              below to see exactly what each package includes.
             </p>
 
             <div className="landing-hero__create">
               <div className="landing-hero__cta">
-                <button type="button" className="btn btn--gold btn--lg" onClick={openCoachPlanSelection}>
-                  Create coach account
-                </button>
+                <a className="btn btn--gold btn--lg" href="#plans">
+                  Explore plans
+                </a>
                 <button type="button" className="btn btn--outline btn--lg" onClick={openAthleteSignUp}>
                   Create athlete account
                 </button>
@@ -166,114 +154,60 @@ export function LandingView() {
                 <strong>Carcavelos · Technical training</strong>
               </header>
               <div className="landing-showcase__kpis">
-                <div>
-                  <span>87%</span>
-                  <small>Success</small>
-                </div>
-                <div>
-                  <span>24</span>
-                  <small>Waves</small>
-                </div>
-                <div>
-                  <span>3</span>
-                  <small>Athletes</small>
-                </div>
+                <div><span>87%</span><small>Success</small></div>
+                <div><span>24</span><small>Waves</small></div>
+                <div><span>3</span><small>Athletes</small></div>
               </div>
               <div className="landing-showcase__bars">
-                <div className="landing-showcase__bar">
-                  <span>Rail</span>
-                  <div><i style={{ width: '82%' }} /></div>
-                </div>
-                <div className="landing-showcase__bar">
-                  <span>Top turn</span>
-                  <div><i style={{ width: '74%' }} /></div>
-                </div>
-                <div className="landing-showcase__bar">
-                  <span>Progressive</span>
-                  <div><i style={{ width: '91%' }} /></div>
-                </div>
+                <div className="landing-showcase__bar"><span>Rail</span><div><i style={{ width: '82%' }} /></div></div>
+                <div className="landing-showcase__bar"><span>Top turn</span><div><i style={{ width: '74%' }} /></div></div>
+                <div className="landing-showcase__bar"><span>Progressive</span><div><i style={{ width: '91%' }} /></div></div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="landing-section" id="highlights">
+        <section className="landing-section" id="plans">
           <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">What SurfStar offers</p>
-            <h2>From live stats to mental check-ins</h2>
-            <p className="landing-section__sub">
-              Training tools, athlete wellbeing, gear management, and team analytics — in one app.
-            </p>
-          </div>
-          <div className="landing-highlights__grid">
-            {LANDING_HIGHLIGHTS.map((item) => (
-              <article key={item.title} className="landing-highlight">
-                <span className="landing-highlight__icon" aria-hidden="true">
-                  {item.icon}
-                </span>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-                <span className="landing-highlight__plans muted">
-                  {item.plans.length === 3
-                    ? 'All plans'
-                    : item.plans.map((id) => getPlan(id).name).join(' · ')}
-                </span>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="landing-section landing-section--alt" id="plans">
-          <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">Compare plans</p>
+            <p className="landing-eyebrow">Pricing & features</p>
             <h2>What does each package include?</h2>
             <p className="landing-section__sub">
-              Tap a plan name to open the full feature breakdown — psychology check-ins, quiver
-              management, custom training, and more.
+              Choose a plan to open its dedicated page — features, app previews, price, and subscribe
+              button. Each plan is explained separately.
             </p>
           </div>
-          <div className="plan-teaser-grid">
-            {SUBSCRIPTION_PLANS.map((plan) => {
-              const profile = PLAN_MARKETING_PROFILES[plan.id]
-              const topFeatures = getTopPlanFeatures(plan.id, 4)
+
+          <div className="plan-picker-grid" id="packs">
+            {LANDING_PLAN_PICKER.map((entry) => {
+              const plan = getPlan(entry.planId)
               return (
                 <article
-                  key={plan.id}
+                  key={entry.planId}
                   className={
                     plan.highlighted
-                      ? 'plan-teaser plan-teaser--highlighted'
+                      ? 'plan-picker-card plan-picker-card--highlighted'
                       : plan.requiresApproval
-                        ? 'plan-teaser plan-teaser--approval'
-                        : 'plan-teaser'
+                        ? 'plan-picker-card plan-picker-card--approval'
+                        : 'plan-picker-card'
                   }
                 >
-                  {plan.highlighted ? (
-                    <span className="pack-card__badge">Most popular</span>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="plan-teaser__title"
-                    onClick={() => openPlanDetail(plan.id)}
-                  >
-                    <h3>{plan.name}</h3>
-                    <span>See all features →</span>
-                  </button>
-                  <p className="plan-teaser__summary">{profile.summary}</p>
-                  <p className="plan-teaser__price">
+                  <span className="plan-picker-card__icon" aria-hidden="true">
+                    {entry.icon}
+                  </span>
+                  <h3>{entry.title}</h3>
+                  <p className="plan-picker-card__text">{entry.text}</p>
+                  <p className="plan-picker-card__price">
                     <strong>{formatPlanPrice(plan, selectedBillingInterval)}</strong>
                     <span>{formatPlanPriceSuffix(selectedBillingInterval)}</span>
                   </p>
-                  <ul className="plan-teaser__features">
-                    {topFeatures.map((feature) => (
-                      <li key={feature}>{feature}</li>
-                    ))}
-                  </ul>
                   <button
                     type="button"
-                    className="btn btn--outline btn--block"
-                    onClick={() => openPlanDetail(plan.id)}
+                    className={
+                      plan.highlighted ? 'btn btn--gold btn--block' : 'btn btn--secondary btn--block'
+                    }
+                    onClick={() => openPlanDetail(entry.planId)}
                   >
-                    View {plan.name} details
+                    See {entry.title} features
                   </button>
                 </article>
               )
@@ -281,51 +215,7 @@ export function LandingView() {
           </div>
         </section>
 
-        <section className="landing-section" id="how">
-          <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">How it works</p>
-            <h2>Get started in three steps</h2>
-          </div>
-          <ol className="landing-steps landing-steps--compact">
-            {STEPS.map((step) => (
-              <li key={step.step} className="landing-step">
-                <span className="landing-step__num">{step.step}</span>
-                <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section className="landing-section landing-section--alt" id="packs">
-          <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">Pricing</p>
-            <h2>Choose the right plan</h2>
-            <p className="landing-section__sub">
-              Monthly or annual billing. Annual plans include 2 months free.
-            </p>
-          </div>
-          <BillingIntervalToggle
-            className="billing-toggle--landing"
-            value={selectedBillingInterval}
-            onChange={setBillingInterval}
-          />
-          <div className="landing-pricing__grid">
-            {SUBSCRIPTION_PLANS.map((plan) => (
-              <PackCard
-                key={plan.id}
-                planId={plan.id}
-                billingInterval={selectedBillingInterval}
-                onSelect={selectPlan}
-                onOpenDetail={openPlanDetail}
-              />
-            ))}
-          </div>
-        </section>
-
-        <section className="landing-section" id="faq">
+        <section className="landing-section landing-section--alt" id="faq">
           <div className="landing-section__head">
             <p className="landing-eyebrow">FAQ</p>
             <h2>Common questions</h2>
@@ -346,9 +236,9 @@ export function LandingView() {
             <h2>Take your team to the next level</h2>
           </div>
           <div className="landing-cta-band__actions">
-            <button type="button" className="btn btn--gold btn--lg" onClick={openCoachPlanSelection}>
-              Create coach account
-            </button>
+            <a className="btn btn--gold btn--lg" href="#plans">
+              Explore plans
+            </a>
             <button type="button" className="btn btn--outline btn--lg" onClick={openContact}>
               Contact us
             </button>
@@ -361,14 +251,6 @@ export function LandingView() {
           <div className="landing-footer__brand">
             <AppLogo size="sm" />
             <p>Surf statistics for coaches and athletes.</p>
-          </div>
-
-          <div className="landing-footer__col">
-            <h3>Explore</h3>
-            <a href="#highlights">Features</a>
-            <a href="#plans">Plans</a>
-            <a href="#packs">Pricing</a>
-            <a href="#faq">FAQ</a>
           </div>
 
           <div className="landing-footer__col">

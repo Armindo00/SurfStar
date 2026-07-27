@@ -1,17 +1,17 @@
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { AppLogo } from '../components/AppLogo'
+import { PlanFeaturePreview } from '../components/PlanFeaturePreview'
 import {
-  getAllComparisonLabels,
-  getPlanMarketingSections,
+  getPlanFeatureShowcases,
   PLAN_MARKETING_PROFILES,
-  planIncludesMarketingFeature,
-} from '../planMarketing'
+} from '../planFeatureShowcases'
 import {
   formatAnnualBillingNote,
   formatPlanPrice,
   formatPlanPriceSuffix,
   getPlan,
   isApprovalRequiredPlan,
+  SUBSCRIPTION_PLANS,
   type PlanId,
 } from '../plans'
 import { useApp } from '../AppContext'
@@ -25,16 +25,16 @@ export function PlanDetailView({ planId }: Props) {
     selectPlan,
     openTeamAcademyRequest,
     openLanding,
-    openCoachPlanSelection,
+    openPlanDetail,
     selectedBillingInterval,
     setBillingInterval,
   } = useApp()
 
   const plan = getPlan(planId)
   const profile = PLAN_MARKETING_PROFILES[planId]
-  const sections = getPlanMarketingSections(planId)
-  const comparisonLabels = getAllComparisonLabels()
+  const showcases = getPlanFeatureShowcases(planId)
   const approvalRequired = isApprovalRequiredPlan(planId)
+  const otherPlans = SUBSCRIPTION_PLANS.filter((entry) => entry.id !== planId)
 
   const handleSelect = () => {
     if (approvalRequired) {
@@ -45,118 +45,122 @@ export function PlanDetailView({ planId }: Props) {
   }
 
   return (
-    <div className="landing-page plan-detail-page">
-      <header className="landing-nav plan-detail-nav">
-        <button type="button" className="landing-nav__brand landing-nav__brand--btn" onClick={openLanding}>
+    <div className="plan-detail-page">
+      <header className="plan-detail-nav">
+        <button type="button" className="plan-detail-nav__brand" onClick={openLanding}>
           <AppLogo size="md" />
         </button>
-        <button type="button" className="btn btn--outline btn--small" onClick={openCoachPlanSelection}>
-          View all plans
-        </button>
+        <nav className="plan-detail-nav__links" aria-label="Other plans">
+          {otherPlans.map((entry) => (
+            <button
+              key={entry.id}
+              type="button"
+              className="plan-detail-nav__link"
+              onClick={() => openPlanDetail(entry.id)}
+            >
+              {entry.name}
+            </button>
+          ))}
+        </nav>
       </header>
 
       <main className="plan-detail">
         <section className="plan-detail__hero">
-          <p className="landing-eyebrow">SurfStar plan</p>
-          <h1>{plan.name}</h1>
-          <p className="plan-detail__tagline">{profile.tagline}</p>
-          <p className="plan-detail__summary">{profile.summary}</p>
-
-          <div className="plan-detail__price-block">
-            <p className="pack-card__price plan-detail__price">
-              <strong>{formatPlanPrice(plan, selectedBillingInterval)}</strong>
-              <span>{formatPlanPriceSuffix(selectedBillingInterval)}</span>
-            </p>
-            {selectedBillingInterval === 'annual' ? (
-              <p className="pack-card__annual-equiv muted">{formatAnnualBillingNote(plan)}</p>
+          <div className="plan-detail__hero-copy">
+            {plan.highlighted ? <span className="plan-detail__badge">Most popular</span> : null}
+            {approvalRequired ? (
+              <span className="plan-detail__badge plan-detail__badge--muted">By approval</span>
             ) : null}
+            <p className="plan-detail__eyebrow">SurfStar plan</p>
+            <h1>{plan.name}</h1>
+            <p className="plan-detail__tagline">{profile.tagline}</p>
+            <p className="plan-detail__summary">{profile.summary}</p>
+            <p className="plan-detail__ideal">
+              <strong>Ideal for:</strong> {profile.idealFor}
+            </p>
+
+            <div className="plan-detail__pricing">
+              <p className="plan-detail__price">
+                <strong>{formatPlanPrice(plan, selectedBillingInterval)}</strong>
+                <span>{formatPlanPriceSuffix(selectedBillingInterval)}</span>
+              </p>
+              {selectedBillingInterval === 'annual' ? (
+                <p className="plan-detail__annual">{formatAnnualBillingNote(plan)}</p>
+              ) : null}
+              <BillingIntervalToggle
+                className="billing-toggle--plan-detail"
+                value={selectedBillingInterval}
+                onChange={setBillingInterval}
+              />
+              <button
+                type="button"
+                className={
+                  approvalRequired
+                    ? 'btn btn--secondary btn--lg btn--block plan-detail__cta'
+                    : plan.highlighted
+                      ? 'btn btn--gold btn--lg btn--block plan-detail__cta'
+                      : 'btn btn--secondary btn--lg btn--block plan-detail__cta'
+                }
+                onClick={handleSelect}
+              >
+                {approvalRequired ? 'Request Team Academy access' : `Subscribe to ${plan.name}`}
+              </button>
+              <p className="plan-detail__note">Athletes join free — only the coach subscribes.</p>
+            </div>
           </div>
 
-          <BillingIntervalToggle
-            className="billing-toggle--landing"
-            value={selectedBillingInterval}
-            onChange={setBillingInterval}
-          />
+          <div className="plan-detail__hero-visual">
+            <PlanFeaturePreview variant={profile.heroImage} />
+          </div>
+        </section>
 
+        <section className="plan-detail__features">
+          <div className="plan-detail__features-head">
+            <h2>What&apos;s included in {plan.name}</h2>
+            <p>Every feature below is part of this plan — with a live app preview for each one.</p>
+          </div>
+
+          {showcases.map((showcase, index) => (
+            <article
+              key={showcase.id}
+              className={
+                index % 2 === 1
+                  ? 'plan-detail__feature plan-detail__feature--reverse'
+                  : 'plan-detail__feature'
+              }
+            >
+              <div className="plan-detail__feature-copy">
+                <h3>{showcase.title}</h3>
+                <p className="plan-detail__feature-lead">{showcase.lead}</p>
+                <ul className="plan-detail__feature-bullets">
+                  {showcase.bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="plan-detail__feature-visual">
+                <PlanFeaturePreview variant={showcase.id} />
+              </div>
+            </article>
+          ))}
+        </section>
+
+        <section className="plan-detail__subscribe">
+          <div className="plan-detail__subscribe-copy">
+            <h2>Ready to start with {plan.name}?</h2>
+            <p>
+              <strong>{formatPlanPrice(plan, selectedBillingInterval)}</strong>
+              {formatPlanPriceSuffix(selectedBillingInterval)}
+              {selectedBillingInterval === 'annual' ? ` · ${formatAnnualBillingNote(plan)}` : null}
+            </p>
+          </div>
           <button
             type="button"
-            className={
-              approvalRequired
-                ? 'btn btn--secondary btn--lg plan-detail__cta'
-                : plan.highlighted
-                  ? 'btn btn--gold btn--lg plan-detail__cta'
-                  : 'btn btn--secondary btn--lg plan-detail__cta'
-            }
+            className="btn btn--gold btn--lg"
             onClick={handleSelect}
           >
-            {approvalRequired ? 'Request Team Academy access' : `Choose ${plan.name}`}
+            {approvalRequired ? 'Request access' : `Subscribe to ${plan.name}`}
           </button>
-
-          <p className="plan-detail__ideal muted">
-            <strong>Ideal for:</strong> {profile.idealFor}
-          </p>
-        </section>
-
-        <section className="plan-detail__matrix landing-section">
-          <div className="landing-section__head">
-            <h2>Everything in {plan.name}</h2>
-            <p className="landing-section__sub">
-              Full checklist for this plan — included items are marked with a check.
-            </p>
-          </div>
-          <ul className="plan-detail__checklist">
-            {comparisonLabels.map((label) => {
-              const included = planIncludesMarketingFeature(planId, label)
-              return (
-                <li
-                  key={label}
-                  className={
-                    included
-                      ? 'pack-card__feature pack-card__feature--yes'
-                      : 'pack-card__feature pack-card__feature--no'
-                  }
-                >
-                  <span className="pack-card__mark" aria-hidden="true">
-                    {included ? '✓' : '—'}
-                  </span>
-                  {label}
-                </li>
-              )
-            })}
-          </ul>
-        </section>
-
-        {sections.map((section) => (
-          <section key={section.id} className="plan-detail__section landing-section landing-section--alt">
-            <div className="landing-section__head">
-              <p className="landing-eyebrow">{section.label}</p>
-              <h2>{section.label}</h2>
-            </div>
-            <div className="plan-detail__feature-grid">
-              {section.items.map((item) => (
-                  <article key={item.title} className="plan-detail__feature-card">
-                    <h3>{item.title}</h3>
-                    <p>{item.text}</p>
-                  </article>
-                ))}
-            </div>
-          </section>
-        ))}
-
-        <section className="landing-cta-band plan-detail__footer-cta">
-          <div>
-            <p className="landing-eyebrow landing-eyebrow--gold">Ready to start?</p>
-            <h2>Get {plan.name} today</h2>
-            <p className="muted">Athletes join free — only the coach subscribes.</p>
-          </div>
-          <div className="landing-cta-band__actions">
-            <button type="button" className="btn btn--gold btn--lg" onClick={handleSelect}>
-              {approvalRequired ? 'Request access' : `Choose ${plan.name}`}
-            </button>
-            <button type="button" className="btn btn--outline btn--lg" onClick={openCoachPlanSelection}>
-              Compare plans
-            </button>
-          </div>
         </section>
       </main>
     </div>
