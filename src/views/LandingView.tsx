@@ -285,7 +285,6 @@ export function LandingView() {
   const [featureTab, setFeatureTab] = useState(FEATURE_GROUPS[0].id)
 
   const activeSpotlight = PREMIUM_SPOTLIGHTS.find((item) => item.id === spotlightTab) ?? PREMIUM_SPOTLIGHTS[0]
-  const activeFeatureGroup = FEATURE_GROUPS.find((group) => group.id === featureTab) ?? FEATURE_GROUPS[0]
 
   useEffect(() => {
     if (!mobileNavOpen) return
@@ -469,7 +468,7 @@ export function LandingView() {
           </div>
         </section>
 
-        <section className="landing-pillars" aria-label="Core capabilities">
+        <section className="landing-pillars landing-pillars--desktop" aria-label="Core capabilities">
           <div className="landing-pillars__grid">
             {PILLARS.map((pillar) => (
               <article key={pillar.title} className="landing-pillar">
@@ -541,7 +540,7 @@ export function LandingView() {
             </p>
           </div>
 
-          <div className="landing-features__tabs landing-features__tabs--mobile" role="tablist" aria-label="Features by role">
+          <div className="landing-features__tabs" role="tablist" aria-label="Features by role">
             {FEATURE_GROUPS.map((group) => (
               <button
                 key={group.id}
@@ -559,39 +558,26 @@ export function LandingView() {
             ))}
           </div>
 
-          <div
-            className="landing-features__mobile landing-features__mobile--mobile"
-            role="tabpanel"
-            id={`features-panel-${activeFeatureGroup.id}`}
-            aria-labelledby={`features-tab-${activeFeatureGroup.id}`}
-            key={featureTab}
-          >
-            {activeFeatureGroup.items.map((feature) => (
-              <article key={feature.title} className="landing-feature">
-                <span className="landing-feature__icon" aria-hidden="true">
-                  {feature.icon}
-                </span>
-                <h3>{feature.title}</h3>
-                <p>{feature.text}</p>
-              </article>
-            ))}
-          </div>
-
-          <div className="landing-features__desktop landing-features__desktop--desktop">
+          <div className="landing-features__panels">
             {FEATURE_GROUPS.map((group) => (
-              <div key={group.id} className="landing-features__group">
-                <h3 className="landing-features__group-title">{group.label}</h3>
-                <div className="landing-features__group-grid">
-                  {group.items.map((feature) => (
-                    <article key={feature.title} className="landing-feature">
-                      <span className="landing-feature__icon" aria-hidden="true">
-                        {feature.icon}
-                      </span>
-                      <h4>{feature.title}</h4>
-                      <p>{feature.text}</p>
-                    </article>
-                  ))}
-                </div>
+              <div
+                key={group.id}
+                id={`features-panel-${group.id}`}
+                role="tabpanel"
+                aria-labelledby={`features-tab-${group.id}`}
+                className="landing-features__panel"
+                hidden={featureTab !== group.id}
+              >
+                <p className="landing-features__panel-label">{group.label}</p>
+                {group.items.map((feature) => (
+                  <article key={feature.title} className="landing-feature">
+                    <span className="landing-feature__icon" aria-hidden="true">
+                      {feature.icon}
+                    </span>
+                    <h3>{feature.title}</h3>
+                    <p>{feature.text}</p>
+                  </article>
+                ))}
               </div>
             ))}
           </div>

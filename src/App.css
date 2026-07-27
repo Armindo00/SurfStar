@@ -4093,8 +4093,7 @@ body {
 /* —— Landing v2: cleaner layout + responsive blocks —— */
 
 .landing-hero__lead--mobile,
-.landing-hero__chips--mobile,
-.landing-features__mobile--mobile {
+.landing-hero__chips--mobile {
   display: block;
 }
 
@@ -4102,8 +4101,7 @@ body {
 .landing-showcase--desktop,
 .landing-hero__signin-links--desktop,
 .landing-hero__checks--desktop,
-.landing-section__sub--desktop,
-.landing-features__desktop--desktop {
+.landing-section__sub--desktop {
   display: none;
 }
 
@@ -4296,10 +4294,6 @@ body {
   margin-bottom: 1rem;
 }
 
-.landing-features__tabs--mobile {
-  display: flex;
-}
-
 .landing-features__tab {
   flex: 1 1 0;
   min-width: 0;
@@ -4330,30 +4324,26 @@ body {
   background: rgba(201, 169, 98, 0.14);
 }
 
-.landing-features__mobile {
+.landing-features__panel {
   display: grid;
   gap: 0.75rem;
 }
 
-.landing-features__desktop {
-  display: grid;
-  gap: 2rem;
+.landing-features__panel[hidden] {
+  display: none !important;
 }
 
-.landing-features__group-title {
-  margin: 0 0 0.85rem;
-  font-size: 1rem;
+.landing-features__panel-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--landing-gold-light);
 }
 
-.landing-features__group-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.landing-features__group-grid h4 {
-  margin: 0 0 0.4rem;
-  font-size: 1.05rem;
+.landing-pillars--desktop {
+  display: none;
 }
 
 .landing-steps--compact .landing-step {
@@ -4395,9 +4385,7 @@ body {
 
 @media (min-width: 768px) {
   .landing-hero__lead--mobile,
-  .landing-hero__chips--mobile,
-  .landing-features__tabs--mobile,
-  .landing-features__mobile--mobile {
+  .landing-hero__chips--mobile {
     display: none;
   }
 
@@ -4437,10 +4425,6 @@ body {
     gap: 3rem;
   }
 
-  .landing-features__desktop--desktop {
-    display: grid;
-  }
-
   .landing-features__tab-full {
     display: inline;
   }
@@ -4449,11 +4433,24 @@ body {
     display: none;
   }
 
+  .landing-features__panel-label {
+    display: none;
+  }
+
+  .landing-features__panel {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
   .landing-whats-new__track {
     grid-auto-flow: row;
     grid-auto-columns: unset;
     grid-template-columns: repeat(4, 1fr);
     overflow: visible;
+  }
+
+  .landing-pillars--desktop {
+    display: block;
   }
 
   .landing-pillars__grid {
@@ -4470,10 +4467,6 @@ body {
 
   .landing-pillar p {
     font-size: 0.85rem;
-  }
-
-  .landing-features__group-grid {
-    grid-template-columns: repeat(3, 1fr);
   }
 
   .landing-footer__grid {
