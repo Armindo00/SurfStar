@@ -18,6 +18,7 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 12 | `add-organization-plan-requests.sql` | Team Academy approval request form |
 | 13 | `add-platform-admin.sql` | Admin panel, block accounts, approve requests |
 | 14 | `add-athlete-equipment-feedback.sql` | Athlete quiver, coach ratings, session wellbeing feedback |
+| 15 | `add-contact-messages.sql` | Contact / feedback form + admin inbox |
 
 ## Platform admin
 

@@ -10,13 +10,19 @@ import {
   type AdminDashboardStats,
   type AdminPlanRequest,
 } from '../adminApi'
+import {
+  adminFetchContactMessages,
+  adminUpdateContactMessageStatus,
+} from '../contactApi'
+import { contactKindLabel } from '../contactKinds'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { SkeletonCard } from '../components/Skeleton'
 import { useToast } from '../components/ToastProvider'
 import { getPlan, type PlanId } from '../plans'
 import { useApp } from '../AppContext'
+import type { ContactMessage, ContactMessageStatus } from '../types'
 
-type AdminTab = 'dashboard' | 'requests' | 'accounts'
+type AdminTab = 'dashboard' | 'requests' | 'accounts' | 'contact'
 
 function formatDate(value: string | null): string {
   if (!value) return '—'
@@ -45,7 +51,10 @@ export function AdminView() {
   const [stats, setStats] = useState<AdminDashboardStats | null>(null)
   const [requests, setRequests] = useState<AdminPlanRequest[]>([])
   const [accounts, setAccounts] = useState<AdminAccount[]>([])
+  const [contactMessages, setContactMessages] = useState<ContactMessage[]>([])
+  const [newContactCount, setNewContactCount] = useState(0)
   const [requestFilter, setRequestFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending')
+  const [contactFilter, setContactFilter] = useState<'new' | 'read' | 'resolved' | 'all'>('new')
   const [accountRole, setAccountRole] = useState<'all' | 'treinador' | 'atleta'>('all')
   const [accountSearch, setAccountSearch] = useState('')
   const [blockedOnly, setBlockedOnly] = useState(false)
@@ -93,13 +102,38 @@ export function AdminView() {
     setAccounts(result.accounts)
   }, [accountRole, accountSearch, blockedOnly])
 
+  const loadContactMessages = useCallback(async () => {
+    setLoading(true)
+    const result = await adminFetchContactMessages(contactFilter === 'all' ? null : contactFilter)
+    setLoading(false)
+    if (!result.ok) {
+      setError(result.error)
+      return
+    }
+    setContactMessages(result.messages)
+    if (contactFilter === 'new') {
+      setNewContactCount(result.messages.length)
+    }
+  }, [contactFilter])
+
+  const refreshNewContactCount = useCallback(async () => {
+    const result = await adminFetchContactMessages('new')
+    if (result.ok) setNewContactCount(result.messages.length)
+  }, [])
+
   useEffect(() => {
     if (!isAdmin || !cloudMode) return
     setError('')
     if (tab === 'dashboard') void loadDashboard()
     if (tab === 'requests') void loadRequests()
     if (tab === 'accounts') void loadAccounts()
-  }, [tab, isAdmin, cloudMode, loadDashboard, loadRequests, loadAccounts])
+    if (tab === 'contact') void loadContactMessages()
+  }, [tab, isAdmin, cloudMode, loadDashboard, loadRequests, loadAccounts, loadContactMessages])
+
+  useEffect(() => {
+    if (!isAdmin || !cloudMode) return
+    void refreshNewContactCount()
+  }, [isAdmin, cloudMode, refreshNewContactCount])
 
   const reviewRequest = async (request: AdminPlanRequest, action: 'approve' | 'reject') => {
     setBusyId(request.id)
@@ -155,6 +189,23 @@ export function AdminView() {
     }
   }
 
+  const updateContactStatus = async (message: ContactMessage, status: ContactMessageStatus) => {
+    setBusyId(message.id)
+    setError('')
+    try {
+      const result = await adminUpdateContactMessageStatus(message.id, status)
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      showToast(`Message marked as ${status}.`, 'success')
+      await loadContactMessages()
+      await refreshNewContactCount()
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   if (!cloudMode) {
     return (
       <div className="admin-page">
@@ -183,6 +234,7 @@ export function AdminView() {
             ['dashboard', 'Overview'],
             ['requests', 'Team Academy'],
             ['accounts', 'Accounts'],
+            ['contact', 'Contact'],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -194,6 +246,9 @@ export function AdminView() {
             {label}
             {id === 'requests' && stats && stats.pending_requests > 0 ? (
               <span className="admin-tabs__badge">{stats.pending_requests}</span>
+            ) : null}
+            {id === 'contact' && newContactCount > 0 ? (
+              <span className="admin-tabs__badge">{newContactCount}</span>
             ) : null}
           </button>
         ))}
@@ -424,6 +479,92 @@ export function AdminView() {
                           Activate Team Academy
                         </button>
                       </>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      {!loading && tab === 'contact' ? (
+        <div className="admin-panel">
+          <div className="admin-toolbar">
+            <label className="field field--pro admin-toolbar__field">
+              <span>Status</span>
+              <select
+                value={contactFilter}
+                onChange={(e) => setContactFilter(e.target.value as typeof contactFilter)}
+              >
+                <option value="new">New</option>
+                <option value="read">Read</option>
+                <option value="resolved">Resolved</option>
+                <option value="all">All</option>
+              </select>
+            </label>
+            <button type="button" className="btn btn--secondary btn--small" onClick={() => void loadContactMessages()}>
+              Refresh
+            </button>
+          </div>
+
+          {contactMessages.length === 0 ? (
+            <p className="muted">No contact messages match this filter.</p>
+          ) : (
+            <div className="admin-list">
+              {contactMessages.map((message) => (
+                <article key={message.id} className="admin-card">
+                  <div className="admin-card__head">
+                    <div>
+                      <h2>{message.subject}</h2>
+                      <p className="muted">
+                        {message.name} · {message.email}
+                        {message.userRole ? ` · ${message.userRole === 'treinador' ? 'Coach' : 'Athlete'}` : ''}
+                      </p>
+                    </div>
+                    <span className={`admin-badge admin-badge--${message.status}`}>{message.status}</span>
+                  </div>
+                  <dl className="admin-meta">
+                    <div>
+                      <dt>Type</dt>
+                      <dd>{contactKindLabel(message.kind)}</dd>
+                    </div>
+                    <div>
+                      <dt>Received</dt>
+                      <dd>{formatDate(message.createdAt)}</dd>
+                    </div>
+                  </dl>
+                  <p className="admin-card__message">{message.message}</p>
+                  <div className="admin-card__actions">
+                    {message.status !== 'read' ? (
+                      <button
+                        type="button"
+                        className="btn btn--secondary btn--small"
+                        disabled={busyId === message.id}
+                        onClick={() => void updateContactStatus(message, 'read')}
+                      >
+                        Mark read
+                      </button>
+                    ) : null}
+                    {message.status !== 'resolved' ? (
+                      <button
+                        type="button"
+                        className="btn btn--gold btn--small"
+                        disabled={busyId === message.id}
+                        onClick={() => void updateContactStatus(message, 'resolved')}
+                      >
+                        Resolve
+                      </button>
+                    ) : null}
+                    {message.status !== 'new' ? (
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--small"
+                        disabled={busyId === message.id}
+                        onClick={() => void updateContactStatus(message, 'new')}
+                      >
+                        Reopen
+                      </button>
                     ) : null}
                   </div>
                 </article>

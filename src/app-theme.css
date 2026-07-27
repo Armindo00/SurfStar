@@ -2107,3 +2107,46 @@ body {
   margin: 1rem 0 0;
   font-size: 0.9rem;
 }
+
+.contact-form textarea {
+  width: 100%;
+  min-height: 7rem;
+  padding: 0.82rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.32);
+  color: var(--landing-text);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.contact-form textarea:focus {
+  outline: none;
+  border-color: rgba(201, 169, 98, 0.55);
+  box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.15);
+}
+
+.contact-form select {
+  width: 100%;
+  padding: 0.82rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.32);
+  color: var(--landing-text);
+  font-size: 1rem;
+}
+
+.contact-success {
+  display: grid;
+  gap: 1rem;
+}
+
+.contact-page-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.help-section--contact .btn {
+  margin-top: 0.35rem;
+}

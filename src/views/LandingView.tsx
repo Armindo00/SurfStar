@@ -142,6 +142,7 @@ export function LandingView() {
     openCoachPlanSelection,
     openPrivacy,
     openTerms,
+    openContact,
   } = useApp()
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -588,6 +589,9 @@ export function LandingView() {
           </button>
           <button type="button" className="landing-footer__btn" onClick={openTerms}>
             Terms of Service
+          </button>
+          <button type="button" className="landing-footer__btn" onClick={openContact}>
+            Contact
           </button>
         </div>
         <p className="landing-footer__copy">© {new Date().getFullYear()} SurfStar</p>

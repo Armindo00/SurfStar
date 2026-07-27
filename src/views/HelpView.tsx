@@ -10,7 +10,7 @@ import {
 import { useApp } from '../AppContext'
 
 export function HelpView() {
-  const { role, subscription, setView } = useApp()
+  const { role, subscription, setView, openContact } = useApp()
   const isCoach = role === 'treinador'
   const planId = subscription?.planId ?? 'team'
 
@@ -78,6 +78,17 @@ export function HelpView() {
       <div className="ss-card help-section">
         <h2 className="page-title">{isCoach ? 'Add to home screen' : 'Install on your phone'}</h2>
         <InstallInstructions />
+      </div>
+
+      <div className="ss-card help-section help-section--contact">
+        <h2 className="page-title">Contact SurfStar</h2>
+        <p className="muted">
+          Send feedback, report a bug, or ask for help. We read every message and typically reply within 1–2
+          business days.
+        </p>
+        <button type="button" className="btn btn--outline btn--block" onClick={openContact}>
+          Send a message
+        </button>
       </div>
     </div>
   )

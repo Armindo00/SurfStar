@@ -51,6 +51,7 @@ import {
   verifyPassword,
 } from './passwordUtils'
 import type {
+  ContactMessageKind,
   AppView,
   Athlete,
   AthleteBoard,
@@ -141,6 +142,10 @@ import {
   localUpdateOrganizationName,
 } from './organizationApi'
 import {
+  cloudSubmitContactMessage,
+  localSubmitContactMessage,
+} from './contactApi'
+import {
   cloudDeleteAthleteBoard,
   cloudDeleteAthleteFin,
   cloudLoadAthleteEquipmentBundle,
@@ -182,6 +187,7 @@ type AppContextValue = {
   openLanding: () => void
   openPrivacy: () => void
   openTerms: () => void
+  openContact: () => void
   openCoachSignIn: () => void
   openCoachPlanSelection: () => void
   openCoachSignUp: () => void
@@ -368,6 +374,13 @@ type AppContextValue = {
     writtenNote: string | null
   }) => Promise<{ ok: true } | { ok: false; error: string }>
   skipSessionFeedback: (sessionId: string) => void
+  submitContactMessage: (input: {
+    kind: ContactMessageKind
+    name: string
+    email: string
+    subject: string
+    message: string
+  }) => Promise<{ ok: true } | { ok: false; error: string }>
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -726,6 +739,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const openTerms = useCallback(() => {
     setPublicView('terms')
   }, [setPublicView])
+
+  const openContact = useCallback(() => {
+    if (auth) {
+      setView('contact')
+      return
+    }
+    setPublicView('contact')
+  }, [auth, setPublicView])
 
   const openCoachSignIn = useCallback(() => {
     setPublicView('coach-sign-in')
@@ -3006,6 +3027,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const submitContactMessage = useCallback(
+    async (input: {
+      kind: ContactMessageKind
+      name: string
+      email: string
+      subject: string
+      message: string
+    }) => {
+      if (!input.name.trim()) return { ok: false as const, error: 'Name is required.' }
+      if (!input.email.trim()) return { ok: false as const, error: 'Email is required.' }
+      if (!input.subject.trim()) return { ok: false as const, error: 'Subject is required.' }
+      if (input.message.trim().length < 10) {
+        return { ok: false as const, error: 'Message must be at least 10 characters.' }
+      }
+
+      try {
+        if (cloudMode) {
+          const result = await cloudSubmitContactMessage(input)
+          if (!result.ok) return result
+          return { ok: true as const }
+        }
+
+        localSubmitContactMessage({
+          ...input,
+          userId: auth?.role === 'treinador' ? auth.coachId : auth?.role === 'atleta' ? auth.athleteId : null,
+          userRole: auth?.role ?? null,
+        })
+        return { ok: true as const }
+      } catch (err) {
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err.message : 'Could not send message.',
+        }
+      }
+    },
+    [auth, cloudMode],
+  )
+
   const value = useMemo(
     () => ({
       auth,
@@ -3021,6 +3080,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openLanding,
       openPrivacy,
       openTerms,
+      openContact,
       openCoachSignIn,
       openCoachPlanSelection,
       openCoachSignUp,
@@ -3149,6 +3209,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       saveEquipmentEvaluation,
       submitSessionFeedback,
       skipSessionFeedback,
+      submitContactMessage,
     }),
     [
       auth,
@@ -3164,6 +3225,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openLanding,
       openPrivacy,
       openTerms,
+      openContact,
       openCoachSignIn,
       openCoachPlanSelection,
       openCoachSignUp,
@@ -3290,6 +3352,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       saveEquipmentEvaluation,
       submitSessionFeedback,
       skipSessionFeedback,
+      submitContactMessage,
     ],
   )
 

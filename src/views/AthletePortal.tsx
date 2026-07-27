@@ -54,6 +54,7 @@ export function AthletePortal() {
     pendingSessionFeedback,
     skipSessionFeedback,
     refreshAthleteEquipment,
+    openContact,
   } = useApp()
   const [pairingBusy, setPairingBusy] = useState<string | null>(null)
   const [pairingError, setPairingError] = useState('')
@@ -512,6 +513,10 @@ export function AthletePortal() {
 
       <button type="button" className="btn btn--outline btn--block" onClick={() => setView('help')}>
         Help & install guide
+      </button>
+
+      <button type="button" className="btn btn--outline btn--block" onClick={openContact}>
+        Contact SurfStar
       </button>
 
       <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>

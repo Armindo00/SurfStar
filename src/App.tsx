@@ -11,6 +11,7 @@ import { SubscriptionView } from './views/SubscriptionView'
 import { TeamAcademyRequestView } from './views/TeamAcademyRequestView'
 import { AdminView } from './views/AdminView'
 import { LegalPageView } from './views/LegalPageView'
+import { ContactView } from './views/ContactView'
 import { AthletePortal } from './views/AthletePortal'
 import { AthleteMaterialView } from './views/AthleteMaterialView'
 import { CoachAthleteInsightsView } from './views/CoachAthleteInsightsView'
@@ -125,6 +126,9 @@ function Shell() {
     if (publicView === 'terms') {
       return <LegalPageView page="terms" />
     }
+    if (publicView === 'contact') {
+      return <ContactView variant="public" />
+    }
     if (isAuthPublicView(publicView)) {
       return <LoginView />
     }
@@ -152,7 +156,10 @@ function Shell() {
         <main className="app-main">
           {role === 'atleta' && view === 'help' && <HelpView />}
           {role === 'atleta' && view === 'athlete-material' && <AthleteMaterialView />}
-          {role === 'atleta' && view !== 'help' && view !== 'athlete-material' && <AthletePortal />}
+          {role === 'atleta' && view === 'contact' && <ContactView variant="app" />}
+          {role === 'atleta' && view !== 'help' && view !== 'athlete-material' && view !== 'contact' && (
+            <AthletePortal />
+          )}
           {role === 'treinador' && view === 'coach-home' && <CoachHome />}
           {role === 'treinador' && view === 'start-session' && <StartSession />}
           {role === 'treinador' && view === 'select-athletes' && <SelectAthletes />}
@@ -175,6 +182,7 @@ function Shell() {
           {role === 'treinador' && view === 'admin' && <AdminView />}
           {role === 'treinador' && view === 'subscription' && <SubscriptionView />}
           {role === 'treinador' && view === 'help' && <HelpView />}
+          {role === 'treinador' && view === 'contact' && <ContactView variant="app" />}
         </main>
         <EndSessionSheet />
       </div>

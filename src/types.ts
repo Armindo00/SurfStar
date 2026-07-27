@@ -10,8 +10,9 @@ export type PublicView =
   | 'team-academy-request'
   | 'privacy'
   | 'terms'
+  | 'contact'
 
-export type AuthPublicView = Exclude<PublicView, 'landing' | 'checkout' | 'team-academy-request' | 'privacy' | 'terms'>
+export type AuthPublicView = Exclude<PublicView, 'landing' | 'checkout' | 'team-academy-request' | 'privacy' | 'terms' | 'contact'>
 
 /** Tipos de sessão SurfStar (evolução futura: mar, heat) */
 export type SessionType = 'treino-tecnico' | 'analise-mar' | 'heat'
@@ -44,6 +45,24 @@ export type AppView =
   | 'admin'
   | 'athlete-material'
   | 'coach-athlete-insights'
+  | 'contact'
+
+export type ContactMessageKind = 'feedback' | 'support' | 'bug' | 'billing' | 'other'
+
+export type ContactMessageStatus = 'new' | 'read' | 'resolved'
+
+export type ContactMessage = {
+  id: string
+  kind: ContactMessageKind
+  name: string
+  email: string
+  subject: string
+  message: string
+  userId: string | null
+  userRole: UserRole | null
+  status: ContactMessageStatus
+  createdAt: string
+}
 
 export type MentalState =
   | 'focused'

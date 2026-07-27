@@ -101,7 +101,7 @@ function CoachOnboarding() {
 }
 
 export function CoachHome() {
-  const { auth, subscription, setView, beginDraftSession, logout, coachAthletes, completedCoachSessions } =
+  const { auth, subscription, setView, beginDraftSession, logout, coachAthletes, completedCoachSessions, openContact } =
     useApp()
   const name = auth?.role === 'treinador' ? auth.name : 'Coach'
   const plan = subscription ? getPlan(subscription.planId) : null
@@ -189,6 +189,10 @@ export function CoachHome() {
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('help')}>
           <span>Help & training guide</span>
+          <span aria-hidden="true">›</span>
+        </button>
+        <button type="button" className="action-list__item" onClick={openContact}>
+          <span>Contact SurfStar</span>
           <span aria-hidden="true">›</span>
         </button>
       </nav>

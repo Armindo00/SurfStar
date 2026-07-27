@@ -162,9 +162,22 @@ insert into _surfstar_migration_check values
   )
   then 'OK' else 'FALTA' end,
   'Tabelas athlete_boards + session_athlete_feedback'
+),
+(
+  15,
+  'add-contact-messages.sql',
+  case when exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'contact_messages'
+  ) and exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'submit_contact_message'
+  )
+  then 'OK' else 'FALTA' end,
+  'Tabela contact_messages + RPC submit_contact_message'
 );
 
--- Passo 15 (opcional): demo mode para checkout sem Stripe
+-- Passo 16 (opcional): demo mode para checkout sem Stripe
 do $$
 begin
   if not exists (
@@ -172,7 +185,7 @@ begin
     where table_schema = 'public' and table_name = 'app_settings'
   ) then
     insert into _surfstar_migration_check values (
-      15, 'enable-demo-mode.sql', 'FALTA',
+      16, 'enable-demo-mode.sql', 'FALTA',
       'Primeiro corre fix-subscription-security.sql (passo 9)'
     );
   elsif exists (
@@ -181,11 +194,11 @@ begin
       and coalesce(value #>> '{}', 'false') = 'true'
   ) then
     insert into _surfstar_migration_check values (
-      14, 'enable-demo-mode.sql', 'OK', 'Demo activo (checkout sem Stripe)'
+      16, 'enable-demo-mode.sql', 'OK', 'Demo activo (checkout sem Stripe)'
     );
   else
     insert into _surfstar_migration_check values (
-      15, 'enable-demo-mode.sql', 'FALTA', 'Corre enable-demo-mode.sql (opcional)'
+      16, 'enable-demo-mode.sql', 'FALTA', 'Corre enable-demo-mode.sql (opcional)'
     );
   end if;
 end $$;
@@ -194,4 +207,4 @@ select ordem, ficheiro, estado, o_que_verifica
 from _surfstar_migration_check
 order by ordem;
 
--- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 14)
+-- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 15)
