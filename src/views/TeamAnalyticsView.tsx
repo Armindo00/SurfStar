@@ -3,6 +3,8 @@ import {
   AthleteAnalyticsTopicSheet,
   type AnalyticsTopic,
 } from '../components/AthleteAnalyticsTopicSheet'
+import { AthleteMaterialPanel } from '../components/AthleteMaterialPanel'
+import { AthletePsychologyPanel } from '../components/AthletePsychologyPanel'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 import { exportAthleteAnalyticsCsv } from '../exportCsv'
@@ -37,12 +39,15 @@ type TopicTile = {
   star?: boolean
 }
 
+type AthleteProfileSection = 'training' | 'psychology' | 'material'
+
 export function TeamAnalyticsView() {
   const { coachAthletes, trainingSessions, auth, subscription, getSpot, setView } = useApp()
   const [search, setSearch] = useState('')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
   const [period, setPeriod] = useState<AnalyticsPeriod>('6m')
   const [activeTopic, setActiveTopic] = useState<AnalyticsTopic | null>(null)
+  const [profileSection, setProfileSection] = useState<AthleteProfileSection>('training')
 
   const planId = subscription?.planId ?? 'team'
   const hasAccess = canAccessTeamAnalytics(planId)
@@ -184,6 +189,7 @@ export function TeamAnalyticsView() {
             setSelectedAthleteId(null)
             setSearch('')
             setActiveTopic(null)
+            setProfileSection('training')
             setPeriod('6m')
           }}
         />
@@ -211,28 +217,88 @@ export function TeamAnalyticsView() {
         <div className="ss-card analytics-period-bar">
           <div className="analytics-period-bar__copy">
             <span className="analytics-period-bar__label">Time range</span>
-            <p className="muted">Choose how far back to analyze this athlete.</p>
+            <p className="muted">
+              {profileSection === 'material'
+                ? 'Equipment is managed outside the time range — switch to training or psychology to filter by period.'
+                : 'Choose how far back to analyze this athlete.'}
+            </p>
           </div>
-          <div className="chip-row chip-row--pro analytics-period-bar__chips" role="tablist" aria-label="Time range">
-            {ANALYTICS_PERIOD_OPTIONS.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                role="tab"
-                aria-selected={period === option.id}
-                className={`chip ${period === option.id ? 'chip--active' : ''}`}
-                onClick={() => {
-                  setPeriod(option.id)
-                  setActiveTopic(null)
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          {profileSection !== 'material' ? (
+            <div className="chip-row chip-row--pro analytics-period-bar__chips" role="tablist" aria-label="Time range">
+              {ANALYTICS_PERIOD_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={period === option.id}
+                  className={`chip ${period === option.id ? 'chip--active' : ''}`}
+                  onClick={() => {
+                    setPeriod(option.id)
+                    setActiveTopic(null)
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
 
-        {analytics.sessions.length === 0 ? (
+        <nav className="admin-tabs athlete-profile-tabs" aria-label="Athlete profile sections">
+          <button
+            type="button"
+            className={
+              profileSection === 'training'
+                ? 'admin-tabs__btn admin-tabs__btn--active'
+                : 'admin-tabs__btn'
+            }
+            onClick={() => {
+              setProfileSection('training')
+              setActiveTopic(null)
+            }}
+          >
+            Training stats
+          </button>
+          <button
+            type="button"
+            className={
+              profileSection === 'psychology'
+                ? 'admin-tabs__btn admin-tabs__btn--active'
+                : 'admin-tabs__btn'
+            }
+            onClick={() => {
+              setProfileSection('psychology')
+              setActiveTopic(null)
+            }}
+          >
+            Psychology
+          </button>
+          <button
+            type="button"
+            className={
+              profileSection === 'material'
+                ? 'admin-tabs__btn admin-tabs__btn--active'
+                : 'admin-tabs__btn'
+            }
+            onClick={() => {
+              setProfileSection('material')
+              setActiveTopic(null)
+            }}
+          >
+            Equipment
+          </button>
+        </nav>
+
+        {profileSection === 'material' ? (
+          <AthleteMaterialPanel athleteId={selectedAthlete.id} />
+        ) : profileSection === 'psychology' ? (
+          <AthletePsychologyPanel
+            athleteId={selectedAthlete.id}
+            coachId={coachId}
+            period={period}
+            sessions={analytics.sessions}
+          />
+        ) : analytics.sessions.length === 0 ? (
           <div className="ss-card stats-panel analytics-empty-period">
             <h2 className="stats-panel__title">No data in this period</h2>
             <p className="muted">
@@ -319,7 +385,7 @@ export function TeamAnalyticsView() {
       <div className="ss-card team-analytics-intro">
         <h2 className="page-title">Pick an athlete</h2>
         <p className="muted">
-          Search by name and open stats with overview cards and detailed breakdowns by topic.
+          Search by name and open the athlete profile with training stats, psychology, and equipment.
         </p>
 
         <label className="field field--pro team-analytics-search">
