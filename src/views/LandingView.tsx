@@ -186,18 +186,12 @@ export function LandingView() {
           <a href="#packs">Pricing</a>
         </nav>
         <div className="landing-nav__actions">
-          <div className="landing-nav__auth-group">
-            <span className="landing-nav__auth-label">Coach</span>
-            <button type="button" className="btn btn--outline btn--small" onClick={openCoachSignIn}>
-              Sign in
-            </button>
-          </div>
-          <div className="landing-nav__auth-group">
-            <span className="landing-nav__auth-label">Athlete</span>
-            <button type="button" className="btn btn--outline btn--small" onClick={openAthleteSignIn}>
-              Sign in
-            </button>
-          </div>
+          <button type="button" className="btn btn--outline btn--small landing-nav__signin" onClick={openCoachSignIn}>
+            Coach sign in
+          </button>
+          <button type="button" className="btn btn--outline btn--small landing-nav__signin" onClick={openAthleteSignIn}>
+            Athlete sign in
+          </button>
         </div>
       </header>
 
