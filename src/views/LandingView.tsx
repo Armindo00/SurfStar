@@ -108,6 +108,7 @@ const FEATURE_GROUPS = [
   {
     id: 'coach',
     label: 'For coaches',
+    shortLabel: 'Coaches',
     items: [
       {
         icon: '◎',
@@ -129,6 +130,7 @@ const FEATURE_GROUPS = [
   {
     id: 'athlete',
     label: 'For athletes',
+    shortLabel: 'Athletes',
     items: [
       {
         icon: '⇄',
@@ -150,6 +152,7 @@ const FEATURE_GROUPS = [
   {
     id: 'team',
     label: 'For the team',
+    shortLabel: 'Teams',
     items: [
       {
         icon: '▣',
@@ -489,13 +492,15 @@ export function LandingView() {
             </p>
           </div>
 
-          <div className="landing-spotlight__tabs landing-spotlight__tabs--desktop" role="tablist">
+          <div className="landing-spotlight__tabs" role="tablist" aria-label="Premium coaching tools">
             {PREMIUM_SPOTLIGHTS.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 role="tab"
+                id={`spotlight-tab-${item.id}`}
                 aria-selected={spotlightTab === item.id}
+                aria-controls={`spotlight-panel-${item.id}`}
                 className={spotlightTab === item.id ? 'landing-spotlight__tab landing-spotlight__tab--active' : 'landing-spotlight__tab'}
                 onClick={() => setSpotlightTab(item.id)}
               >
@@ -504,7 +509,12 @@ export function LandingView() {
             ))}
           </div>
 
-          <div className="landing-spotlight__panel landing-spotlight__panel--desktop">
+          <div
+            className="landing-spotlight__panel"
+            role="tabpanel"
+            id={`spotlight-panel-${activeSpotlight.id}`}
+            aria-labelledby={`spotlight-tab-${activeSpotlight.id}`}
+          >
             <div className="landing-spotlight__copy">
               <p className="landing-eyebrow">{activeSpotlight.eyebrow}</p>
               <h3>{activeSpotlight.title}</h3>
@@ -520,20 +530,6 @@ export function LandingView() {
               <PremiumPreview spotlight={activeSpotlight} />
             </div>
           </div>
-
-          <div className="landing-spotlight__accordion landing-spotlight__accordion--mobile">
-            {PREMIUM_SPOTLIGHTS.map((item) => (
-              <details key={item.id} className="landing-spotlight__details" open={item.id === 'custom'}>
-                <summary>{item.title}</summary>
-                <p className="landing-spotlight__lead">{item.lead}</p>
-                <ul className="landing-sea__bullets">
-                  {item.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
-              </details>
-            ))}
-          </div>
         </section>
 
         <section className="landing-section" id="features">
@@ -545,22 +541,31 @@ export function LandingView() {
             </p>
           </div>
 
-          <div className="landing-features__tabs landing-features__tabs--mobile" role="tablist">
+          <div className="landing-features__tabs landing-features__tabs--mobile" role="tablist" aria-label="Features by role">
             {FEATURE_GROUPS.map((group) => (
               <button
                 key={group.id}
                 type="button"
                 role="tab"
+                id={`features-tab-${group.id}`}
                 aria-selected={featureTab === group.id}
+                aria-controls={`features-panel-${group.id}`}
                 className={featureTab === group.id ? 'landing-features__tab landing-features__tab--active' : 'landing-features__tab'}
                 onClick={() => setFeatureTab(group.id)}
               >
-                {group.label}
+                <span className="landing-features__tab-short">{group.shortLabel}</span>
+                <span className="landing-features__tab-full">{group.label}</span>
               </button>
             ))}
           </div>
 
-          <div className="landing-features__mobile landing-features__mobile--mobile">
+          <div
+            className="landing-features__mobile landing-features__mobile--mobile"
+            role="tabpanel"
+            id={`features-panel-${activeFeatureGroup.id}`}
+            aria-labelledby={`features-tab-${activeFeatureGroup.id}`}
+            key={featureTab}
+          >
             {activeFeatureGroup.items.map((feature) => (
               <article key={feature.title} className="landing-feature">
                 <span className="landing-feature__icon" aria-hidden="true">

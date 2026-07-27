@@ -4094,8 +4094,6 @@ body {
 
 .landing-hero__lead--mobile,
 .landing-hero__chips--mobile,
-.landing-spotlight__accordion--mobile,
-.landing-features__tabs--mobile,
 .landing-features__mobile--mobile {
   display: block;
 }
@@ -4105,8 +4103,6 @@ body {
 .landing-hero__signin-links--desktop,
 .landing-hero__checks--desktop,
 .landing-section__sub--desktop,
-.landing-spotlight__tabs--desktop,
-.landing-spotlight__panel--desktop,
 .landing-features__desktop--desktop {
   display: none;
 }
@@ -4239,19 +4235,23 @@ body {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .landing-spotlight__tab {
+  flex: 1 1 0;
+  min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
   color: var(--landing-muted);
   font: inherit;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  padding: 0.55rem 1rem;
+  padding: 0.6rem 0.75rem;
   border-radius: 999px;
   cursor: pointer;
+  text-align: center;
+  line-height: 1.25;
 }
 
 .landing-spotlight__tab--active {
@@ -4290,49 +4290,38 @@ body {
   font-size: 0.85rem;
 }
 
-.landing-spotlight__accordion {
-  display: grid;
-  gap: 0.65rem;
-}
-
-.landing-spotlight__details {
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 0.25rem 1rem 1rem;
-}
-
-.landing-spotlight__details summary {
-  cursor: pointer;
-  font-weight: 700;
-  padding: 0.85rem 0;
-  list-style: none;
-}
-
-.landing-spotlight__details summary::-webkit-details-marker {
-  display: none;
-}
-
 .landing-features__tabs {
   display: flex;
   gap: 0.45rem;
-  overflow-x: auto;
   margin-bottom: 1rem;
-  padding-bottom: 0.15rem;
+}
+
+.landing-features__tabs--mobile {
+  display: flex;
 }
 
 .landing-features__tab {
-  flex: 0 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
   color: var(--landing-muted);
   font: inherit;
   font-size: 0.82rem;
   font-weight: 600;
-  padding: 0.5rem 0.85rem;
+  padding: 0.55rem 0.5rem;
   border-radius: 999px;
   cursor: pointer;
-  white-space: nowrap;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.landing-features__tab-full {
+  display: none;
+}
+
+.landing-features__tab-short {
+  display: inline;
 }
 
 .landing-features__tab--active {
@@ -4407,7 +4396,6 @@ body {
 @media (min-width: 768px) {
   .landing-hero__lead--mobile,
   .landing-hero__chips--mobile,
-  .landing-spotlight__accordion--mobile,
   .landing-features__tabs--mobile,
   .landing-features__mobile--mobile {
     display: none;
@@ -4433,11 +4421,17 @@ body {
     display: block;
   }
 
-  .landing-spotlight__tabs--desktop {
-    display: flex;
+  .landing-spotlight__tabs {
+    margin-bottom: 1.75rem;
   }
 
-  .landing-spotlight__panel--desktop {
+  .landing-spotlight__tab {
+    flex: 0 1 auto;
+    font-size: 0.88rem;
+    padding: 0.55rem 1rem;
+  }
+
+  .landing-spotlight__panel {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
@@ -4445,6 +4439,14 @@ body {
 
   .landing-features__desktop--desktop {
     display: grid;
+  }
+
+  .landing-features__tab-full {
+    display: inline;
+  }
+
+  .landing-features__tab-short {
+    display: none;
   }
 
   .landing-whats-new__track {
@@ -4498,6 +4500,15 @@ body {
 
   .landing-section {
     padding-block: 2.75rem;
+  }
+
+  .landing-spotlight__panel {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .landing-spotlight__copy h3 {
+    font-size: 1.25rem;
   }
 
   .landing-cta-band {
