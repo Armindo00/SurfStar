@@ -137,6 +137,30 @@ export function heatRemainingMs(heat: HeatRecord, now = Date.now()): number | nu
   return Math.max(0, end - now)
 }
 
+export function heatDurationMs(heat: HeatRecord): number {
+  return heat.durationMinutes * 60 * 1000
+}
+
+/** Milliseconds from heat timer start to wave log time. Null if timer missing or wave outside heat. */
+export function heatWaveElapsedMs(heat: HeatRecord, waveAt: string): number | null {
+  if (!heat.timerStartedAt) return null
+  const start = new Date(heat.timerStartedAt).getTime()
+  const at = new Date(waveAt).getTime()
+  const elapsed = at - start
+  if (elapsed < 0) return null
+  // Allow waves logged up to 1 minute after the planned heat end (buzzer waves).
+  if (elapsed > heatDurationMs(heat) + 60_000) return null
+  return elapsed
+}
+
+export function formatHeatElapsedMinutes(minutes: number | null): string {
+  if (minutes === null) return '—'
+  const totalSec = Math.round(minutes * 60)
+  const m = Math.floor(totalSec / 60)
+  const s = totalSec % 60
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
 export function heatIsRunning(heat: HeatRecord): boolean {
   return Boolean(heat.timerStartedAt && !heat.endedAt)
 }

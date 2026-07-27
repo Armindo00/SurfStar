@@ -1,7 +1,13 @@
 import { EvolutionLineChart } from './EvolutionLineChart'
 import { ManeuverLevelSuccessChart } from './ManeuverLevelSuccessChart'
 import { SideCompareChart } from './SideCompareChart'
-import type { AthleteHeatDetail, AthleteSessionSummary } from '../athleteStats'
+import type { AthleteSessionSummary } from '../athleteStats'
+import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
+import {
+  EARLY_HEAT_TOTAL_TARGET,
+  MAJOR_HEAT_WAVE_SCORE,
+} from '../heatAnalyticsStats'
+import { formatHeatElapsedMinutes } from '../heatUtils'
 import {
   averageLevelHint,
   averageLevelTrendLabel,
@@ -66,7 +72,7 @@ type Props = {
   topic: AnalyticsTopic
   period: AnalyticsPeriod
   analytics: AthletePeriodAnalytics
-  heatDetails: AthleteHeatDetail[]
+  heatAnalytics: AthleteHeatAnalyticsSummary
   sessionSummaries: AthleteSessionSummary[]
   getSpot: (id: string) => SurfSpot | undefined
   onClose: () => void
@@ -76,7 +82,7 @@ export function AthleteAnalyticsTopicSheet({
   topic,
   period,
   analytics,
-  heatDetails,
+  heatAnalytics,
   sessionSummaries,
   getSpot,
   onClose,
@@ -367,7 +373,7 @@ export function AthleteAnalyticsTopicSheet({
                 <article className="kpi-card">
                   <span className="kpi-card__label">Avg heat score</span>
                   <strong className="kpi-card__value">
-                    {general.avgHeatScore === null ? '—' : general.avgHeatScore.toFixed(2)}
+                    {heatAnalytics.avgHeatScore === null ? '—' : heatAnalytics.avgHeatScore.toFixed(2)}
                   </strong>
                 </article>
                 <article className="kpi-card">
@@ -380,31 +386,157 @@ export function AthleteAnalyticsTopicSheet({
                 </article>
               </div>
 
-              {heatDetails.length > 0 ? (
-                <div className="table-wrap">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Heat</th>
-                        <th>Score</th>
-                        <th>Place</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {heatDetails.map((row) => (
-                        <tr key={`${row.sessionId}-${row.heatLabel}`}>
-                          <td>{formatSessionDate(row.sessionEndedAt)}</td>
-                          <td>{row.heatLabel}</td>
-                          <td>{row.total.toFixed(2)}</td>
-                          <td>
-                            #{row.placement}
-                            {row.won ? ' · Win' : ''}
-                          </td>
+              {heatAnalytics.heatsWithTiming > 0 ? (
+                <>
+                  <p className="muted analytics-topic-sheet__note">
+                    Rhythm metrics use wave timestamps vs heat timer. Major score ={' '}
+                    {MAJOR_HEAT_WAVE_SCORE.toFixed(2)}+ pts. Based on{' '}
+                    {heatAnalytics.heatsWithTiming} heat
+                    {heatAnalytics.heatsWithTiming === 1 ? '' : 's'} with timer data.
+                  </p>
+
+                  <div className="analytics-topic-sheet__section">
+                    <h3 className="analytics-topic-sheet__section-title">Opening & early rhythm</h3>
+                    <div className="kpi-grid analytics-topic-sheet__kpis">
+                      <article className="kpi-card kpi-card--accent">
+                        <span className="kpi-card__label">Best wave · first 5 min</span>
+                        <strong className="kpi-card__value">
+                          {heatAnalytics.avgBestWaveOpening === null
+                            ? '—'
+                            : heatAnalytics.avgBestWaveOpening.toFixed(2)}
+                        </strong>
+                        <small className="kpi-card__hint">Avg peak opening score</small>
+                      </article>
+                      <article className="kpi-card">
+                        <span className="kpi-card__label">
+                          {EARLY_HEAT_TOTAL_TARGET}+ pts total · first 10 min
+                        </span>
+                        <strong className="kpi-card__value">
+                          {heatAnalytics.earlyTenPointsRate === null
+                            ? '—'
+                            : `${heatAnalytics.earlyTenPointsRate}%`}
+                        </strong>
+                        <small className="kpi-card__hint">
+                          Avg early total{' '}
+                          {heatAnalytics.avgEarlyTotalFirst10Min?.toFixed(2) ?? '—'} pts
+                        </small>
+                      </article>
+                      <article className="kpi-card">
+                        <span className="kpi-card__label">Time to 1st wave</span>
+                        <strong className="kpi-card__value">
+                          {formatHeatElapsedMinutes(heatAnalytics.avgTimeToFirstWaveMin)}
+                        </strong>
+                        <small className="kpi-card__hint">
+                          {heatAnalytics.heatsWithFirstWave} heat
+                          {heatAnalytics.heatsWithFirstWave === 1 ? '' : 's'} with a wave logged
+                        </small>
+                      </article>
+                      <article className="kpi-card">
+                        <span className="kpi-card__label">Time to 2 major scores</span>
+                        <strong className="kpi-card__value">
+                          {formatHeatElapsedMinutes(heatAnalytics.avgTimeToTwoMajorMin)}
+                        </strong>
+                        <small className="kpi-card__hint">
+                          {heatAnalytics.heatsWithTwoMajor} heat
+                          {heatAnalytics.heatsWithTwoMajor === 1 ? '' : 's'} reached pair
+                        </small>
+                      </article>
+                    </div>
+                  </div>
+
+                  <div className="analytics-topic-sheet__section">
+                    <h3 className="analytics-topic-sheet__section-title">Closing under pressure</h3>
+                    <div className="kpi-grid analytics-topic-sheet__kpis">
+                      <article className="kpi-card kpi-card--accent">
+                        <span className="kpi-card__label">Best wave · last 5 min</span>
+                        <strong className="kpi-card__value">
+                          {heatAnalytics.avgBestWaveClosing === null
+                            ? '—'
+                            : heatAnalytics.avgBestWaveClosing.toFixed(2)}
+                        </strong>
+                        <small className="kpi-card__hint">Avg peak closing score</small>
+                      </article>
+                      <article className="kpi-card">
+                        <span className="kpi-card__label">Major score · last 5 min</span>
+                        <strong className="kpi-card__value">
+                          {heatAnalytics.closingMajorRate === null
+                            ? '—'
+                            : `${heatAnalytics.closingMajorRate}%`}
+                        </strong>
+                        <small className="kpi-card__hint">Heats with a late major wave</small>
+                      </article>
+                      <article className="kpi-card">
+                        <span className="kpi-card__label">Clutch delta</span>
+                        <strong className="kpi-card__value">
+                          {heatAnalytics.clutchDelta === null
+                            ? '—'
+                            : `${heatAnalytics.clutchDelta >= 0 ? '+' : ''}${heatAnalytics.clutchDelta.toFixed(2)}`}
+                        </strong>
+                        <small className="kpi-card__hint">Closing best − opening best (avg)</small>
+                      </article>
+                    </div>
+                  </div>
+                </>
+              ) : heatAnalytics.heatsTotal > 0 ? (
+                <p className="muted analytics-topic-sheet__note">
+                  {heatAnalytics.heatsTotal} heat{heatAnalytics.heatsTotal === 1 ? '' : 's'} found,
+                  but none have timer data for rhythm analysis. Start the heat timer when logging
+                  waves to unlock opening/closing metrics.
+                </p>
+              ) : null}
+
+              {heatAnalytics.rows.length > 0 ? (
+                <div className="analytics-topic-sheet__section">
+                  <h3 className="analytics-topic-sheet__section-title">Heat log</h3>
+                  <div className="table-wrap">
+                    <table className="data-table data-table--compact">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Heat</th>
+                          <th>Total</th>
+                          <th>1st wave</th>
+                          <th>Total ≤10m</th>
+                          <th>{EARLY_HEAT_TOTAL_TARGET}+ ≤10m</th>
+                          <th>2 maj time</th>
+                          <th>Close 5m</th>
+                          <th>Place</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {heatAnalytics.rows.map((row) => (
+                          <tr key={`${row.sessionId}-${row.heatLabel}`}>
+                            <td>{formatSessionDate(row.sessionEndedAt)}</td>
+                            <td>{row.heatLabel}</td>
+                            <td>{row.total.toFixed(2)}</td>
+                            <td>{formatHeatElapsedMinutes(row.timeToFirstWaveMin)}</td>
+                            <td>
+                              {row.hasTimerData
+                                ? row.earlyTotalFirst10Min?.toFixed(2) ?? '—'
+                                : '—'}
+                            </td>
+                            <td>
+                              {!row.hasTimerData
+                                ? '—'
+                                : row.reachedTenPointsInEarlyWindow
+                                  ? 'Yes'
+                                  : 'No'}
+                            </td>
+                            <td>{formatHeatElapsedMinutes(row.timeToTwoMajorMin)}</td>
+                            <td>
+                              {row.hasTimerData
+                                ? row.bestWaveClosing?.toFixed(2) ?? '—'
+                                : '—'}
+                            </td>
+                            <td>
+                              #{row.placement}
+                              {row.won ? ' · Win' : ''}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : (
                 <p className="muted">No heat or championship results in this period.</p>

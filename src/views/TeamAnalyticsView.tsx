@@ -8,10 +8,8 @@ import { useApp } from '../AppContext'
 import { exportAthleteAnalyticsCsv } from '../exportCsv'
 import { formatAverageLevelValue, formatCombinedLevelSummary } from '../sessionStats'
 import { canAccessTeamAnalytics, planUpgradeHint } from '../planUtils'
-import {
-  buildAthleteHeatDetails,
-  buildAthleteSessionSummaries,
-} from '../athleteStats'
+import { buildAthleteSessionSummaries } from '../athleteStats'
+import { buildAthleteHeatAnalytics } from '../heatAnalyticsStats'
 import {
   ANALYTICS_PERIOD_OPTIONS,
   analyticsPeriodLabel,
@@ -65,9 +63,27 @@ export function TeamAnalyticsView() {
     return buildAthletePeriodAnalytics(trainingSessions, coachId, selectedAthleteId, period)
   }, [coachId, period, selectedAthleteId, trainingSessions])
 
-  const heatDetails = useMemo(() => {
-    if (!analytics || !selectedAthleteId) return []
-    return buildAthleteHeatDetails(analytics.sessions, selectedAthleteId)
+  const heatAnalytics = useMemo(() => {
+    if (!analytics || !selectedAthleteId) {
+      return {
+        heatsWithTiming: 0,
+        heatsTotal: 0,
+        avgHeatScore: null,
+        avgBestWaveOpening: null,
+        earlyTenPointsRate: null,
+        avgEarlyTotalFirst10Min: null,
+        avgTimeToFirstWaveMin: null,
+        heatsWithFirstWave: 0,
+        avgTimeToTwoMajorMin: null,
+        heatsWithTwoMajor: 0,
+        avgBestWaveClosing: null,
+        closingMajorRate: null,
+        openingMajorRate: null,
+        clutchDelta: null,
+        rows: [],
+      }
+    }
+    return buildAthleteHeatAnalytics(analytics.sessions, selectedAthleteId)
   }, [analytics, selectedAthleteId])
 
   const sessionSummaries = useMemo(() => {
@@ -127,13 +143,15 @@ export function TeamAnalyticsView() {
         label: 'Competition',
         value: String(general.heatWins),
         hint:
-          general.heatParticipations > 0
-            ? `${general.heatParticipations} heats · avg ${general.avgHeatScore?.toFixed(2) ?? '—'}`
-            : 'No heats in period',
+          heatAnalytics.heatsWithTiming > 0
+            ? `Avg ${heatAnalytics.avgHeatScore?.toFixed(2) ?? '—'} · open ${heatAnalytics.avgBestWaveOpening?.toFixed(2) ?? '—'} · close ${heatAnalytics.avgBestWaveClosing?.toFixed(2) ?? '—'}`
+            : general.heatParticipations > 0
+              ? `${general.heatParticipations} heats · avg ${general.avgHeatScore?.toFixed(2) ?? '—'}`
+              : 'No heats in period',
         success: general.heatWins > 0,
       },
     ]
-  }, [analytics])
+  }, [analytics, heatAnalytics])
 
   if (!hasAccess) {
     return (
@@ -182,7 +200,7 @@ export function TeamAnalyticsView() {
           <button
             type="button"
             className="btn btn--secondary btn--small team-analytics-hero__export"
-            onClick={() => exportAthleteAnalyticsCsv(selectedAthlete.name, analytics)}
+            onClick={() => exportAthleteAnalyticsCsv(selectedAthlete.name, analytics, selectedAthlete.id)}
           >
             Export CSV
           </button>
@@ -282,7 +300,7 @@ export function TeamAnalyticsView() {
             topic={activeTopic}
             period={period}
             analytics={analytics}
-            heatDetails={heatDetails}
+            heatAnalytics={heatAnalytics}
             sessionSummaries={sessionSummaries}
             getSpot={getSpot}
             onClose={() => setActiveTopic(null)}

@@ -1,5 +1,6 @@
 import type { AthletePeriodAnalytics } from './teamAnalyticsStats'
 import { analyticsPeriodLabel } from './teamAnalyticsStats'
+import { buildAthleteHeatAnalytics, EARLY_HEAT_TOTAL_TARGET, MAJOR_HEAT_WAVE_SCORE } from './heatAnalyticsStats'
 import type { Athlete, SurfSpot, TrainingSession } from './types'
 import {
   athleteNamesForSession,
@@ -57,6 +58,7 @@ export function exportSessionsCsv(
 export function exportAthleteAnalyticsCsv(
   athleteName: string,
   analytics: AthletePeriodAnalytics,
+  athleteId: string,
 ) {
   const periodLabel = analyticsPeriodLabel(analytics.period)
   const evolutionColumn =
@@ -90,6 +92,26 @@ export function exportAthleteAnalyticsCsv(
   rows.push(['Maneuver attempts', String(analytics.general.totalManeuverAttempts)])
   rows.push(['Star maneuvers', String(analytics.general.totalStars)])
   rows.push(['Heat wins', String(analytics.general.heatWins)])
+
+  const heatStats = buildAthleteHeatAnalytics(analytics.sessions, athleteId)
+  if (heatStats.heatsTotal > 0) {
+    rows.push([])
+    rows.push(['Heat rhythm analytics', ''])
+    rows.push(['Major score threshold', `${MAJOR_HEAT_WAVE_SCORE.toFixed(2)}+`])
+    rows.push(['Heats with timer data', String(heatStats.heatsWithTiming)])
+    rows.push(['Avg heat score', heatStats.avgHeatScore?.toFixed(2) ?? ''])
+    rows.push(['Avg best wave first 5 min', heatStats.avgBestWaveOpening?.toFixed(2) ?? ''])
+    rows.push([
+      `${EARLY_HEAT_TOTAL_TARGET}+ pts total in first 10 min %`,
+      heatStats.earlyTenPointsRate == null ? '' : String(heatStats.earlyTenPointsRate),
+    ])
+    rows.push(['Avg top-2 total first 10 min', heatStats.avgEarlyTotalFirst10Min?.toFixed(2) ?? ''])
+    rows.push(['Avg time to 1st wave (min)', heatStats.avgTimeToFirstWaveMin?.toFixed(2) ?? ''])
+    rows.push(['Avg time to 2 major scores (min)', heatStats.avgTimeToTwoMajorMin?.toFixed(2) ?? ''])
+    rows.push(['Avg best wave last 5 min', heatStats.avgBestWaveClosing?.toFixed(2) ?? ''])
+    rows.push(['Major score in last 5 min %', heatStats.closingMajorRate == null ? '' : String(heatStats.closingMajorRate)])
+    rows.push(['Clutch delta (close - open)', heatStats.clutchDelta?.toFixed(2) ?? ''])
+  }
 
   const safeName = athleteName.replace(/[^\w\-]+/g, '-').toLowerCase()
   downloadCsv(`surfstar-analytics-${safeName}.csv`, rows)

@@ -6490,6 +6490,12 @@ a:focus:not(:focus-visible) {
   color: var(--ss-text);
 }
 
+.data-table--compact th,
+.data-table--compact td {
+  font-size: 0.78rem;
+  padding: 0.45rem 0.5rem;
+}
+
 /* App header mobile menu */
 .app-brandbar__menu-btn {
   display: none;
