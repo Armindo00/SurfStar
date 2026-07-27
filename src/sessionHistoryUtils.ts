@@ -1,3 +1,4 @@
+import { computeCustomSessionStats } from './customTrainingStats'
 import { heatAthleteTotals, heatIsFinished } from './heatUtils'
 import {
   computeComboSessionStats,
@@ -114,8 +115,34 @@ export function buildCoachSessionHeadline(
     return `${finished} heat${finished === 1 ? '' : 's'} completed`
   }
 
-  const logs = session.seaAnalysis?.logs.length ?? 0
-  return logs ? `${logs} sea observations` : 'Sea analysis completed'
+  if (session.mode === 'custom') {
+    const templateName = session.customTemplateName?.trim() || 'Custom training'
+
+    if (session.athleteIds.length === 0) return templateName
+
+    if (session.athleteIds.length === 1) {
+      const athleteId = session.athleteIds[0]!
+      const stats = computeCustomSessionStats(session, athleteId)
+      return `${templateName} · ${stats.overallSuccessRate}% · ${stats.totalAttempts} attempts`
+    }
+
+    const athleteSummaries = session.athleteIds
+      .map((athleteId) => {
+        const name = getAthlete?.(athleteId)?.name ?? 'Athlete'
+        const stats = computeCustomSessionStats(session, athleteId)
+        return `${name}: ${stats.overallSuccessRate}% · ${stats.totalAttempts} attempts`
+      })
+      .join(' · ')
+
+    return `${templateName} · ${athleteSummaries}`
+  }
+
+  if (session.mode === 'sea-analysis') {
+    const logs = session.seaAnalysis?.logs.length ?? 0
+    return logs ? `${logs} sea observations` : 'Sea analysis completed'
+  }
+
+  return 'Session completed'
 }
 
 export function athleteNamesForSession(

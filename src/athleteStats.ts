@@ -1,3 +1,4 @@
+import { computeCustomSessionStats } from './customTrainingStats'
 import { heatAthleteTotals, heatIsFinished, heatResultBreakdown } from './heatUtils'
 import {
   averageLevelFromLogs,
@@ -306,12 +307,30 @@ export function buildAthleteSessionSummaries(
       }
     }
 
+    if (session.mode === 'custom') {
+      const stats = computeCustomSessionStats(session, athleteId)
+      const templateName = session.customTemplateName?.trim() || 'Custom training'
+      return {
+        session,
+        waveCount,
+        headline: `${templateName} · ${stats.overallSuccessRate}% · ${stats.totalAttempts} attempts`,
+      }
+    }
+
+    if (session.mode === 'sea-analysis') {
+      return {
+        session,
+        waveCount,
+        headline: session.seaAnalysis?.logs.length
+          ? `${session.seaAnalysis.logs.length} sea observations`
+          : 'Sea analysis completed',
+      }
+    }
+
     return {
       session,
       waveCount,
-      headline: session.seaAnalysis?.logs.length
-        ? `${session.seaAnalysis.logs.length} sea observations`
-        : 'Session completed',
+      headline: 'Session completed',
     }
   })
 }
