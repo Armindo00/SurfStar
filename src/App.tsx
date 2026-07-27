@@ -8,6 +8,7 @@ import { ForgotPasswordView } from './views/ForgotPasswordView'
 import { LandingView } from './views/LandingView'
 import { SubscriptionView } from './views/SubscriptionView'
 import { TeamAcademyRequestView } from './views/TeamAcademyRequestView'
+import { AdminView } from './views/AdminView'
 import { AthletePortal } from './views/AthletePortal'
 import { CoachHome } from './views/CoachHome'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
@@ -49,6 +50,11 @@ function AppHeader() {
       </div>
       <div className="app-brandbar__user">
         <span className="app-brandbar__name">{auth.name}</span>
+        {auth.role === 'treinador' && auth.isPlatformAdmin ? (
+          <button type="button" className="btn btn--ghost btn--small" onClick={() => setView('admin')}>
+            Admin
+          </button>
+        ) : null}
         <button type="button" className="btn btn--ghost btn--small" onClick={() => setView('help')}>
           Help
         </button>
@@ -129,6 +135,7 @@ function Shell() {
           {role === 'treinador' && view === 'session-history-detail' && <SessionHistoryDetailView />}
           {role === 'treinador' && view === 'analytics' && <TeamAnalyticsView />}
           {role === 'treinador' && view === 'organization' && <OrganizationView />}
+          {role === 'treinador' && view === 'admin' && <AdminView />}
           {role === 'treinador' && view === 'subscription' && <SubscriptionView />}
           {role === 'treinador' && view === 'help' && <HelpView />}
         </main>

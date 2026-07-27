@@ -39,6 +39,7 @@ export type AppView =
   | 'athlete-portal'
   | 'manage-custom-templates'
   | 'organization'
+  | 'admin'
 
 export type CustomLevel = {
   id: string
@@ -209,6 +210,7 @@ export type AuthSession =
       organizationName: string
       name: string
       email: string
+      isPlatformAdmin?: boolean
     }
   | {
       role: 'atleta'

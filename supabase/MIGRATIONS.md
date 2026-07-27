@@ -13,6 +13,17 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 7 | `fix-pairing-share-settings.sql` | Share settings fixes |
 | 8 | `add-subscriptions.sql` | Plans + subscriptions table |
 | 9 | `fix-subscription-security.sql` | **Production:** secure billing, limits, demo flag |
+| 10 | `add-custom-templates.sql` | Custom training templates |
+| 11 | `add-organizations.sql` | Team Academy orgs, shared data, org subscriptions |
+| 12 | `add-organization-plan-requests.sql` | Team Academy approval request form |
+| 13 | `add-platform-admin.sql` | Admin panel, block accounts, approve requests |
+
+## Platform admin
+
+1. Run `add-platform-admin.sql` after the migrations above.
+2. First admin email is stored in `app_settings.platform_admin_emails` (default: `armindo.j.costa@hotmail.com`).
+3. Sign in as coach with that email → **Admin** button appears in the app header.
+4. Admin can approve Team Academy requests, activate plans manually, and block/unblock accounts (no Stripe required).
 
 ## Production billing
 

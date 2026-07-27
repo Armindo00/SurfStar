@@ -22,6 +22,8 @@ type ProfileRow = {
   coach_id: string | null
   athlete_id: string | null
   must_change_password?: boolean
+  is_platform_admin?: boolean
+  blocked?: boolean
 }
 
 function buildAthleteSession(
@@ -49,6 +51,7 @@ function buildCoachSession(
     organizationName: string
     role: 'owner' | 'coach'
   },
+  options?: { isPlatformAdmin?: boolean },
 ): AuthSession {
   const meta = user.user_metadata ?? {}
   return {
@@ -59,6 +62,7 @@ function buildCoachSession(
     organizationName: org?.organizationName ?? 'My Team',
     name: String(meta.name || user.email?.split('@')[0] || 'Coach'),
     email: (user.email || '').toLowerCase(),
+    isPlatformAdmin: options?.isPlatformAdmin ?? false,
   }
 }
 
@@ -66,30 +70,39 @@ async function enrichCoachSession(user: {
   id: string
   email?: string | null
   user_metadata?: Record<string, unknown>
-}): Promise<AuthSession> {
+}, profile?: ProfileRow): Promise<AuthSession> {
   const supabase = getSupabase()
+  const isPlatformAdmin = profile?.is_platform_admin ?? false
   await supabase.rpc('accept_organization_invites')
   const { data } = await supabase.rpc('get_my_organization_context')
 
   if (data?.ok) {
-    return buildCoachSession(user, {
-      organizationId: data.organization_id,
-      organizationName: data.organization_name,
-      role: data.role,
-    })
+    return buildCoachSession(
+      user,
+      {
+        organizationId: data.organization_id,
+        organizationName: data.organization_name,
+        role: data.role,
+      },
+      { isPlatformAdmin },
+    )
   }
 
   await supabase.rpc('ensure_coach_organization', { p_org_name: null })
   const { data: retry } = await supabase.rpc('get_my_organization_context')
   if (retry?.ok) {
-    return buildCoachSession(user, {
-      organizationId: retry.organization_id,
-      organizationName: retry.organization_name,
-      role: retry.role,
-    })
+    return buildCoachSession(
+      user,
+      {
+        organizationId: retry.organization_id,
+        organizationName: retry.organization_name,
+        role: retry.role,
+      },
+      { isPlatformAdmin },
+    )
   }
 
-  return buildCoachSession(user)
+  return buildCoachSession(user, undefined, { isPlatformAdmin })
 }
 
 async function buildAthleteAuthSession(
@@ -121,7 +134,7 @@ async function buildAthleteAuthSession(
     return { error: 'Your athlete profile is not set up. Sign out and sign in again.' }
   }
 
-  if (athleteRow.blocked) {
+  if (athleteRow.blocked || profile.blocked) {
     await supabase.auth.signOut()
     return {
       error: 'Your account is blocked. Contact your coach if you think this is a mistake.',
@@ -141,7 +154,7 @@ async function fetchProfileRow(userId: string): Promise<ProfileRow | null> {
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('id, role, name, email, coach_id, athlete_id, must_change_password')
+    .select('id, role, name, email, coach_id, athlete_id, must_change_password, is_platform_admin, blocked')
     .eq('id', userId)
     .maybeSingle()
 
@@ -249,6 +262,8 @@ async function buildAuthSessionFromUser(user: {
     return { error: profileResult.error ?? 'Could not load your profile.' }
   }
 
+  await getSupabase().rpc('sync_platform_admin_bootstrap')
+
   const profile = await fetchProfileRow(user.id)
   if (!profile) {
     return { error: 'Could not load your profile.' }
@@ -258,7 +273,13 @@ async function buildAuthSessionFromUser(user: {
     return buildAthleteAuthSession(user, profile)
   }
 
-  return enrichCoachSession(user)
+  if (profile.blocked) {
+    const supabase = getSupabase()
+    await supabase.auth.signOut()
+    return { error: 'Your account is blocked. Contact SurfStar support if you think this is a mistake.' }
+  }
+
+  return enrichCoachSession(user, profile)
 }
 
 export type CloudAuthResult =

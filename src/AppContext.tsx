@@ -603,6 +603,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const hasActiveSubscription = useMemo(() => {
     if (auth?.role !== 'treinador') return true
+    if (auth.isPlatformAdmin) return true
     return isSubscriptionActive(subscription)
   }, [auth, subscription])
 
