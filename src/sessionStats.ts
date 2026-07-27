@@ -60,6 +60,35 @@ export type ComboSessionStatsSnapshot = {
 export const COMBO_LEVELS: ComboLevel[] = [1, 2, 3, 'estrela']
 export const LEVELS: ManeuverLevel[] = COMBO_LEVELS
 
+/** Numeric scale for averaging: levels 1–3 map to themselves, star = 4 */
+export function levelToNumeric(level: ManeuverLevel | ComboLevel): number {
+  return level === 'estrela' ? 4 : level
+}
+
+export function averageLevelFromLogs(logs: { level: ManeuverLevel | ComboLevel }[]): number | null {
+  if (logs.length === 0) return null
+  const sum = logs.reduce((acc, log) => acc + levelToNumeric(log.level), 0)
+  return Math.round((sum / logs.length) * 100) / 100
+}
+
+export function formatAverageLevelValue(avg: number | null): string {
+  if (avg === null) return '—'
+  return avg.toFixed(2)
+}
+
+export function averageLevelHint(avg: number | null): string {
+  if (avg === null) return 'No maneuver attempts logged yet'
+  return 'All attempts incl. misses · scale 1–4 (★ = 4)'
+}
+
+export function averageLevelTrendLabel(avg: number | null): string | null {
+  if (avg === null) return null
+  if (avg >= 3.5) return 'Pushing star-level work'
+  if (avg >= 2.5) return 'Working at advanced levels'
+  if (avg >= 1.5) return 'Building intermediate skills'
+  return 'Focused on fundamentals'
+}
+
 function emptySideStats(): LevelSuccessStats {
   return { attempts: 0, successes: 0, rate: 0 }
 }

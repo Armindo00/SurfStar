@@ -61,7 +61,7 @@ export function exportAthleteAnalyticsCsv(
     ['Athlete', athleteName],
     ['Period', `Last ${analytics.monthlyEvolution.length} months`],
     [],
-    ['Month', 'Sessions', 'Success rate %', 'Potential rate %', 'Waves'],
+    ['Month', 'Sessions', 'Success rate %', 'Avg maneuver level', 'Potential rate %', 'Waves'],
   ]
 
   for (const point of analytics.monthlyEvolution) {
@@ -69,6 +69,7 @@ export function exportAthleteAnalyticsCsv(
       point.label,
       String(point.sessions),
       point.successRate == null ? '' : String(Math.round(point.successRate)),
+      point.avgManeuverLevel == null ? '' : point.avgManeuverLevel.toFixed(2),
       point.potentialRate == null ? '' : String(Math.round(point.potentialRate)),
       String(point.waves),
     ])
@@ -78,6 +79,8 @@ export function exportAthleteAnalyticsCsv(
   rows.push(['Totals', ''])
   rows.push(['Total sessions', String(analytics.general.totalTrainings)])
   rows.push(['Total waves', String(analytics.general.totalWaves)])
+  rows.push(['Avg maneuver level', analytics.general.avgOverallManeuverLevel?.toFixed(2) ?? ''])
+  rows.push(['Maneuver attempts', String(analytics.general.totalManeuverAttempts)])
   rows.push(['Star maneuvers', String(analytics.general.totalStars)])
   rows.push(['Heat wins', String(analytics.general.heatWins)])
 

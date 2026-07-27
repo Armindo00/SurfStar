@@ -128,6 +128,7 @@ export function EvolutionLineChart({ title, subtitle, points }: Props) {
                   <th>Sessions</th>
                   <th>Waves</th>
                   <th>Success</th>
+                  <th>Avg level</th>
                   <th>Potential</th>
                 </tr>
               </thead>
@@ -138,6 +139,7 @@ export function EvolutionLineChart({ title, subtitle, points }: Props) {
                     <td>{point.sessions}</td>
                     <td>{point.waves}</td>
                     <td>{point.successRate === null ? '—' : `${point.successRate}%`}</td>
+                    <td>{point.avgManeuverLevel === null ? '—' : point.avgManeuverLevel.toFixed(2)}</td>
                     <td>{point.potentialRate === null ? '—' : `${point.potentialRate}%`}</td>
                   </tr>
                 ))}

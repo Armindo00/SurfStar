@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { EvolutionLineChart } from '../components/EvolutionLineChart'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { SessionFeedbackSheet } from '../components/SessionFeedbackSheet'
 import { useApp } from '../AppContext'
@@ -13,7 +14,13 @@ import {
 } from '../athleteStats'
 import { formatHeatTotal } from '../heatUtils'
 import { resolveSessionSpotName } from '../sessionHistoryUtils'
+import {
+  averageLevelHint,
+  averageLevelTrendLabel,
+  formatAverageLevelValue,
+} from '../sessionStats'
 import { LEVELS } from '../sessionStats'
+import { buildAthleteMonthlyEvolution } from '../teamAnalyticsStats'
 import {
   COMBO_LEVEL_LABELS,
   MANEUVER_LABELS,
@@ -154,6 +161,11 @@ export function AthletePortal() {
     [heatSessions, athleteId],
   )
 
+  const monthlyEvolution = useMemo(
+    () => (isAthlete ? buildAthleteMonthlyEvolution(mySessions, athleteId) : []),
+    [isAthlete, mySessions, athleteId],
+  )
+
   const hasSharedContent =
     Boolean(technicalStats) ||
     Boolean(comboStats) ||
@@ -212,6 +224,10 @@ export function AthletePortal() {
     totalStars: 0,
     technicalStars: 0,
     comboStars: 0,
+    avgTechnicalManeuverLevel: null,
+    avgComboLevel: null,
+    avgOverallManeuverLevel: null,
+    totalManeuverAttempts: 0,
   }
 
   return (
@@ -358,6 +374,29 @@ export function AthletePortal() {
               </>
             )}
           </article>
+          <article className="kpi-card kpi-card--accent">
+            <span className="kpi-card__label">Avg maneuver level</span>
+            <strong className="kpi-card__value">
+              {formatAverageLevelValue(stats.avgOverallManeuverLevel)}
+            </strong>
+            {stats.avgOverallManeuverLevel !== null ? (
+              <>
+                <small className="kpi-card__hint">{averageLevelHint(stats.avgOverallManeuverLevel)}</small>
+                <small className="kpi-card__hint">{averageLevelTrendLabel(stats.avgOverallManeuverLevel)}</small>
+                {(stats.avgTechnicalManeuverLevel !== null || stats.avgComboLevel !== null) && (
+                  <small className="kpi-card__hint">
+                    {stats.avgTechnicalManeuverLevel !== null
+                      ? `Technical ${formatAverageLevelValue(stats.avgTechnicalManeuverLevel)}`
+                      : ''}
+                    {stats.avgTechnicalManeuverLevel !== null && stats.avgComboLevel !== null ? ' · ' : ''}
+                    {stats.avgComboLevel !== null ? `Combo ${formatAverageLevelValue(stats.avgComboLevel)}` : ''}
+                  </small>
+                )}
+              </>
+            ) : (
+              <small className="kpi-card__hint">{averageLevelHint(null)}</small>
+            )}
+          </article>
           <article className="kpi-card kpi-card--star">
             <span className="kpi-card__label">Stars landed</span>
             <strong className="kpi-card__value">{stats.totalStars} ★</strong>
@@ -366,6 +405,14 @@ export function AthletePortal() {
             </small>
           </article>
         </div>
+
+        {monthlyEvolution.some((point) => point.avgManeuverLevel !== null || point.successRate !== null) ? (
+          <EvolutionLineChart
+            title="Your evolution (6 months)"
+            subtitle="Track whether your average maneuver level is rising over time"
+            points={monthlyEvolution}
+          />
+        ) : null}
       </div>
 
       {hasSharedContent && (

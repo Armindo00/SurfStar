@@ -1,12 +1,13 @@
 import { heatAthleteTotals, heatIsFinished, heatResultBreakdown } from './heatUtils'
 import {
+  averageLevelFromLogs,
   computeComboSessionStats,
   computeSessionStats,
   computeWaveStats,
   type ComboSessionStatsSnapshot,
   type SessionStatsSnapshot,
 } from './sessionStats'
-import type { TrainingSession } from './types'
+import type { ComboAttemptLog, ManeuverLog, TrainingSession } from './types'
 
 export type AthleteGeneralStats = {
   totalTrainings: number
@@ -21,6 +22,13 @@ export type AthleteGeneralStats = {
   totalStars: number
   technicalStars: number
   comboStars: number
+  /** Average maneuver level (1–4, ★=4) including failed attempts — technical sessions */
+  avgTechnicalManeuverLevel: number | null
+  /** Average combo level (1–4, ★=4) including failed attempts */
+  avgComboLevel: number | null
+  /** Combined average across technical maneuvers and combo attempts */
+  avgOverallManeuverLevel: number | null
+  totalManeuverAttempts: number
 }
 
 export type AthleteHeatDetail = {
@@ -91,6 +99,21 @@ function countAthleteStars(sessions: TrainingSession[], athleteId: string) {
   return { technicalStars, comboStars, totalStars: technicalStars + comboStars }
 }
 
+function collectAthleteAttemptLogs(sessions: TrainingSession[], athleteId: string) {
+  const maneuvers: ManeuverLog[] = []
+  const comboAttempts: ComboAttemptLog[] = []
+
+  for (const session of sessions) {
+    for (const wave of session.waves) {
+      if (wave.athleteId !== athleteId) continue
+      maneuvers.push(...wave.maneuvers)
+      comboAttempts.push(...(wave.comboAttempts ?? []))
+    }
+  }
+
+  return { maneuvers, comboAttempts }
+}
+
 export function computeAthleteGeneralStats(
   sessions: TrainingSession[],
   athleteId: string,
@@ -133,6 +156,12 @@ export function computeAthleteGeneralStats(
     ? Math.round((withoutPotential / totalWaves) * 100)
     : null
 
+  const { maneuvers, comboAttempts } = collectAthleteAttemptLogs(sessions, athleteId)
+  const avgTechnicalManeuverLevel = averageLevelFromLogs(maneuvers)
+  const avgComboLevel = averageLevelFromLogs(comboAttempts)
+  const avgOverallManeuverLevel = averageLevelFromLogs([...maneuvers, ...comboAttempts])
+  const totalManeuverAttempts = maneuvers.length + comboAttempts.length
+
   return {
     totalTrainings: sessions.length,
     totalWaves,
@@ -146,6 +175,10 @@ export function computeAthleteGeneralStats(
     totalStars,
     technicalStars,
     comboStars,
+    avgTechnicalManeuverLevel,
+    avgComboLevel,
+    avgOverallManeuverLevel,
+    totalManeuverAttempts,
   }
 }
 

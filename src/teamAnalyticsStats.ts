@@ -9,6 +9,7 @@ import {
   computeComboSessionStats,
   computeSessionStats,
   computeWaveStats,
+  levelToNumeric,
 } from './sessionStats'
 import type { TrainingSession } from './types'
 
@@ -21,6 +22,7 @@ export type EvolutionMonthPoint = {
   waves: number
   successRate: number | null
   potentialRate: number | null
+  avgManeuverLevel: number | null
 }
 
 export type AthleteSixMonthAnalytics = {
@@ -103,6 +105,28 @@ function accumulateSessionPerformance(
   }
 }
 
+function accumulateSessionLevelSum(
+  session: TrainingSession,
+  athleteId: string,
+): { levelSum: number; levelCount: number } {
+  let levelSum = 0
+  let levelCount = 0
+
+  for (const wave of session.waves) {
+    if (wave.athleteId !== athleteId) continue
+    for (const maneuver of wave.maneuvers) {
+      levelSum += levelToNumeric(maneuver.level)
+      levelCount += 1
+    }
+    for (const attempt of wave.comboAttempts ?? []) {
+      levelSum += levelToNumeric(attempt.level)
+      levelCount += 1
+    }
+  }
+
+  return { levelSum, levelCount }
+}
+
 export function buildAthleteMonthlyEvolution(
   sessions: TrainingSession[],
   athleteId: string,
@@ -111,7 +135,15 @@ export function buildAthleteMonthlyEvolution(
   const slots = lastNMonthSlots(months)
   const bucket = new Map<
     string,
-    { sessions: number; waves: number; successes: number; attempts: number; withPotential: number }
+    {
+      sessions: number
+      waves: number
+      successes: number
+      attempts: number
+      withPotential: number
+      levelSum: number
+      levelCount: number
+    }
   >()
 
   for (const slot of slots) {
@@ -121,6 +153,8 @@ export function buildAthleteMonthlyEvolution(
       successes: 0,
       attempts: 0,
       withPotential: 0,
+      levelSum: 0,
+      levelCount: 0,
     })
   }
 
@@ -131,11 +165,14 @@ export function buildAthleteMonthlyEvolution(
     if (!row) continue
 
     const perf = accumulateSessionPerformance(session, athleteId)
+    const levels = accumulateSessionLevelSum(session, athleteId)
     row.sessions += 1
     row.waves += perf.waves
     row.successes += perf.successes
     row.attempts += perf.attempts
     row.withPotential += perf.withPotential
+    row.levelSum += levels.levelSum
+    row.levelCount += levels.levelCount
   }
 
   return slots.map((slot) => {
@@ -147,6 +184,9 @@ export function buildAthleteMonthlyEvolution(
       waves: row.waves,
       successRate: row.attempts ? Math.round((row.successes / row.attempts) * 100) : null,
       potentialRate: row.waves ? Math.round((row.withPotential / row.waves) * 100) : null,
+      avgManeuverLevel: row.levelCount
+        ? Math.round((row.levelSum / row.levelCount) * 100) / 100
+        : null,
     }
   })
 }

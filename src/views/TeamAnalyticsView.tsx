@@ -5,6 +5,11 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { useApp } from '../AppContext'
 import { exportAthleteAnalyticsCsv } from '../exportCsv'
+import {
+  averageLevelHint,
+  averageLevelTrendLabel,
+  formatAverageLevelValue,
+} from '../sessionStats'
 import { canAccessTeamAnalytics, planUpgradeHint } from '../planUtils'
 import {
   buildAthleteHeatDetails,
@@ -118,6 +123,17 @@ export function TeamAnalyticsView() {
         </div>
 
         <div className="kpi-grid">
+          <article className="kpi-card kpi-card--accent">
+            <span className="kpi-card__label">Avg maneuver level</span>
+            <strong className="kpi-card__value">
+              {formatAverageLevelValue(general.avgOverallManeuverLevel)}
+            </strong>
+            <small className="kpi-card__hint">
+              {general.avgOverallManeuverLevel === null
+                ? averageLevelHint(null)
+                : `${averageLevelHint(general.avgOverallManeuverLevel)} · ${averageLevelTrendLabel(general.avgOverallManeuverLevel)}`}
+            </small>
+          </article>
           <article className="kpi-card">
             <span className="kpi-card__label">Trainings</span>
             <strong className="kpi-card__value">{general.totalTrainings}</strong>
@@ -156,7 +172,7 @@ export function TeamAnalyticsView() {
         <div className="ss-card stats-panel">
           <EvolutionLineChart
             title="Evolution (6 months)"
-            subtitle="Monthly success rate and waves with potential"
+            subtitle="Monthly success rate, average maneuver level, and waves with potential"
             points={analytics.monthlyEvolution}
           />
         </div>
