@@ -92,6 +92,7 @@ export function exportAthleteAnalyticsCsv(
   rows.push(['Maneuver attempts', String(analytics.general.totalManeuverAttempts)])
   rows.push(['Star maneuvers', String(analytics.general.totalStars)])
   rows.push(['Heat wins', String(analytics.general.heatWins)])
+  rows.push(['Championship wins', String(analytics.general.championshipWins)])
 
   const heatStats = buildAthleteHeatAnalytics(analytics.sessions, athleteId)
   if (heatStats.heatsTotal > 0) {

@@ -221,6 +221,7 @@ export function AthletePortal() {
     withoutPotentialRate: null,
     heatWins: 0,
     heatParticipations: 0,
+    championshipWins: 0,
     avgHeatScore: null,
     totalStars: 0,
     technicalStars: 0,
@@ -355,6 +356,13 @@ export function AthletePortal() {
             <strong className="kpi-card__value">{stats.heatWins}</strong>
             <small className="kpi-card__hint">
               {stats.heatParticipations} heats
+            </small>
+          </article>
+          <article className="kpi-card kpi-card--success">
+            <span className="kpi-card__label">Championship wins</span>
+            <strong className="kpi-card__value">{stats.championshipWins}</strong>
+            <small className="kpi-card__hint">
+              {stats.championshipWins === 1 ? 'title won' : 'titles won'}
             </small>
           </article>
           <article className="kpi-card">

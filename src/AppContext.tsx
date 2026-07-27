@@ -177,6 +177,7 @@ type DraftSession = {
   heatDurationMinutes: HeatDurationMinutes
   customTemplateId: string
   championshipHeatSize: ChampionshipHeatSize
+  championshipParallelHeats: boolean
 }
 
 type AppContextValue = {
@@ -262,6 +263,7 @@ type AppContextValue = {
   setDraftCondition: (condition: string) => void
   setDraftHeatDuration: (minutes: HeatDurationMinutes) => void
   setDraftChampionshipHeatSize: (size: ChampionshipHeatSize) => void
+  setDraftChampionshipParallelHeats: (parallel: boolean) => void
   addDraftAthlete: (athleteId: string) => void
   removeDraftAthlete: (athleteId: string) => void
   resetDraft: () => void
@@ -402,6 +404,7 @@ const emptyDraft = (): DraftSession => ({
   heatDurationMinutes: 15,
   customTemplateId: store.getCustomTemplates()[0]?.id ?? '',
   championshipHeatSize: 4,
+  championshipParallelHeats: true,
 })
 
 function viewForAuth(session: AuthSession): AppView {
@@ -1974,6 +1977,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDraft((d) => ({ ...d, championshipHeatSize: size }))
   }, [])
 
+  const setDraftChampionshipParallelHeats = useCallback((parallel: boolean) => {
+    setDraft((d) => ({ ...d, championshipParallelHeats: parallel }))
+  }, [])
+
   const addDraftAthlete = useCallback((athleteId: string) => {
     setDraft((d) => {
       if (d.athleteIds.includes(athleteId)) return d
@@ -2113,6 +2120,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         draft.mode === 'campeonato'
           ? {
               heatSize: draft.championshipHeatSize,
+              parallelHeats: draft.championshipParallelHeats,
               status: 'active',
               championAthleteId: null,
             }
@@ -3198,6 +3206,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDraftCondition,
       setDraftHeatDuration,
       setDraftChampionshipHeatSize,
+      setDraftChampionshipParallelHeats,
       addDraftAthlete,
       removeDraftAthlete,
       resetDraft,
@@ -3346,6 +3355,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDraftCondition,
       setDraftHeatDuration,
       setDraftChampionshipHeatSize,
+      setDraftChampionshipParallelHeats,
       addDraftAthlete,
       removeDraftAthlete,
       resetDraft,

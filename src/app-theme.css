@@ -1806,6 +1806,25 @@ body {
   border-top: none;
 }
 
+.champ-sequential-runner__head {
+  margin-bottom: 0.75rem;
+}
+
+.champ-sequential-runner__sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.84rem;
+}
+
+.champ-sequential-runner__tabs {
+  margin-bottom: 1rem;
+}
+
+.heat-leaderboard--compact {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .app-shell .heat-runner--compact .heat-runner__head {
   margin-bottom: 0.35rem;
 }

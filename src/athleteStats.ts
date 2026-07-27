@@ -19,6 +19,8 @@ export type AthleteGeneralStats = {
   withoutPotentialRate: number | null
   heatWins: number
   heatParticipations: number
+  /** Completed championships won (final winner). */
+  championshipWins: number
   avgHeatScore: number | null
   totalStars: number
   technicalStars: number
@@ -126,6 +128,7 @@ export function computeAthleteGeneralStats(
   let withoutPotential = 0
   let heatWins = 0
   let heatParticipations = 0
+  let championshipWins = 0
   const heatTotals: number[] = []
 
   for (const session of sessions) {
@@ -133,6 +136,13 @@ export function computeAthleteGeneralStats(
     totalWaves += waveStats.totalWaves
     withPotential += waveStats.withPotential
     withoutPotential += waveStats.withoutPotential
+
+    if (
+      session.championship?.status === 'complete' &&
+      session.championship.championAthleteId === athleteId
+    ) {
+      championshipWins += 1
+    }
 
     for (const heat of session.heats) {
       if (!heatIsFinished(heat) || !heat.athleteIds.includes(athleteId)) continue
@@ -174,6 +184,7 @@ export function computeAthleteGeneralStats(
     withoutPotentialRate,
     heatWins,
     heatParticipations,
+    championshipWins,
     avgHeatScore,
     totalStars,
     technicalStars,

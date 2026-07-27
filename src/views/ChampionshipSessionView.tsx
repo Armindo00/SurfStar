@@ -7,10 +7,12 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 import {
   activeChampionshipRound,
+  championshipParallelHeatsEnabled,
   groupHeatsByRound,
   previewBracketRounds,
   roundHeatsActionable,
   roundHeatsRunning,
+  shouldUseParallelRoundRunner,
   splitAthletesIntoHeats,
 } from '../championshipUtils'
 
@@ -20,6 +22,7 @@ export function ChampionshipSessionView() {
   const heats = activeSession?.heats ?? []
   const championship = activeSession?.championship ?? null
   const heatSize = championship?.heatSize ?? 4
+  const parallelHeats = championshipParallelHeatsEnabled(championship)
   const activeHeat =
     heats.find((h) => h.id === activeHeatId) ??
     heats.find((h) => !h.endedAt && !h.bracketLocked) ??
@@ -65,7 +68,17 @@ export function ChampionshipSessionView() {
     return column?.label ?? `Round ${focusRound}`
   }, [focusRound, heats])
 
-  const showParallelRunner = focusRoundHeats.length > 0 && !focusRoundHeats.every((h) => h.bracketLocked)
+  const showParallelRunner = shouldUseParallelRoundRunner(championship, heats, focusRound)
+
+  const sequentialRoundHeats =
+    !parallelHeats && focusRoundHeats.length > 1 ? focusRoundHeats : []
+
+  const sequentialActiveHeat =
+    sequentialRoundHeats.length > 0
+      ? sequentialRoundHeats.find((h) => h.id === activeHeatId) ??
+        sequentialRoundHeats.find((h) => !h.endedAt) ??
+        sequentialRoundHeats[0]
+      : null
 
   if (!activeSession || activeSession.mode !== 'campeonato') {
     return (
@@ -92,6 +105,8 @@ export function ChampionshipSessionView() {
         <p className="muted stats-panel__sub">
           {athleteCount} surfers ·{' '}
           {heatSize === 2 ? 'heats of 2 · top 1 advances' : 'heats of 3 or 4 · top 2 advance'}
+          {' · '}
+          {parallelHeats ? 'parallel heats' : 'sequential heats'}
         </p>
         {bracketPreview.length > 0 ? (
           <p className="muted stats-panel__sub">
@@ -125,6 +140,35 @@ export function ChampionshipSessionView() {
             heatSize={heatSize}
             roundLabel={focusRoundLabel}
           />
+        </div>
+      ) : sequentialActiveHeat ? (
+        <div className="ss-card">
+          <div className="champ-sequential-runner">
+            <header className="champ-sequential-runner__head">
+              <h2 className="heat-runner__title">{focusRoundLabel}</h2>
+              <p className="muted champ-sequential-runner__sub">
+                One heat at a time — select a heat below or from the bracket.
+              </p>
+            </header>
+            <div className="chip-row chip-row--pro champ-sequential-runner__tabs">
+              {sequentialRoundHeats.map((heat) => {
+                const selected = heat.id === sequentialActiveHeat.id
+                const status = heat.endedAt ? ' · done' : heat.timerStartedAt ? ' · live' : ''
+                return (
+                  <button
+                    key={heat.id}
+                    type="button"
+                    className={selected ? 'chip chip--active' : 'chip'}
+                    onClick={() => setActiveHeatId(heat.id)}
+                  >
+                    {heat.label}
+                    {status}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <HeatRunnerPanel heat={sequentialActiveHeat} championshipHeatSize={heatSize} />
         </div>
       ) : activeHeat ? (
         <div className="ss-card">

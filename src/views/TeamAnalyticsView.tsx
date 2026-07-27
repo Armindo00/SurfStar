@@ -143,12 +143,14 @@ export function TeamAnalyticsView() {
         label: 'Competition',
         value: String(general.heatWins),
         hint:
-          heatAnalytics.heatsWithTiming > 0
-            ? `Avg ${heatAnalytics.avgHeatScore?.toFixed(2) ?? '—'} · open ${heatAnalytics.avgBestWaveOpening?.toFixed(2) ?? '—'} · close ${heatAnalytics.avgBestWaveClosing?.toFixed(2) ?? '—'}`
-            : general.heatParticipations > 0
-              ? `${general.heatParticipations} heats · avg ${general.avgHeatScore?.toFixed(2) ?? '—'}`
-              : 'No heats in period',
-        success: general.heatWins > 0,
+          general.championshipWins > 0
+            ? `${general.championshipWins} championship win${general.championshipWins === 1 ? '' : 's'} · ${general.heatParticipations} heats`
+            : heatAnalytics.heatsWithTiming > 0
+              ? `Avg ${heatAnalytics.avgHeatScore?.toFixed(2) ?? '—'} · open ${heatAnalytics.avgBestWaveOpening?.toFixed(2) ?? '—'} · close ${heatAnalytics.avgBestWaveClosing?.toFixed(2) ?? '—'}`
+              : general.heatParticipations > 0
+                ? `${general.heatParticipations} heats · avg ${general.avgHeatScore?.toFixed(2) ?? '—'}`
+                : 'No heats in period',
+        success: general.heatWins > 0 || general.championshipWins > 0,
       },
     ]
   }, [analytics, heatAnalytics])

@@ -80,7 +80,7 @@ export function SelectAthletes() {
           <p className="muted stats-panel__sub">
             {selectedCount} surfer{selectedCount === 1 ? '' : 's'} selected
             {selectedCount >= 2 && bracketReady
-              ? ` · ${draft.championshipHeatSize === 2 ? 'top 1 per heat' : 'top 2 per heat'}`
+              ? ` · ${draft.championshipHeatSize === 2 ? 'top 1 per heat' : 'top 2 per heat'} · ${draft.championshipParallelHeats ? 'parallel' : 'sequential'}`
               : ''}
           </p>
         ) : null}

@@ -2238,6 +2238,25 @@ body {
   margin: 0;
 }
 
+.champ-sequential-runner__head {
+  margin-bottom: 0.75rem;
+}
+
+.champ-sequential-runner__sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.84rem;
+}
+
+.champ-sequential-runner__tabs {
+  margin-bottom: 1rem;
+}
+
+.heat-leaderboard--compact {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
 .champ-heat-list {
   list-style: none;
   margin: 0;

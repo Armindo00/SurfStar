@@ -420,6 +420,8 @@ export type ChampionshipHeatSize = 2 | 4
 
 export type ChampionshipState = {
   heatSize: ChampionshipHeatSize
+  /** When true, all heats in a round run together; when false, one heat at a time. */
+  parallelHeats?: boolean
   status: 'active' | 'complete'
   championAthleteId: string | null
 }

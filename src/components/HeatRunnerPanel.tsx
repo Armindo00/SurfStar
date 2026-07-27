@@ -134,14 +134,18 @@ export function HeatRunnerPanel({
         </div>
       ) : null}
 
-      {heat.waveScores.length > 0 && !compact ? (
-        <div className="heat-leaderboard">
+      {heat.waveScores.length > 0 ? (
+        <div className={compact ? 'heat-leaderboard heat-leaderboard--compact' : 'heat-leaderboard'}>
           <HeatWaveScoreLog heat={heat} />
-          <h3 className="heat-leaderboard__title">Heat results</h3>
-          <p className="muted heat-leaderboard__sub">
-            Waves in chronological order · green = counting (2 best) · red = interference.
-          </p>
-          <HeatResultsTable heat={heat} getAthleteName={(id) => getAthlete(id)?.name ?? 'Athlete'} />
+          {!compact ? (
+            <>
+              <h3 className="heat-leaderboard__title">Heat results</h3>
+              <p className="muted heat-leaderboard__sub">
+                Waves in chronological order · green = counting (2 best) · red = interference.
+              </p>
+              <HeatResultsTable heat={heat} getAthleteName={(id) => getAthlete(id)?.name ?? 'Athlete'} />
+            </>
+          ) : null}
         </div>
       ) : null}
 

@@ -376,6 +376,13 @@ export function AthleteAnalyticsTopicSheet({
                     {heatAnalytics.avgHeatScore === null ? '—' : heatAnalytics.avgHeatScore.toFixed(2)}
                   </strong>
                 </article>
+                <article className="kpi-card kpi-card--success">
+                  <span className="kpi-card__label">Championship wins</span>
+                  <strong className="kpi-card__value">{general.championshipWins}</strong>
+                  <small className="kpi-card__hint">
+                    {general.championshipWins === 1 ? 'title' : 'titles'} in period
+                  </small>
+                </article>
                 <article className="kpi-card">
                   <span className="kpi-card__label">Win rate</span>
                   <strong className="kpi-card__value">

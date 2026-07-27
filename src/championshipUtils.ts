@@ -229,6 +229,22 @@ export function roundSupportsParallelRun(heats: HeatRecord[], round: number): bo
   return roundHeatsActionable(heats, round).length > 1
 }
 
+export function championshipParallelHeatsEnabled(
+  championship: Pick<ChampionshipState, 'parallelHeats'> | null | undefined,
+): boolean {
+  return championship?.parallelHeats !== false
+}
+
+export function shouldUseParallelRoundRunner(
+  championship: Pick<ChampionshipState, 'parallelHeats'> | null | undefined,
+  heats: HeatRecord[],
+  round: number,
+): boolean {
+  if (!championshipParallelHeatsEnabled(championship)) return false
+  const roundHeats = roundHeatsActionable(heats, round)
+  return roundHeats.length > 1 && !roundHeats.every((h) => h.bracketLocked)
+}
+
 export function maxRound(heats: HeatRecord[]): number {
   return heats.reduce((max, h) => Math.max(max, h.round ?? 1), 1)
 }

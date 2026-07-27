@@ -31,6 +31,7 @@ export function StartSession() {
     setDraftCondition,
     setDraftHeatDuration,
     setDraftChampionshipHeatSize,
+    setDraftChampionshipParallelHeats,
     setView,
   } = useApp()
 
@@ -174,6 +175,29 @@ export function StartSession() {
             </div>
             <p className="muted stats-panel__sub">
               Select all athletes next — SurfStar builds quarterfinals, semifinals and the final from your total count (heats of 3 or 4).
+            </p>
+
+            <p className="field-label">Heat scheduling</p>
+            <div className="chip-row chip-row--pro">
+              <button
+                type="button"
+                className={draft.championshipParallelHeats ? 'chip chip--active' : 'chip'}
+                onClick={() => setDraftChampionshipParallelHeats(true)}
+              >
+                Same time (parallel)
+              </button>
+              <button
+                type="button"
+                className={!draft.championshipParallelHeats ? 'chip chip--active' : 'chip'}
+                onClick={() => setDraftChampionshipParallelHeats(false)}
+              >
+                One at a time (sequential)
+              </button>
+            </div>
+            <p className="muted stats-panel__sub">
+              {draft.championshipParallelHeats
+                ? 'All heats in a round start together with one shared timer.'
+                : 'Run each heat separately — finish one before starting the next in the same round.'}
             </p>
           </>
         ) : null}

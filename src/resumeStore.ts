@@ -15,6 +15,7 @@ export type DraftSessionResume = {
   heatDurationMinutes: HeatDurationMinutes
   customTemplateId: string
   championshipHeatSize: import('./types').ChampionshipHeatSize
+  championshipParallelHeats: boolean
 }
 
 export type AppResumeState = {
@@ -167,7 +168,10 @@ export function validateAndNormalizeResume(
     activeAthleteId,
     activeWaveId,
     activeHeatId,
-    draft,
+    draft: {
+      ...draft,
+      championshipParallelHeats: draft.championshipParallelHeats ?? true,
+    },
     historySessionId,
   }
 }

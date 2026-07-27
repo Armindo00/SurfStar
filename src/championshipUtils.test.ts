@@ -12,6 +12,7 @@ import {
   roundHeatsReadyToStart,
   roundHeatsRunning,
   roundSupportsParallelRun,
+  shouldUseParallelRoundRunner,
   simulateBracketStructure,
   splitAthletesIntoHeats,
 } from './championshipUtils'
@@ -191,6 +192,19 @@ describe('championshipUtils', () => {
     expect(roundSupportsParallelRun(heats, 1)).toBe(true)
     expect(roundHeatsReadyToStart(heats, 1)).toHaveLength(2)
     expect(roundHeatsRunning(heats, 1)).toHaveLength(0)
+  })
+
+  it('disables parallel round runner when sequential heats are selected', () => {
+    const heats = buildFullChampionshipBracket(
+      ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
+      4,
+      15,
+    )
+    const parallelChampionship = { heatSize: 4 as const, parallelHeats: true, status: 'active' as const, championAthleteId: null }
+    const sequentialChampionship = { ...parallelChampionship, parallelHeats: false }
+
+    expect(shouldUseParallelRoundRunner(parallelChampionship, heats, 1)).toBe(true)
+    expect(shouldUseParallelRoundRunner(sequentialChampionship, heats, 1)).toBe(false)
   })
 
   it('picks heat winners by total score', () => {
