@@ -6562,16 +6562,33 @@ a:focus:not(:focus-visible) {
   margin-bottom: 1rem;
 }
 
+.heat-live-stats-page {
+  --ss-muted: #475569;
+  --ss-border: #cbd5e1;
+}
+
+.heat-live-stats-page .kpi-card__label,
+.heat-live-stats-page .heat-live-stats__place,
+.heat-live-stats-page .heat-live-stats__rhythm li span,
+.heat-live-stats-page .stats-panel__sub,
+.heat-live-stats-page .heat-live-stats__rhythm-empty {
+  color: #475569;
+}
+
+.heat-live-stats-page .heat-live-stats__rhythm li strong {
+  color: var(--ss-text);
+}
+
 .heat-live-stats__athlete {
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--ss-border);
   border-radius: 14px;
   padding: 0.9rem 1rem;
-  background: rgba(248, 250, 252, 0.65);
+  background: #f8fafc;
 }
 
 .heat-live-stats__athlete--lead {
-  border-color: #bae6fd;
-  background: linear-gradient(180deg, rgba(240, 249, 255, 0.95), white);
+  border-color: #7dd3fc;
+  background: linear-gradient(180deg, #e0f2fe, #ffffff);
 }
 
 .heat-live-stats__athlete-head {
@@ -6587,7 +6604,7 @@ a:focus:not(:focus-visible) {
   margin-right: 0.35rem;
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--ss-muted);
+  color: #334155;
 }
 
 .heat-live-stats__total {
@@ -6623,10 +6640,17 @@ a:focus:not(:focus-visible) {
   justify-content: space-between;
   gap: 0.5rem;
   font-size: 0.82rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .heat-live-stats__rhythm li span {
-  color: var(--ss-muted);
+  color: #475569;
+}
+
+.heat-live-stats__rhythm li strong {
+  color: var(--ss-text);
 }
 
 .heat-live-stats__rhythm-empty {

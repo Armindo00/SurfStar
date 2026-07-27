@@ -59,7 +59,7 @@ export function SessionStatsView() {
     const title = liveStatsTitle(activeSession)
 
     return (
-      <div className="ss-flow stats-page">
+      <div className="ss-flow stats-page heat-live-stats-page">
         <ScreenHeader title={title} onBack={() => setView(backView)} />
 
         {snapshots.length === 0 ? (

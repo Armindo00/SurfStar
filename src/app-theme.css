@@ -734,10 +734,54 @@ body {
 .app-shell .heat-rule,
 .app-shell .heat-scores-list li,
 .app-shell .heat-leaderboard__list li,
-.app-shell .heat-surfer-row {
+.app-shell .heat-surfer-row,
+.app-shell .heat-live-stats__athlete {
   background: rgba(0, 0, 0, 0.25) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
   color: #f1f5f9 !important;
+}
+
+.app-shell .heat-live-stats__athlete--lead {
+  background: rgba(201, 169, 98, 0.14) !important;
+  border-color: rgba(201, 169, 98, 0.42) !important;
+}
+
+.app-shell .heat-live-stats__athlete-head strong {
+  color: #f8fafc !important;
+}
+
+.app-shell .heat-live-stats__place {
+  color: #cbd5e1 !important;
+}
+
+.app-shell .heat-live-stats__total {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .heat-live-stats__rhythm li {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.app-shell .heat-live-stats__rhythm li span,
+.app-shell .heat-live-stats__rhythm-empty,
+.app-shell .heat-live-stats .stats-panel__sub {
+  color: #b8c5d6 !important;
+}
+
+.app-shell .heat-live-stats__rhythm li strong {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .heat-live-stats .kpi-card__label {
+  color: #b8c5d6 !important;
+}
+
+.app-shell .heat-live-stats .kpi-card--compact .kpi-card__value {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .heat-live-stats .stats-panel__title {
+  color: #f8fafc !important;
 }
 
 .app-shell .heat-timer__value {
@@ -1217,6 +1261,87 @@ body {
 .app-shell .team-analytics-hero__avatar {
   background: rgba(201, 169, 98, 0.22) !important;
   color: var(--landing-gold-light) !important;
+}
+
+/* Team analytics detail — dark cards with readable text */
+.app-shell .team-analytics-page .analytics-overview-strip__item,
+.app-shell .team-analytics-page .analytics-topic-tile,
+.app-shell .analytics-topic-sheet .kpi-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: none !important;
+  color: #f1f5f9 !important;
+}
+
+.app-shell .team-analytics-page .analytics-overview-strip__item--accent,
+.app-shell .team-analytics-page .analytics-topic-tile--accent,
+.app-shell .analytics-topic-sheet .kpi-card--accent {
+  background: rgba(201, 169, 98, 0.12) !important;
+  border-color: rgba(201, 169, 98, 0.38) !important;
+}
+
+.app-shell .team-analytics-page .analytics-topic-tile--success {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border-color: rgba(34, 197, 94, 0.35) !important;
+}
+
+.app-shell .team-analytics-page .analytics-topic-tile--star,
+.app-shell .analytics-topic-sheet .kpi-card--star {
+  background: rgba(234, 179, 8, 0.1) !important;
+  border-color: rgba(234, 179, 8, 0.38) !important;
+}
+
+.app-shell .team-analytics-page .analytics-overview-strip__item span,
+.app-shell .team-analytics-page .analytics-topic-tile__label,
+.app-shell .team-analytics-page .analytics-topic-tile__hint,
+.app-shell .team-analytics-page .analytics-period-bar__label,
+.app-shell .team-analytics-page .analytics-topic-grid__footnote,
+.app-shell .analytics-topic-sheet .kpi-card__label,
+.app-shell .analytics-topic-sheet .kpi-card__hint,
+.app-shell .analytics-topic-sheet .analytics-topic-sheet__note {
+  color: #b8c5d6 !important;
+}
+
+.app-shell .team-analytics-page .analytics-overview-strip__item strong,
+.app-shell .team-analytics-page .analytics-topic-tile__value,
+.app-shell .analytics-topic-sheet .kpi-card__value,
+.app-shell .analytics-topic-sheet .kpi-card--star .kpi-card__value {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .team-analytics-page .analytics-topic-tile__chev {
+  color: var(--landing-gold) !important;
+}
+
+.app-shell .team-analytics-page .chip:not(.chip--active) {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #dbe4ef !important;
+}
+
+.app-shell .team-analytics-page .analytics-topic-sheet__breakdown {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.app-shell .team-analytics-page .analytics-topic-sheet__breakdown-list li,
+.app-shell .analytics-topic-sheet .analytics-topic-sheet__breakdown-list li {
+  color: #cbd5e1 !important;
+}
+
+.app-shell .team-analytics-page .analytics-topic-sheet__section-title,
+.app-shell .analytics-topic-sheet .analytics-topic-sheet__section-title {
+  color: #f1f5f9 !important;
+}
+
+.app-shell .team-analytics-page .rate-bar,
+.app-shell .analytics-topic-sheet .rate-bar {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.app-shell .team-analytics-page .team-analytics-hero .muted,
+.app-shell .team-analytics-page .analytics-period-bar__copy .muted {
+  color: #a8b8cc !important;
 }
 
 /* Heat results mobile cards */
