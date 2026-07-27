@@ -38,6 +38,7 @@ export function ManageAthletes() {
     revokePairing,
     updateAthleteShareSettings,
     setAthleteBlocked,
+    openCoachAthleteInsights,
     setView,
   } = useApp()
   const [code, setCode] = useState('')
@@ -193,6 +194,13 @@ export function ManageAthletes() {
                   {expanded && a.linkId ? (
                     <div className="athlete-share-panel">
                       <div className="athlete-manage-actions">
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--small"
+                          onClick={() => void openCoachAthleteInsights(a.id)}
+                        >
+                          Gear & wellbeing
+                        </button>
                         <button
                           type="button"
                           className={

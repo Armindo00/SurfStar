@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { SideCompareChart } from '../components/SideCompareChart'
+import { SessionFeedbackSheet } from '../components/SessionFeedbackSheet'
 import { useApp } from '../AppContext'
 import {
   buildAthleteHeatDetails,
@@ -50,6 +51,9 @@ export function AthletePortal() {
     revokePairing,
     refreshPairingData,
     setView,
+    pendingSessionFeedback,
+    skipSessionFeedback,
+    refreshAthleteEquipment,
   } = useApp()
   const [pairingBusy, setPairingBusy] = useState<string | null>(null)
   const [pairingError, setPairingError] = useState('')
@@ -57,6 +61,10 @@ export function AthletePortal() {
   useEffect(() => {
     void refreshPairingData()
   }, [refreshPairingData])
+
+  useEffect(() => {
+    if (auth?.role === 'atleta') void refreshAthleteEquipment(auth.athleteId)
+  }, [auth, refreshAthleteEquipment])
 
   useEffect(() => {
     const onFocus = () => {
@@ -207,11 +215,29 @@ export function AthletePortal() {
 
   return (
     <div className="dashboard athlete-portal">
+      {pendingSessionFeedback[0] ? (
+        <SessionFeedbackSheet
+          session={pendingSessionFeedback[0]}
+          onSubmitted={() => {}}
+          onSkip={() => skipSessionFeedback(pendingSessionFeedback[0].id)}
+        />
+      ) : null}
+
       <header className="dashboard__hero">
         <p className="dashboard__hello">Hello,</p>
         <h1 className="dashboard__name">{auth.name}</h1>
         <p className="muted">Your statistics across all linked coaches</p>
       </header>
+
+      <button type="button" className="action-card action-card--primary" onClick={() => setView('athlete-material')}>
+        <span className="action-card__icon" aria-hidden="true">
+          🏄
+        </span>
+        <span>
+          <strong>O meu material</strong>
+          <small>Pranchas, quilhas e setup</small>
+        </span>
+      </button>
 
       <div className="ss-card athlete-portal__section pairing-panel">
         <h2 className="page-title">Your pairing code</h2>

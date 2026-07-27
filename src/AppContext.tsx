@@ -53,16 +53,22 @@ import {
 import type {
   AppView,
   Athlete,
+  AthleteBoard,
+  AthleteFin,
   AthleteShareSettings,
   AuthSession,
   ChampionshipHeatSize,
   ComboLevel,
+  EquipmentEvaluation,
+  EquipmentType,
   HeatDurationMinutes,
   HeatInterferenceType,
   HeatRecord,
+  MentalState,
   PublicView,
   SeaPeak,
   SeaWaveType,
+  SessionAthleteFeedback,
   ManeuverKind,
   ManeuverLevel,
   ManeuverLog,
@@ -134,6 +140,16 @@ import {
   localRemoveOrganizationMember,
   localUpdateOrganizationName,
 } from './organizationApi'
+import {
+  cloudDeleteAthleteBoard,
+  cloudDeleteAthleteFin,
+  cloudLoadAthleteEquipmentBundle,
+  cloudSaveEquipmentEvaluation,
+  cloudSubmitSessionFeedback,
+  cloudUpsertAthleteBoard,
+  cloudUpsertAthleteFin,
+} from './athleteEquipmentApi'
+import { equipmentStore } from './equipmentStore'
 import {
   clearResumeState,
   loadResumeState,
@@ -308,6 +324,50 @@ type AppContextValue = {
   deleteWaveRecord: (waveId: string) => void
   updateHeatWaveScore: (heatId: string, scoreId: string, score: number) => void
   deleteHeatWaveScore: (heatId: string, scoreId: string) => void
+  athleteBoards: AthleteBoard[]
+  athleteFins: AthleteFin[]
+  equipmentEvaluations: EquipmentEvaluation[]
+  sessionAthleteFeedback: SessionAthleteFeedback[]
+  insightsAthlete: Athlete | null
+  pendingSessionFeedback: TrainingSession[]
+  refreshAthleteEquipment: (athleteId: string) => Promise<void>
+  openCoachAthleteInsights: (athleteId: string) => Promise<void>
+  saveAthleteBoard: (input: {
+    id?: string
+    name: string
+    lengthCm: number | null
+    widthInches: number | null
+    thicknessInches: number | null
+    volumeLiters: number | null
+    notes: string | null
+  }) => Promise<{ ok: true } | { ok: false; error: string }>
+  deleteAthleteBoard: (boardId: string) => Promise<void>
+  saveAthleteFin: (input: {
+    id?: string
+    name: string
+    size: string | null
+    template: string | null
+    notes: string | null
+  }) => Promise<{ ok: true } | { ok: false; error: string }>
+  deleteAthleteFin: (finId: string) => Promise<void>
+  saveEquipmentEvaluation: (input: {
+    athleteId: string
+    equipmentType: EquipmentType
+    equipmentId: string
+    speed: number
+    control: number
+    release: number
+    notes: string | null
+  }) => Promise<{ ok: true } | { ok: false; error: string }>
+  submitSessionFeedback: (input: {
+    sessionId: string
+    coachId: string
+    boardId: string | null
+    finId: string | null
+    mentalState: MentalState
+    writtenNote: string | null
+  }) => Promise<{ ok: true } | { ok: false; error: string }>
+  skipSessionFeedback: (sessionId: string) => void
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -409,6 +469,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
   const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([])
   const [forgotPasswordRole, setForgotPasswordRole] = useState<UserRole>('treinador')
+  const [athleteBoards, setAthleteBoards] = useState<AthleteBoard[]>([])
+  const [athleteFins, setAthleteFins] = useState<AthleteFin[]>([])
+  const [equipmentEvaluations, setEquipmentEvaluations] = useState<EquipmentEvaluation[]>([])
+  const [sessionAthleteFeedback, setSessionAthleteFeedback] = useState<SessionAthleteFeedback[]>([])
+  const [insightsAthleteId, setInsightsAthleteId] = useState<string | null>(null)
+  const [skippedFeedbackSessionIds, setSkippedFeedbackSessionIds] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('surfstar-skipped-feedback') ?? '[]') as string[]
+    } catch {
+      return []
+    }
+  })
   const [view, setView] = useState<AppView>('coach-home')
   const [athletes, setAthletes] = useState<Athlete[]>(() =>
     cloudMode ? [] : migrateLegacyLocalAthletes(store.getAthletes()),
@@ -888,6 +960,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return { ok: true as const }
   }, [auth, cloudMode, refreshSubscription, showToast])
 
+  const refreshAthleteEquipment = useCallback(
+    async (athleteId: string) => {
+      if (cloudMode) {
+        try {
+          const bundle = await cloudLoadAthleteEquipmentBundle(athleteId)
+          setAthleteBoards(bundle.boards)
+          setAthleteFins(bundle.fins)
+          setEquipmentEvaluations(bundle.evaluations)
+          setSessionAthleteFeedback(bundle.sessionFeedback)
+        } catch (err) {
+          console.error('Failed to load athlete equipment', err)
+        }
+        return
+      }
+      setAthleteBoards(equipmentStore.getBoards(athleteId))
+      setAthleteFins(equipmentStore.getFins(athleteId))
+      setEquipmentEvaluations(equipmentStore.getEvaluations(athleteId))
+      setSessionAthleteFeedback(equipmentStore.getSessionFeedback(athleteId))
+    },
+    [cloudMode],
+  )
+
   const refreshPairingData = useCallback(async () => {
     if (!auth) return
     if (cloudMode) {
@@ -903,6 +997,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAthletes(data.athlete ? [data.athlete] : [])
         setAthleteLinks(data.links)
         setTrainingSessions(data.trainingSessions.filter((s) => Boolean(s.endedAt)))
+        await refreshAthleteEquipment(auth.athleteId)
       }
       return
     }
@@ -921,8 +1016,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           : []
         : []
       setTrainingSessions(loadAthleteSessionsLocal(auth.athleteId, allLinks, sessions))
+      await refreshAthleteEquipment(auth.athleteId)
     }
-  }, [auth, cloudMode])
+  }, [auth, cloudMode, refreshAthleteEquipment])
 
   useEffect(() => {
     if (cloudMode || !auth || auth.role !== 'treinador') return
@@ -2658,6 +2754,258 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [activeSessionId, updateSession],
   )
 
+  const insightsAthlete = useMemo(() => {
+    if (!insightsAthleteId) return null
+    return coachAthletes.find((a) => a.id === insightsAthleteId) ?? null
+  }, [coachAthletes, insightsAthleteId])
+
+  const pendingSessionFeedback = useMemo(() => {
+    if (auth?.role !== 'atleta') return []
+    const answered = new Set(sessionAthleteFeedback.map((row) => row.sessionId))
+    const skipped = new Set(skippedFeedbackSessionIds)
+    return trainingSessions
+      .filter(
+        (session) =>
+          Boolean(session.endedAt) &&
+          session.athleteIds.includes(auth.athleteId) &&
+          !answered.has(session.id) &&
+          !skipped.has(session.id),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.endedAt ?? b.startedAt).getTime() -
+          new Date(a.endedAt ?? a.startedAt).getTime(),
+      )
+  }, [auth, sessionAthleteFeedback, skippedFeedbackSessionIds, trainingSessions])
+
+  const openCoachAthleteInsights = useCallback(
+    async (athleteId: string) => {
+      setInsightsAthleteId(athleteId)
+      await refreshAthleteEquipment(athleteId)
+      setView('coach-athlete-insights')
+    },
+    [refreshAthleteEquipment],
+  )
+
+  const saveAthleteBoard = useCallback(
+    async (input: {
+      id?: string
+      name: string
+      lengthCm: number | null
+      widthInches: number | null
+      thicknessInches: number | null
+      volumeLiters: number | null
+      notes: string | null
+    }) => {
+      if (!auth || auth.role !== 'atleta') {
+        return { ok: false as const, error: 'Sign in as athlete first.' }
+      }
+      try {
+        const id = input.id ?? crypto.randomUUID()
+        const now = new Date().toISOString()
+        if (cloudMode) {
+          const saved = await cloudUpsertAthleteBoard(auth.athleteId, {
+            id,
+            name: input.name,
+            lengthCm: input.lengthCm,
+            widthInches: input.widthInches,
+            thicknessInches: input.thicknessInches,
+            volumeLiters: input.volumeLiters,
+            notes: input.notes,
+          })
+          setAthleteBoards((prev) => [saved, ...prev.filter((b) => b.id !== saved.id)])
+        } else {
+          const saved = equipmentStore.saveBoard({
+            id,
+            athleteId: auth.athleteId,
+            name: input.name,
+            lengthCm: input.lengthCm,
+            widthInches: input.widthInches,
+            thicknessInches: input.thicknessInches,
+            volumeLiters: input.volumeLiters,
+            notes: input.notes,
+            createdAt: now,
+            updatedAt: now,
+          })
+          setAthleteBoards((prev) => [saved, ...prev.filter((b) => b.id !== saved.id)])
+        }
+        return { ok: true as const }
+      } catch (err) {
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err.message : 'Could not save board.',
+        }
+      }
+    },
+    [auth, cloudMode],
+  )
+
+  const deleteAthleteBoard = useCallback(
+    async (boardId: string) => {
+      if (cloudMode) await cloudDeleteAthleteBoard(boardId)
+      else equipmentStore.deleteBoard(boardId)
+      setAthleteBoards((prev) => prev.filter((b) => b.id !== boardId))
+    },
+    [cloudMode],
+  )
+
+  const saveAthleteFin = useCallback(
+    async (input: {
+      id?: string
+      name: string
+      size: string | null
+      template: string | null
+      notes: string | null
+    }) => {
+      if (!auth || auth.role !== 'atleta') {
+        return { ok: false as const, error: 'Sign in as athlete first.' }
+      }
+      try {
+        const id = input.id ?? crypto.randomUUID()
+        const now = new Date().toISOString()
+        if (cloudMode) {
+          const saved = await cloudUpsertAthleteFin(auth.athleteId, {
+            id,
+            name: input.name,
+            size: input.size,
+            template: input.template,
+            notes: input.notes,
+          })
+          setAthleteFins((prev) => [saved, ...prev.filter((f) => f.id !== saved.id)])
+        } else {
+          const saved = equipmentStore.saveFin({
+            id,
+            athleteId: auth.athleteId,
+            name: input.name,
+            size: input.size,
+            template: input.template,
+            notes: input.notes,
+            createdAt: now,
+            updatedAt: now,
+          })
+          setAthleteFins((prev) => [saved, ...prev.filter((f) => f.id !== saved.id)])
+        }
+        return { ok: true as const }
+      } catch (err) {
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err.message : 'Could not save fins.',
+        }
+      }
+    },
+    [auth, cloudMode],
+  )
+
+  const deleteAthleteFin = useCallback(
+    async (finId: string) => {
+      if (cloudMode) await cloudDeleteAthleteFin(finId)
+      else equipmentStore.deleteFin(finId)
+      setAthleteFins((prev) => prev.filter((f) => f.id !== finId))
+    },
+    [cloudMode],
+  )
+
+  const saveEquipmentEvaluation = useCallback(
+    async (input: {
+      athleteId: string
+      equipmentType: EquipmentType
+      equipmentId: string
+      speed: number
+      control: number
+      release: number
+      notes: string | null
+    }) => {
+      if (!auth || auth.role !== 'treinador') {
+        return { ok: false as const, error: 'Sign in as coach first.' }
+      }
+      try {
+        if (cloudMode) {
+          const saved = await cloudSaveEquipmentEvaluation(auth.coachId, input.athleteId, input)
+          setEquipmentEvaluations((prev) => [saved, ...prev])
+        } else {
+          const saved = equipmentStore.saveEvaluation({
+            id: crypto.randomUUID(),
+            coachId: auth.coachId,
+            athleteId: input.athleteId,
+            equipmentType: input.equipmentType,
+            equipmentId: input.equipmentId,
+            speed: input.speed,
+            control: input.control,
+            release: input.release,
+            notes: input.notes,
+            createdAt: new Date().toISOString(),
+          })
+          setEquipmentEvaluations((prev) => [saved, ...prev])
+        }
+        return { ok: true as const }
+      } catch (err) {
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err.message : 'Could not save evaluation.',
+        }
+      }
+    },
+    [auth, cloudMode],
+  )
+
+  const submitSessionFeedback = useCallback(
+    async (input: {
+      sessionId: string
+      coachId: string
+      boardId: string | null
+      finId: string | null
+      mentalState: MentalState
+      writtenNote: string | null
+    }) => {
+      if (!auth || auth.role !== 'atleta') {
+        return { ok: false as const, error: 'Sign in as athlete first.' }
+      }
+      try {
+        if (cloudMode) {
+          const saved = await cloudSubmitSessionFeedback({
+            sessionId: input.sessionId,
+            athleteId: auth.athleteId,
+            coachId: input.coachId,
+            boardId: input.boardId,
+            finId: input.finId,
+            mentalState: input.mentalState,
+            writtenNote: input.writtenNote,
+          })
+          setSessionAthleteFeedback((prev) => [saved, ...prev.filter((row) => row.id !== saved.id)])
+        } else {
+          const saved = equipmentStore.saveSessionFeedback({
+            id: crypto.randomUUID(),
+            sessionId: input.sessionId,
+            athleteId: auth.athleteId,
+            coachId: input.coachId,
+            boardId: input.boardId,
+            finId: input.finId,
+            mentalState: input.mentalState,
+            writtenNote: input.writtenNote,
+            submittedAt: new Date().toISOString(),
+          })
+          setSessionAthleteFeedback((prev) => [saved, ...prev.filter((row) => row.id !== saved.id)])
+        }
+        return { ok: true as const }
+      } catch (err) {
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err.message : 'Could not submit feedback.',
+        }
+      }
+    },
+    [auth, cloudMode],
+  )
+
+  const skipSessionFeedback = useCallback((sessionId: string) => {
+    setSkippedFeedbackSessionIds((prev) => {
+      if (prev.includes(sessionId)) return prev
+      const next = [...prev, sessionId]
+      localStorage.setItem('surfstar-skipped-feedback', JSON.stringify(next))
+      return next
+    })
+  }, [])
+
   const value = useMemo(
     () => ({
       auth,
@@ -2786,6 +3134,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteWaveRecord,
       updateHeatWaveScore,
       deleteHeatWaveScore,
+      athleteBoards,
+      athleteFins,
+      equipmentEvaluations,
+      sessionAthleteFeedback,
+      insightsAthlete,
+      pendingSessionFeedback,
+      refreshAthleteEquipment,
+      openCoachAthleteInsights,
+      saveAthleteBoard,
+      deleteAthleteBoard,
+      saveAthleteFin,
+      deleteAthleteFin,
+      saveEquipmentEvaluation,
+      submitSessionFeedback,
+      skipSessionFeedback,
     }),
     [
       auth,
@@ -2912,6 +3275,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteWaveRecord,
       updateHeatWaveScore,
       deleteHeatWaveScore,
+      athleteBoards,
+      athleteFins,
+      equipmentEvaluations,
+      sessionAthleteFeedback,
+      insightsAthlete,
+      pendingSessionFeedback,
+      refreshAthleteEquipment,
+      openCoachAthleteInsights,
+      saveAthleteBoard,
+      deleteAthleteBoard,
+      saveAthleteFin,
+      deleteAthleteFin,
+      saveEquipmentEvaluation,
+      submitSessionFeedback,
+      skipSessionFeedback,
     ],
   )
 

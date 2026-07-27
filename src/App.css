@@ -5843,3 +5843,216 @@ a:focus:not(:focus-visible) {
   line-height: 1.45;
 }
 
+/* Athlete material & feedback */
+.material-section + .material-section {
+  margin-top: 0.75rem;
+}
+
+.material-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.material-form-grid__full {
+  grid-column: 1 / -1;
+}
+
+.material-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.material-list {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.material-list__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.material-list__item:last-child {
+  border-bottom: 0;
+}
+
+.material-list__notes {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ss-muted);
+}
+
+.material-list__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.material-empty {
+  margin: 0.75rem 0 0;
+}
+
+.equipment-rating-chart {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0.85rem 0;
+}
+
+.equipment-rating-chart__title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.equipment-rating__head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.equipment-rating__track {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.equipment-rating__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #c9a962, #e8d5a3);
+}
+
+.rating-sliders {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.rating-slider input[type='range'] {
+  width: 100%;
+}
+
+.evaluation-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.evaluation-history__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.feedback-timeline {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.feedback-timeline__item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.feedback-timeline__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.feedback-timeline__gear,
+.feedback-timeline__note {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+}
+
+.session-feedback-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: end center;
+  padding: 1rem;
+  background: rgba(5, 11, 24, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.session-feedback-sheet {
+  width: min(100%, 32rem);
+  max-height: min(92vh, 44rem);
+  overflow: auto;
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.session-feedback-sheet__lead {
+  margin: 0.35rem 0 1rem;
+}
+
+.session-feedback-states {
+  border: 0;
+  margin: 0.85rem 0;
+  padding: 0;
+}
+
+.session-feedback-states legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.session-feedback-states__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.session-feedback-state {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  font-size: 0.82rem;
+}
+
+.session-feedback-states__picked {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+}
+
+.session-feedback-sheet__actions {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.insights-tabs {
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .material-form-grid,
+  .session-feedback-states__grid {
+    grid-template-columns: 1fr;
+  }
+}
+

@@ -42,6 +42,69 @@ export type AppView =
   | 'manage-custom-templates'
   | 'organization'
   | 'admin'
+  | 'athlete-material'
+  | 'coach-athlete-insights'
+
+export type MentalState =
+  | 'focused'
+  | 'motivated'
+  | 'confident'
+  | 'neutral'
+  | 'tired'
+  | 'anxious'
+  | 'demotivated'
+  | 'frustrated'
+
+export type EquipmentType = 'board' | 'fin'
+
+export type AthleteBoard = {
+  id: string
+  athleteId: string
+  name: string
+  lengthCm: number | null
+  widthInches: number | null
+  thicknessInches: number | null
+  volumeLiters: number | null
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type AthleteFin = {
+  id: string
+  athleteId: string
+  name: string
+  size: string | null
+  template: string | null
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type EquipmentEvaluation = {
+  id: string
+  coachId: string
+  athleteId: string
+  equipmentType: EquipmentType
+  equipmentId: string
+  speed: number
+  control: number
+  release: number
+  notes: string | null
+  createdAt: string
+}
+
+export type SessionAthleteFeedback = {
+  id: string
+  sessionId: string
+  athleteId: string
+  coachId: string
+  boardId: string | null
+  finId: string | null
+  mentalState: MentalState
+  writtenNote: string | null
+  submittedAt: string
+}
 
 export type CustomLevel = {
   id: string

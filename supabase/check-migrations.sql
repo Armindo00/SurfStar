@@ -149,9 +149,22 @@ insert into _surfstar_migration_check values
   )
   then 'OK' else 'FALTA' end,
   'Coluna profiles.is_platform_admin + RPC admin_get_dashboard_stats'
+),
+(
+  14,
+  'add-athlete-equipment-feedback.sql',
+  case when exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'athlete_boards'
+  ) and exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'session_athlete_feedback'
+  )
+  then 'OK' else 'FALTA' end,
+  'Tabelas athlete_boards + session_athlete_feedback'
 );
 
--- Passo 14 (opcional): demo mode para checkout sem Stripe
+-- Passo 15 (opcional): demo mode para checkout sem Stripe
 do $$
 begin
   if not exists (
@@ -159,7 +172,7 @@ begin
     where table_schema = 'public' and table_name = 'app_settings'
   ) then
     insert into _surfstar_migration_check values (
-      14, 'enable-demo-mode.sql', 'FALTA',
+      15, 'enable-demo-mode.sql', 'FALTA',
       'Primeiro corre fix-subscription-security.sql (passo 9)'
     );
   elsif exists (
@@ -172,7 +185,7 @@ begin
     );
   else
     insert into _surfstar_migration_check values (
-      14, 'enable-demo-mode.sql', 'FALTA', 'Corre enable-demo-mode.sql (opcional)'
+      15, 'enable-demo-mode.sql', 'FALTA', 'Corre enable-demo-mode.sql (opcional)'
     );
   end if;
 end $$;
@@ -181,4 +194,4 @@ select ordem, ficheiro, estado, o_que_verifica
 from _surfstar_migration_check
 order by ordem;
 
--- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 13)
+-- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 14)

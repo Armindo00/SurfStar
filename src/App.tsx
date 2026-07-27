@@ -12,6 +12,8 @@ import { TeamAcademyRequestView } from './views/TeamAcademyRequestView'
 import { AdminView } from './views/AdminView'
 import { LegalPageView } from './views/LegalPageView'
 import { AthletePortal } from './views/AthletePortal'
+import { AthleteMaterialView } from './views/AthleteMaterialView'
+import { CoachAthleteInsightsView } from './views/CoachAthleteInsightsView'
 import { CoachHome } from './views/CoachHome'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
 import { CombosSessionView } from './views/CombosSessionView'
@@ -149,7 +151,8 @@ function Shell() {
         <AppHeader />
         <main className="app-main">
           {role === 'atleta' && view === 'help' && <HelpView />}
-          {role === 'atleta' && view !== 'help' && <AthletePortal />}
+          {role === 'atleta' && view === 'athlete-material' && <AthleteMaterialView />}
+          {role === 'atleta' && view !== 'help' && view !== 'athlete-material' && <AthletePortal />}
           {role === 'treinador' && view === 'coach-home' && <CoachHome />}
           {role === 'treinador' && view === 'start-session' && <StartSession />}
           {role === 'treinador' && view === 'select-athletes' && <SelectAthletes />}
@@ -162,6 +165,7 @@ function Shell() {
           {role === 'treinador' && view === 'session-stats' && <SessionStatsView />}
           {role === 'treinador' && view === 'saved-waves' && <SavedWavesView />}
           {role === 'treinador' && view === 'manage-athletes' && <ManageAthletes />}
+          {role === 'treinador' && view === 'coach-athlete-insights' && <CoachAthleteInsightsView />}
           {role === 'treinador' && view === 'manage-spots' && <ManageSpots />}
           {role === 'treinador' && view === 'manage-custom-templates' && <ManageCustomTemplates />}
           {role === 'treinador' && view === 'training-sessions' && <TrainingSessionsView />}
