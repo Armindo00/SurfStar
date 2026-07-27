@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { HeatResultsTable } from '../components/HeatResultsTable'
+import { HeatLiveStatsPanel } from '../components/HeatLiveStatsPanel'
 import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessChart'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { SeaAnalysisStatsPanel } from '../components/SeaAnalysisStatsPanel'
@@ -13,7 +13,7 @@ import {
 } from '../sessionHistoryUtils'
 import { computeComboSessionStats, computeSessionStats, LEVELS } from '../sessionStats'
 import { computeCustomSessionStats } from '../customTrainingStats'
-import { heatIsFinished } from '../heatUtils'
+import { isHeatLikeSession } from '../sessionModeUtils'
 import {
   COMBO_LEVEL_LABELS,
   MANEUVER_LABELS,
@@ -193,10 +193,9 @@ export function SessionHistoryDetailView() {
   }
 
   const spotName = resolveSessionSpotName(historySession, getSpot)
-  const finishedHeats = historySession.heats.filter(heatIsFinished)
 
   return (
-    <div className="ss-flow stats-page">
+    <div className={`ss-flow stats-page ${isHeatLikeSession(historySession) ? 'heat-live-stats-page' : ''}`}>
       <ScreenHeader title="Session detail" onBack={closeHistorySession} />
 
       <div className="ss-card history-detail-hero">
@@ -255,19 +254,14 @@ export function SessionHistoryDetailView() {
           ))
         : null}
 
-      {historySession.mode === 'heats' || historySession.mode === 'campeonato' ? (
-        finishedHeats.length === 0 ? (
-          <div className="ss-card">
-            <p className="muted">No finished heats in this session.</p>
-          </div>
-        ) : (
-          finishedHeats.map((heat) => (
-            <div key={heat.id} className="ss-card stats-panel">
-              <h2 className="stats-panel__title">{heat.label}</h2>
-              <HeatResultsTable heat={heat} getAthleteName={getAthleteName} />
-            </div>
-          ))
-        )
+      {isHeatLikeSession(historySession) ? (
+        <HeatLiveStatsPanel
+          session={historySession}
+          getAthleteName={getAthleteName}
+          finishedOnly
+          emptyMessage="No finished heats in this session."
+          rhythmEmptyMessage="Heat timer was not started — rhythm stats unavailable."
+        />
       ) : null}
 
       {historySession.mode === 'sea-analysis' && historySession.seaAnalysis ? (
