@@ -96,7 +96,12 @@ import {
   loadAthleteSessionsLocal,
   migrateLegacyLocalAthletes,
 } from './localPairing'
-import { clampHeatScore, MAX_HEAT_ATHLETES } from './heatUtils'
+import {
+  canEndHeatBasedSession,
+  clampHeatScore,
+  MAX_HEAT_ATHLETES,
+  pendingHeatEndLabels,
+} from './heatUtils'
 import { buildInitialChampionshipHeats, isValidChampionshipField, processChampionshipRoundAdvance } from './championshipUtils'
 import type { BillingInterval, PlanId } from './plans'
 import { getPlan, getStripePaymentLink, isApprovalRequiredPlan, isStripeConfigured } from './plans'
@@ -2132,8 +2137,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [auth, customTemplates, draft, persistSessions, showToast, spots, subscription?.planId])
 
   const openEndSessionSheet = useCallback(() => {
+    const session = trainingSessions.find((s) => s.id === activeSessionId)
+    if (session && !canEndHeatBasedSession(session)) {
+      const labels = pendingHeatEndLabels(session)
+      showToast(
+        labels.length
+          ? `Finish ${labels.join(', ')} before ending the session.`
+          : 'Finish all heats before ending the session.',
+        'error',
+      )
+      return
+    }
     setEndSessionSheetOpen(true)
-  }, [])
+  }, [activeSessionId, showToast, trainingSessions])
 
   const closeEndSessionSheet = useCallback(() => {
     setEndSessionSheetOpen(false)

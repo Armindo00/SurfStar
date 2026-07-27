@@ -179,16 +179,32 @@ export function StartSession() {
         ) : null}
 
         <div className="form-pro">
-          <label className="field field--pro">
-            <span>Spot</span>
-            <select value={draft.spotId} onChange={(e) => setDraftSpot(e.target.value)}>
-              {spots.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <p className="field-label">Spot</p>
+          {spots.length === 0 ? (
+            <div className="custom-start-empty">
+              <p className="muted">
+                You have not added any spots yet. Add at least one spot before starting a session.
+              </p>
+              <button
+                type="button"
+                className="btn btn--primary btn--block"
+                onClick={() => setView('manage-spots')}
+              >
+                Add spots
+              </button>
+            </div>
+          ) : (
+            <label className="field field--pro">
+              <span>Spot</span>
+              <select value={draft.spotId} onChange={(e) => setDraftSpot(e.target.value)}>
+                {spots.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           <label className="field field--pro">
             <span>Sea conditions</span>
@@ -213,6 +229,8 @@ export function StartSession() {
           className="btn btn--primary btn--block btn--lg"
           disabled={
             !draft.condition ||
+            spots.length === 0 ||
+            !draft.spotId ||
             modes.length === 0 ||
             (isCustom && (!draft.customTemplateId || customTemplates.length === 0))
           }

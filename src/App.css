@@ -6030,12 +6030,29 @@ a:focus:not(:focus-visible) {
   padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
 }
 
-.session-sticky-bar {
+.session-sticky-bar-wrap {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 40;
+}
+
+.session-sticky-bar__notice {
+  margin: 0;
+  padding: 0.45rem 1rem;
+  font-size: 0.78rem;
+  text-align: center;
+  background: rgba(254, 249, 195, 0.95);
+  color: #854d0e;
+  border-top: 1px solid rgba(234, 179, 8, 0.35);
+}
+
+.session-sticky-bar {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;

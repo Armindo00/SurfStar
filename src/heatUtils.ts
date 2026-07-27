@@ -1,4 +1,4 @@
-import type { HeatInterferenceType, HeatRecord, HeatWaveScore } from './types'
+import type { HeatRecord, HeatInterferenceType, HeatWaveScore, TrainingSession } from './types'
 
 export const MAX_HEAT_ATHLETES = 4
 
@@ -167,6 +167,22 @@ export function heatIsRunning(heat: HeatRecord): boolean {
 
 export function heatIsFinished(heat: HeatRecord): boolean {
   return Boolean(heat.endedAt)
+}
+
+/** Heat still in progress or not ended — blocks ending the training session. */
+export function heatBlocksSessionEnd(heat: HeatRecord): boolean {
+  if (heat.bracketLocked && heat.athleteIds.length === 0) return false
+  if (heat.athleteIds.length === 0) return false
+  return !heatIsFinished(heat)
+}
+
+export function canEndHeatBasedSession(session: Pick<TrainingSession, 'mode' | 'heats'>): boolean {
+  if (session.mode !== 'heats' && session.mode !== 'campeonato') return true
+  return !session.heats.some(heatBlocksSessionEnd)
+}
+
+export function pendingHeatEndLabels(session: Pick<TrainingSession, 'heats'>): string[] {
+  return session.heats.filter(heatBlocksSessionEnd).map((heat) => heat.label)
 }
 
 export type HeatWaveCellState = 'counting' | 'int-drop' | 'int-half' | 'normal'
