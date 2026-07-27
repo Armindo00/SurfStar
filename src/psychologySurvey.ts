@@ -14,18 +14,21 @@ export type PsychologySurveyKey = (typeof PSYCHOLOGY_SURVEY_KEYS)[number]
 export type PsychologySurveyScores = Record<PsychologySurveyKey, number>
 
 export const PSYCHOLOGY_SURVEY_QUESTIONS: { id: PsychologySurveyKey; label: string }[] = [
-  { id: 'mood', label: 'Como está o teu estado de espírito?' },
-  { id: 'confidenceToContinue', label: 'Quão confiante estás para continuar a treinar?' },
-  { id: 'confidenceDuring', label: 'Quão confiante te sentiste durante o treino?' },
-  { id: 'focusDuring', label: 'Quão focado estiveste durante o treino?' },
-  { id: 'errorHandling', label: 'Como avalias a tua capacidade de lidar com os erros que cometeste hoje?' },
-  { id: 'feltImprovement', label: 'Sentes que evoluíste neste treino?' },
-  { id: 'performanceSatisfaction', label: 'Quão satisfeito estás com o teu desempenho?' },
-  { id: 'mentalFatigue', label: 'Como está o teu cansaço mental?' },
+  { id: 'mood', label: 'How is your mood?' },
+  { id: 'confidenceToContinue', label: 'How confident do you feel about continuing to train?' },
+  { id: 'confidenceDuring', label: 'How confident did you feel during the session?' },
+  { id: 'focusDuring', label: 'How focused were you during the session?' },
+  {
+    id: 'errorHandling',
+    label: 'How well did you handle the mistakes you made today?',
+  },
+  { id: 'feltImprovement', label: 'Do you feel you improved in this session?' },
+  { id: 'performanceSatisfaction', label: 'How satisfied are you with your performance?' },
+  { id: 'mentalFatigue', label: 'How is your mental fatigue?' },
 ]
 
 export const PSYCHOLOGY_SURVEY_COACH_NOTE_PROMPT =
-  'Há alguma coisa que o treinador deva saber sobre este treino?'
+  'Is there anything your coach should know about this session?'
 
 export const DEFAULT_PSYCHOLOGY_SURVEY_SCORES: PsychologySurveyScores = {
   mood: 3,

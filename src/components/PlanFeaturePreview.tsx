@@ -129,7 +129,7 @@ function LiveStatsPreview() {
 
 function TechnicalTrainingPreview() {
   return (
-    <PreviewShell pill="Technical · Wave 12" title="João Silva · Frontside" accent="blue">
+    <PreviewShell pill="Technical · Wave 12" title="John Silva · Frontside" accent="blue">
       <div className="plan-feature-preview__maneuver-grid">
         <div className="plan-feature-preview__maneuver plan-feature-preview__maneuver--ok">
           <span>Rail</span><strong>L3</strong><em>✓</em>
@@ -233,12 +233,12 @@ function EquipmentRatingsPreview() {
 
 function PsychologyPreview() {
   return (
-    <PreviewShell pill="Check-in rápido" title="Post-session wellbeing" accent="purple">
+    <PreviewShell pill="Quick check-in" title="Post-session wellbeing" accent="purple">
       <ul className="plan-feature-preview__survey">
         {[
-          ['Confiança na bateria', '4'],
-          ['Concentração na sessão', '5'],
-          ['Estado emocional geral', '4'],
+          ['Heat confidence', '4'],
+          ['Session focus', '5'],
+          ['Overall emotional state', '4'],
         ].map(([label, score]) => (
           <li key={label}>
             <span>{label}</span>
@@ -300,7 +300,7 @@ function SeaAnalysisPreview() {
 
 function SharingPreview() {
   return (
-    <PreviewShell pill="Athlete sharing" title="João Silva · Permissions" accent="green">
+    <PreviewShell pill="Athlete sharing" title="John Silva · Permissions" accent="green">
       <ul className="plan-feature-preview__toggle-list">
         {[
           ['Technical training stats', true],

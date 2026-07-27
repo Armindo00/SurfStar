@@ -186,7 +186,7 @@ export function LoginView() {
               autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={isCoach ? 'e.g. João Silva' : 'e.g. Maria Costa'}
+              placeholder={isCoach ? 'e.g. John Smith' : 'e.g. Jane Doe'}
               required
             />
           </label>

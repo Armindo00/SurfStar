@@ -175,23 +175,25 @@ export function AthleteMaterialView() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="O meu material" onBack={() => setView('athlete-portal')} />
+      <ScreenHeader title="My equipment" onBack={() => setView('athlete-portal')} />
 
       <div className="ss-card material-section">
-        <h2 className="page-title">Quiver de pranchas</h2>
-        <p className="muted">Regista tamanho, largura, espessura e litros — o teu treinador vê este quiver.</p>
+        <h2 className="page-title">Board quiver</h2>
+        <p className="muted">
+          Log length, width, thickness and volume — your coach can see this quiver.
+        </p>
 
         <div className="material-form-grid">
           <label className="field field--pro">
-            <span>Nome / modelo</span>
+            <span>Name / model</span>
             <input
               value={boardDraft.name}
               onChange={(e) => setBoardDraft((d) => ({ ...d, name: e.target.value }))}
-              placeholder="Ex.: Pyzel Phantom"
+              placeholder="e.g. Pyzel Phantom"
             />
           </label>
           <label className="field field--pro">
-            <span>Comprimento (cm)</span>
+            <span>Length (cm)</span>
             <input
               inputMode="decimal"
               value={boardDraft.lengthCm}
@@ -200,7 +202,7 @@ export function AthleteMaterialView() {
             />
           </label>
           <label className="field field--pro">
-            <span>Largura (in)</span>
+            <span>Width (in)</span>
             <input
               inputMode="decimal"
               value={boardDraft.widthInches}
@@ -209,7 +211,7 @@ export function AthleteMaterialView() {
             />
           </label>
           <label className="field field--pro">
-            <span>Espessura (in)</span>
+            <span>Thickness (in)</span>
             <input
               inputMode="decimal"
               value={boardDraft.thicknessInches}
@@ -218,7 +220,7 @@ export function AthleteMaterialView() {
             />
           </label>
           <label className="field field--pro">
-            <span>Litros (L)</span>
+            <span>Volume (L)</span>
             <input
               inputMode="decimal"
               value={boardDraft.volumeLiters}
@@ -227,44 +229,44 @@ export function AthleteMaterialView() {
             />
           </label>
           <label className="field field--pro material-form-grid__full">
-            <span>Notas</span>
+            <span>Notes</span>
             <textarea
               rows={2}
               value={boardDraft.notes}
               onChange={(e) => setBoardDraft((d) => ({ ...d, notes: e.target.value }))}
-              placeholder="Tipo de onda, setup, etc."
+              placeholder="Wave type, setup, etc."
             />
           </label>
         </div>
 
         <div className="material-form-actions">
           <button type="button" className="btn btn--primary" disabled={busy} onClick={() => void submitBoard()}>
-            {editingBoardId ? 'Guardar prancha' : 'Adicionar prancha'}
+            {editingBoardId ? 'Save board' : 'Add board'}
           </button>
           {editingBoardId ? (
             <button type="button" className="btn btn--ghost" onClick={resetBoardForm}>
-              Cancelar
+              Cancel
             </button>
           ) : null}
         </div>
 
         {athleteBoards.length === 0 ? (
-          <p className="muted material-empty">Ainda não tens pranchas registadas.</p>
+          <p className="muted material-empty">You haven&apos;t added any boards yet.</p>
         ) : (
           <ul className="material-list">
             {athleteBoards.map((board) => (
               <li key={board.id} className="material-list__item">
                 <div>
                   <strong>{board.name}</strong>
-                  <p className="muted">{formatBoardSpecs(board) || 'Sem medidas'}</p>
+                  <p className="muted">{formatBoardSpecs(board) || 'No dimensions'}</p>
                   {board.notes ? <p className="material-list__notes">{board.notes}</p> : null}
                 </div>
                 <div className="material-list__actions">
                   <button type="button" className="btn btn--ghost btn--small" onClick={() => startEditBoard(board)}>
-                    Editar
+                    Edit
                   </button>
                   <button type="button" className="btn btn--ghost btn--small" onClick={() => void removeBoard(board.id)}>
-                    Apagar
+                    Delete
                   </button>
                 </div>
               </li>
@@ -274,20 +276,20 @@ export function AthleteMaterialView() {
       </div>
 
       <div className="ss-card material-section">
-        <h2 className="page-title">Quilhas</h2>
-        <p className="muted">Template, tamanho e notas das tuas quilhas.</p>
+        <h2 className="page-title">Fins</h2>
+        <p className="muted">Template, size and notes for your fins.</p>
 
         <div className="material-form-grid">
           <label className="field field--pro">
-            <span>Nome / set</span>
+            <span>Name / set</span>
             <input
               value={finDraft.name}
               onChange={(e) => setFinDraft((d) => ({ ...d, name: e.target.value }))}
-              placeholder="Ex.: FCS II Performer"
+              placeholder="e.g. FCS II Performer"
             />
           </label>
           <label className="field field--pro">
-            <span>Tamanho</span>
+            <span>Size</span>
             <input
               value={finDraft.size}
               onChange={(e) => setFinDraft((d) => ({ ...d, size: e.target.value }))}
@@ -303,7 +305,7 @@ export function AthleteMaterialView() {
             />
           </label>
           <label className="field field--pro material-form-grid__full">
-            <span>Notas</span>
+            <span>Notes</span>
             <textarea
               rows={2}
               value={finDraft.notes}
@@ -315,17 +317,17 @@ export function AthleteMaterialView() {
 
         <div className="material-form-actions">
           <button type="button" className="btn btn--primary" disabled={busy} onClick={() => void submitFin()}>
-            {editingFinId ? 'Guardar quilhas' : 'Adicionar quilhas'}
+            {editingFinId ? 'Save fins' : 'Add fins'}
           </button>
           {editingFinId ? (
             <button type="button" className="btn btn--ghost" onClick={resetFinForm}>
-              Cancelar
+              Cancel
             </button>
           ) : null}
         </div>
 
         {athleteFins.length === 0 ? (
-          <p className="muted material-empty">Ainda não tens quilhas registadas.</p>
+          <p className="muted material-empty">You haven&apos;t added any fins yet.</p>
         ) : (
           <ul className="material-list">
             {athleteFins.map((fin) => (
@@ -333,16 +335,16 @@ export function AthleteMaterialView() {
                 <div>
                   <strong>{fin.name}</strong>
                   <p className="muted">
-                    {[fin.template, fin.size].filter(Boolean).join(' · ') || 'Sem detalhes'}
+                    {[fin.template, fin.size].filter(Boolean).join(' · ') || 'No details'}
                   </p>
                   {fin.notes ? <p className="material-list__notes">{fin.notes}</p> : null}
                 </div>
                 <div className="material-list__actions">
                   <button type="button" className="btn btn--ghost btn--small" onClick={() => startEditFin(fin)}>
-                    Editar
+                    Edit
                   </button>
                   <button type="button" className="btn btn--ghost btn--small" onClick={() => void removeFin(fin.id)}>
-                    Apagar
+                    Delete
                   </button>
                 </div>
               </li>

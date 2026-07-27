@@ -93,11 +93,11 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
     <div className="session-feedback-overlay" role="dialog" aria-modal="true" aria-labelledby="session-feedback-title">
       <div className="session-feedback-sheet ss-card">
         <h2 id="session-feedback-title" className="page-title">
-          Check-in rápido
+          Quick check-in
         </h2>
         <p className="muted">{sessionLabel}</p>
         <p className="muted session-feedback-sheet__lead">
-          Avalia cada item de 0 a 5 — demora menos de um minuto.
+          Rate each item from 0 to 5 — it takes less than a minute.
         </p>
 
         <div className="psych-survey-list">
@@ -112,12 +112,12 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
         </div>
 
         <label className="field field--pro">
-          <span>{PSYCHOLOGY_SURVEY_COACH_NOTE_PROMPT} (opcional)</span>
+          <span>{PSYCHOLOGY_SURVEY_COACH_NOTE_PROMPT} (optional)</span>
           <textarea
             rows={3}
             value={writtenNote}
             onChange={(e) => setWrittenNote(e.target.value)}
-            placeholder="Comentário opcional para o treinador…"
+            placeholder="Optional comment for your coach…"
           />
         </label>
 
@@ -125,7 +125,7 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
 
         <div className="session-feedback-sheet__actions">
           <button type="button" className="btn btn--primary btn--block" disabled={busy} onClick={() => void submit()}>
-            {busy ? 'A enviar…' : 'Enviar check-in'}
+            {busy ? 'Sending…' : 'Submit check-in'}
           </button>
           <button type="button" className="btn btn--ghost btn--block" onClick={onSkip}>
             Skip for now

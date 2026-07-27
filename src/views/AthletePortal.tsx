@@ -180,52 +180,52 @@ export function AthletePortal() {
   const dashboardActions: DashboardAction[] = [
     {
       id: 'material',
-      label: 'Gestão de material',
-      description: 'Pranchas, quilhas e setup',
+      label: 'Equipment management',
+      description: 'Boards, fins and setup',
       icon: '⇄',
     },
     {
       id: 'coaches',
-      label: 'Treinadores ligados',
-      description: 'Código de pairing e pedidos',
+      label: 'Linked coaches',
+      description: 'Pairing code and requests',
       icon: '◉',
       badge: pendingLinks.length || undefined,
     },
     {
       id: 'shared-stats',
-      label: 'Estatísticas partilhadas',
+      label: 'Shared statistics',
       description:
         sharingCoachCount > 0
-          ? `${sharingCoachCount} treinador${sharingCoachCount === 1 ? '' : 'es'} a partilhar`
-          : 'Detalhes partilhados pelos treinadores',
+          ? `${sharingCoachCount} coach${sharingCoachCount === 1 ? '' : 'es'} sharing data`
+          : 'Details shared by your coaches',
       icon: '▤',
     },
     {
       id: 'checkins',
       label: 'Mental check-ins',
-      description: 'Responder após cada treino',
+      description: 'Complete after each session',
       icon: '◎',
       badge: pendingCheckins || undefined,
     },
     {
       id: 'evolution',
-      label: 'Gráfico de evolução',
-      description: '6 meses · 1 mês · 1 semana',
+      label: 'Evolution chart',
+      description: '6 months · 1 month · 1 week',
       icon: '↗',
     },
     {
       id: 'heats',
-      label: 'Histórico de heats',
-      description: heatDetails.length > 0 ? `${heatDetails.length} heats` : 'Resultados de competição',
+      label: 'Heat history',
+      description: heatDetails.length > 0 ? `${heatDetails.length} heats` : 'Competition results',
       icon: '★',
     },
     {
       id: 'training-history',
-      label: 'Histórico de treinos',
+      label: 'Training history',
       description:
         sessionSummaries.length > 0
-          ? `${sessionSummaries.length} sessões`
-          : 'Treinos partilhados pelos treinadores',
+          ? `${sessionSummaries.length} sessions`
+          : 'Training sessions shared by your coaches',
       icon: '☰',
     },
   ]
