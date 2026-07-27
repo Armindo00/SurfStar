@@ -698,7 +698,7 @@ body {
 
 .app-shell .pairing-list__item {
   background: rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   color: #f1f5f9 !important;
 }
 
@@ -866,6 +866,41 @@ body {
 
 .app-shell .action-list__item span[aria-hidden='true'] {
   color: var(--landing-gold) !important;
+}
+
+.app-shell .athlete-portal__nav-icon {
+  background: rgba(201, 169, 98, 0.18) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .athlete-portal__nav-item small {
+  color: var(--landing-muted) !important;
+}
+
+.app-shell .athlete-portal__nav-badge {
+  background: rgba(201, 169, 98, 0.85) !important;
+  color: #0a1628 !important;
+}
+
+.app-shell .athlete-share-coaches__item,
+.app-shell .athlete-checkin-timeline__item,
+.app-shell .athlete-checkin-pending__item,
+.app-shell .athlete-history-list--cards li {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .athlete-share-coaches__tag {
+  background: rgba(201, 169, 98, 0.18) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .evolution-chart__table thead th {
+  background: rgba(0, 0, 0, 0.25) !important;
+}
+
+.app-shell .evolution-chart__table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03) !important;
 }
 
 .app-shell .kpi-card__value {
