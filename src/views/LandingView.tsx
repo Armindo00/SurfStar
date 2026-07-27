@@ -2,181 +2,15 @@ import { useEffect, useState } from 'react'
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { PackCard } from '../components/PackCard'
 import { AppLogo } from '../components/AppLogo'
-import { SUBSCRIPTION_PLANS } from '../plans'
+import { LANDING_HIGHLIGHTS, getTopPlanFeatures, PLAN_MARKETING_PROFILES } from '../planMarketing'
+import { SUBSCRIPTION_PLANS, formatPlanPrice, formatPlanPriceSuffix, getPlan } from '../plans'
 import { scrollToPricingSection } from '../routing'
 import { useApp } from '../AppContext'
 
-const WHATS_NEW = [
-  {
-    tag: 'New',
-    title: 'Athlete gear quiver',
-    text: 'Boards and fins with dimensions, volume, and setup — all in one place.',
-    audience: 'Athlete',
-  },
-  {
-    tag: 'New',
-    title: 'Post-session wellbeing',
-    text: 'Quick check-in after training: gear used, mental state, and optional notes.',
-    audience: 'Athlete',
-  },
-  {
-    tag: 'New',
-    title: 'Coach gear insights',
-    text: 'Rate equipment speed, control, and release. Track wellbeing over time.',
-    audience: 'Coach',
-  },
-  {
-    tag: 'New',
-    title: 'Contact SurfStar',
-    text: 'Send feedback, report bugs, or ask for help — directly from the app.',
-    audience: 'Everyone',
-  },
-]
-
-const PILLARS = [
-  {
-    icon: '▣',
-    title: 'Live session stats',
-    text: 'Success rates and maneuver breakdowns update wave by wave on the beach.',
-  },
-  {
-    icon: '⚙',
-    title: 'Custom training',
-    text: 'Coach Premium — your skill buttons, levels, timer, and rules.',
-  },
-  {
-    icon: '≋',
-    title: 'Sea analysis',
-    text: 'Compare two peaks with timed observations and a data-backed pick.',
-  },
-  {
-    icon: '◆',
-    title: 'Season analytics',
-    text: 'Monthly evolution charts plus full season totals for every athlete.',
-  },
-]
-
-const PREMIUM_SPOTLIGHTS = [
-  {
-    id: 'custom',
-    eyebrow: 'Coach Premium',
-    title: 'Custom training',
-    lead: 'Build templates that match how you actually coach — then run them live with one tap per skill.',
-    bullets: [
-      'Name your own skill buttons and color-code them',
-      'Per-button levels plus success / fail tracking',
-      'Built-in timer with auto-start for timed drills',
-    ],
-    preview: {
-      pill: 'Custom training · Live register',
-      spot: 'Cutback focus · Carcavelos',
-      chips: ['Cutback', 'Re-entry', 'Tube', 'Layback'],
-      kpis: [
-        { value: '76%', label: 'Success' },
-        { value: '12:40', label: 'Timer left' },
-        { value: '18', label: 'Logs' },
-      ],
-      foot: 'Level 3 cutback · Success · Frontside',
-    },
-  },
-  {
-    id: 'sea',
-    eyebrow: 'Coach Premium',
-    title: 'Sea analysis',
-    lead: 'Run a 30-minute session, log what you see on both peaks, and get a clear recommendation.',
-    bullets: [
-      'Log wave types on Peak 1 and Peak 2 in real time',
-      'Wave score + arrival rate = recommended peak',
-      'Full timeline with edit and delete for mistakes',
-    ],
-    preview: {
-      pill: 'Sea analysis · 18:42 left',
-      spot: 'Supertubos · Offshore',
-      recommend: { peak: 'Peak 1', note: 'Stronger sets and faster arrivals on Peak 1' },
-      peaks: [
-        { name: 'Peak 1', score: '42 pts', obs: '18 observations' },
-        { name: 'Peak 2', score: '31 pts', obs: '14 observations' },
-      ],
-      chips: ['Set', 'Large int.', 'Small int.', 'Small'],
-    },
-  },
-] as const
-
-type SpotlightId = (typeof PREMIUM_SPOTLIGHTS)[number]['id']
-
-const FEATURE_GROUPS = [
-  {
-    id: 'coach',
-    label: 'For coaches',
-    shortLabel: 'Coaches',
-    items: [
-      {
-        icon: '◎',
-        title: 'Wave-by-wave logging',
-        text: 'Technical training and combos with success rates by maneuver, level, and side.',
-      },
-      {
-        icon: '★',
-        title: 'Heats & championship',
-        text: 'Simulate heats, log interferences, and track results like a real contest.',
-      },
-      {
-        icon: '↓',
-        title: 'CSV export',
-        text: 'Export session data for reports, sharing, or your own analysis.',
-      },
-    ],
-  },
-  {
-    id: 'athlete',
-    label: 'For athletes',
-    shortLabel: 'Athletes',
-    items: [
-      {
-        icon: '⇄',
-        title: 'Multi-coach pairing',
-        text: 'Link to several coaches with a code and control what each one sees.',
-      },
-      {
-        icon: '🏄',
-        title: 'Gear quiver',
-        text: 'Register boards and fins — length, width, thickness, and liters.',
-      },
-      {
-        icon: '◌',
-        title: 'Session wellbeing',
-        text: 'Post-training questionnaire: gear used, mental state, and notes.',
-      },
-    ],
-  },
-  {
-    id: 'team',
-    label: 'For the team',
-    shortLabel: 'Teams',
-    items: [
-      {
-        icon: '▣',
-        title: 'Live stats',
-        text: 'Open stats mid-session — waves, success %, and breakdowns update instantly.',
-      },
-      {
-        icon: '◆',
-        title: 'Monthly evolution',
-        text: 'Six-month charts for sessions, success trends, and potential rate.',
-      },
-      {
-        icon: '☎',
-        title: 'Help & contact',
-        text: 'In-app guides plus a direct line to the SurfStar team for support.',
-      },
-    ],
-  },
-]
-
 const STEPS = [
-  { step: '01', title: 'Pick your plan', text: 'Coach, Coach Premium, or Team Academy.' },
+  { step: '01', title: 'Pick your plan', text: 'Tap a plan below to see everything included — then subscribe.' },
   { step: '02', title: 'Set up your team', text: 'Create spots, invite athletes by code, and start logging.' },
-  { step: '03', title: 'Review with data', text: 'Live stats on the beach, monthly trends, and season totals.' },
+  { step: '03', title: 'Review with data', text: 'Live stats on the beach, gear tracking, wellbeing, and season analytics.' },
 ]
 
 const FAQ = [
@@ -185,12 +19,12 @@ const FAQ = [
     a: 'No. Only the coach subscribes. Athletes join free with a pairing code.',
   },
   {
-    q: 'Can I see stats while training?',
-    a: 'Yes. Open Live stats during technical or combo sessions — success rate and breakdowns update in real time.',
+    q: 'What is the psychology check-in?',
+    a: 'On Coach Premium and Team Academy, coaches can opt in individual athletes for a quick 0–5 questionnaire after each session. Athletes who are not interested simply do not get prompted.',
   },
   {
-    q: 'What is new in SurfStar?',
-    a: 'Athletes can manage their gear quiver and complete post-session wellbeing check-ins. Coaches can rate equipment and see wellbeing trends. Everyone can contact SurfStar from the app.',
+    q: 'Can athletes manage their gear?',
+    a: 'Yes. Every athlete can register boards and fins in their quiver. Coaches can rate equipment and track performance over time.',
   },
   {
     q: 'Does it work on mobile?',
@@ -199,76 +33,16 @@ const FAQ = [
 ]
 
 const NAV_LINKS = [
-  { href: '#whats-new', label: "What's new" },
-  { href: '#features', label: 'Features' },
+  { href: '#highlights', label: 'Features' },
+  { href: '#plans', label: 'Plans' },
   { href: '#packs', label: 'Pricing' },
   { href: '#faq', label: 'FAQ' },
 ]
 
-function PremiumPreview({ spotlight }: { spotlight: (typeof PREMIUM_SPOTLIGHTS)[number] }) {
-  const { preview } = spotlight
-
-  if (spotlight.id === 'sea' && 'recommend' in preview) {
-    return (
-      <div className="landing-showcase__card landing-spotlight__preview-card">
-        <header className="landing-showcase__head">
-          <span className="landing-showcase__pill">{preview.pill}</span>
-          <strong>{preview.spot}</strong>
-        </header>
-        <div className="landing-sea__recommend">
-          <span className="landing-sea__recommend-label">Recommended peak</span>
-          <strong>{preview.recommend.peak}</strong>
-          <p>{preview.recommend.note}</p>
-        </div>
-        <div className="landing-sea__peaks">
-          {preview.peaks.map((peak) => (
-            <div key={peak.name} className="landing-sea__peak">
-              <span>{peak.name}</span>
-              <strong>{peak.score}</strong>
-              <small>{peak.obs}</small>
-            </div>
-          ))}
-        </div>
-        <div className="landing-sea__types">
-          {preview.chips.map((chip) => (
-            <span key={chip}>{chip}</span>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if ('kpis' in preview) {
-    return (
-      <div className="landing-showcase__card landing-spotlight__preview-card">
-        <header className="landing-showcase__head">
-          <span className="landing-showcase__pill">{preview.pill}</span>
-          <strong>{preview.spot}</strong>
-        </header>
-        <div className="landing-sea__types">
-          {preview.chips.map((chip) => (
-            <span key={chip}>{chip}</span>
-          ))}
-        </div>
-        <div className="landing-showcase__kpis">
-          {preview.kpis.map((kpi) => (
-            <div key={kpi.label}>
-              <span>{kpi.value}</span>
-              <small>{kpi.label}</small>
-            </div>
-          ))}
-        </div>
-        <p className="landing-spotlight__preview-foot muted">{preview.foot}</p>
-      </div>
-    )
-  }
-
-  return null
-}
-
 export function LandingView() {
   const {
     selectPlan,
+    openPlanDetail,
     selectedBillingInterval,
     setBillingInterval,
     openAthleteSignIn,
@@ -281,10 +55,6 @@ export function LandingView() {
   } = useApp()
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [spotlightTab, setSpotlightTab] = useState<SpotlightId>('custom')
-  const [featureTab, setFeatureTab] = useState(FEATURE_GROUPS[0].id)
-
-  const activeSpotlight = PREMIUM_SPOTLIGHTS.find((item) => item.id === spotlightTab) ?? PREMIUM_SPOTLIGHTS[0]
 
   useEffect(() => {
     if (!mobileNavOpen) return
@@ -364,22 +134,10 @@ export function LandingView() {
               Surf statistics for{' '}
               <span className="landing-accent">coaches who demand more</span>
             </h1>
-            <p className="landing-hero__lead landing-hero__lead--desktop">
-              Log every wave, see live stats on the beach, and track monthly evolution and season totals
-              for your whole team.
+            <p className="landing-hero__lead">
+              Live stats on the beach, gear quiver management, optional psychology check-ins, and
+              season analytics for your whole team.
             </p>
-            <p className="landing-hero__lead landing-hero__lead--mobile">
-              Live stats on the beach. Gear tracking, wellbeing check-ins, and season analytics for your
-              whole team.
-            </p>
-
-            <div className="landing-hero__chips landing-hero__chips--mobile">
-              {PILLARS.slice(0, 3).map((pillar) => (
-                <span key={pillar.title} className="landing-chip">
-                  {pillar.title}
-                </span>
-              ))}
-            </div>
 
             <div className="landing-hero__create">
               <div className="landing-hero__cta">
@@ -390,18 +148,9 @@ export function LandingView() {
                   Create athlete account
                 </button>
               </div>
-              <div className="landing-hero__signin-links landing-hero__signin-links--desktop">
-                <button type="button" className="landing-hero__signin-link" onClick={openCoachSignIn}>
-                  Coach sign in
-                </button>
-                <span aria-hidden="true">·</span>
-                <button type="button" className="landing-hero__signin-link" onClick={openAthleteSignIn}>
-                  Athlete sign in
-                </button>
-              </div>
             </div>
 
-            <ul className="landing-hero__checks landing-hero__checks--desktop">
+            <ul className="landing-hero__checks">
               <li>Live stats during every session</li>
               <li>Gear quiver & wellbeing check-ins</li>
               <li>Athletes included free</li>
@@ -448,142 +197,91 @@ export function LandingView() {
           </div>
         </section>
 
-        <section className="landing-section landing-whats-new" id="whats-new">
-          <div className="landing-section__head">
-            <p className="landing-eyebrow">What's new</p>
-            <h2>Fresh tools for coaches and athletes</h2>
-            <p className="landing-section__sub landing-section__sub--desktop">
-              Latest additions to SurfStar — gear management, wellbeing insights, and direct support.
+        <section className="landing-section" id="highlights">
+          <div className="landing-section__head landing-section__head--center">
+            <p className="landing-eyebrow">What SurfStar offers</p>
+            <h2>From live stats to mental check-ins</h2>
+            <p className="landing-section__sub">
+              Training tools, athlete wellbeing, gear management, and team analytics — in one app.
             </p>
           </div>
-          <div className="landing-whats-new__track">
-            {WHATS_NEW.map((item) => (
-              <article key={item.title} className="landing-whats-new__card">
-                <span className="landing-whats-new__tag">{item.tag}</span>
+          <div className="landing-highlights__grid">
+            {LANDING_HIGHLIGHTS.map((item) => (
+              <article key={item.title} className="landing-highlight">
+                <span className="landing-highlight__icon" aria-hidden="true">
+                  {item.icon}
+                </span>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
-                <span className="landing-whats-new__audience">{item.audience}</span>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="landing-pillars landing-pillars--desktop" aria-label="Core capabilities">
-          <div className="landing-pillars__grid">
-            {PILLARS.map((pillar) => (
-              <article key={pillar.title} className="landing-pillar">
-                <span className="landing-pillar__icon" aria-hidden="true">
-                  {pillar.icon}
+                <span className="landing-highlight__plans muted">
+                  {item.plans.length === 3
+                    ? 'All plans'
+                    : item.plans.map((id) => getPlan(id).name).join(' · ')}
                 </span>
-                <h3>{pillar.title}</h3>
-                <p>{pillar.text}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="landing-section landing-section--alt landing-spotlight" id="premium">
+        <section className="landing-section landing-section--alt" id="plans">
           <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">Coach Premium</p>
-            <h2>Advanced coaching tools</h2>
+            <p className="landing-eyebrow">Compare plans</p>
+            <h2>What does each package include?</h2>
             <p className="landing-section__sub">
-              Custom training and sea analysis — exclusive to the top plan.
+              Tap a plan name to open the full feature breakdown — psychology check-ins, quiver
+              management, custom training, and more.
             </p>
           </div>
-
-          <div className="landing-spotlight__tabs" role="tablist" aria-label="Premium coaching tools">
-            {PREMIUM_SPOTLIGHTS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                id={`spotlight-tab-${item.id}`}
-                aria-selected={spotlightTab === item.id}
-                aria-controls={`spotlight-panel-${item.id}`}
-                className={spotlightTab === item.id ? 'landing-spotlight__tab landing-spotlight__tab--active' : 'landing-spotlight__tab'}
-                onClick={() => setSpotlightTab(item.id)}
-              >
-                {item.title}
-              </button>
-            ))}
-          </div>
-
-          <div
-            className="landing-spotlight__panel"
-            role="tabpanel"
-            id={`spotlight-panel-${activeSpotlight.id}`}
-            aria-labelledby={`spotlight-tab-${activeSpotlight.id}`}
-          >
-            <div className="landing-spotlight__copy">
-              <p className="landing-eyebrow">{activeSpotlight.eyebrow}</p>
-              <h3>{activeSpotlight.title}</h3>
-              <p className="landing-spotlight__lead">{activeSpotlight.lead}</p>
-              <ul className="landing-sea__bullets">
-                {activeSpotlight.bullets.map((bullet) => (
-                  <li key={bullet}>{bullet}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="landing-spotlight__preview">
-              <div className="landing-showcase__glow" />
-              <PremiumPreview spotlight={activeSpotlight} />
-            </div>
+          <div className="plan-teaser-grid">
+            {SUBSCRIPTION_PLANS.map((plan) => {
+              const profile = PLAN_MARKETING_PROFILES[plan.id]
+              const topFeatures = getTopPlanFeatures(plan.id, 4)
+              return (
+                <article
+                  key={plan.id}
+                  className={
+                    plan.highlighted
+                      ? 'plan-teaser plan-teaser--highlighted'
+                      : plan.requiresApproval
+                        ? 'plan-teaser plan-teaser--approval'
+                        : 'plan-teaser'
+                  }
+                >
+                  {plan.highlighted ? (
+                    <span className="pack-card__badge">Most popular</span>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="plan-teaser__title"
+                    onClick={() => openPlanDetail(plan.id)}
+                  >
+                    <h3>{plan.name}</h3>
+                    <span>See all features →</span>
+                  </button>
+                  <p className="plan-teaser__summary">{profile.summary}</p>
+                  <p className="plan-teaser__price">
+                    <strong>{formatPlanPrice(plan, selectedBillingInterval)}</strong>
+                    <span>{formatPlanPriceSuffix(selectedBillingInterval)}</span>
+                  </p>
+                  <ul className="plan-teaser__features">
+                    {topFeatures.map((feature) => (
+                      <li key={feature}>{feature}</li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    className="btn btn--outline btn--block"
+                    onClick={() => openPlanDetail(plan.id)}
+                  >
+                    View {plan.name} details
+                  </button>
+                </article>
+              )
+            })}
           </div>
         </section>
 
-        <section className="landing-section" id="features">
-          <div className="landing-section__head">
-            <p className="landing-eyebrow">Features</p>
-            <h2>Built for coaches, athletes, and teams</h2>
-            <p className="landing-section__sub landing-section__sub--desktop">
-              Organized by role — everything you need without the clutter.
-            </p>
-          </div>
-
-          <div className="landing-features__tabs" role="tablist" aria-label="Features by role">
-            {FEATURE_GROUPS.map((group) => (
-              <button
-                key={group.id}
-                type="button"
-                role="tab"
-                id={`features-tab-${group.id}`}
-                aria-selected={featureTab === group.id}
-                aria-controls={`features-panel-${group.id}`}
-                className={featureTab === group.id ? 'landing-features__tab landing-features__tab--active' : 'landing-features__tab'}
-                onClick={() => setFeatureTab(group.id)}
-              >
-                <span className="landing-features__tab-short">{group.shortLabel}</span>
-                <span className="landing-features__tab-full">{group.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="landing-features__panels">
-            {FEATURE_GROUPS.map((group) => (
-              <div
-                key={group.id}
-                id={`features-panel-${group.id}`}
-                role="tabpanel"
-                aria-labelledby={`features-tab-${group.id}`}
-                className="landing-features__panel"
-                hidden={featureTab !== group.id}
-              >
-                <p className="landing-features__panel-label">{group.label}</p>
-                {group.items.map((feature) => (
-                  <article key={feature.title} className="landing-feature">
-                    <span className="landing-feature__icon" aria-hidden="true">
-                      {feature.icon}
-                    </span>
-                    <h3>{feature.title}</h3>
-                    <p>{feature.text}</p>
-                  </article>
-                ))}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="landing-section landing-section--alt" id="how">
+        <section className="landing-section" id="how">
           <div className="landing-section__head landing-section__head--center">
             <p className="landing-eyebrow">How it works</p>
             <h2>Get started in three steps</h2>
@@ -601,7 +299,7 @@ export function LandingView() {
           </ol>
         </section>
 
-        <section className="landing-section" id="packs">
+        <section className="landing-section landing-section--alt" id="packs">
           <div className="landing-section__head landing-section__head--center">
             <p className="landing-eyebrow">Pricing</p>
             <h2>Choose the right plan</h2>
@@ -621,12 +319,13 @@ export function LandingView() {
                 planId={plan.id}
                 billingInterval={selectedBillingInterval}
                 onSelect={selectPlan}
+                onOpenDetail={openPlanDetail}
               />
             ))}
           </div>
         </section>
 
-        <section className="landing-section landing-section--alt" id="faq">
+        <section className="landing-section" id="faq">
           <div className="landing-section__head">
             <p className="landing-eyebrow">FAQ</p>
             <h2>Common questions</h2>
@@ -666,10 +365,24 @@ export function LandingView() {
 
           <div className="landing-footer__col">
             <h3>Explore</h3>
-            <a href="#whats-new">What's new</a>
-            <a href="#features">Features</a>
+            <a href="#highlights">Features</a>
+            <a href="#plans">Plans</a>
             <a href="#packs">Pricing</a>
             <a href="#faq">FAQ</a>
+          </div>
+
+          <div className="landing-footer__col">
+            <h3>Plans</h3>
+            {SUBSCRIPTION_PLANS.map((plan) => (
+              <button
+                key={plan.id}
+                type="button"
+                className="landing-footer__btn"
+                onClick={() => openPlanDetail(plan.id)}
+              >
+                {plan.name}
+              </button>
+            ))}
           </div>
 
           <div className="landing-footer__col">
@@ -680,16 +393,6 @@ export function LandingView() {
             <button type="button" className="landing-footer__btn" onClick={openAthleteSignUp}>
               Create athlete account
             </button>
-            <button type="button" className="landing-footer__btn" onClick={openCoachSignIn}>
-              Coach sign in
-            </button>
-            <button type="button" className="landing-footer__btn" onClick={openAthleteSignIn}>
-              Athlete sign in
-            </button>
-          </div>
-
-          <div className="landing-footer__col">
-            <h3>Support</h3>
             <button type="button" className="landing-footer__btn" onClick={openContact}>
               Contact SurfStar
             </button>

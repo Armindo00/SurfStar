@@ -7,6 +7,7 @@ import { ChangePasswordView } from './views/ChangePasswordView'
 import { CheckoutView } from './views/CheckoutView'
 import { ForgotPasswordView } from './views/ForgotPasswordView'
 import { LandingView } from './views/LandingView'
+import { PlanDetailView } from './views/PlanDetailView'
 import { SubscriptionView } from './views/SubscriptionView'
 import { TeamAcademyRequestView } from './views/TeamAcademyRequestView'
 import { AdminView } from './views/AdminView'
@@ -98,7 +99,7 @@ function AppHeader() {
 }
 
 function Shell() {
-  const { auth, authReady, role, view, publicView, hasActiveSubscription } = useApp()
+  const { auth, authReady, role, view, publicView, planDetailPlanId, hasActiveSubscription } = useApp()
 
   if (!authReady) {
     return (
@@ -117,6 +118,9 @@ function Shell() {
     }
     if (publicView === 'landing') {
       return <LandingView />
+    }
+    if (publicView === 'plan-detail' && planDetailPlanId) {
+      return <PlanDetailView planId={planDetailPlanId} />
     }
     if (publicView === 'team-academy-request') {
       return <TeamAcademyRequestView />

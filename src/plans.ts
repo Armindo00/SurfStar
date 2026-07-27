@@ -40,6 +40,9 @@ export const PLAN_COMPARISON_FEATURES: PlanComparisonFeature[] = [
   { label: 'Share stats with athletes', includedIn: ['team', 'club', 'organization'] },
   { label: 'Heats & championship', includedIn: ['team', 'club', 'organization'] },
   { label: 'Sea analysis', includedIn: ['club', 'organization'] },
+  { label: 'Psychology check-ins (0–5 survey)', includedIn: ['club', 'organization'] },
+  { label: 'Athlete gear quiver', includedIn: ['team', 'club', 'organization'] },
+  { label: 'Equipment speed & control ratings', includedIn: ['team', 'club', 'organization'] },
   { label: 'Priority support', includedIn: ['club', 'organization'] },
 ]
 

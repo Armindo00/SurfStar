@@ -1,6 +1,7 @@
 import type { AuthPublicView, PublicView } from './types'
+import type { PlanId } from './plans'
 
-const PATHS: Record<PublicView, string> = {
+const PATHS: Record<Exclude<PublicView, 'plan-detail'>, string> = {
   landing: '/',
   'coach-sign-in': '/login/coach',
   'coach-sign-up': '/signup/coach',
@@ -14,10 +15,21 @@ const PATHS: Record<PublicView, string> = {
 }
 
 export function pathForPublicView(view: PublicView): string {
+  if (view === 'plan-detail') return '/plans/team'
   return PATHS[view]
 }
 
+export function pathForPlanDetail(planId: PlanId): string {
+  return `/plans/${planId}`
+}
+
+export function planIdFromPath(pathname: string): PlanId | null {
+  const match = pathname.match(/^\/plans\/(team|club|organization)\/?$/)
+  return match ? (match[1] as PlanId) : null
+}
+
 export function publicViewFromPath(pathname: string): PublicView {
+  if (planIdFromPath(pathname)) return 'plan-detail'
   if (pathname === '/login/coach' || pathname === '/login') return 'coach-sign-in'
   if (pathname === '/signup/coach') return 'coach-sign-up'
   if (pathname === '/login/athlete') return 'athlete-sign-in'
@@ -58,6 +70,15 @@ export function scrollToPricingSection(behavior: ScrollBehavior = 'smooth') {
 
 export function navigateToPublicView(view: PublicView, replace = false) {
   const path = pathForPublicView(view)
+  if (replace) {
+    window.history.replaceState({}, '', path)
+  } else {
+    window.history.pushState({}, '', path)
+  }
+}
+
+export function navigateToPlanDetail(planId: PlanId, replace = false) {
+  const path = pathForPlanDetail(planId)
   if (replace) {
     window.history.replaceState({}, '', path)
   } else {

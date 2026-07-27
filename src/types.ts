@@ -15,8 +15,12 @@ export type PublicView =
   | 'privacy'
   | 'terms'
   | 'contact'
+  | 'plan-detail'
 
-export type AuthPublicView = Exclude<PublicView, 'landing' | 'checkout' | 'team-academy-request' | 'privacy' | 'terms' | 'contact'>
+export type AuthPublicView = Exclude<
+  PublicView,
+  'landing' | 'checkout' | 'team-academy-request' | 'privacy' | 'terms' | 'contact' | 'plan-detail'
+>
 
 /** Tipos de sessão SurfStar (evolução futura: mar, heat) */
 export type SessionType = 'treino-tecnico' | 'analise-mar' | 'heat'

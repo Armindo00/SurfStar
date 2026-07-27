@@ -131,7 +131,9 @@ import {
 import { useToast } from './components/ToastProvider'
 import {
   navigateToLandingPricing,
+  navigateToPlanDetail,
   navigateToPublicView,
+  planIdFromPath,
   publicViewFromPath,
   scrollToPricingSection,
 } from './routing'
@@ -187,6 +189,7 @@ type AppContextValue = {
   authReady: boolean
   cloudMode: boolean
   publicView: PublicView
+  planDetailPlanId: PlanId | null
   selectedPlanId: PlanId | null
   selectedBillingInterval: BillingInterval
   setBillingInterval: (interval: BillingInterval) => void
@@ -199,6 +202,7 @@ type AppContextValue = {
   openContact: () => void
   openCoachSignIn: () => void
   openCoachPlanSelection: () => void
+  openPlanDetail: (planId: PlanId) => void
   openCoachSignUp: () => void
   openAthleteSignIn: () => void
   openAthleteSignUp: () => void
@@ -489,6 +493,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
   const role: UserRole = auth?.role ?? 'treinador'
   const [publicView, setPublicViewState] = useState<PublicView>(() => publicViewFromPath(window.location.pathname))
+  const [planDetailPlanId, setPlanDetailPlanId] = useState<PlanId | null>(() =>
+    planIdFromPath(window.location.pathname),
+  )
   const [selectedPlanId, setSelectedPlanId] = useState<PlanId | null>(null)
   const [selectedBillingInterval, setSelectedBillingInterval] = useState<BillingInterval>('monthly')
   const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
@@ -641,11 +648,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setPublicView = useCallback((next: PublicView) => {
     setPublicViewState(next)
-    navigateToPublicView(next)
+    if (next !== 'plan-detail') {
+      setPlanDetailPlanId(null)
+      navigateToPublicView(next)
+    }
   }, [])
 
   useEffect(() => {
-    const onPopState = () => setPublicViewState(publicViewFromPath(window.location.pathname))
+    const onPopState = () => {
+      const planId = planIdFromPath(window.location.pathname)
+      if (planId) {
+        setPlanDetailPlanId(planId)
+        setPublicViewState('plan-detail')
+        return
+      }
+      setPlanDetailPlanId(null)
+      setPublicViewState(publicViewFromPath(window.location.pathname))
+    }
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
@@ -743,8 +762,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [setPublicView])
 
   const openLanding = useCallback(() => {
+    setPlanDetailPlanId(null)
     setPublicView('landing')
   }, [setPublicView])
+
+  const openPlanDetail = useCallback((planId: PlanId) => {
+    setPlanDetailPlanId(planId)
+    setPublicViewState('plan-detail')
+    navigateToPlanDetail(planId)
+  }, [])
 
   const openPrivacy = useCallback(() => {
     setPublicView('privacy')
@@ -3160,6 +3186,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authReady,
       cloudMode,
       publicView,
+      planDetailPlanId,
       selectedPlanId,
       selectedBillingInterval,
       setBillingInterval,
@@ -3172,6 +3199,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openContact,
       openCoachSignIn,
       openCoachPlanSelection,
+      openPlanDetail,
       openCoachSignUp,
       openAthleteSignIn,
       openAthleteSignUp,
@@ -3309,6 +3337,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       authReady,
       cloudMode,
       publicView,
+      planDetailPlanId,
       selectedPlanId,
       selectedBillingInterval,
       setBillingInterval,
@@ -3321,6 +3350,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openContact,
       openCoachSignIn,
       openCoachPlanSelection,
+      openPlanDetail,
       openCoachSignUp,
       openAthleteSignIn,
       openAthleteSignUp,

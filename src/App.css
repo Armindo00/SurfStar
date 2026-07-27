@@ -5470,6 +5470,260 @@ body {
   margin-top: auto;
 }
 
+.pack-card__name-link {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.pack-card__name-link:hover .pack-card__name,
+.plan-teaser__title:hover h3 {
+  color: var(--ss-gold);
+}
+
+.pack-card__name-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ss-gold);
+}
+
+.pack-card__detail-link {
+  margin-top: 0.65rem;
+  border: 0;
+  background: transparent;
+  color: var(--ss-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.landing-highlights__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.landing-highlight {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.15rem;
+}
+
+.landing-highlight__icon {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(184, 148, 63, 0.15);
+  margin-bottom: 0.65rem;
+  font-size: 1rem;
+}
+
+.landing-highlight h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.landing-highlight p {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.landing-highlight__plans {
+  font-size: 0.75rem;
+}
+
+.plan-teaser-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.plan-teaser {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.plan-teaser--highlighted {
+  border-color: rgba(184, 148, 63, 0.55);
+  box-shadow: 0 0 0 1px rgba(184, 148, 63, 0.2);
+}
+
+.plan-teaser__title {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.plan-teaser__title h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.plan-teaser__title span {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ss-gold);
+}
+
+.plan-teaser__summary {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.plan-teaser__price {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.plan-teaser__price span {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ss-muted);
+}
+
+.plan-teaser__features {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.plan-detail-page {
+  min-height: 100svh;
+}
+
+.plan-detail-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.landing-nav__brand--btn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.plan-detail {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+}
+
+.plan-detail__hero {
+  padding: 2rem 0 1.5rem;
+  text-align: center;
+}
+
+.plan-detail__hero h1 {
+  margin: 0.35rem 0 0.75rem;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.plan-detail__tagline {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.plan-detail__summary {
+  margin: 0 auto 1.25rem;
+  max-width: 640px;
+  color: var(--ss-muted);
+  line-height: 1.5;
+}
+
+.plan-detail__price-block {
+  margin-bottom: 1rem;
+}
+
+.plan-detail__price {
+  justify-content: center;
+}
+
+.plan-detail__cta {
+  margin: 1rem auto 0;
+  min-width: min(100%, 320px);
+}
+
+.plan-detail__ideal {
+  margin: 1rem auto 0;
+  max-width: 640px;
+  line-height: 1.5;
+}
+
+.plan-detail__checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.plan-detail__feature-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.plan-detail__feature-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.plan-detail__feature-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.plan-detail__feature-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--ss-muted);
+}
+
+.plan-detail__footer-cta {
+  margin-top: 2rem;
+  border-radius: 18px;
+}
+
 .checkout-page {
   min-height: 100svh;
   display: grid;

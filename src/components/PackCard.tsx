@@ -15,9 +15,16 @@ type Props = {
   billingInterval?: BillingInterval
   selected?: boolean
   onSelect: (planId: PlanId) => void
+  onOpenDetail?: (planId: PlanId) => void
 }
 
-export function PackCard({ planId, billingInterval = 'monthly', selected, onSelect }: Props) {
+export function PackCard({
+  planId,
+  billingInterval = 'monthly',
+  selected,
+  onSelect,
+  onOpenDetail,
+}: Props) {
   const plan = getPlan(planId)
   const approvalRequired = isApprovalRequiredPlan(planId)
   const visibleFeatures = getVisibleComparisonFeatures(planId)
@@ -41,7 +48,14 @@ export function PackCard({ planId, billingInterval = 'monthly', selected, onSele
       {approvalRequired ? <span className="pack-card__badge pack-card__badge--muted">By approval</span> : null}
 
       <header className="pack-card__head">
-        <h3 className="pack-card__name">{plan.name}</h3>
+        <button
+          type="button"
+          className="pack-card__name-link"
+          onClick={() => onOpenDetail?.(planId)}
+        >
+          <h3 className="pack-card__name">{plan.name}</h3>
+          {onOpenDetail ? <span className="pack-card__name-hint">See all features</span> : null}
+        </button>
       </header>
 
       <p className="pack-card__price">
@@ -81,6 +95,12 @@ export function PackCard({ planId, billingInterval = 'monthly', selected, onSele
       >
         {approvalRequired ? 'Request access' : `Choose ${plan.name}`}
       </button>
+
+      {onOpenDetail ? (
+        <button type="button" className="pack-card__detail-link" onClick={() => onOpenDetail(planId)}>
+          Compare full feature list
+        </button>
+      ) : null}
     </article>
   )
 }
