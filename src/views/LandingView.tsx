@@ -119,7 +119,7 @@ const VALUE_GROUPS = [
   },
   {
     id: 'athlete',
-    icon: '🏄',
+    icon: '⇄',
     label: 'Athletes',
     headline: 'Your progress, free forever',
     lead: 'Join with a coach code at no cost — keep your quiver, sessions, and shared stats in one app.',

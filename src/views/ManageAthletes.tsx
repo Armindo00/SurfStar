@@ -161,7 +161,7 @@ export function ManageAthletes() {
             <ul className="pairing-list">
               {pendingLinks.map((link) => (
                 <li key={link.id} className="pairing-list__item">
-                  <span>
+                  <span className="pairing-list__info">
                     <strong>{link.athleteName ?? 'Athlete'}</strong>
                     <small>Pending</small>
                   </span>
