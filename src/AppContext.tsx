@@ -156,6 +156,7 @@ import {
 } from './athleteEquipmentApi'
 import { equipmentStore } from './equipmentStore'
 import {
+  ACTIVE_SESSION_FLOW_VIEWS,
   clearResumeState,
   loadResumeState,
   resumeUserKey,
@@ -268,6 +269,9 @@ type AppContextValue = {
   openEndSessionSheet: () => void
   closeEndSessionSheet: () => void
   confirmEndSession: (coachNotes: string) => void
+  leaveSessionConfirmOpen: boolean
+  closeLeaveSessionConfirm: () => void
+  confirmLeaveActiveSession: () => void
   cancelActiveSession: () => void
   completedCoachSessions: TrainingSession[]
   historySessionId: string | null
@@ -534,6 +538,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeWaveId, setActiveWaveId] = useState<string | null>(null)
   const [activeHeatId, setActiveHeatId] = useState<string | null>(null)
   const [endSessionSheetOpen, setEndSessionSheetOpen] = useState(false)
+  const [leaveSessionConfirmOpen, setLeaveSessionConfirmOpen] = useState(false)
+  const [pendingLeaveView, setPendingLeaveView] = useState<AppView | null>(null)
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
 
   const skipResumeSaveRef = useRef(false)
@@ -1998,9 +2004,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setView('subscription')
         return
       }
+      if (
+        activeSessionId &&
+        ACTIVE_SESSION_FLOW_VIEWS.includes(view) &&
+        !ACTIVE_SESSION_FLOW_VIEWS.includes(next)
+      ) {
+        setPendingLeaveView(next)
+        setLeaveSessionConfirmOpen(true)
+        return
+      }
       setView(next)
     },
-    [showToast, subscription],
+    [activeSessionId, showToast, subscription, view],
   )
 
   const beginDraftSession = useCallback(() => {
@@ -2162,7 +2177,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setView('training-sessions')
   }, [])
 
-  const cancelActiveSession = useCallback(() => {
+  const discardActiveSession = useCallback(() => {
     if (!activeSessionId) return
     persistSessions((prev) => prev.filter((s) => s.id !== activeSessionId))
     setActiveWaveId(null)
@@ -2170,8 +2185,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveSessionId(null)
     setActiveAthleteId(null)
     resetDraft()
-    setView('coach-home')
   }, [activeSessionId, persistSessions, resetDraft])
+
+  const closeLeaveSessionConfirm = useCallback(() => {
+    setLeaveSessionConfirmOpen(false)
+    setPendingLeaveView(null)
+  }, [])
+
+  const confirmLeaveActiveSession = useCallback(() => {
+    const target = pendingLeaveView ?? 'coach-home'
+    discardActiveSession()
+    setLeaveSessionConfirmOpen(false)
+    setPendingLeaveView(null)
+    setView(target)
+  }, [discardActiveSession, pendingLeaveView])
+
+  const cancelActiveSession = useCallback(() => {
+    discardActiveSession()
+    setView('coach-home')
+  }, [discardActiveSession])
 
   const discardEmptyOpenWave = useCallback(
     (sessionId: string, waveId: string | null) => {
@@ -3153,6 +3185,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openEndSessionSheet,
       closeEndSessionSheet,
       confirmEndSession,
+      leaveSessionConfirmOpen,
+      closeLeaveSessionConfirm,
+      confirmLeaveActiveSession,
       cancelActiveSession,
       completedCoachSessions,
       historySessionId,
@@ -3298,6 +3333,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openEndSessionSheet,
       closeEndSessionSheet,
       confirmEndSession,
+      leaveSessionConfirmOpen,
+      closeLeaveSessionConfirm,
+      confirmLeaveActiveSession,
       cancelActiveSession,
       completedCoachSessions,
       historySessionId,

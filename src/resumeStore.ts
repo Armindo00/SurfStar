@@ -28,7 +28,7 @@ export type AppResumeState = {
 
 const KEY_PREFIX = 'surfstar-resume'
 
-const SESSION_VIEWS: AppView[] = [
+export const ACTIVE_SESSION_FLOW_VIEWS: AppView[] = [
   'training',
   'combos',
   'heats',
@@ -38,6 +38,8 @@ const SESSION_VIEWS: AppView[] = [
   'session-stats',
   'saved-waves',
 ]
+
+const SESSION_VIEWS = ACTIVE_SESSION_FLOW_VIEWS
 
 const DRAFT_VIEWS: AppView[] = ['start-session', 'select-athletes']
 

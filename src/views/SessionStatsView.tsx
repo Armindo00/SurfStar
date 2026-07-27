@@ -1,9 +1,21 @@
 import { computeComboSessionStats, computeSessionStats, LEVELS } from '../sessionStats'
 import { computeCustomSessionStats } from '../customTrainingStats'
+import { HeatResultsTable } from '../components/HeatResultsTable'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessChart'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
+import {
+  buildHeatLiveSnapshots,
+  EARLY_HEAT_TOTAL_TARGET,
+} from '../heatAnalyticsStats'
+import {
+  formatHeatElapsedMinutes,
+  formatHeatTotal,
+  formatWaveScoreCompact,
+  heatIsFinished,
+  heatIsRunning,
+} from '../heatUtils'
 import { COMBO_LEVEL_LABELS, MANEUVER_LABELS, type ManeuverKind } from '../types'
 
 const KINDS: ManeuverKind[] = ['rail', 'top-turn', 'progressive']
@@ -14,6 +26,20 @@ function RateBar({ value }: { value: number }) {
       <div className="rate-bar__fill" style={{ width: `${Math.min(100, value)}%` }} />
     </div>
   )
+}
+
+function heatStatusLabel(running: boolean, finished: boolean): string {
+  if (running) return 'Running'
+  if (finished) return 'Finished'
+  return 'Not started'
+}
+
+function sessionStatsBackView(mode: string): 'combos' | 'custom' | 'heats' | 'campeonato' | 'training' {
+  if (mode === 'combos') return 'combos'
+  if (mode === 'custom') return 'custom'
+  if (mode === 'heats') return 'heats'
+  if (mode === 'campeonato') return 'campeonato'
+  return 'training'
 }
 
 export function SessionStatsView() {
@@ -28,13 +54,132 @@ export function SessionStatsView() {
     )
   }
 
-  const backView =
-    activeSession.mode === 'combos'
-      ? 'combos'
-      : activeSession.mode === 'custom'
-        ? 'custom'
-        : 'training'
+  const backView = sessionStatsBackView(activeSession.mode)
   const athleteName = activeAthleteId ? getAthlete(activeAthleteId)?.name : 'All athletes'
+
+  if (activeSession.mode === 'heats' || activeSession.mode === 'campeonato') {
+    const snapshots = buildHeatLiveSnapshots(activeSession)
+    const title =
+      activeSession.mode === 'campeonato' ? 'Live stats · Championship' : 'Live stats · Heat'
+
+    return (
+      <div className="ss-flow stats-page">
+        <ScreenHeader title={title} onBack={() => setView(backView)} />
+
+        {snapshots.length === 0 ? (
+          <div className="ss-card stats-panel">
+            <p className="muted">No heats with surfers assigned yet.</p>
+          </div>
+        ) : (
+          snapshots.map(({ heat, athletes }) => {
+            const running = heatIsRunning(heat)
+            const finished = heatIsFinished(heat)
+
+            return (
+              <div key={heat.id} className="ss-card stats-panel heat-live-stats">
+                <header className="stats-panel__head">
+                  <div>
+                    <h2 className="stats-panel__title">{heat.label}</h2>
+                    <p className="muted stats-panel__sub">
+                      {heat.durationMinutes} min · {heatStatusLabel(running, finished)}
+                    </p>
+                  </div>
+                  <span className="stats-badge">{athletes.length} surfers</span>
+                </header>
+
+                <div className="heat-live-stats__leaderboard">
+                  {athletes.map((athlete) => {
+                    const name = getAthlete(athlete.athleteId)?.name ?? 'Athlete'
+                    return (
+                      <article
+                        key={athlete.athleteId}
+                        className={`heat-live-stats__athlete ${athlete.placement === 1 ? 'heat-live-stats__athlete--lead' : ''}`}
+                      >
+                        <header className="heat-live-stats__athlete-head">
+                          <div>
+                            <span className="heat-live-stats__place">#{athlete.placement}</span>
+                            <strong>{name}</strong>
+                          </div>
+                          <strong className="heat-live-stats__total">{formatHeatTotal(athlete.total)}</strong>
+                        </header>
+
+                        <div className="kpi-grid heat-live-stats__kpis">
+                          <article className="kpi-card kpi-card--compact">
+                            <span className="kpi-card__label">Waves</span>
+                            <strong className="kpi-card__value">{athlete.waveCount}</strong>
+                          </article>
+                          <article className="kpi-card kpi-card--compact">
+                            <span className="kpi-card__label">Best wave</span>
+                            <strong className="kpi-card__value">
+                              {athlete.bestWave === null ? '—' : formatWaveScoreCompact(athlete.bestWave)}
+                            </strong>
+                          </article>
+                          <article className="kpi-card kpi-card--compact kpi-card--accent">
+                            <span className="kpi-card__label">Counting</span>
+                            <strong className="kpi-card__value heat-live-stats__counting">
+                              {athlete.countingScores.length === 0
+                                ? '—'
+                                : athlete.countingScores
+                                    .map((score) => formatWaveScoreCompact(score))
+                                    .join(' + ')}
+                            </strong>
+                          </article>
+                        </div>
+
+                        {athlete.timing.hasTimerData ? (
+                          <ul className="heat-live-stats__rhythm">
+                            <li>
+                              <span>1st wave</span>
+                              <strong>{formatHeatElapsedMinutes(athlete.timing.timeToFirstWaveMin)}</strong>
+                            </li>
+                            <li>
+                              <span>Total ≤10m</span>
+                              <strong>
+                                {athlete.timing.earlyTotalFirst10Min?.toFixed(2) ?? '—'}
+                              </strong>
+                            </li>
+                            <li>
+                              <span>{EARLY_HEAT_TOTAL_TARGET}+ ≤10m</span>
+                              <strong>
+                                {athlete.timing.reachedTenPointsInEarlyWindow ? 'Yes' : 'No'}
+                              </strong>
+                            </li>
+                            <li>
+                              <span>Best open 5m</span>
+                              <strong>
+                                {athlete.timing.bestWaveOpening?.toFixed(2) ?? '—'}
+                              </strong>
+                            </li>
+                            <li>
+                              <span>Best close 5m</span>
+                              <strong>
+                                {athlete.timing.bestWaveClosing?.toFixed(2) ?? '—'}
+                              </strong>
+                            </li>
+                          </ul>
+                        ) : (
+                          <p className="muted heat-live-stats__rhythm-empty">
+                            Start the heat timer to unlock rhythm stats for this surfer.
+                          </p>
+                        )}
+                      </article>
+                    )
+                  })}
+                </div>
+
+                {heat.waveScores.length > 0 ? (
+                  <HeatResultsTable
+                    heat={heat}
+                    getAthleteName={(id) => getAthlete(id)?.name ?? 'Athlete'}
+                  />
+                ) : null}
+              </div>
+            )
+          })
+        )}
+      </div>
+    )
+  }
 
   if (activeSession.mode === 'custom') {
     const stats = computeCustomSessionStats(activeSession, activeAthleteId)
@@ -178,7 +323,7 @@ export function SessionStatsView() {
 
   return (
     <div className="ss-flow stats-page">
-      <ScreenHeader title="Live stats" onBack={() => setView(backView)} />
+      <ScreenHeader title="Live stats · Technical" onBack={() => setView(backView)} />
 
       <p className="stats-page__meta">
         Athlete: <strong>{athleteName}</strong>

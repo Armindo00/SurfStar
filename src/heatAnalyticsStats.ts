@@ -202,6 +202,60 @@ export function analyzeHeatTiming(
   }
 }
 
+export type HeatAthleteLiveStats = {
+  athleteId: string
+  total: number
+  waveCount: number
+  bestWave: number | null
+  countingScores: number[]
+  placement: number
+  timing: HeatTimingMetrics
+}
+
+export type HeatLiveSnapshot = {
+  heat: HeatRecord
+  athletes: HeatAthleteLiveStats[]
+}
+
+function buildHeatAthleteLiveStats(heat: HeatRecord): HeatAthleteLiveStats[] {
+  const totals = heat.athleteIds.reduce<Record<string, number>>((acc, id) => {
+    acc[id] = heatResultBreakdown(heat, id).total
+    return acc
+  }, {})
+  const ranked = [...heat.athleteIds].sort(
+    (a, b) => (totals[b] ?? 0) - (totals[a] ?? 0) || a.localeCompare(b),
+  )
+
+  return heat.athleteIds
+    .map((athleteId) => {
+      const breakdown = heatResultBreakdown(heat, athleteId)
+      const waves = heat.waveScores.filter((wave) => wave.athleteId === athleteId)
+      const timing = analyzeHeatTiming(heat, athleteId, breakdown)
+
+      return {
+        athleteId,
+        total: breakdown.total,
+        waveCount: waves.length,
+        bestWave: waves.length > 0 ? Math.max(...waves.map((wave) => wave.score)) : null,
+        countingScores: breakdown.countingScores,
+        placement: ranked.indexOf(athleteId) + 1,
+        timing,
+      }
+    })
+    .sort((a, b) => a.placement - b.placement)
+}
+
+export function buildHeatLiveSnapshots(session: TrainingSession): HeatLiveSnapshot[] {
+  if (session.mode !== 'heats' && session.mode !== 'campeonato') return []
+
+  return session.heats
+    .filter((heat) => heat.athleteIds.length > 0)
+    .map((heat) => ({
+      heat,
+      athletes: buildHeatAthleteLiveStats(heat),
+    }))
+}
+
 export function buildAthleteHeatAnalytics(
   sessions: TrainingSession[],
   athleteId: string,

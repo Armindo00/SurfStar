@@ -26,6 +26,7 @@ import { ManageSpots } from './views/ManageSpots'
 import { ManageCustomTemplates } from './views/ManageCustomTemplates'
 import { OrganizationView } from './views/OrganizationView'
 import { EndSessionSheet } from './components/EndSessionSheet'
+import { LeaveSessionConfirmSheet } from './components/LeaveSessionConfirmSheet'
 import { HelpView } from './views/HelpView'
 import { InstallAppBanner } from './components/InstallAppBanner'
 import { SavedWavesView } from './views/SavedWavesView'
@@ -185,6 +186,7 @@ function Shell() {
           {role === 'treinador' && view === 'contact' && <ContactView variant="app" />}
         </main>
         <EndSessionSheet />
+        <LeaveSessionConfirmSheet />
       </div>
     </div>
   )
