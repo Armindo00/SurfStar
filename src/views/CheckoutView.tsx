@@ -17,6 +17,7 @@ import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { ManualBillingNotice } from '../components/ManualBillingNotice'
 import { useApp } from '../AppContext'
 import { buildStripeCheckoutUrl, isSubscriptionActive } from '../subscriptionApi'
+import { hasCompleteBillingAddress, emptyBillingAddress } from '../billingUtils'
 import { isDemoSubscriptionEnabled } from '../config'
 import { fetchCoachPlanRequest, submitOrganizationPlanRequest, type CoachPlanRequest } from '../organizationPlanRequestApi'
 import { formatAppDateTime } from '../dateFormat'
@@ -74,7 +75,7 @@ export function CheckoutView() {
   useEffect(() => {
     if (!manualFlow || !cloudMode || !auth || auth.role !== 'treinador') return
     if (autoSubmitAttempted.current || approvalBlocked) return
-    if (!auth.taxId || !auth.billingAddress) return
+    if (!hasCompleteBillingAddress(auth.billingAddress)) return
 
     autoSubmitAttempted.current = true
     void (async () => {
@@ -94,7 +95,7 @@ export function CheckoutView() {
             planId: planId as PlanId,
             billingInterval: selectedBillingInterval,
             taxId: auth.taxId ?? '',
-            billingAddress: auth.billingAddress ?? '',
+            billingAddress: auth.billingAddress ?? emptyBillingAddress(),
             message: 'Payment request submitted while waiting for admin approval.',
           },
           cloudMode,
@@ -171,7 +172,7 @@ export function CheckoutView() {
           planId: planId as PlanId,
           billingInterval: selectedBillingInterval,
           taxId: auth.taxId ?? '',
-          billingAddress: auth.billingAddress ?? '',
+          billingAddress: auth.billingAddress ?? emptyBillingAddress(),
           message: `Payment request submitted from checkout for ${plan.name} (${selectedBillingInterval}).`,
         },
         cloudMode,

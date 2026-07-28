@@ -11,6 +11,7 @@ import {
 import { authStore, store } from './store'
 import { formatShortDate } from './dateFormat'
 import { isCloudEnabled } from './config'
+import type { BillingAddress } from './billingUtils'
 import {
   cloudChangePassword,
   cloudGetSession,
@@ -248,7 +249,7 @@ type AppContextValue = {
     name: string,
     email: string,
     password: string,
-    billing?: { taxId: string; billingAddress: string },
+    billing?: { taxId: string; billingAddress: BillingAddress },
   ) => Promise<{ ok: true } | { ok: false; error: string }>
   registerAthlete: (
     name: string,
@@ -1365,7 +1366,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       name: string,
       email: string,
       password: string,
-      billing?: { taxId: string; billingAddress: string },
+      billing?: { taxId: string; billingAddress: BillingAddress },
     ) => {
       if (cloudMode) {
         const result = await cloudRegisterCoach(name, email, password, billing)

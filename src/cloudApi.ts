@@ -7,7 +7,7 @@ import {
   cloudSetupSelfRegisteredAthlete,
 } from './cloudPairingApi'
 import { isValidEmail, normalizeEmail, validatePasswordStrength } from './passwordUtils'
-import { normalizeTaxId } from './billingUtils'
+import { normalizeTaxId, normalizeBillingAddress, billingAddressFromRow, formatBillingAddress, type BillingAddress } from './billingUtils'
 import type {
   AuthSession,
   CustomTrainingTemplate,
@@ -27,6 +27,12 @@ type ProfileRow = {
   blocked?: boolean
   tax_id?: string | null
   billing_address?: string | null
+  billing_street?: string | null
+  billing_address_line2?: string | null
+  billing_postal_code?: string | null
+  billing_city?: string | null
+  billing_region?: string | null
+  billing_country?: string | null
 }
 
 function buildAthleteSession(
@@ -54,7 +60,7 @@ function buildCoachSession(
     organizationName: string
     role: 'owner' | 'coach'
   },
-  options?: { isPlatformAdmin?: boolean; taxId?: string; billingAddress?: string },
+  options?: { isPlatformAdmin?: boolean; taxId?: string; billingAddress?: BillingAddress },
 ): AuthSession {
   const meta = user.user_metadata ?? {}
   return {
@@ -81,7 +87,7 @@ async function enrichCoachSession(user: {
   const billingOptions = {
     isPlatformAdmin,
     taxId: profile?.tax_id ?? undefined,
-    billingAddress: profile?.billing_address ?? undefined,
+    billingAddress: profile ? billingAddressFromRow(profile) : undefined,
   }
   await supabase.rpc('accept_organization_invites')
   const { data } = await supabase.rpc('get_my_organization_context')
@@ -298,18 +304,25 @@ export type CloudAuthResult =
 
 export type CoachBillingDetails = {
   taxId: string
-  billingAddress: string
+  billingAddress: BillingAddress
 }
 
 export async function cloudSaveCoachBillingDetails(
   userId: string,
   billing: CoachBillingDetails,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  const address = normalizeBillingAddress(billing.billingAddress)
   const { error } = await getSupabase()
     .from('profiles')
     .update({
-      tax_id: normalizeTaxId(billing.taxId),
-      billing_address: billing.billingAddress.trim(),
+      tax_id: normalizeTaxId(billing.taxId, address.countryCode),
+      billing_street: address.street,
+      billing_address_line2: address.addressLine2 ?? null,
+      billing_postal_code: address.postalCode,
+      billing_city: address.city,
+      billing_region: address.region ?? null,
+      billing_country: address.countryCode,
+      billing_address: formatBillingAddress(address),
     })
     .eq('id', userId)
     .eq('role', 'treinador')
@@ -358,7 +371,11 @@ export async function cloudRegisterCoach(
       ok: true,
       session:
         billing && session.role === 'treinador'
-          ? { ...session, taxId: billing.taxId.trim(), billingAddress: billing.billingAddress.trim() }
+          ? {
+              ...session,
+              taxId: normalizeTaxId(billing.taxId, billing.billingAddress.countryCode),
+              billingAddress: normalizeBillingAddress(billing.billingAddress),
+            }
           : session,
     }
   }
@@ -387,7 +404,11 @@ export async function cloudRegisterCoach(
     ok: true,
     session:
       billing && session.role === 'treinador'
-        ? { ...session, taxId: billing.taxId.trim(), billingAddress: billing.billingAddress.trim() }
+        ? {
+            ...session,
+            taxId: normalizeTaxId(billing.taxId, billing.billingAddress.countryCode),
+            billingAddress: normalizeBillingAddress(billing.billingAddress),
+          }
         : session,
   }
 }

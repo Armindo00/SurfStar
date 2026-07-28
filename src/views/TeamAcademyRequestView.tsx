@@ -2,7 +2,14 @@ import { useState, type FormEvent } from 'react'
 import { AppLogo } from '../components/AppLogo'
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { ManualBillingNotice } from '../components/ManualBillingNotice'
-import { validateBillingAddress, validateTaxId } from '../billingUtils'
+import {
+  normalizeBillingAddress,
+  normalizeTaxId,
+  validateBillingAddressParts,
+  validateTaxId,
+} from '../billingUtils'
+import { BillingAddressFields } from '../components/BillingAddressFields'
+import { TaxIdField } from '../components/TaxIdField'
 import { useApp } from '../AppContext'
 import { isValidEmail, normalizeEmail } from '../passwordUtils'
 import {
@@ -21,7 +28,12 @@ export function TeamAcademyRequestView() {
   const [contactName, setContactName] = useState('')
   const [email, setEmail] = useState('')
   const [taxId, setTaxId] = useState('')
-  const [billingAddress, setBillingAddress] = useState('')
+  const [billingStreet, setBillingStreet] = useState('')
+  const [billingAddressLine2, setBillingAddressLine2] = useState('')
+  const [billingPostalCode, setBillingPostalCode] = useState('')
+  const [billingCity, setBillingCity] = useState('')
+  const [billingRegion, setBillingRegion] = useState('')
+  const [billingCountryCode, setBillingCountryCode] = useState('')
   const [organizationName, setOrganizationName] = useState('')
   const [coachesCount, setCoachesCount] = useState('5')
   const [message, setMessage] = useState('')
@@ -49,16 +61,28 @@ export function TeamAcademyRequestView() {
       setError('Enter your school, club, or federation name.')
       return
     }
-    const taxError = validateTaxId(taxId)
+
+    const taxError = validateTaxId(taxId, billingCountryCode)
     if (taxError) {
       setError(taxError)
       return
     }
-    const addressError = validateBillingAddress(billingAddress)
+
+    const billingDraft = {
+      street: billingStreet,
+      addressLine2: billingAddressLine2,
+      postalCode: billingPostalCode,
+      city: billingCity,
+      region: billingRegion,
+      countryCode: billingCountryCode,
+    }
+    const addressError = validateBillingAddressParts(billingDraft)
     if (addressError) {
       setError(addressError)
       return
     }
+
+    const billingAddress = normalizeBillingAddress(billingDraft)
 
     setBusy(true)
     try {
@@ -71,8 +95,8 @@ export function TeamAcademyRequestView() {
           message,
           planId: 'organization',
           billingInterval: selectedBillingInterval,
-          taxId: taxId.trim(),
-          billingAddress: billingAddress.trim(),
+          taxId: normalizeTaxId(taxId, billingAddress.countryCode),
+          billingAddress,
         },
         cloudMode,
       )
@@ -119,7 +143,7 @@ export function TeamAcademyRequestView() {
         <AppLogo size="xl" />
         <h1 className="auth-title">Request Team Academy</h1>
         <p className="muted auth-lead">
-          For schools, federations, and surf academies. Up to 5 coaches on one shared roster —{' '}
+          For schools, federations, and surf academies worldwide. Up to 5 coaches on one shared roster —{' '}
           {formatPlanPriceWithSuffix(plan, selectedBillingInterval)} or{' '}
           {formatPlanTotalPrice(plan, 'annual')} billed annually after approval.
         </p>
@@ -156,26 +180,29 @@ export function TeamAcademyRequestView() {
               required
             />
           </label>
-          <label className="field field--pro">
-            <span>NIF (tax ID)</span>
-            <input
-              value={taxId}
-              onChange={(e) => setTaxId(e.target.value)}
-              inputMode="numeric"
-              placeholder="e.g. 123456789"
-              required
-            />
-          </label>
-          <label className="field field--pro">
-            <span>Billing address</span>
-            <textarea
-              rows={3}
-              value={billingAddress}
-              onChange={(e) => setBillingAddress(e.target.value)}
-              placeholder="Street, postal code, city, country"
-              required
-            />
-          </label>
+
+          <TaxIdField
+            value={taxId}
+            countryCode={billingCountryCode}
+            onChange={setTaxId}
+            variant="form-pro"
+          />
+          <BillingAddressFields
+            street={billingStreet}
+            addressLine2={billingAddressLine2}
+            city={billingCity}
+            region={billingRegion}
+            postalCode={billingPostalCode}
+            countryCode={billingCountryCode}
+            onStreetChange={setBillingStreet}
+            onAddressLine2Change={setBillingAddressLine2}
+            onCityChange={setBillingCity}
+            onRegionChange={setBillingRegion}
+            onPostalCodeChange={setBillingPostalCode}
+            onCountryCodeChange={setBillingCountryCode}
+            variant="form-pro"
+          />
+
           <label className="field field--pro">
             <span>Coaches needed</span>
             <select value={coachesCount} onChange={(e) => setCoachesCount(e.target.value)}>

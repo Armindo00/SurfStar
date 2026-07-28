@@ -1,6 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { AuthShell } from '../components/AuthShell'
-import { validateBillingAddress, validateTaxId } from '../billingUtils'
+import {
+  normalizeBillingAddress,
+  normalizeTaxId,
+  validateBillingAddressParts,
+  validateTaxId,
+  type BillingAddress,
+} from '../billingUtils'
+import { BillingAddressFields } from '../components/BillingAddressFields'
+import { TaxIdField } from '../components/TaxIdField'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { formatPlanPriceWithSuffix, getPlan } from '../plans'
 import { useApp } from '../AppContext'
@@ -107,7 +115,12 @@ export function LoginView() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [taxId, setTaxId] = useState('')
-  const [billingAddress, setBillingAddress] = useState('')
+  const [billingStreet, setBillingStreet] = useState('')
+  const [billingAddressLine2, setBillingAddressLine2] = useState('')
+  const [billingPostalCode, setBillingPostalCode] = useState('')
+  const [billingCity, setBillingCity] = useState('')
+  const [billingRegion, setBillingRegion] = useState('')
+  const [billingCountryCode, setBillingCountryCode] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [error, setError] = useState('')
@@ -119,7 +132,12 @@ export function LoginView() {
     setError('')
     setName('')
     setTaxId('')
-    setBillingAddress('')
+    setBillingStreet('')
+    setBillingAddressLine2('')
+    setBillingPostalCode('')
+    setBillingCity('')
+    setBillingRegion('')
+    setBillingCountryCode('')
     setPasswordConfirm('')
     copy.switchAction()
   }
@@ -128,7 +146,12 @@ export function LoginView() {
     setError('')
     setName('')
     setTaxId('')
-    setBillingAddress('')
+    setBillingStreet('')
+    setBillingAddressLine2('')
+    setBillingPostalCode('')
+    setBillingCity('')
+    setBillingRegion('')
+    setBillingCountryCode('')
     setPasswordConfirm('')
     copy.otherRoleAction()
   }
@@ -146,23 +169,45 @@ export function LoginView() {
           return
         }
         if (isCoach && cloudMode) {
-          const taxError = validateTaxId(taxId)
+          const taxError = validateTaxId(taxId, billingCountryCode)
           if (taxError) {
             setError(taxError)
             return
           }
-          const addressError = validateBillingAddress(billingAddress)
+          const billingDraft: BillingAddress = {
+            street: billingStreet,
+            addressLine2: billingAddressLine2,
+            postalCode: billingPostalCode,
+            city: billingCity,
+            region: billingRegion,
+            countryCode: billingCountryCode,
+          }
+          const addressError = validateBillingAddressParts(billingDraft)
           if (addressError) {
             setError(addressError)
             return
           }
         }
-        const billing =
+        const billing: BillingAddress | undefined =
           isCoach && cloudMode
-            ? { taxId: taxId.trim(), billingAddress: billingAddress.trim() }
+            ? normalizeBillingAddress({
+                street: billingStreet,
+                addressLine2: billingAddressLine2,
+                postalCode: billingPostalCode,
+                city: billingCity,
+                region: billingRegion,
+                countryCode: billingCountryCode,
+              })
             : undefined
         const result = isCoach
-          ? await registerCoach(name, trimmedEmail, password, billing)
+          ? await registerCoach(
+              name,
+              trimmedEmail,
+              password,
+              billing
+                ? { taxId: normalizeTaxId(taxId, billing.countryCode), billingAddress: billing }
+                : undefined,
+            )
           : await registerAthlete(name, trimmedEmail, password)
         if (!result.ok) setError(result.error ?? 'Could not create account.')
         return
@@ -216,31 +261,33 @@ export function LoginView() {
         ) : null}
 
         {isRegister && isCoach && cloudMode ? (
-          <>
-            <label className="auth-field">
-              <span>NIF (tax ID)</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                autoComplete="off"
-                value={taxId}
-                onChange={(e) => setTaxId(e.target.value)}
-                placeholder="e.g. 123456789"
-                required
-              />
-            </label>
-            <label className="auth-field">
-              <span>Billing address</span>
-              <textarea
-                rows={3}
-                autoComplete="street-address"
-                value={billingAddress}
-                onChange={(e) => setBillingAddress(e.target.value)}
-                placeholder="Street, postal code, city, country"
-                required
-              />
-            </label>
-          </>
+          <div className="auth-billing-block">
+            <p className="auth-billing-block__title">Billing details</p>
+            <p className="auth-billing-block__lead muted">
+              Required for invoices and tax compliance. We bill coaches worldwide.
+            </p>
+            <TaxIdField
+              value={taxId}
+              countryCode={billingCountryCode}
+              onChange={setTaxId}
+              variant="auth"
+            />
+            <BillingAddressFields
+              street={billingStreet}
+              addressLine2={billingAddressLine2}
+              city={billingCity}
+              region={billingRegion}
+              postalCode={billingPostalCode}
+              countryCode={billingCountryCode}
+              onStreetChange={setBillingStreet}
+              onAddressLine2Change={setBillingAddressLine2}
+              onCityChange={setBillingCity}
+              onRegionChange={setBillingRegion}
+              onPostalCodeChange={setBillingPostalCode}
+              onCountryCodeChange={setBillingCountryCode}
+              variant="auth"
+            />
+          </div>
         ) : null}
 
         <label className="auth-field">

@@ -1,4 +1,9 @@
 import { getSupabase } from './lib/supabase'
+import {
+  normalizeBillingAddress,
+  type BillingAddress,
+} from './billingUtils'
+import { getBillingCountryName } from './billingCountries'
 import { getTeamAcademyContactEmail, type BillingInterval, type PlanId } from './plans'
 
 export type PaymentStatus = 'unpaid' | 'paid' | 'waived'
@@ -12,7 +17,7 @@ export type PlanPaymentRequest = {
   planId?: PlanId
   billingInterval?: BillingInterval
   taxId: string
-  billingAddress: string
+  billingAddress: BillingAddress
 }
 
 export type CoachPlanRequest = {
@@ -28,6 +33,12 @@ export type CoachPlanRequest = {
   payment_status: PaymentStatus
   tax_id: string | null
   billing_address: string | null
+  billing_street: string | null
+  billing_address_line2: string | null
+  billing_postal_code: string | null
+  billing_city: string | null
+  billing_region: string | null
+  billing_country: string | null
   created_at: string
   reviewed_at: string | null
   notes: string | null
@@ -47,8 +58,15 @@ export function buildTeamAcademyMailtoLink(request: PlanPaymentRequest): string 
       request.planId ? `Plan: ${request.planId}` : '',
       request.billingInterval ? `Billing: ${request.billingInterval}` : '',
       request.coachesCount ? `Coaches needed: ${request.coachesCount}` : '',
-      `NIF: ${request.taxId}`,
-      `Billing address: ${request.billingAddress}`,
+      `Tax ID / VAT: ${request.taxId}`,
+      `Address line 1: ${request.billingAddress.street}`,
+      request.billingAddress.addressLine2
+        ? `Address line 2: ${request.billingAddress.addressLine2}`
+        : '',
+      `Postal / ZIP: ${request.billingAddress.postalCode}`,
+      `City: ${request.billingAddress.city}`,
+      request.billingAddress.region ? `Region: ${request.billingAddress.region}` : '',
+      `Country: ${getBillingCountryName(request.billingAddress.countryCode)} (${request.billingAddress.countryCode})`,
       '',
       request.message?.trim() ? `Message:\n${request.message.trim()}` : '',
     ]
@@ -61,6 +79,7 @@ export function buildTeamAcademyMailtoLink(request: PlanPaymentRequest): string 
 export async function cloudSubmitOrganizationPlanRequest(
   request: PlanPaymentRequest,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  const address = normalizeBillingAddress(request.billingAddress)
   const { data, error } = await getSupabase().rpc('submit_organization_plan_request', {
     p_contact_name: request.contactName.trim(),
     p_email: request.email.trim().toLowerCase(),
@@ -70,7 +89,12 @@ export async function cloudSubmitOrganizationPlanRequest(
     p_plan_id: request.planId ?? 'organization',
     p_billing_interval: request.billingInterval ?? 'monthly',
     p_tax_id: request.taxId.trim(),
-    p_billing_address: request.billingAddress.trim(),
+    p_billing_street: address.street,
+    p_billing_address_line2: address.addressLine2 ?? null,
+    p_billing_postal_code: address.postalCode,
+    p_billing_city: address.city,
+    p_billing_region: address.region ?? null,
+    p_billing_country: address.countryCode,
   })
 
   if (error) {

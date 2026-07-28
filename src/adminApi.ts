@@ -28,6 +28,12 @@ export type AdminPlanRequest = {
   activated_at: string | null
   tax_id: string | null
   billing_address: string | null
+  billing_street: string | null
+  billing_address_line2: string | null
+  billing_postal_code: string | null
+  billing_city: string | null
+  billing_region: string | null
+  billing_country: string | null
   coach_registered: boolean
 }
 

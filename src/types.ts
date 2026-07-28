@@ -2,6 +2,8 @@ import type { PsychologySurveyScores } from './psychologySurvey'
 
 export type { PsychologySurveyScores } from './psychologySurvey'
 
+import type { BillingAddress } from './billingUtils'
+
 export type UserRole = 'treinador' | 'atleta'
 
 export type PublicView =
@@ -312,7 +314,7 @@ export type AuthSession =
       email: string
       isPlatformAdmin?: boolean
       taxId?: string
-      billingAddress?: string
+      billingAddress?: BillingAddress
     }
   | {
       role: 'atleta'

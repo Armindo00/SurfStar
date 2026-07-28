@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { getBillingCountryName } from '../billingCountries'
 import {
   adminActivateCoachPlan,
   adminActivatePlanRequest,
@@ -453,14 +454,51 @@ export function AdminView() {
                       </div>
                       {request.tax_id ? (
                         <div>
-                          <dt>NIF</dt>
+                          <dt>Tax ID / VAT</dt>
                           <dd>{request.tax_id}</dd>
                         </div>
                       ) : null}
-                      {request.billing_address ? (
+                      {request.billing_street ? (
                         <div className="admin-meta__wide">
-                          <dt>Billing address</dt>
+                          <dt>Address line 1</dt>
+                          <dd>{request.billing_street}</dd>
+                        </div>
+                      ) : request.billing_address ? (
+                        <div className="admin-meta__wide">
+                          <dt>Address</dt>
                           <dd>{request.billing_address}</dd>
+                        </div>
+                      ) : null}
+                      {request.billing_address_line2 ? (
+                        <div className="admin-meta__wide">
+                          <dt>Address line 2</dt>
+                          <dd>{request.billing_address_line2}</dd>
+                        </div>
+                      ) : null}
+                      {request.billing_postal_code ? (
+                        <div>
+                          <dt>Postal / ZIP</dt>
+                          <dd>{request.billing_postal_code}</dd>
+                        </div>
+                      ) : null}
+                      {request.billing_city ? (
+                        <div>
+                          <dt>City</dt>
+                          <dd>{request.billing_city}</dd>
+                        </div>
+                      ) : null}
+                      {request.billing_region ? (
+                        <div>
+                          <dt>State / region</dt>
+                          <dd>{request.billing_region}</dd>
+                        </div>
+                      ) : null}
+                      {request.billing_country ? (
+                        <div>
+                          <dt>Country</dt>
+                          <dd>
+                            {getBillingCountryName(request.billing_country)} ({request.billing_country})
+                          </dd>
                         </div>
                       ) : null}
                       {request.reviewed_at ? (
