@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { AppLogo } from '../components/AppLogo'
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
+import { ManualBillingNotice } from '../components/ManualBillingNotice'
 import { useApp } from '../AppContext'
 import { isValidEmail, normalizeEmail } from '../passwordUtils'
 import {
@@ -78,11 +79,9 @@ export function TeamAcademyRequestView() {
         <div className="auth-card auth-card--wide">
           <AppLogo size="xl" />
           <h1 className="auth-title">Request received</h1>
+          <ManualBillingNotice variant="submitted" email={email.trim() || undefined} />
           <p className="muted auth-lead">
             Thanks — we&apos;ll review your Team Academy request and email you within 2 business days.
-            {manualFlow
-              ? ' Once approved, we send payment details (IBAN / MB Way) and activate your organization after confirmation.'
-              : ' Once approved, we activate your organization and send payment details.'}
           </p>
           <button type="button" className="btn btn--gold btn--block" onClick={openLanding}>
             Back to home

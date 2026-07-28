@@ -14,6 +14,7 @@ import {
 } from '../plans'
 import { AppLogo } from '../components/AppLogo'
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
+import { ManualBillingNotice } from '../components/ManualBillingNotice'
 import { useApp } from '../AppContext'
 import { buildStripeCheckoutUrl, isSubscriptionActive } from '../subscriptionApi'
 import { isDemoSubscriptionEnabled } from '../config'
@@ -242,6 +243,10 @@ export function CheckoutView() {
             </p>
           </div>
         </div>
+
+        {manualFlow && !approvalBlocked ? (
+          <ManualBillingNotice variant="waiting" email={auth?.email} />
+        ) : null}
 
         {approvalBlocked ? (
           <div className="checkout-pending team-academy-request__banner">
