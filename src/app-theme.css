@@ -903,6 +903,12 @@ body {
   background: rgba(255, 255, 255, 0.03) !important;
 }
 
+.app-shell .evolution-chart__col--active,
+.app-shell .evolution-chart__table thead th.evolution-chart__col--active,
+.app-shell .evolution-chart__table tbody td.evolution-chart__col--active {
+  background: rgba(201, 169, 98, 0.12) !important;
+}
+
 .app-shell .kpi-card__value {
   color: var(--landing-gold-light) !important;
 }

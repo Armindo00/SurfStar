@@ -3950,6 +3950,32 @@ body {
   padding: 0.35rem 0.65rem;
 }
 
+.evolution-chart__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+.evolution-chart__metric {
+  font-size: 0.78rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.evolution-chart__metric:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.evolution-chart__metric-head {
+  margin-bottom: 0.75rem;
+}
+
+.evolution-chart__metric-copy {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+}
+
 .evolution-chart__plot {
   border-radius: var(--radius);
   background: linear-gradient(180deg, rgba(37, 99, 235, 0.04), transparent);
@@ -4062,6 +4088,16 @@ body {
   stroke: none;
 }
 
+.evolution-chart__area--potential {
+  fill: rgba(245, 158, 11, 0.12);
+  stroke: none;
+}
+
+.evolution-chart__area--level {
+  fill: rgba(139, 92, 246, 0.12);
+  stroke: none;
+}
+
 .evolution-chart__dot--success {
   fill: #0ea5e9;
   stroke: white;
@@ -4138,6 +4174,15 @@ body {
 
 .evolution-chart__cell--level {
   color: #6d28d9;
+}
+
+.evolution-chart__col--active {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.evolution-chart__table thead th.evolution-chart__col--active,
+.evolution-chart__table tbody td.evolution-chart__col--active {
+  background: rgba(37, 99, 235, 0.08);
 }
 
 @media (max-width: 480px) {
