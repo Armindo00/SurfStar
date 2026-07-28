@@ -7149,6 +7149,10 @@ body {
   font-size: 0.88rem;
 }
 
+.admin-meta__wide {
+  grid-column: 1 / -1;
+}
+
 .admin-badge {
   display: inline-flex;
   align-items: center;

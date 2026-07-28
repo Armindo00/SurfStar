@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { AppLogo } from '../components/AppLogo'
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { ManualBillingNotice } from '../components/ManualBillingNotice'
+import { validateBillingAddress, validateTaxId } from '../billingUtils'
 import { useApp } from '../AppContext'
 import { isValidEmail, normalizeEmail } from '../passwordUtils'
 import {
@@ -19,6 +20,8 @@ export function TeamAcademyRequestView() {
 
   const [contactName, setContactName] = useState('')
   const [email, setEmail] = useState('')
+  const [taxId, setTaxId] = useState('')
+  const [billingAddress, setBillingAddress] = useState('')
   const [organizationName, setOrganizationName] = useState('')
   const [coachesCount, setCoachesCount] = useState('5')
   const [message, setMessage] = useState('')
@@ -46,6 +49,16 @@ export function TeamAcademyRequestView() {
       setError('Enter your school, club, or federation name.')
       return
     }
+    const taxError = validateTaxId(taxId)
+    if (taxError) {
+      setError(taxError)
+      return
+    }
+    const addressError = validateBillingAddress(billingAddress)
+    if (addressError) {
+      setError(addressError)
+      return
+    }
 
     setBusy(true)
     try {
@@ -58,6 +71,8 @@ export function TeamAcademyRequestView() {
           message,
           planId: 'organization',
           billingInterval: selectedBillingInterval,
+          taxId: taxId.trim(),
+          billingAddress: billingAddress.trim(),
         },
         cloudMode,
       )
@@ -138,6 +153,26 @@ export function TeamAcademyRequestView() {
               value={organizationName}
               onChange={(e) => setOrganizationName(e.target.value)}
               placeholder="e.g. Cascais Surf Academy"
+              required
+            />
+          </label>
+          <label className="field field--pro">
+            <span>NIF (tax ID)</span>
+            <input
+              value={taxId}
+              onChange={(e) => setTaxId(e.target.value)}
+              inputMode="numeric"
+              placeholder="e.g. 123456789"
+              required
+            />
+          </label>
+          <label className="field field--pro">
+            <span>Billing address</span>
+            <textarea
+              rows={3}
+              value={billingAddress}
+              onChange={(e) => setBillingAddress(e.target.value)}
+              placeholder="Street, postal code, city, country"
               required
             />
           </label>

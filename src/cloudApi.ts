@@ -7,6 +7,7 @@ import {
   cloudSetupSelfRegisteredAthlete,
 } from './cloudPairingApi'
 import { isValidEmail, normalizeEmail, validatePasswordStrength } from './passwordUtils'
+import { normalizeTaxId } from './billingUtils'
 import type {
   AuthSession,
   CustomTrainingTemplate,
@@ -24,6 +25,8 @@ type ProfileRow = {
   must_change_password?: boolean
   is_platform_admin?: boolean
   blocked?: boolean
+  tax_id?: string | null
+  billing_address?: string | null
 }
 
 function buildAthleteSession(
@@ -51,7 +54,7 @@ function buildCoachSession(
     organizationName: string
     role: 'owner' | 'coach'
   },
-  options?: { isPlatformAdmin?: boolean },
+  options?: { isPlatformAdmin?: boolean; taxId?: string; billingAddress?: string },
 ): AuthSession {
   const meta = user.user_metadata ?? {}
   return {
@@ -63,6 +66,8 @@ function buildCoachSession(
     name: String(meta.name || user.email?.split('@')[0] || 'Coach'),
     email: (user.email || '').toLowerCase(),
     isPlatformAdmin: options?.isPlatformAdmin ?? false,
+    taxId: options?.taxId,
+    billingAddress: options?.billingAddress,
   }
 }
 
@@ -73,6 +78,11 @@ async function enrichCoachSession(user: {
 }, profile?: ProfileRow): Promise<AuthSession> {
   const supabase = getSupabase()
   const isPlatformAdmin = profile?.is_platform_admin ?? false
+  const billingOptions = {
+    isPlatformAdmin,
+    taxId: profile?.tax_id ?? undefined,
+    billingAddress: profile?.billing_address ?? undefined,
+  }
   await supabase.rpc('accept_organization_invites')
   const { data } = await supabase.rpc('get_my_organization_context')
 
@@ -84,7 +94,7 @@ async function enrichCoachSession(user: {
         organizationName: data.organization_name,
         role: data.role,
       },
-      { isPlatformAdmin },
+      billingOptions,
     )
   }
 
@@ -98,11 +108,11 @@ async function enrichCoachSession(user: {
         organizationName: retry.organization_name,
         role: retry.role,
       },
-      { isPlatformAdmin },
+      billingOptions,
     )
   }
 
-  return buildCoachSession(user, undefined, { isPlatformAdmin })
+  return buildCoachSession(user, undefined, billingOptions)
 }
 
 async function buildAthleteAuthSession(
@@ -286,10 +296,33 @@ export type CloudAuthResult =
   | { ok: true; session: AuthSession }
   | { ok: false; error: string }
 
+export type CoachBillingDetails = {
+  taxId: string
+  billingAddress: string
+}
+
+export async function cloudSaveCoachBillingDetails(
+  userId: string,
+  billing: CoachBillingDetails,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { error } = await getSupabase()
+    .from('profiles')
+    .update({
+      tax_id: normalizeTaxId(billing.taxId),
+      billing_address: billing.billingAddress.trim(),
+    })
+    .eq('id', userId)
+    .eq('role', 'treinador')
+
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
 export async function cloudRegisterCoach(
   name: string,
   email: string,
   password: string,
+  billing?: CoachBillingDetails,
 ): Promise<CloudAuthResult> {
   const trimmedName = name.trim()
   const normalized = normalizeEmail(email)
@@ -316,9 +349,18 @@ export async function cloudRegisterCoach(
   }
 
   if (data.session?.user) {
+    if (billing) {
+      await cloudSaveCoachBillingDetails(data.session.user.id, billing)
+    }
     const session = await buildAuthSessionFromUser(data.session.user)
     if ('error' in session) return { ok: false, error: session.error }
-    return { ok: true, session }
+    return {
+      ok: true,
+      session:
+        billing && session.role === 'treinador'
+          ? { ...session, taxId: billing.taxId.trim(), billingAddress: billing.billingAddress.trim() }
+          : session,
+    }
   }
 
   const { data: signInData, error: loginError } = await supabase.auth.signInWithPassword({
@@ -335,9 +377,19 @@ export async function cloudRegisterCoach(
     return { ok: false, error: 'Account created but sign in failed. Try Sign in.' }
   }
 
+  if (billing) {
+    await cloudSaveCoachBillingDetails(signInData.user.id, billing)
+  }
+
   const session = await buildAuthSessionFromUser(signInData.user)
   if ('error' in session) return { ok: false, error: session.error }
-  return { ok: true, session }
+  return {
+    ok: true,
+    session:
+      billing && session.role === 'treinador'
+        ? { ...session, taxId: billing.taxId.trim(), billingAddress: billing.billingAddress.trim() }
+        : session,
+  }
 }
 
 export async function cloudRegisterAthlete(

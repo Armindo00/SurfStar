@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { AuthShell } from '../components/AuthShell'
+import { validateBillingAddress, validateTaxId } from '../billingUtils'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { formatPlanPriceWithSuffix, getPlan } from '../plans'
 import { useApp } from '../AppContext'
@@ -105,6 +106,8 @@ export function LoginView() {
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [taxId, setTaxId] = useState('')
+  const [billingAddress, setBillingAddress] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [error, setError] = useState('')
@@ -115,6 +118,8 @@ export function LoginView() {
   const goToAlternateScreen = () => {
     setError('')
     setName('')
+    setTaxId('')
+    setBillingAddress('')
     setPasswordConfirm('')
     copy.switchAction()
   }
@@ -122,6 +127,8 @@ export function LoginView() {
   const goToOtherRole = () => {
     setError('')
     setName('')
+    setTaxId('')
+    setBillingAddress('')
     setPasswordConfirm('')
     copy.otherRoleAction()
   }
@@ -138,8 +145,24 @@ export function LoginView() {
           setError('Passwords do not match.')
           return
         }
+        if (isCoach && cloudMode) {
+          const taxError = validateTaxId(taxId)
+          if (taxError) {
+            setError(taxError)
+            return
+          }
+          const addressError = validateBillingAddress(billingAddress)
+          if (addressError) {
+            setError(addressError)
+            return
+          }
+        }
+        const billing =
+          isCoach && cloudMode
+            ? { taxId: taxId.trim(), billingAddress: billingAddress.trim() }
+            : undefined
         const result = isCoach
-          ? await registerCoach(name, trimmedEmail, password)
+          ? await registerCoach(name, trimmedEmail, password, billing)
           : await registerAthlete(name, trimmedEmail, password)
         if (!result.ok) setError(result.error ?? 'Could not create account.')
         return
@@ -190,6 +213,34 @@ export function LoginView() {
               required
             />
           </label>
+        ) : null}
+
+        {isRegister && isCoach && cloudMode ? (
+          <>
+            <label className="auth-field">
+              <span>NIF (tax ID)</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                value={taxId}
+                onChange={(e) => setTaxId(e.target.value)}
+                placeholder="e.g. 123456789"
+                required
+              />
+            </label>
+            <label className="auth-field">
+              <span>Billing address</span>
+              <textarea
+                rows={3}
+                autoComplete="street-address"
+                value={billingAddress}
+                onChange={(e) => setBillingAddress(e.target.value)}
+                placeholder="Street, postal code, city, country"
+                required
+              />
+            </label>
+          </>
         ) : null}
 
         <label className="auth-field">

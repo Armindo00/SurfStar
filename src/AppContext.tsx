@@ -248,6 +248,7 @@ type AppContextValue = {
     name: string,
     email: string,
     password: string,
+    billing?: { taxId: string; billingAddress: string },
   ) => Promise<{ ok: true } | { ok: false; error: string }>
   registerAthlete: (
     name: string,
@@ -1360,16 +1361,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const registerCoach = useCallback(
-    async (name: string, email: string, password: string) => {
+    async (
+      name: string,
+      email: string,
+      password: string,
+      billing?: { taxId: string; billingAddress: string },
+    ) => {
       if (cloudMode) {
-        const result = await cloudRegisterCoach(name, email, password)
+        const result = await cloudRegisterCoach(name, email, password, billing)
         if (!result.ok) return result
         setAuth(result.session)
         try {
           await applyCloudSessionData(result.session)
           await syncCoachSubscription(result.session)
 
-          if (usesManualPaymentFlow() && result.session.role === 'treinador') {
+          if (usesManualPaymentFlow() && result.session.role === 'treinador' && billing) {
             const planId = selectedPlanId ?? 'team'
             if (!isApprovalRequiredPlan(planId)) {
               await submitOrganizationPlanRequest(
@@ -1379,6 +1385,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
                   organizationName: result.session.organizationName || `${result.session.name}'s Team`,
                   planId,
                   billingInterval: selectedBillingInterval,
+                  taxId: billing.taxId,
+                  billingAddress: billing.billingAddress,
                   message: 'Payment request auto-submitted on coach registration.',
                 },
                 true,

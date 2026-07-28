@@ -59,7 +59,7 @@ export function CheckoutView() {
   const isPending = subscription?.status === 'pending'
   const isActive = isSubscriptionActive(subscription)
   const approvalBlocked = isApprovalRequiredPlan(rawPlanId)
-  const demoActivationAllowed = !cloudMode || isDemoSubscriptionEnabled()
+  const demoActivationAllowed = (!cloudMode || isDemoSubscriptionEnabled()) && !manualFlow
 
   const loadOpenRequest = useCallback(async () => {
     if (!cloudMode || !manualFlow) return
@@ -74,6 +74,7 @@ export function CheckoutView() {
   useEffect(() => {
     if (!manualFlow || !cloudMode || !auth || auth.role !== 'treinador') return
     if (autoSubmitAttempted.current || approvalBlocked) return
+    if (!auth.taxId || !auth.billingAddress) return
 
     autoSubmitAttempted.current = true
     void (async () => {
@@ -92,6 +93,8 @@ export function CheckoutView() {
             organizationName: auth.organizationName || `${auth.name}'s Team`,
             planId: planId as PlanId,
             billingInterval: selectedBillingInterval,
+            taxId: auth.taxId ?? '',
+            billingAddress: auth.billingAddress ?? '',
             message: 'Payment request submitted while waiting for admin approval.',
           },
           cloudMode,
@@ -167,6 +170,8 @@ export function CheckoutView() {
           organizationName: auth.organizationName || `${auth.name}'s Team`,
           planId: planId as PlanId,
           billingInterval: selectedBillingInterval,
+          taxId: auth.taxId ?? '',
+          billingAddress: auth.billingAddress ?? '',
           message: `Payment request submitted from checkout for ${plan.name} (${selectedBillingInterval}).`,
         },
         cloudMode,

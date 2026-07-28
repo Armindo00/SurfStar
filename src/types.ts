@@ -311,6 +311,8 @@ export type AuthSession =
       name: string
       email: string
       isPlatformAdmin?: boolean
+      taxId?: string
+      billingAddress?: string
     }
   | {
       role: 'atleta'

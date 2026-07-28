@@ -20,6 +20,11 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 14 | `add-athlete-equipment-feedback.sql` | Athlete quiver, coach ratings, session wellbeing feedback |
 | 15 | `add-contact-messages.sql` | Contact / feedback form + admin inbox |
 | 16 | `add-manual-payments.sql` | **Manual billing:** payment requests for all plans, admin confirm & activate |
+| 17 | `add-billing-details.sql` | NIF + billing address on signup and payment requests |
+
+## Production reset
+
+Run `cleanup-test-data.sql` **once** before launch to delete all test users and data. Keeps only accounts in `platform_admin_emails` (default: `armindo.j.costa@hotmail.com`).
 
 ## Platform admin
 

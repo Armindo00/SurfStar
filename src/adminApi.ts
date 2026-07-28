@@ -26,6 +26,8 @@ export type AdminPlanRequest = {
   notes: string | null
   paid_at: string | null
   activated_at: string | null
+  tax_id: string | null
+  billing_address: string | null
   coach_registered: boolean
 }
 

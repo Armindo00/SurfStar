@@ -11,6 +11,8 @@ export type PlanPaymentRequest = {
   message?: string
   planId?: PlanId
   billingInterval?: BillingInterval
+  taxId: string
+  billingAddress: string
 }
 
 export type CoachPlanRequest = {
@@ -24,6 +26,8 @@ export type CoachPlanRequest = {
   plan_id: PlanId
   billing_interval: BillingInterval
   payment_status: PaymentStatus
+  tax_id: string | null
+  billing_address: string | null
   created_at: string
   reviewed_at: string | null
   notes: string | null
@@ -43,6 +47,8 @@ export function buildTeamAcademyMailtoLink(request: PlanPaymentRequest): string 
       request.planId ? `Plan: ${request.planId}` : '',
       request.billingInterval ? `Billing: ${request.billingInterval}` : '',
       request.coachesCount ? `Coaches needed: ${request.coachesCount}` : '',
+      `NIF: ${request.taxId}`,
+      `Billing address: ${request.billingAddress}`,
       '',
       request.message?.trim() ? `Message:\n${request.message.trim()}` : '',
     ]
@@ -63,6 +69,8 @@ export async function cloudSubmitOrganizationPlanRequest(
     p_message: request.message?.trim() ?? null,
     p_plan_id: request.planId ?? 'organization',
     p_billing_interval: request.billingInterval ?? 'monthly',
+    p_tax_id: request.taxId.trim(),
+    p_billing_address: request.billingAddress.trim(),
   })
 
   if (error) {

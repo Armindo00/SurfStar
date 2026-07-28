@@ -451,6 +451,18 @@ export function AdminView() {
                         <dt>Account registered</dt>
                         <dd>{request.coach_registered ? 'Yes' : 'Not yet'}</dd>
                       </div>
+                      {request.tax_id ? (
+                        <div>
+                          <dt>NIF</dt>
+                          <dd>{request.tax_id}</dd>
+                        </div>
+                      ) : null}
+                      {request.billing_address ? (
+                        <div className="admin-meta__wide">
+                          <dt>Billing address</dt>
+                          <dd>{request.billing_address}</dd>
+                        </div>
+                      ) : null}
                       {request.reviewed_at ? (
                         <div>
                           <dt>Reviewed</dt>
