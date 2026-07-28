@@ -49,6 +49,11 @@ export type AdminAccount = {
   plan_status: string | null
   organization_name: string | null
   organization_id: string | null
+  requested_plan_id?: string | null
+  requested_billing_interval?: BillingInterval | null
+  requested_plan_status?: string | null
+  requested_plan_payment_status?: string | null
+  requested_plan_activated_at?: string | null
 }
 
 type RpcResult = { ok: boolean; error?: string }

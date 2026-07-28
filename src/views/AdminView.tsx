@@ -23,6 +23,7 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import { SkeletonCard } from '../components/Skeleton'
 import { useToast } from '../components/ToastProvider'
 import {
+  formatPlanPriceWithSuffix,
   formatPlanTotalPrice,
   getPlan,
   type BillingInterval,
@@ -54,6 +55,29 @@ function planLabel(planId: string | null): string {
   }
 }
 
+function planIdLabel(planId: string | null): string {
+  if (!planId) return '—'
+  const labels: Record<string, string> = {
+    team: 'Coach',
+    club: 'Coach Premium',
+    organization: 'Team Academy',
+  }
+  return labels[planId] ?? planId
+}
+
+function billingIntervalLabel(interval: BillingInterval | string | null | undefined): string {
+  return interval === 'annual' ? 'Annual' : 'Monthly'
+}
+
+function planRequestSummary(planId: PlanId, billingInterval: BillingInterval): string {
+  const plan = getPlan(planId)
+  const price =
+    billingInterval === 'annual'
+      ? `${formatPlanTotalPrice(plan, 'annual')}/year`
+      : `${formatPlanPriceWithSuffix(plan, 'monthly')}`
+  return `${plan.name} · ${billingIntervalLabel(billingInterval)} · ${price}`
+}
+
 function requestAmount(request: AdminPlanRequest): string {
   try {
     return formatPlanTotalPrice(getPlan(request.plan_id), request.billing_interval)
@@ -79,6 +103,56 @@ function requestPhase(request: AdminPlanRequest): { label: string; tone: string 
     return { label: 'Approved', tone: 'approved' }
   }
   return { label: request.status, tone: 'pending' }
+}
+
+function accountPlanInfo(account: AdminAccount): {
+  headline: string
+  subline: string
+  tone: 'active' | 'pending' | 'none'
+} {
+  const activePlanId = account.plan_id
+  const activeStatus = account.plan_status
+
+  if (
+    activePlanId &&
+    (activeStatus === 'active' || activeStatus === 'trialing')
+  ) {
+    const interval = account.requested_billing_interval ?? 'monthly'
+    return {
+      headline: planLabel(activePlanId),
+      subline: `${activeStatus === 'trialing' ? 'Trialing' : 'Active subscription'} · ${billingIntervalLabel(interval)}`,
+      tone: 'active',
+    }
+  }
+
+  if (account.requested_plan_id) {
+    try {
+      const planId = account.requested_plan_id as PlanId
+      const interval = (account.requested_billing_interval ?? 'monthly') as BillingInterval
+      const awaiting =
+        !account.requested_plan_activated_at &&
+        account.requested_plan_status !== 'rejected'
+      return {
+        headline: planRequestSummary(planId, interval),
+        subline: awaiting
+          ? `Requested plan — unlock ${planIdLabel(planId)} on payment confirmation`
+          : `Last request: ${account.requested_plan_status ?? 'unknown'}`,
+        tone: awaiting ? 'pending' : 'none',
+      }
+    } catch {
+      return {
+        headline: planLabel(account.requested_plan_id),
+        subline: 'Requested plan on file',
+        tone: 'pending',
+      }
+    }
+  }
+
+  return {
+    headline: 'No active plan',
+    subline: 'Coach is waiting for plan activation',
+    tone: 'none',
+  }
 }
 
 export function AdminView() {
@@ -425,16 +499,35 @@ export function AdminView() {
                           {request.contact_name} · {request.email}
                         </p>
                       </div>
-                      <span className={`admin-badge admin-badge--${phase.tone}`}>{phase.label}</span>
+                      <div className="admin-card__badges">
+                        <span className={`admin-badge admin-badge--${phase.tone}`}>{phase.label}</span>
+                        <span className="admin-badge admin-badge--plan">{planIdLabel(request.plan_id)}</span>
+                      </div>
                     </div>
+
+                    <div className="admin-plan-banner">
+                      <span className="admin-plan-banner__eyebrow">Requested plan to unlock</span>
+                      <strong className="admin-plan-banner__title">
+                        {planRequestSummary(request.plan_id, request.billing_interval)}
+                      </strong>
+                      <p className="admin-plan-banner__hint muted">
+                        When you confirm payment, activate{' '}
+                        <strong>{planLabel(request.plan_id)}</strong> ({planIdLabel(request.plan_id)}).
+                      </p>
+                    </div>
+
                     <dl className="admin-meta">
                       <div>
-                        <dt>Plan</dt>
+                        <dt>Plan ID</dt>
+                        <dd>{request.plan_id}</dd>
+                      </div>
+                      <div>
+                        <dt>Plan name</dt>
                         <dd>{planLabel(request.plan_id)}</dd>
                       </div>
                       <div>
                         <dt>Billing</dt>
-                        <dd>{request.billing_interval === 'annual' ? 'Annual' : 'Monthly'}</dd>
+                        <dd>{billingIntervalLabel(request.billing_interval)}</dd>
                       </div>
                       <div>
                         <dt>Amount</dt>
@@ -561,7 +654,7 @@ export function AdminView() {
                                 disabled={busyId === request.id}
                                 onClick={() => void confirmPayment(request)}
                               >
-                                Confirm payment & activate
+                                Confirm payment & activate {planLabel(request.plan_id)}
                               </button>
                               <button
                                 type="button"
@@ -569,7 +662,7 @@ export function AdminView() {
                                 disabled={busyId === request.id}
                                 onClick={() => void activateFree(request)}
                               >
-                                Activate free
+                                Activate {planLabel(request.plan_id)} free
                               </button>
                             </>
                           ) : (
@@ -580,7 +673,7 @@ export function AdminView() {
                                 disabled={busyId === request.id}
                                 onClick={() => void confirmPayment(request)}
                               >
-                                Confirm payment & activate
+                                Confirm payment & activate {planLabel(request.plan_id)}
                               </button>
                               <button
                                 type="button"
@@ -588,7 +681,7 @@ export function AdminView() {
                                 disabled={busyId === request.id}
                                 onClick={() => void activateFree(request)}
                               >
-                                Activate free
+                                Activate {planLabel(request.plan_id)} free
                               </button>
                             </>
                           )}
@@ -639,7 +732,10 @@ export function AdminView() {
             <p className="muted">No accounts found.</p>
           ) : (
             <div className="admin-list">
-              {accounts.map((account) => (
+              {accounts.map((account) => {
+                const planInfo = accountPlanInfo(account)
+
+                return (
                 <article key={account.profile_id} className="admin-card">
                   <div className="admin-card__head">
                     <div>
@@ -649,18 +745,41 @@ export function AdminView() {
                       </p>
                     </div>
                     <div className="admin-card__badges">
+                      <span className={`admin-badge admin-badge--plan admin-badge--plan-${planInfo.tone}`}>
+                        {planInfo.headline}
+                      </span>
                       {account.is_platform_admin ? <span className="admin-badge admin-badge--admin">Admin</span> : null}
                       {account.blocked ? <span className="admin-badge admin-badge--blocked">Blocked</span> : null}
                     </div>
                   </div>
+
+                  <div className={`admin-plan-banner admin-plan-banner--${planInfo.tone}`}>
+                    <span className="admin-plan-banner__eyebrow">
+                      {planInfo.tone === 'active' ? 'Current plan' : 'Plan status'}
+                    </span>
+                    <strong className="admin-plan-banner__title">{planInfo.headline}</strong>
+                    <p className="admin-plan-banner__hint muted">{planInfo.subline}</p>
+                  </div>
+
                   <dl className="admin-meta">
                     <div>
-                      <dt>Plan</dt>
+                      <dt>Active plan</dt>
                       <dd>
-                        {planLabel(account.plan_id)}
+                        {account.plan_id ? planLabel(account.plan_id) : '—'}
                         {account.plan_status ? ` (${account.plan_status})` : ''}
                       </dd>
                     </div>
+                    {account.requested_plan_id && account.requested_plan_id !== account.plan_id ? (
+                      <div>
+                        <dt>Requested plan</dt>
+                        <dd>
+                          {planLabel(account.requested_plan_id)}
+                          {account.requested_billing_interval
+                            ? ` · ${billingIntervalLabel(account.requested_billing_interval)}`
+                            : ''}
+                        </dd>
+                      </div>
+                    ) : null}
                     <div>
                       <dt>Organization</dt>
                       <dd>{account.organization_name ?? '—'}</dd>
@@ -711,7 +830,8 @@ export function AdminView() {
                     ) : null}
                   </div>
                 </article>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

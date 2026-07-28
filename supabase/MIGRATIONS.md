@@ -22,6 +22,7 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 16 | `add-manual-payments.sql` | **Manual billing:** payment requests for all plans, admin confirm & activate |
 | 17 | `add-billing-details.sql` | NIF + billing address on signup and payment requests |
 | 18 | `patch-billing-address-fields.sql` | Split address into street, postal code, city, country |
+| 19 | `patch-admin-plan-display.sql` | Admin accounts: show requested plan from payment requests |
 
 ## Production reset
 

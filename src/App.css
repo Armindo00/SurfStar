@@ -7214,6 +7214,74 @@ body {
   color: #86efac;
 }
 
+.admin-badge--plan {
+  color: #fde68a;
+  background: rgba(201, 169, 98, 0.16);
+  border-color: rgba(201, 169, 98, 0.35);
+}
+
+.admin-badge--plan-active {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(74, 222, 128, 0.25);
+}
+
+.admin-badge--plan-pending {
+  color: #fde68a;
+  background: rgba(201, 169, 98, 0.16);
+  border-color: rgba(201, 169, 98, 0.35);
+}
+
+.admin-badge--plan-none {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.admin-plan-banner {
+  margin: 0.85rem 0 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 169, 98, 0.28);
+  background: rgba(201, 169, 98, 0.08);
+}
+
+.admin-plan-banner--active {
+  border-color: rgba(74, 222, 128, 0.28);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.admin-plan-banner--pending {
+  border-color: rgba(201, 169, 98, 0.28);
+  background: rgba(201, 169, 98, 0.08);
+}
+
+.admin-plan-banner--none {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.admin-plan-banner__eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ss-muted);
+  margin-bottom: 0.25rem;
+}
+
+.admin-plan-banner__title {
+  display: block;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.admin-plan-banner__hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .checkout-manual-total {
   margin: 0 0 1rem;
   padding: 0.75rem 1rem;
