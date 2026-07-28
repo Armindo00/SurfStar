@@ -1,3 +1,4 @@
+import { getAppSiteUrl } from './config'
 import type { PlanId } from './plans'
 import type { TrainingMode } from './types'
 import { TRAINING_MODE_LABELS } from './types'
@@ -112,32 +113,38 @@ export const ATHLETE_HELP_SECTIONS = [
   },
 ]
 
-export const INSTALL_HELP = {
-  title: 'Add SurfStar to your home screen',
-  lead:
-    'Install SurfStar like an app for one-tap access at the beach. Works on iPhone and Android — no App Store download required.',
-  iphone: {
-    title: 'iPhone (Safari)',
-    steps: [
-      'Open surf-star.vercel.app in Safari (Chrome on iPhone does not support home screen install the same way).',
-      'Tap the Share button at the bottom of the screen (□ with an arrow pointing up).',
-      'Scroll the share menu and tap Add to Home Screen.',
-      'Edit the name if you like, then tap Add — the SurfStar icon appears on your home screen.',
-      'Open SurfStar from that icon for full-screen, app-like experience.',
-    ],
-  },
-  android: {
-    title: 'Android (Chrome)',
-    steps: [
-      'Open surf-star.vercel.app in Google Chrome.',
-      'Tap the menu (⋮) in the top-right corner.',
-      'Tap Install app or Add to Home screen (wording may vary by phone).',
-      'Confirm on the prompt — SurfStar is added to your home screen and app drawer.',
-      'On Samsung Internet: tap ≡ menu → Add page to → Home screen.',
-    ],
-  },
-  note: 'If you already installed SurfStar, you can ignore this section.',
+export function getInstallHelp() {
+  const siteHost = getAppSiteUrl().replace(/^https?:\/\//, '')
+  return {
+    title: 'Add SurfStar to your home screen',
+    lead:
+      'Install SurfStar like an app for one-tap access at the beach. Works on iPhone and Android — no App Store download required.',
+    iphone: {
+      title: 'iPhone (Safari)',
+      steps: [
+        `Open ${siteHost} in Safari (Chrome on iPhone does not support home screen install the same way).`,
+        'Tap the Share button at the bottom of the screen (□ with an arrow pointing up).',
+        'Scroll the share menu and tap Add to Home Screen.',
+        'Edit the name if you like, then tap Add — the SurfStar icon appears on your home screen.',
+        'Open SurfStar from that icon for full-screen, app-like experience.',
+      ],
+    },
+    android: {
+      title: 'Android (Chrome)',
+      steps: [
+        `Open ${siteHost} in Google Chrome.`,
+        'Tap the menu (⋮) in the top-right corner.',
+        'Tap Install app or Add to Home screen (wording may vary by phone).',
+        'Confirm on the prompt — SurfStar is added to your home screen and app drawer.',
+        'On Samsung Internet: tap ≡ menu → Add page to → Home screen.',
+      ],
+    },
+    note: 'If you already installed SurfStar, you can ignore this section.',
+  }
 }
+
+/** @deprecated Use getInstallHelp() for the current site URL. */
+export const INSTALL_HELP = getInstallHelp()
 
 export function trainingGuideLabel(mode: TrainingMode): string {
   return TRAINING_MODE_LABELS[mode]

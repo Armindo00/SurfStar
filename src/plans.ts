@@ -183,10 +183,10 @@ export function formatPlanTotalPrice(plan: SubscriptionPlan, interval: BillingIn
   }).format(amount)
 }
 
+import { getContactEmail } from './config'
+
 export function getTeamAcademyContactEmail(): string {
-  const value = import.meta.env.VITE_TEAM_ACADEMY_CONTACT_EMAIL
-  if (typeof value === 'string' && value.trim()) return value.trim()
-  return 'hello@surf-star.vercel.app'
+  return getContactEmail()
 }
 
 export function isOrganizationPlan(planId: PlanId): boolean {

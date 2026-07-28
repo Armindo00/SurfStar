@@ -2,7 +2,7 @@
 
 Surf statistics platform for coaches and athletes — wave-by-wave sessions, team analytics, heats, multi-coach pairing, and subscriptions.
 
-**Live:** https://surf-star.vercel.app
+**Live:** https://www.surfstar.app
 
 ## Features
 

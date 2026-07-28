@@ -1,4 +1,5 @@
 import { AppLogo } from '../components/AppLogo'
+import { getContactEmail } from '../config'
 import { useApp } from '../AppContext'
 
 type Props = {
@@ -11,7 +12,7 @@ const PRIVACY = {
   sections: [
     {
       heading: 'Who we are',
-      body: 'SurfStar ("we", "us") provides surf coaching statistics software for coaches and athletes. Contact: hello@surf-star.vercel.app',
+      body: `SurfStar ("we", "us") provides surf coaching statistics software for coaches and athletes. Contact: ${getContactEmail()}`,
     },
     {
       heading: 'Data we collect',
@@ -70,7 +71,7 @@ const TERMS = {
     },
     {
       heading: 'Contact',
-      body: 'Questions: hello@surf-star.vercel.app',
+      body: `Questions: ${getContactEmail()}`,
     },
   ],
 }

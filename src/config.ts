@@ -28,3 +28,21 @@ export function isManualPaymentsEnabled(): boolean {
   // Launch default: cloud without Stripe → manual billing until Stripe is configured
   return isCloudEnabled() && !isStripeConfiguredInEnv()
 }
+
+/** Public site URL (landing, PWA install help, legal links). */
+export function getAppSiteUrl(): string {
+  const value = import.meta.env.VITE_APP_URL
+  if (typeof value === 'string' && value.trim()) {
+    return value.trim().replace(/\/$/, '')
+  }
+  return 'https://www.surfstar.app'
+}
+
+/** Public contact inbox for support, billing, and legal notices. */
+export function getContactEmail(): string {
+  const primary = import.meta.env.VITE_CONTACT_EMAIL
+  if (typeof primary === 'string' && primary.trim()) return primary.trim()
+  const legacy = import.meta.env.VITE_TEAM_ACADEMY_CONTACT_EMAIL
+  if (typeof legacy === 'string' && legacy.trim()) return legacy.trim()
+  return 'contact@surfstar.app'
+}

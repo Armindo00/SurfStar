@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     const returnUrl =
       typeof body.return_url === 'string' && body.return_url.startsWith('http')
         ? body.return_url
-        : 'https://surf-star.vercel.app'
+        : 'https://www.surfstar.app'
 
     if (action === 'portal') {
       if (!row.stripe_customer_id) {
