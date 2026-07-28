@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../AppContext'
+import { formatAppTime } from '../dateFormat'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { ComboEditModal } from '../components/ComboEditModal'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
@@ -65,7 +66,7 @@ export function SavedWavesView() {
                     <div>
                       <strong>{getAthlete(w.athleteId)?.name ?? 'Athlete'}</strong>
                       <span>
-                        {new Date(w.startedAt).toLocaleTimeString('en-US', {
+                        {formatAppTime(w.startedAt, {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}{' '}

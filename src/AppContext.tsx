@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { authStore, store } from './store'
+import { formatShortDate } from './dateFormat'
 import { isCloudEnabled } from './config'
 import {
   cloudChangePassword,
@@ -1014,7 +1015,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await refreshSubscription()
     showToast(
       result.currentPeriodEnd
-        ? `Subscription canceled. Access until ${new Date(result.currentPeriodEnd).toLocaleDateString('en-GB')}.`
+        ? `Subscription canceled. Access until ${formatShortDate(result.currentPeriodEnd)}.`
         : 'Subscription canceled.',
       'success',
     )

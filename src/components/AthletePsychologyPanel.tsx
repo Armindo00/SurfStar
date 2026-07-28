@@ -5,6 +5,7 @@ import {
   feedbackHasPsychologySurvey,
 } from '../athletePsychologyStats'
 import { PSYCHOLOGY_SURVEY_QUESTIONS } from '../psychologySurvey'
+import { formatShortDate } from '../dateFormat'
 import { analyticsPeriodLabel, type AnalyticsPeriod } from '../teamAnalyticsStats'
 import { TRAINING_MODE_LABELS, type TrainingSession } from '../types'
 
@@ -13,14 +14,6 @@ type Props = {
   coachId: string
   period: AnalyticsPeriod
   sessions: TrainingSession[]
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
 }
 
 export function AthletePsychologyPanel({ athleteId, coachId, period, sessions }: Props) {
@@ -113,7 +106,7 @@ export function AthletePsychologyPanel({ athleteId, coachId, period, sessions }:
                       {session ? TRAINING_MODE_LABELS[session.mode] : 'Session'}
                       {averageScore !== null ? ` · avg ${averageScore.toFixed(1)}/5` : ''}
                     </strong>
-                    <span className="muted">{formatDate(feedback.submittedAt)}</span>
+                    <span className="muted">{formatShortDate(feedback.submittedAt)}</span>
                   </div>
                   {feedbackHasPsychologySurvey(feedback) ? (
                     <ul className="psych-survey-summary">

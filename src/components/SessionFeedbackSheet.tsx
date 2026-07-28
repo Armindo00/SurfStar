@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../AppContext'
+import { formatShortDate } from '../dateFormat'
 import {
   createDefaultPsychologySurveyScores,
   PSYCHOLOGY_SURVEY_COACH_NOTE_PROMPT,
@@ -9,14 +10,6 @@ import {
 } from '../psychologySurvey'
 import { TRAINING_MODE_LABELS } from '../types'
 import type { TrainingSession } from '../types'
-
-function formatSessionDate(iso: string) {
-  return new Date(iso).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
 
 type Props = {
   session: TrainingSession
@@ -62,7 +55,7 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
 
   const sessionLabel = useMemo(() => {
     const endedAt = session.endedAt ?? session.startedAt
-    return `${TRAINING_MODE_LABELS[session.mode]} · ${formatSessionDate(endedAt)}`
+    return `${TRAINING_MODE_LABELS[session.mode]} · ${formatShortDate(endedAt)}`
   }, [session])
 
   const setScore = (key: PsychologySurveyKey, value: number) => {

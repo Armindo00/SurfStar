@@ -9,7 +9,11 @@ import {
   PSYCHOLOGY_SURVEY_QUESTIONS,
 } from '../../psychologySurvey'
 import { formatHeatTotal } from '../../heatUtils'
-import { resolveSessionSpotName } from '../../sessionHistoryUtils'
+import {
+  formatSessionDate,
+  formatSessionDateTime,
+  resolveSessionSpotName,
+} from '../../sessionHistoryUtils'
 import { LEVELS, type ComboSessionStatsSnapshot, type SessionStatsSnapshot } from '../../sessionStats'
 import {
   ANALYTICS_PERIOD_OPTIONS,
@@ -45,24 +49,6 @@ function RateBar({ value }: { value: number }) {
       <div className="rate-bar__fill" style={{ width: `${Math.min(100, value)}%` }} />
     </div>
   )
-}
-
-function formatSessionDate(iso: string) {
-  return new Date(iso).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-function formatSessionDateTime(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 export type AthletePortalSheetProps = {

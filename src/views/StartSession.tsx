@@ -1,4 +1,5 @@
 import { useApp } from '../AppContext'
+import { formatAppDateTime } from '../dateFormat'
 import { canUseTrainingMode } from '../planUtils'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { HEAT_DURATIONS, TRAINING_MODE_LABELS, type TrainingMode } from '../types'
@@ -45,7 +46,7 @@ export function StartSession() {
   const isCustom = draft.mode === 'custom'
   const selectedTemplate = customTemplates.find((t) => t.id === draft.customTemplateId)
 
-  const startedLabel = new Date().toLocaleString('en-GB', {
+  const startedLabel = formatAppDateTime(new Date(), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',

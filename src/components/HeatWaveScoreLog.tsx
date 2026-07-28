@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../AppContext'
+import { formatAppTime } from '../dateFormat'
 import { formatHeatScore, formatWaveScoreCompact } from '../heatUtils'
 import type { HeatRecord } from '../types'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
@@ -36,7 +37,7 @@ export function HeatWaveScoreLog({ heat }: Props) {
       <ul className="sea-timeline heat-score-log">
         {rows.map((row) => {
           const name = getAthlete(row.athleteId)?.name ?? 'Athlete'
-          const time = new Date(row.at).toLocaleTimeString('en-US', {
+          const time = formatAppTime(row.at, {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',

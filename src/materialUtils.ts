@@ -1,4 +1,5 @@
 import type { AthleteBoard } from './types'
+import { formatShortDate } from './dateFormat'
 
 export function formatBoardSpecs(board: Pick<
   AthleteBoard,
@@ -13,9 +14,5 @@ export function formatBoardSpecs(board: Pick<
 }
 
 export function formatMaterialDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
+  return formatShortDate(iso)
 }

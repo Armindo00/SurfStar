@@ -1,4 +1,5 @@
 import { computeCustomSessionStats } from './customTrainingStats'
+import { formatAppDate, formatAppDateTime } from './dateFormat'
 import { heatAthleteTotals, heatIsFinished } from './heatUtils'
 import {
   computeComboSessionStats,
@@ -35,7 +36,7 @@ export function filterCoachCompletedSessions(
 }
 
 export function formatSessionDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
+  return formatAppDate(iso, {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -44,7 +45,7 @@ export function formatSessionDate(iso: string): string {
 }
 
 export function formatSessionDateTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
+  return formatAppDateTime(iso, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

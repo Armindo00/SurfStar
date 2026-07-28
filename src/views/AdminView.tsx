@@ -15,6 +15,7 @@ import {
   adminUpdateContactMessageStatus,
 } from '../contactApi'
 import { contactKindLabel } from '../contactKinds'
+import { formatAppDateTime } from '../dateFormat'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { SkeletonCard } from '../components/Skeleton'
 import { useToast } from '../components/ToastProvider'
@@ -26,7 +27,7 @@ type AdminTab = 'dashboard' | 'requests' | 'accounts' | 'contact'
 
 function formatDate(value: string | null): string {
   if (!value) return '—'
-  return new Date(value).toLocaleString('en-GB', {
+  return formatAppDateTime(value, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

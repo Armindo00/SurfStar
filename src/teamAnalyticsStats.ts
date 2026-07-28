@@ -5,6 +5,7 @@ import {
   computeAthleteTechnicalStats,
   filterAthleteSessions,
 } from './athleteStats'
+import { formatDayMonth, formatMonthShort, formatWeekdayShort } from './dateFormat'
 import {
   computeComboSessionStats,
   computeSessionStats,
@@ -102,7 +103,7 @@ export function lastNMonthSlots(count: number): { periodKey: string; label: stri
     const d = new Date(now.getFullYear(), now.getMonth() - offset, 1)
     slots.push({
       periodKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
-      label: d.toLocaleDateString(undefined, { month: 'short' }),
+      label: formatMonthShort(d),
     })
   }
 
@@ -124,7 +125,7 @@ function lastNWeekSlots(count: number): EvolutionSlot[] {
     const label =
       weeksAgo === 0
         ? 'This wk'
-        : start.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+        : formatDayMonth(start)
 
     return {
       periodKey: `week-${weeksAgo}`,
@@ -156,7 +157,7 @@ function lastNDaySlots(count: number): EvolutionSlot[] {
         ? 'Today'
         : daysAgo === 1
           ? 'Yesterday'
-          : day.toLocaleDateString(undefined, { weekday: 'short' })
+          : formatWeekdayShort(day)
 
     return {
       periodKey: dayKeyFromIso(start.toISOString()),

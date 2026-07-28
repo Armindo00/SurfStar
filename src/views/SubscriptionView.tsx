@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { formatPlanPriceWithSuffix, getPlan, isApprovalRequiredPlan, isStripeConfigured, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
+import { formatAppDate } from '../dateFormat'
 import { athleteLimitMessage, coachSeatLimitMessage, canManageOrganizationCoaches } from '../planUtils'
 import { cloudOpenBillingPortal, isSubscriptionActive } from '../subscriptionApi'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -141,7 +142,7 @@ export function SubscriptionView() {
             {subscription?.currentPeriodEnd ? (
               <p className="muted">
                 {isCanceled ? 'Access until' : 'Renews'}:{' '}
-                {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', {
+                {formatAppDate(subscription.currentPeriodEnd, {
                   day: '2-digit',
                   month: 'long',
                   year: 'numeric',
