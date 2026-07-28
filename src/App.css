@@ -7277,15 +7277,26 @@ body {
   margin: 0;
   font-size: 0.82rem;
   line-height: 1.45;
+  color: #64748b;
+}
+
+.checkout-page .checkout-notice__footer {
+  color: #94a3b8;
 }
 
 .app-theme-dark .checkout-notice {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(96, 165, 250, 0.35);
+  background: rgba(30, 58, 138, 0.35);
+  border-color: rgba(147, 197, 253, 0.4);
 }
 
 .app-theme-dark .checkout-notice__title {
-  color: #93c5fd;
+  color: #bfdbfe;
+}
+
+.app-theme-dark .checkout-notice__lead,
+.app-theme-dark .checkout-notice__steps,
+.app-theme-dark .checkout-notice__steps li {
+  color: #e2e8f0;
 }
 
 /* ——— Professional polish ——— */
