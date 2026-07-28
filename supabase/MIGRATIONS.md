@@ -19,15 +19,24 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 13 | `add-platform-admin.sql` | Admin panel, block accounts, approve requests |
 | 14 | `add-athlete-equipment-feedback.sql` | Athlete quiver, coach ratings, session wellbeing feedback |
 | 15 | `add-contact-messages.sql` | Contact / feedback form + admin inbox |
+| 16 | `add-manual-payments.sql` | **Manual billing:** payment requests for all plans, admin confirm & activate |
 
 ## Platform admin
 
 1. Run `add-platform-admin.sql` after the migrations above.
-2. First admin email is stored in `app_settings.platform_admin_emails` (default: `armindo.j.costa@hotmail.com`).
-3. Sign in as coach with that email → **Admin** button appears in the app header.
-4. Admin can approve Team Academy requests, activate plans manually, and block/unblock accounts (no Stripe required).
+2. Run `add-manual-payments.sql` for manual billing workflow (recommended at launch).
+3. First admin email is stored in `app_settings.platform_admin_emails` (default: `armindo.j.costa@hotmail.com`).
+4. Sign in as coach with that email → **Admin** button appears in the app header.
+5. Admin can review payment requests, approve, confirm payment, and activate plans manually.
 
-## Production billing
+## Manual billing (initial launch)
+
+1. Set `VITE_MANUAL_PAYMENTS=true` in Vercel / `.env`.
+2. Run `add-manual-payments.sql` in Supabase.
+3. Coaches register → submit payment request → admin approves → sends IBAN/MB Way → confirms payment → account activates.
+4. Admin panel **Payments** tab manages the full lifecycle.
+
+## Production billing (Stripe — later)
 
 1. Deploy Edge Function: `supabase/functions/stripe-webhook`
 2. Set secrets (Stripe + service role + payment link IDs)

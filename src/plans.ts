@@ -1,3 +1,5 @@
+import { isManualPaymentsEnabled } from './config'
+
 export type PlanId = 'team' | 'club' | 'organization'
 
 export type BillingInterval = 'monthly' | 'annual'
@@ -138,6 +140,7 @@ export function getAnnualSavingsLabel(): string {
 }
 
 export function getStripePaymentLink(planId: PlanId, interval: BillingInterval = 'monthly'): string | null {
+  if (isManualPaymentsEnabled()) return null
   if (isApprovalRequiredPlan(planId)) return null
   const intervalSuffix = interval === 'annual' ? '_ANNUAL' : ''
   const envKey = `VITE_STRIPE_LINK_${planId.toUpperCase()}${intervalSuffix}` as const
@@ -155,8 +158,29 @@ export function isApprovalRequiredPlan(planId: PlanId): boolean {
   return Boolean(getPlan(planId).requiresApproval)
 }
 
+export function usesManualPaymentFlow(): boolean {
+  return isManualPaymentsEnabled()
+}
+
 export function getSelfServePlans(): PlanId[] {
   return SUBSCRIPTION_PLANS.filter((p) => !p.requiresApproval).map((p) => p.id)
+}
+
+export function getCheckoutPlans(): PlanId[] {
+  return SUBSCRIPTION_PLANS.map((p) => p.id)
+}
+
+export function getPlanTotalPrice(plan: SubscriptionPlan, interval: BillingInterval): number {
+  return interval === 'annual' ? plan.priceAnnual : plan.priceMonthly
+}
+
+export function formatPlanTotalPrice(plan: SubscriptionPlan, interval: BillingInterval): string {
+  const amount = getPlanTotalPrice(plan, interval)
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency: plan.currency,
+    maximumFractionDigits: 0,
+  }).format(amount)
 }
 
 export function getTeamAcademyContactEmail(): string {

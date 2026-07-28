@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { formatPlanPriceWithSuffix, getPlan, isApprovalRequiredPlan, isStripeConfigured, SUBSCRIPTION_PLANS, type PlanId } from '../plans'
+import { formatPlanPriceWithSuffix, getPlan, isApprovalRequiredPlan, isStripeConfigured, SUBSCRIPTION_PLANS, type PlanId, usesManualPaymentFlow } from '../plans'
 import { formatAppDate } from '../dateFormat'
 import { athleteLimitMessage, coachSeatLimitMessage, canManageOrganizationCoaches } from '../planUtils'
 import { cloudOpenBillingPortal, isSubscriptionActive } from '../subscriptionApi'
@@ -36,6 +36,7 @@ export function SubscriptionView() {
   const activeCount = coachAthletes.filter((a) => !a.blocked).length
   const isActive = isSubscriptionActive(subscription)
   const isCanceled = subscription?.status === 'canceled'
+  const manualFlow = usesManualPaymentFlow()
 
   const submitPassword = async (e: FormEvent) => {
     e.preventDefault()
@@ -163,12 +164,19 @@ export function SubscriptionView() {
       <div className="ss-card stats-panel">
         <h2 className="stats-panel__title">Change plan</h2>
         <p className="muted subscription-manage__hint">
-          {cloudMode && !isStripeConfigured()
-            ? 'Switch anytime. Plans update instantly while Stripe is not active.'
-            : 'Switch anytime. Upgrades apply immediately; downgrades follow your billing cycle when paid via Stripe.'}
-          {' '}
-          Annual billing (2 months free) is available at checkout when you subscribe or upgrade via Stripe.
+          {manualFlow
+            ? 'Manual billing is active. Contact support to change plan or renew your subscription.'
+            : cloudMode && !isStripeConfigured()
+              ? 'Switch anytime. Plans update instantly while Stripe is not active.'
+              : 'Switch anytime. Upgrades apply immediately; downgrades follow your billing cycle when paid via Stripe.'}
+          {!manualFlow ? (
+            <>
+              {' '}
+              Annual billing (2 months free) is available at checkout when you subscribe or upgrade via Stripe.
+            </>
+          ) : null}
         </p>
+        {!manualFlow ? (
         <div className="subscription-plan-picker">
           {SUBSCRIPTION_PLANS.filter((item) => !isApprovalRequiredPlan(item.id)).map((item) => {
             const isCurrent = subscription?.planId === item.id && isActive
@@ -198,6 +206,7 @@ export function SubscriptionView() {
             )
           })}
         </div>
+        ) : null}
         {!canManageOrganizationCoaches(plan?.id ?? 'team') ? (
           <div className="subscription-team-academy-cta">
             <p className="muted">
@@ -211,7 +220,7 @@ export function SubscriptionView() {
             </button>
           </div>
         ) : null}
-        {cloudMode ? (
+        {cloudMode && !manualFlow ? (
           <button
             type="button"
             className="btn btn--gold btn--block"

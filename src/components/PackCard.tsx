@@ -6,6 +6,7 @@ import {
   getVisibleComparisonFeatures,
   isApprovalRequiredPlan,
   planHasComparisonFeature,
+  usesManualPaymentFlow,
   type BillingInterval,
   type PlanId,
 } from '../plans'
@@ -27,6 +28,7 @@ export function PackCard({
 }: Props) {
   const plan = getPlan(planId)
   const approvalRequired = isApprovalRequiredPlan(planId)
+  const manualFlow = usesManualPaymentFlow()
   const visibleFeatures = getVisibleComparisonFeatures(planId)
   const includedFeatures = visibleFeatures.filter((feature) =>
     planHasComparisonFeature(planId, feature),
@@ -46,6 +48,9 @@ export function PackCard({
     >
       {plan.highlighted ? <span className="pack-card__badge">Most popular</span> : null}
       {approvalRequired ? <span className="pack-card__badge pack-card__badge--muted">By approval</span> : null}
+      {manualFlow && !approvalRequired ? (
+        <span className="pack-card__badge pack-card__badge--muted">Manual billing</span>
+      ) : null}
 
       <header className="pack-card__head">
         <button
@@ -69,6 +74,8 @@ export function PackCard({
 
       {approvalRequired ? (
         <p className="pack-card__approval-note muted">For schools, clubs & federations — we review every request.</p>
+      ) : manualFlow ? (
+        <p className="pack-card__approval-note muted">Register, submit a payment request, and we activate after confirmation.</p>
       ) : null}
 
       <ul className="pack-card__features">
@@ -93,7 +100,7 @@ export function PackCard({
         }
         onClick={() => onSelect(planId)}
       >
-        {approvalRequired ? 'Request access' : `Choose ${plan.name}`}
+        {approvalRequired ? 'Request access' : manualFlow ? `Get ${plan.name}` : `Choose ${plan.name}`}
       </button>
 
       {onOpenDetail ? (

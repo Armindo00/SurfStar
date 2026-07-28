@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
   adminActivateCoachPlan,
+  adminActivatePlanRequest,
   adminFetchAccounts,
   adminFetchDashboard,
   adminFetchPlanRequests,
@@ -9,6 +10,7 @@ import {
   type AdminAccount,
   type AdminDashboardStats,
   type AdminPlanRequest,
+  type AdminRequestFilter,
 } from '../adminApi'
 import {
   adminFetchContactMessages,
@@ -19,7 +21,12 @@ import { formatAppDateTime } from '../dateFormat'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { SkeletonCard } from '../components/Skeleton'
 import { useToast } from '../components/ToastProvider'
-import { getPlan, type PlanId } from '../plans'
+import {
+  formatPlanTotalPrice,
+  getPlan,
+  type BillingInterval,
+  type PlanId,
+} from '../plans'
 import { useApp } from '../AppContext'
 import { UNSEEN } from '../unseenDomains'
 import type { ContactMessage, ContactMessageStatus } from '../types'
@@ -46,6 +53,33 @@ function planLabel(planId: string | null): string {
   }
 }
 
+function requestAmount(request: AdminPlanRequest): string {
+  try {
+    return formatPlanTotalPrice(getPlan(request.plan_id), request.billing_interval)
+  } catch {
+    return '—'
+  }
+}
+
+function requestPhase(request: AdminPlanRequest): { label: string; tone: string } {
+  if (request.activated_at) {
+    return { label: 'Activated', tone: 'activated' }
+  }
+  if (request.status === 'pending') {
+    return { label: 'Pending review', tone: 'pending' }
+  }
+  if (request.status === 'approved' && request.payment_status === 'unpaid') {
+    return { label: 'Awaiting payment', tone: 'awaiting' }
+  }
+  if (request.status === 'rejected') {
+    return { label: 'Rejected', tone: 'rejected' }
+  }
+  if (request.status === 'approved') {
+    return { label: 'Approved', tone: 'approved' }
+  }
+  return { label: request.status, tone: 'pending' }
+}
+
 export function AdminView() {
   const { auth, cloudMode, setView, markSeen, countUnseen } = useApp()
   const { showToast } = useToast()
@@ -55,7 +89,7 @@ export function AdminView() {
   const [accounts, setAccounts] = useState<AdminAccount[]>([])
   const [contactMessages, setContactMessages] = useState<ContactMessage[]>([])
   const [newContactCount, setNewContactCount] = useState(0)
-  const [requestFilter, setRequestFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending')
+  const [requestFilter, setRequestFilter] = useState<AdminRequestFilter>('pending')
   const [contactFilter, setContactFilter] = useState<'new' | 'read' | 'resolved' | 'all'>('new')
   const [accountRole, setAccountRole] = useState<'all' | 'treinador' | 'atleta'>('all')
   const [accountSearch, setAccountSearch] = useState('')
@@ -83,7 +117,7 @@ export function AdminView() {
 
   const loadRequests = useCallback(async () => {
     setLoading(true)
-    const result = await adminFetchPlanRequests(requestFilter === 'all' ? null : requestFilter)
+    const result = await adminFetchPlanRequests(requestFilter)
     setLoading(false)
     if (!result.ok) {
       setError(result.error)
@@ -127,10 +161,14 @@ export function AdminView() {
   }, [])
 
   const refreshPendingPlanRequestItems = useCallback(async () => {
-    const result = await adminFetchPlanRequests('pending')
-    if (result.ok) {
-      setPendingPlanRequestItems(result.requests.map((request) => ({ id: request.id })))
-    }
+    const [pending, awaiting] = await Promise.all([
+      adminFetchPlanRequests('pending'),
+      adminFetchPlanRequests('awaiting_payment'),
+    ])
+    const items: { id: string }[] = []
+    if (pending.ok) items.push(...pending.requests.map((r) => ({ id: r.id })))
+    if (awaiting.ok) items.push(...awaiting.requests.map((r) => ({ id: r.id })))
+    setPendingPlanRequestItems(items)
   }, [])
 
   useEffect(() => {
@@ -140,10 +178,13 @@ export function AdminView() {
 
   useEffect(() => {
     if (tab !== 'requests' || requests.length === 0) return
-    const pendingIds = requests
-      .filter((request) => request.status === 'pending')
+    const unseenIds = requests
+      .filter((request) => {
+        const phase = requestPhase(request)
+        return phase.tone === 'pending' || phase.tone === 'awaiting'
+      })
       .map((request) => request.id)
-    if (pendingIds.length > 0) markSeen(UNSEEN.adminPlanRequests, pendingIds)
+    if (unseenIds.length > 0) markSeen(UNSEEN.adminPlanRequests, unseenIds)
   }, [tab, requests, markSeen])
 
   useEffect(() => {
@@ -160,22 +201,47 @@ export function AdminView() {
     void refreshNewContactCount()
   }, [isAdmin, cloudMode, refreshNewContactCount])
 
-  const reviewRequest = async (request: AdminPlanRequest, action: 'approve' | 'reject') => {
+  const runRequestAction = async (
+    request: AdminPlanRequest,
+    action: () => Promise<{ ok: boolean; error?: string; message?: string }>,
+    successFallback: string,
+  ) => {
     setBusyId(request.id)
     setError('')
     try {
-      const result = await adminReviewPlanRequest(request.id, action, notesDraft[request.id])
+      const result = await action()
       if (!result.ok) {
-        setError(result.error)
+        setError(result.error ?? 'Action failed.')
         return
       }
-      showToast(result.message ?? (action === 'approve' ? 'Request approved.' : 'Request rejected.'), 'success')
+      showToast(result.message ?? successFallback, 'success')
       await loadRequests()
       await loadDashboard()
+      await refreshPendingPlanRequestItems()
     } finally {
       setBusyId(null)
     }
   }
+
+  const approveRequest = (request: AdminPlanRequest) =>
+    runRequestAction(request, () => adminReviewPlanRequest(request.id, 'approve', notesDraft[request.id], false), 'Request approved.')
+
+  const rejectRequest = (request: AdminPlanRequest) =>
+    runRequestAction(request, () => adminReviewPlanRequest(request.id, 'reject', notesDraft[request.id]), 'Request rejected.')
+
+  const confirmPayment = (request: AdminPlanRequest) =>
+    runRequestAction(
+      request,
+      () => adminActivatePlanRequest(request.id, 'paid', notesDraft[request.id]),
+      'Payment confirmed and plan activated.',
+    )
+
+  const activateFree = (request: AdminPlanRequest) =>
+    runRequestAction(
+      request,
+      () => adminActivatePlanRequest(request.id, 'waived', notesDraft[request.id]),
+      'Plan activated without payment.',
+    )
 
   const toggleBlocked = async (account: AdminAccount) => {
     setBusyId(account.profile_id)
@@ -194,7 +260,7 @@ export function AdminView() {
     }
   }
 
-  const activatePlan = async (account: AdminAccount, planId: PlanId) => {
+  const activatePlan = async (account: AdminAccount, planId: PlanId, billingInterval: BillingInterval = 'monthly') => {
     setBusyId(account.profile_id)
     setError('')
     try {
@@ -202,6 +268,7 @@ export function AdminView() {
         account.profile_id,
         account.organization_name ?? `${account.name}'s Team`,
         planId,
+        billingInterval,
       )
       if (!result.ok) {
         setError(result.error)
@@ -257,7 +324,7 @@ export function AdminView() {
         {(
           [
             ['dashboard', 'Overview'],
-            ['requests', 'Team Academy'],
+            ['requests', 'Payments'],
             ['accounts', 'Accounts'],
             ['contact', 'Contact'],
           ] as const
@@ -284,41 +351,53 @@ export function AdminView() {
       {loading ? <SkeletonCard lines={5} /> : null}
 
       {!loading && tab === 'dashboard' && stats ? (
-        <div className="admin-stats">
-          <div className="admin-stat-card">
-            <strong>{stats.coaches}</strong>
-            <span>Coaches</span>
+        <>
+          <div className="admin-stats">
+            <div className="admin-stat-card">
+              <strong>{stats.coaches}</strong>
+              <span>Coaches</span>
+            </div>
+            <div className="admin-stat-card">
+              <strong>{stats.athletes}</strong>
+              <span>Athletes</span>
+            </div>
+            <div className="admin-stat-card">
+              <strong>{stats.organizations}</strong>
+              <span>Organizations</span>
+            </div>
+            <div className="admin-stat-card admin-stat-card--highlight">
+              <strong>{stats.pending_requests}</strong>
+              <span>Pending review</span>
+            </div>
+            <div className="admin-stat-card admin-stat-card--highlight">
+              <strong>{stats.awaiting_payment}</strong>
+              <span>Awaiting payment</span>
+            </div>
+            <div className="admin-stat-card">
+              <strong>{stats.blocked_accounts}</strong>
+              <span>Blocked accounts</span>
+            </div>
           </div>
-          <div className="admin-stat-card">
-            <strong>{stats.athletes}</strong>
-            <span>Athletes</span>
-          </div>
-          <div className="admin-stat-card">
-            <strong>{stats.organizations}</strong>
-            <span>Organizations</span>
-          </div>
-          <div className="admin-stat-card admin-stat-card--highlight">
-            <strong>{stats.pending_requests}</strong>
-            <span>Pending requests</span>
-          </div>
-          <div className="admin-stat-card">
-            <strong>{stats.blocked_accounts}</strong>
-            <span>Blocked accounts</span>
-          </div>
-        </div>
+          <p className="muted admin-page__hint">
+            Manual billing workflow: approve the request → send payment details (IBAN / MB Way) → confirm payment to
+            activate the coach account.
+          </p>
+        </>
       ) : null}
 
       {!loading && tab === 'requests' ? (
         <div className="admin-panel">
           <div className="admin-toolbar">
             <label className="field field--pro admin-toolbar__field">
-              <span>Status</span>
+              <span>Filter</span>
               <select
                 value={requestFilter}
-                onChange={(e) => setRequestFilter(e.target.value as typeof requestFilter)}
+                onChange={(e) => setRequestFilter(e.target.value as AdminRequestFilter)}
               >
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
+                <option value="pending">Pending review</option>
+                <option value="awaiting_payment">Awaiting payment</option>
+                <option value="activated">Activated</option>
+                <option value="approved">Approved (all)</option>
                 <option value="rejected">Rejected</option>
                 <option value="all">All</option>
               </select>
@@ -329,71 +408,146 @@ export function AdminView() {
           </div>
 
           {requests.length === 0 ? (
-            <p className="muted">No requests match this filter.</p>
+            <p className="muted">No payment requests match this filter.</p>
           ) : (
             <div className="admin-list">
-              {requests.map((request) => (
-                <article key={request.id} className="admin-card">
-                  <div className="admin-card__head">
-                    <div>
-                      <h2>{request.organization_name}</h2>
-                      <p className="muted">
-                        {request.contact_name} · {request.email}
-                      </p>
-                    </div>
-                    <span className={`admin-badge admin-badge--${request.status}`}>{request.status}</span>
-                  </div>
-                  <dl className="admin-meta">
-                    <div>
-                      <dt>Submitted</dt>
-                      <dd>{formatDate(request.created_at)}</dd>
-                    </div>
-                    <div>
-                      <dt>Coaches</dt>
-                      <dd>{request.coaches_count ?? '—'}</dd>
-                    </div>
-                    <div>
-                      <dt>Account registered</dt>
-                      <dd>{request.coach_registered ? 'Yes' : 'Not yet'}</dd>
-                    </div>
-                  </dl>
-                  {request.message ? <p className="admin-card__message">{request.message}</p> : null}
-                  {request.notes ? <p className="muted admin-card__notes">Notes: {request.notes}</p> : null}
+              {requests.map((request) => {
+                const phase = requestPhase(request)
+                const isOpen = !request.activated_at && request.status !== 'rejected'
 
-                  {request.status === 'pending' ? (
-                    <>
-                      <label className="field field--pro">
-                        <span>Internal notes (optional)</span>
-                        <textarea
-                          rows={2}
-                          value={notesDraft[request.id] ?? ''}
-                          onChange={(e) =>
-                            setNotesDraft((prev) => ({ ...prev, [request.id]: e.target.value }))
-                          }
-                        />
-                      </label>
-                      <div className="admin-card__actions">
-                        <button
-                          type="button"
-                          className="btn btn--gold btn--small"
-                          disabled={busyId === request.id}
-                          onClick={() => void reviewRequest(request, 'approve')}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn--secondary btn--small"
-                          disabled={busyId === request.id}
-                          onClick={() => void reviewRequest(request, 'reject')}
-                        >
-                          Reject
-                        </button>
+                return (
+                  <article key={request.id} className="admin-card">
+                    <div className="admin-card__head">
+                      <div>
+                        <h2>{request.organization_name}</h2>
+                        <p className="muted">
+                          {request.contact_name} · {request.email}
+                        </p>
                       </div>
-                    </>
-                  ) : null}
-                </article>
-              ))}
+                      <span className={`admin-badge admin-badge--${phase.tone}`}>{phase.label}</span>
+                    </div>
+                    <dl className="admin-meta">
+                      <div>
+                        <dt>Plan</dt>
+                        <dd>{planLabel(request.plan_id)}</dd>
+                      </div>
+                      <div>
+                        <dt>Billing</dt>
+                        <dd>{request.billing_interval === 'annual' ? 'Annual' : 'Monthly'}</dd>
+                      </div>
+                      <div>
+                        <dt>Amount</dt>
+                        <dd>{requestAmount(request)}</dd>
+                      </div>
+                      <div>
+                        <dt>Submitted</dt>
+                        <dd>{formatDate(request.created_at)}</dd>
+                      </div>
+                      <div>
+                        <dt>Coaches</dt>
+                        <dd>{request.coaches_count ?? '—'}</dd>
+                      </div>
+                      <div>
+                        <dt>Account registered</dt>
+                        <dd>{request.coach_registered ? 'Yes' : 'Not yet'}</dd>
+                      </div>
+                      {request.reviewed_at ? (
+                        <div>
+                          <dt>Reviewed</dt>
+                          <dd>{formatDate(request.reviewed_at)}</dd>
+                        </div>
+                      ) : null}
+                      {request.paid_at ? (
+                        <div>
+                          <dt>Paid</dt>
+                          <dd>{formatDate(request.paid_at)}</dd>
+                        </div>
+                      ) : null}
+                      {request.activated_at ? (
+                        <div>
+                          <dt>Activated</dt>
+                          <dd>{formatDate(request.activated_at)}</dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                    {request.message ? <p className="admin-card__message">{request.message}</p> : null}
+                    {request.notes ? <p className="muted admin-card__notes">Notes: {request.notes}</p> : null}
+
+                    {isOpen ? (
+                      <>
+                        <label className="field field--pro">
+                          <span>Internal notes (optional)</span>
+                          <textarea
+                            rows={2}
+                            value={notesDraft[request.id] ?? ''}
+                            onChange={(e) =>
+                              setNotesDraft((prev) => ({ ...prev, [request.id]: e.target.value }))
+                            }
+                            placeholder="Payment reference, IBAN sent, etc."
+                          />
+                        </label>
+                        <div className="admin-card__actions">
+                          {request.status === 'pending' ? (
+                            <>
+                              <button
+                                type="button"
+                                className="btn btn--gold btn--small"
+                                disabled={busyId === request.id}
+                                onClick={() => void approveRequest(request)}
+                              >
+                                Approve (await payment)
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn--secondary btn--small"
+                                disabled={busyId === request.id}
+                                onClick={() => void rejectRequest(request)}
+                              >
+                                Reject
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn--ghost btn--small"
+                                disabled={busyId === request.id}
+                                onClick={() => void confirmPayment(request)}
+                              >
+                                Confirm payment & activate
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn--ghost btn--small"
+                                disabled={busyId === request.id}
+                                onClick={() => void activateFree(request)}
+                              >
+                                Activate free
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className="btn btn--gold btn--small"
+                                disabled={busyId === request.id}
+                                onClick={() => void confirmPayment(request)}
+                              >
+                                Confirm payment & activate
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn--ghost btn--small"
+                                disabled={busyId === request.id}
+                                onClick={() => void activateFree(request)}
+                              >
+                                Activate free
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </>
+                    ) : null}
+                  </article>
+                )
+              })}
             </div>
           )}
         </div>

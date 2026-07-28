@@ -1,10 +1,12 @@
 import { getSupabase } from './lib/supabase'
+import type { BillingInterval, PlanId } from './plans'
 
 export type AdminDashboardStats = {
   coaches: number
   athletes: number
   organizations: number
   pending_requests: number
+  awaiting_payment: number
   blocked_accounts: number
 }
 
@@ -16,9 +18,14 @@ export type AdminPlanRequest = {
   coaches_count: number | null
   message: string | null
   status: 'pending' | 'approved' | 'rejected'
+  plan_id: PlanId
+  billing_interval: BillingInterval
+  payment_status: 'unpaid' | 'paid' | 'waived'
   created_at: string
   reviewed_at: string | null
   notes: string | null
+  paid_at: string | null
+  activated_at: string | null
   coach_registered: boolean
 }
 
@@ -58,16 +65,25 @@ export async function adminFetchDashboard(): Promise<
       athletes: data.athletes as number,
       organizations: data.organizations as number,
       pending_requests: data.pending_requests as number,
+      awaiting_payment: (data.awaiting_payment as number | undefined) ?? 0,
       blocked_accounts: data.blocked_accounts as number,
     },
   }
 }
 
+export type AdminRequestFilter =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'awaiting_payment'
+  | 'activated'
+  | 'all'
+
 export async function adminFetchPlanRequests(
-  status?: 'pending' | 'approved' | 'rejected' | null,
+  status?: AdminRequestFilter | null,
 ): Promise<{ ok: true; requests: AdminPlanRequest[] } | { ok: false; error: string }> {
   const { data, error } = await getSupabase().rpc('admin_list_organization_plan_requests', {
-    p_status: status ?? null,
+    p_status: status === 'all' ? null : (status ?? null),
     p_limit: 100,
   })
   if (error || !data?.ok) {
@@ -80,12 +96,13 @@ export async function adminReviewPlanRequest(
   requestId: string,
   action: 'approve' | 'reject',
   notes?: string,
+  activatePlan = false,
 ): Promise<{ ok: true; message?: string } | { ok: false; error: string }> {
   const { data, error } = await getSupabase().rpc('admin_review_organization_plan_request', {
     p_request_id: requestId,
     p_action: action,
     p_notes: notes ?? null,
-    p_activate_plan: action === 'approve',
+    p_activate_plan: activatePlan,
   })
   if (error || !data?.ok) {
     return { ok: false, error: parseError(error, data as RpcResult) }
@@ -98,12 +115,44 @@ export async function adminReviewPlanRequest(
     return { ok: true, message: activation.message }
   }
   if (activation && activation.ok === false && activation.error) {
-    return { ok: true, message: `Request approved but activation failed: ${activation.error}` }
+    return { ok: true, message: `Approved but activation failed: ${activation.error}` }
+  }
+  if (data.message) {
+    return { ok: true, message: data.message as string }
+  }
+  if (action === 'approve' && activatePlan) {
+    return { ok: true, message: 'Plan activated.' }
   }
   if (action === 'approve') {
-    return { ok: true, message: 'Request approved and Team Academy activated.' }
+    return { ok: true, message: 'Request approved. Send payment details, then confirm payment to activate.' }
   }
   return { ok: true }
+}
+
+export async function adminActivatePlanRequest(
+  requestId: string,
+  paymentStatus: 'paid' | 'waived' = 'paid',
+  notes?: string,
+): Promise<{ ok: true; message?: string } | { ok: false; error: string }> {
+  const { data, error } = await getSupabase().rpc('admin_activate_plan_request', {
+    p_request_id: requestId,
+    p_payment_status: paymentStatus,
+    p_notes: notes ?? null,
+  })
+  if (error || !data?.ok) {
+    return { ok: false, error: parseError(error, data as RpcResult) }
+  }
+
+  const activation = data.activation as
+    | { ok?: boolean; pending_signup?: boolean; message?: string }
+    | undefined
+  if (activation?.pending_signup) {
+    return { ok: true, message: activation.message }
+  }
+  if (paymentStatus === 'waived') {
+    return { ok: true, message: 'Plan activated without payment (complimentary).' }
+  }
+  return { ok: true, message: 'Payment confirmed and plan activated.' }
 }
 
 export async function adminFetchAccounts(options?: {
@@ -143,11 +192,13 @@ export async function adminActivateCoachPlan(
   coachId: string,
   orgName: string,
   planId: 'team' | 'club' | 'organization' = 'organization',
+  billingInterval: BillingInterval = 'monthly',
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const { data, error } = await getSupabase().rpc('admin_activate_coach_plan', {
     p_coach_id: coachId,
     p_org_name: orgName,
     p_plan_id: planId,
+    p_billing_interval: billingInterval,
   })
   if (error || !data?.ok) {
     return { ok: false, error: parseError(error, data as RpcResult) }

@@ -1,13 +1,20 @@
 import { useState, type FormEvent } from 'react'
 import { AppLogo } from '../components/AppLogo'
+import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { useApp } from '../AppContext'
 import { isValidEmail, normalizeEmail } from '../passwordUtils'
-import { formatPlanPriceWithSuffix, getPlan } from '../plans'
+import {
+  formatPlanPriceWithSuffix,
+  formatPlanTotalPrice,
+  getPlan,
+  usesManualPaymentFlow,
+} from '../plans'
 import { submitOrganizationPlanRequest } from '../organizationPlanRequestApi'
 
 export function TeamAcademyRequestView() {
-  const { openLanding, openCoachSignIn, cloudMode } = useApp()
+  const { openLanding, openCoachSignIn, cloudMode, selectedBillingInterval, setBillingInterval } = useApp()
   const plan = getPlan('organization')
+  const manualFlow = usesManualPaymentFlow()
 
   const [contactName, setContactName] = useState('')
   const [email, setEmail] = useState('')
@@ -48,6 +55,8 @@ export function TeamAcademyRequestView() {
           organizationName: trimmedOrg,
           coachesCount: coachesCount ? Number(coachesCount) : null,
           message,
+          planId: 'organization',
+          billingInterval: selectedBillingInterval,
         },
         cloudMode,
       )
@@ -71,7 +80,9 @@ export function TeamAcademyRequestView() {
           <h1 className="auth-title">Request received</h1>
           <p className="muted auth-lead">
             Thanks — we&apos;ll review your Team Academy request and email you within 2 business days.
-            Once approved, we activate your organization and send payment details.
+            {manualFlow
+              ? ' Once approved, we send payment details (IBAN / MB Way) and activate your organization after confirmation.'
+              : ' Once approved, we activate your organization and send payment details.'}
           </p>
           <button type="button" className="btn btn--gold btn--block" onClick={openLanding}>
             Back to home
@@ -95,12 +106,14 @@ export function TeamAcademyRequestView() {
         <h1 className="auth-title">Request Team Academy</h1>
         <p className="muted auth-lead">
           For schools, federations, and surf academies. Up to 5 coaches on one shared roster —{' '}
-          {formatPlanPriceWithSuffix(plan, 'monthly')} or {formatPlanPriceWithSuffix(plan, 'annual')} billed
-          annually after approval.
+          {formatPlanPriceWithSuffix(plan, selectedBillingInterval)} or{' '}
+          {formatPlanTotalPrice(plan, 'annual')} billed annually after approval.
         </p>
 
+        <BillingIntervalToggle value={selectedBillingInterval} onChange={setBillingInterval} />
+
         <ul className="checkout-features team-academy-request__features">
-          <li>Manual review — no self-checkout</li>
+          <li>Manual review — payment after approval</li>
           <li>Shared athletes, sessions & analytics for your staff</li>
           <li>Everything included in Coach Premium</li>
         </ul>
@@ -157,7 +170,9 @@ export function TeamAcademyRequestView() {
         </form>
 
         <p className="checkout-note muted">
-          Need a solo plan today? Choose Coach or Coach Premium on the pricing page — instant activation.
+          {manualFlow
+            ? 'All plans use manual billing at launch. Choose Coach or Coach Premium on the pricing page to register first.'
+            : 'Need a solo plan today? Choose Coach or Coach Premium on the pricing page — instant activation.'}
         </p>
       </div>
     </div>
