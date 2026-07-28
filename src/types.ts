@@ -52,6 +52,7 @@ export type AppView =
   | 'organization'
   | 'admin'
   | 'athlete-material'
+  | 'athlete-equipment-reviews'
   | 'coach-athlete-insights'
   | 'contact'
 

@@ -174,6 +174,23 @@ import {
   validateAndNormalizeResume,
 } from './resumeStore'
 
+function mergeSessionFeedback(
+  serverRows: SessionAthleteFeedback[],
+  localRows: SessionAthleteFeedback[],
+): SessionAthleteFeedback[] {
+  const byKey = new Map<string, SessionAthleteFeedback>()
+  const keyFor = (row: SessionAthleteFeedback) => `${row.sessionId}:${row.athleteId}`
+  for (const row of serverRows) byKey.set(keyFor(row), row)
+  for (const row of localRows) {
+    const key = keyFor(row)
+    const existing = byKey.get(key)
+    if (!existing || row.submittedAt >= existing.submittedAt) {
+      byKey.set(key, row)
+    }
+  }
+  return [...byKey.values()].sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
+}
+
 type DraftSession = {
   mode: TrainingMode
   spotId: string
@@ -390,6 +407,9 @@ type AppContextValue = {
     writtenNote: string | null
   }) => Promise<{ ok: true } | { ok: false; error: string }>
   skipSessionFeedback: (sessionId: string) => void
+  openSessionFeedback: (sessionId: string) => void
+  clearPrioritySessionFeedback: () => void
+  priorityFeedbackSessionId: string | null
   submitContactMessage: (input: {
     kind: ContactMessageKind
     name: string
@@ -514,6 +534,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return []
     }
   })
+  const [priorityFeedbackSessionId, setPriorityFeedbackSessionId] = useState<string | null>(null)
   const [view, setView] = useState<AppView>('coach-home')
   const [athletes, setAthletes] = useState<Athlete[]>(() =>
     cloudMode ? [] : migrateLegacyLocalAthletes(store.getAthletes()),
@@ -1030,7 +1051,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setAthleteBoards(bundle.boards)
           setAthleteFins(bundle.fins)
           setEquipmentEvaluations(bundle.evaluations)
-          setSessionAthleteFeedback(bundle.sessionFeedback)
+          setSessionAthleteFeedback((prev) => mergeSessionFeedback(bundle.sessionFeedback, prev))
         } catch (err) {
           console.error('Failed to load athlete equipment', err)
         }
@@ -1039,7 +1060,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAthleteBoards(equipmentStore.getBoards(athleteId))
       setAthleteFins(equipmentStore.getFins(athleteId))
       setEquipmentEvaluations(equipmentStore.getEvaluations(athleteId))
-      setSessionAthleteFeedback(equipmentStore.getSessionFeedback(athleteId))
+      setSessionAthleteFeedback((prev) =>
+        mergeSessionFeedback(equipmentStore.getSessionFeedback(athleteId), prev),
+      )
     },
     [cloudMode],
   )
@@ -3141,6 +3164,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('surfstar-skipped-feedback', JSON.stringify(next))
       return next
     })
+    if (priorityFeedbackSessionId === sessionId) {
+      setPriorityFeedbackSessionId(null)
+    }
+  }, [priorityFeedbackSessionId])
+
+  const openSessionFeedback = useCallback((sessionId: string) => {
+    setPriorityFeedbackSessionId(sessionId)
+    setSkippedFeedbackSessionIds((prev) => {
+      if (!prev.includes(sessionId)) return prev
+      const next = prev.filter((id) => id !== sessionId)
+      localStorage.setItem('surfstar-skipped-feedback', JSON.stringify(next))
+      return next
+    })
+  }, [])
+
+  const clearPrioritySessionFeedback = useCallback(() => {
+    setPriorityFeedbackSessionId(null)
   }, [])
 
   const submitContactMessage = useCallback(
@@ -3331,6 +3371,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       saveEquipmentEvaluation,
       submitSessionFeedback,
       skipSessionFeedback,
+      openSessionFeedback,
+      clearPrioritySessionFeedback,
+      priorityFeedbackSessionId,
       submitContactMessage,
     }),
     [
@@ -3480,6 +3523,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       saveEquipmentEvaluation,
       submitSessionFeedback,
       skipSessionFeedback,
+      openSessionFeedback,
+      clearPrioritySessionFeedback,
+      priorityFeedbackSessionId,
       submitContactMessage,
     ],
   )

@@ -15,6 +15,7 @@ import { LegalPageView } from './views/LegalPageView'
 import { ContactView } from './views/ContactView'
 import { AthletePortal } from './views/AthletePortal'
 import { AthleteMaterialView } from './views/AthleteMaterialView'
+import { AthleteEquipmentReviewsView } from './views/AthleteEquipmentReviewsView'
 import { CoachAthleteInsightsView } from './views/CoachAthleteInsightsView'
 import { CoachHome } from './views/CoachHome'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
@@ -28,6 +29,7 @@ import { ManageCustomTemplates } from './views/ManageCustomTemplates'
 import { OrganizationView } from './views/OrganizationView'
 import { EndSessionSheet } from './components/EndSessionSheet'
 import { LeaveSessionConfirmSheet } from './components/LeaveSessionConfirmSheet'
+import { SessionFeedbackPortal } from './components/SessionFeedbackPortal'
 import { HelpView } from './views/HelpView'
 import { InstallAppBanner } from './components/InstallAppBanner'
 import { SavedWavesView } from './views/SavedWavesView'
@@ -162,10 +164,13 @@ function Shell() {
         <main className="app-main">
           {role === 'atleta' && view === 'help' && <HelpView />}
           {role === 'atleta' && view === 'athlete-material' && <AthleteMaterialView />}
+          {role === 'atleta' && view === 'athlete-equipment-reviews' && <AthleteEquipmentReviewsView />}
           {role === 'atleta' && view === 'contact' && <ContactView variant="app" />}
-          {role === 'atleta' && view !== 'help' && view !== 'athlete-material' && view !== 'contact' && (
-            <AthletePortal />
-          )}
+          {role === 'atleta' &&
+            view !== 'help' &&
+            view !== 'athlete-material' &&
+            view !== 'athlete-equipment-reviews' &&
+            view !== 'contact' && <AthletePortal />}
           {role === 'treinador' && view === 'coach-home' && <CoachHome />}
           {role === 'treinador' && view === 'start-session' && <StartSession />}
           {role === 'treinador' && view === 'select-athletes' && <SelectAthletes />}
@@ -192,6 +197,7 @@ function Shell() {
         </main>
         <EndSessionSheet />
         <LeaveSessionConfirmSheet />
+        <SessionFeedbackPortal />
       </div>
     </div>
   )

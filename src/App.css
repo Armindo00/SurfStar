@@ -3187,6 +3187,86 @@ body {
   font-size: 0.82rem;
 }
 
+.athlete-checkin-list {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.athlete-checkin-list__item {
+  border: 1px solid var(--ss-border);
+  border-radius: var(--radius);
+  background: white;
+  box-shadow: var(--ss-shadow);
+  overflow: hidden;
+}
+
+.athlete-checkin-list__item--pending {
+  border-color: rgba(37, 99, 235, 0.25);
+  background: rgba(37, 99, 235, 0.03);
+}
+
+.athlete-checkin-list__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.athlete-checkin-list__summary p {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+}
+
+.athlete-checkin-list__badge {
+  flex-shrink: 0;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.athlete-checkin-list__badge--done {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
+
+.athlete-checkin-list__badge--pending {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+.athlete-checkin-list__detail,
+.athlete-checkin-list__prompt {
+  padding: 0 1rem 1rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.athlete-checkin-list__prompt {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.athlete-checkin-list__prompt p {
+  margin: 0.85rem 0 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.65rem;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #92400e;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
 .athlete-checkin-timeline {
   list-style: none;
   margin: 0;
@@ -7931,11 +8011,45 @@ a:focus:not(:focus-visible) {
   gap: 1rem;
 }
 
+.evaluation-history__item {
+  padding: 1rem;
+  border: 1px solid var(--ss-border);
+  border-radius: var(--radius);
+  background: white;
+  box-shadow: var(--ss-shadow);
+}
+
+.evaluation-history__coach {
+  display: inline-block;
+  margin-bottom: 0.45rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(201, 169, 98, 0.16);
+  color: #92400e;
+}
+
 .evaluation-history__head {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.35rem;
+}
+
+.evaluation-history__note {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.evaluation-history__note--empty {
+  font-size: 0.84rem;
+  font-style: italic;
+}
+
+.material-section--cta {
+  border-left: 3px solid rgba(201, 169, 98, 0.75);
 }
 
 .feedback-timeline {
@@ -7967,7 +8081,7 @@ a:focus:not(:focus-visible) {
 .session-feedback-overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 10000;
   display: grid;
   place-items: end center;
   padding: 1rem;
@@ -8020,9 +8134,23 @@ a:focus:not(:focus-visible) {
 }
 
 .session-feedback-sheet__actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
   display: grid;
   gap: 0.5rem;
   margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  background: var(--ss-card);
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.session-feedback-sheet__error {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.55rem;
+  background: rgba(127, 29, 29, 0.35);
+  border: 1px solid rgba(252, 165, 165, 0.45);
 }
 
 .psych-survey-list {

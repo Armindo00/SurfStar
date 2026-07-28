@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useApp } from '../AppContext'
 import { formatShortDate } from '../dateFormat'
 import {
@@ -52,17 +53,30 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
   const [writtenNote, setWrittenNote] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const errorRef = useRef<HTMLParagraphElement>(null)
 
   const sessionLabel = useMemo(() => {
     const endedAt = session.endedAt ?? session.startedAt
     return `${TRAINING_MODE_LABELS[session.mode]} · ${formatShortDate(endedAt)}`
   }, [session])
 
+  useEffect(() => {
+    setScores(createDefaultPsychologySurveyScores())
+    setWrittenNote('')
+    setError('')
+    setBusy(false)
+  }, [session.id])
+
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [error])
+
   const setScore = (key: PsychologySurveyKey, value: number) => {
     setScores((current) => ({ ...current, [key]: value }))
   }
 
   const submit = async () => {
+    if (busy) return
     setError('')
     setBusy(true)
     try {
@@ -73,18 +87,32 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
         writtenNote: writtenNote.trim() || null,
       })
       if (!result.ok) {
-        setError(result.error)
+        setError(result.error || 'Could not submit check-in. Please try again.')
         return
       }
       onSubmitted()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not submit check-in. Please try again.')
     } finally {
       setBusy(false)
     }
   }
 
-  return (
-    <div className="session-feedback-overlay" role="dialog" aria-modal="true" aria-labelledby="session-feedback-title">
-      <div className="session-feedback-sheet ss-card">
+  const content = (
+    <div
+      className="session-feedback-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="session-feedback-title"
+    >
+      <form
+        className="session-feedback-sheet ss-card"
+        onSubmit={(event) => {
+          event.preventDefault()
+          void submit()
+        }}
+        onClick={(event) => event.stopPropagation()}
+      >
         <h2 id="session-feedback-title" className="page-title">
           Quick check-in
         </h2>
@@ -114,17 +142,23 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
           />
         </label>
 
-        {error ? <p className="login-error">{error}</p> : null}
+        {error ? (
+          <p ref={errorRef} className="login-error session-feedback-sheet__error" role="alert">
+            {error}
+          </p>
+        ) : null}
 
         <div className="session-feedback-sheet__actions">
-          <button type="button" className="btn btn--primary btn--block" disabled={busy} onClick={() => void submit()}>
+          <button type="submit" className="btn btn--primary btn--block" disabled={busy}>
             {busy ? 'Sending…' : 'Submit check-in'}
           </button>
-          <button type="button" className="btn btn--ghost btn--block" onClick={onSkip}>
+          <button type="button" className="btn btn--ghost btn--block" disabled={busy} onClick={onSkip}>
             Skip for now
           </button>
         </div>
-      </div>
+      </form>
     </div>
   )
+
+  return createPortal(content, document.body)
 }

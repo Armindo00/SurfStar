@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 import type { AthleteBoard, AthleteFin } from '../types'
@@ -53,14 +53,26 @@ function formatBoardSpecs(board: AthleteBoard): string {
 
 export function AthleteMaterialView() {
   const {
+    auth,
     athleteBoards,
     athleteFins,
+    equipmentEvaluations,
     saveAthleteBoard,
     deleteAthleteBoard,
     saveAthleteFin,
     deleteAthleteFin,
+    refreshAthleteEquipment,
     setView,
   } = useApp()
+
+  useEffect(() => {
+    if (auth?.role === 'atleta') void refreshAthleteEquipment(auth.athleteId)
+  }, [auth, refreshAthleteEquipment])
+
+  const equipmentReviewCount =
+    auth?.role === 'atleta'
+      ? equipmentEvaluations.filter((item) => item.athleteId === auth.athleteId).length
+      : 0
 
   const [boardDraft, setBoardDraft] = useState<BoardDraft>(emptyBoard)
   const [finDraft, setFinDraft] = useState<FinDraft>(emptyFin)
@@ -176,6 +188,23 @@ export function AthleteMaterialView() {
   return (
     <div className="ss-flow">
       <ScreenHeader title="My equipment" onBack={() => setView('athlete-portal')} />
+
+      <div className="ss-card material-section material-section--cta">
+        <h2 className="page-title">Coach reviews</h2>
+        <p className="muted">
+          See speed, control and release ratings — and comments — that your coaches left on your
+          boards and fins.
+        </p>
+        <button
+          type="button"
+          className="btn btn--secondary btn--block"
+          onClick={() => setView('athlete-equipment-reviews')}
+        >
+          {equipmentReviewCount > 0
+            ? `View coach reviews (${equipmentReviewCount})`
+            : 'View coach reviews'}
+        </button>
+      </div>
 
       <div className="ss-card material-section">
         <h2 className="page-title">Board quiver</h2>

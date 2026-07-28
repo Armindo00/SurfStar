@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { SessionFeedbackSheet } from '../components/SessionFeedbackSheet'
 import { useApp } from '../AppContext'
 import {
   buildAthleteHeatDetails,
@@ -31,7 +30,7 @@ function RateBar({ value }: { value: number }) {
 }
 
 type DashboardAction = {
-  id: AthletePortalSheet | 'material'
+  id: AthletePortalSheet | 'material' | 'equipment-reviews'
   label: string
   description: string
   icon: string
@@ -51,9 +50,9 @@ export function AthletePortal() {
     refreshPairingData,
     setView,
     pendingSessionFeedback,
-    skipSessionFeedback,
-    refreshAthleteEquipment,
+    equipmentEvaluations,
     openContact,
+    refreshAthleteEquipment,
   } = useApp()
   const [pairingBusy, setPairingBusy] = useState<string | null>(null)
   const [pairingError, setPairingError] = useState('')
@@ -173,6 +172,11 @@ export function AthletePortal() {
 
   const pendingCheckins = pendingSessionFeedback.length
 
+  const equipmentReviewCount = useMemo(
+    () => equipmentEvaluations.filter((item) => item.athleteId === athleteId).length,
+    [equipmentEvaluations, athleteId],
+  )
+
   const sharingCoachCount = activeLinks.filter((link) =>
     Object.values(link.shareSettings).some(Boolean),
   ).length
@@ -183,6 +187,16 @@ export function AthletePortal() {
       label: 'Equipment management',
       description: 'Boards, fins and setup',
       icon: '⇄',
+    },
+    {
+      id: 'equipment-reviews',
+      label: 'Coach equipment reviews',
+      description:
+        equipmentReviewCount > 0
+          ? `${equipmentReviewCount} review${equipmentReviewCount === 1 ? '' : 's'} from your coaches`
+          : 'Ratings and comments on your gear',
+      icon: '★',
+      badge: equipmentReviewCount || undefined,
     },
     {
       id: 'coaches',
@@ -266,6 +280,10 @@ export function AthletePortal() {
       setView('athlete-material')
       return
     }
+    if (id === 'equipment-reviews') {
+      setView('athlete-equipment-reviews')
+      return
+    }
     setSheet(id)
   }
 
@@ -280,13 +298,6 @@ export function AthletePortal() {
   if (sheet) {
     return (
       <>
-        {sheet === 'checkins' && pendingSessionFeedback[0] ? (
-          <SessionFeedbackSheet
-            session={pendingSessionFeedback[0]}
-            onSubmitted={() => {}}
-            onSkip={() => skipSessionFeedback(pendingSessionFeedback[0].id)}
-          />
-        ) : null}
         <AthletePortalSheetView
           sheet={sheet}
           onClose={() => setSheet(null)}
@@ -338,14 +349,6 @@ export function AthletePortal() {
 
   return (
     <div className="dashboard athlete-portal">
-      {pendingSessionFeedback[0] ? (
-        <SessionFeedbackSheet
-          session={pendingSessionFeedback[0]}
-          onSubmitted={() => {}}
-          onSkip={() => skipSessionFeedback(pendingSessionFeedback[0].id)}
-        />
-      ) : null}
-
       <header className="dashboard__hero">
         <p className="dashboard__hello">Hello,</p>
         <h1 className="dashboard__name">{auth.name}</h1>

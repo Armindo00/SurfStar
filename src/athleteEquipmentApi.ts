@@ -268,7 +268,7 @@ export async function cloudSubmitSessionFeedback(input: {
         coach_id: input.coachId,
         board_id: null,
         fin_id: null,
-        mental_state: null,
+        mental_state: 'neutral',
         psychology_scores: input.psychologyScores,
         written_note: input.writtenNote?.trim() || null,
         submitted_at: new Date().toISOString(),

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useApp } from '../../AppContext'
 import { EvolutionLineChart } from '../../components/EvolutionLineChart'
 import { ScreenHeader } from '../../components/ScreenHeader'
 import { SideCompareChart } from '../../components/SideCompareChart'
@@ -8,6 +9,7 @@ import {
   averagePsychologyScore,
   PSYCHOLOGY_SURVEY_QUESTIONS,
 } from '../../psychologySurvey'
+import { coachIdsWithPsychologyCheckins } from '../../psychologyCheckins'
 import { formatHeatTotal } from '../../heatUtils'
 import {
   formatSessionDate,
@@ -319,88 +321,136 @@ function CheckinsSheet({
   athleteId,
   mySessions,
   sessionAthleteFeedback,
-  pendingCheckins,
-  pendingSessions,
+  activeLinks,
   coachName,
 }: AthletePortalSheetProps) {
-  const sessionMap = useMemo(
-    () => new Map(mySessions.map((session) => [session.id, session])),
-    [mySessions],
+  const { openSessionFeedback } = useApp()
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null)
+
+  const psychologyCoachIds = useMemo(
+    () => coachIdsWithPsychologyCheckins(activeLinks),
+    [activeLinks],
   )
 
-  const timeline = useMemo(
+  const feedbackBySessionId = useMemo(() => {
+    const map = new Map<string, SessionAthleteFeedback>()
+    for (const row of sessionAthleteFeedback) {
+      if (row.athleteId === athleteId && feedbackHasPsychologySurvey(row)) {
+        map.set(row.sessionId, row)
+      }
+    }
+    return map
+  }, [sessionAthleteFeedback, athleteId])
+
+  const checkinSessions = useMemo(
     () =>
-      sessionAthleteFeedback
-        .filter((row) => row.athleteId === athleteId && feedbackHasPsychologySurvey(row))
-        .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)),
-    [sessionAthleteFeedback, athleteId],
+      mySessions
+        .filter(
+          (session) => Boolean(session.endedAt) && psychologyCoachIds.has(session.coachId),
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.endedAt ?? b.startedAt).getTime() -
+            new Date(a.endedAt ?? a.startedAt).getTime(),
+        )
+        .map((session) => ({
+          session,
+          feedback: feedbackBySessionId.get(session.id) ?? null,
+          completed: feedbackBySessionId.has(session.id),
+        })),
+    [mySessions, psychologyCoachIds, feedbackBySessionId],
   )
+
+  const pendingCount = checkinSessions.filter((row) => !row.completed).length
+
+  const toggleSession = (sessionId: string) => {
+    setExpandedSessionId((current) => (current === sessionId ? null : sessionId))
+  }
 
   return (
     <div className="athlete-sheet">
       <ScreenHeader title="Mental check-ins" onBack={onClose} />
       <div className="athlete-sheet__body">
-        {pendingSessions.length > 0 ? (
+        {checkinSessions.length > 0 ? (
           <div className="ss-card athlete-sheet__block">
-            <h2 className="page-title">Pending responses</h2>
+            <h2 className="page-title">Training sessions</h2>
             <p className="muted stats-panel__sub">
-              {pendingCheckins} check-in{pendingCheckins === 1 ? '' : 's'} waiting — each is linked to
-              the training date below. The form opens on your dashboard when you return.
+              {pendingCount > 0
+                ? `${pendingCount} check-in${pendingCount === 1 ? '' : 's'} still waiting. Tap a session to view details or complete it.`
+                : 'Tap a completed session to review your answers.'}
             </p>
-            <ul className="athlete-checkin-pending">
-              {pendingSessions.map((session) => {
+            <ul className="athlete-checkin-list">
+              {checkinSessions.map(({ session, feedback, completed }) => {
                 const sessionDate = session.endedAt ?? session.startedAt
+                const expanded = expandedSessionId === session.id
                 return (
-                  <li key={session.id} className="athlete-checkin-pending__item">
-                    <div>
-                      <strong>{TRAINING_MODE_LABELS[session.mode]}</strong>
-                      <p className="muted">
-                        {formatSessionDateTime(sessionDate)} · {coachName(session.coachId)}
-                      </p>
-                    </div>
-                    <span className="athlete-portal__nav-badge">New</span>
+                  <li
+                    key={session.id}
+                    className={
+                      completed
+                        ? 'athlete-checkin-list__item athlete-checkin-list__item--done'
+                        : 'athlete-checkin-list__item athlete-checkin-list__item--pending'
+                    }
+                  >
+                    <button
+                      type="button"
+                      className="athlete-checkin-list__row"
+                      aria-expanded={expanded}
+                      onClick={() => toggleSession(session.id)}
+                    >
+                      <div className="athlete-checkin-list__summary">
+                        <strong>{TRAINING_MODE_LABELS[session.mode]}</strong>
+                        <p className="muted">
+                          {formatSessionDateTime(sessionDate)} · {coachName(session.coachId)}
+                        </p>
+                      </div>
+                      {completed && feedback ? (
+                        <span className="athlete-checkin-list__badge athlete-checkin-list__badge--done">
+                          {averagePsychologyScore(feedback.psychologyScores!).toFixed(1)}/5
+                        </span>
+                      ) : (
+                        <span className="athlete-checkin-list__badge athlete-checkin-list__badge--pending">
+                          Pending
+                        </span>
+                      )}
+                    </button>
+
+                    {expanded && completed && feedback ? (
+                      <div className="athlete-checkin-list__detail">
+                        <ul className="athlete-checkin-timeline__scores">
+                          {PSYCHOLOGY_SURVEY_QUESTIONS.map((question) => (
+                            <li key={question.id}>
+                              <span>{question.label}</span>
+                              <strong>{feedback.psychologyScores![question.id]}/5</strong>
+                            </li>
+                          ))}
+                        </ul>
+                        {feedback.writtenNote?.trim() ? (
+                          <p className="athlete-checkin-timeline__note">{feedback.writtenNote}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {expanded && !completed ? (
+                      <div className="athlete-checkin-list__prompt" role="status">
+                        <p>
+                          You have not completed this check-in yet. It only takes a minute and helps
+                          your coach support you between sessions.
+                        </p>
+                        <button
+                          type="button"
+                          className="btn btn--primary btn--block"
+                          onClick={() => openSessionFeedback(session.id)}
+                        >
+                          Fill in check-in now
+                        </button>
+                      </div>
+                    ) : null}
                   </li>
                 )
               })}
             </ul>
           </div>
-        ) : null}
-
-        {timeline.length > 0 ? (
-          <ul className="athlete-checkin-timeline">
-            {timeline.map((entry) => {
-              const session = sessionMap.get(entry.sessionId)
-              const sessionDate = session?.endedAt ?? session?.startedAt ?? entry.submittedAt
-              return (
-                <li key={entry.id} className="athlete-checkin-timeline__item">
-                  <header className="athlete-checkin-timeline__head">
-                    <div>
-                      <strong>
-                        {session ? TRAINING_MODE_LABELS[session.mode] : 'Training session'}
-                      </strong>
-                      <p className="muted">
-                        {formatSessionDateTime(sessionDate)} · {coachName(entry.coachId)}
-                      </p>
-                    </div>
-                    <span className="athlete-checkin-timeline__score">
-                      {averagePsychologyScore(entry.psychologyScores!).toFixed(1)}/5
-                    </span>
-                  </header>
-                  <ul className="athlete-checkin-timeline__scores">
-                    {PSYCHOLOGY_SURVEY_QUESTIONS.map((question) => (
-                      <li key={question.id}>
-                        <span>{question.label}</span>
-                        <strong>{entry.psychologyScores![question.id]}/5</strong>
-                      </li>
-                    ))}
-                  </ul>
-                  {entry.writtenNote?.trim() ? (
-                    <p className="athlete-checkin-timeline__note">{entry.writtenNote}</p>
-                  ) : null}
-                </li>
-              )
-            })}
-          </ul>
         ) : (
           <div className="ss-card athlete-sheet__block">
             <p className="muted">
