@@ -105,7 +105,14 @@ import {
 } from './heatUtils'
 import { buildInitialChampionshipHeats, isValidChampionshipField, processChampionshipRoundAdvance } from './championshipUtils'
 import type { BillingInterval, PlanId } from './plans'
-import { getPlan, getStripePaymentLink, isApprovalRequiredPlan, isStripeConfigured } from './plans'
+import {
+  getPlan,
+  getStripePaymentLink,
+  isApprovalRequiredPlan,
+  isStripeConfigured,
+  usesManualPaymentFlow,
+} from './plans'
+import { submitOrganizationPlanRequest } from './organizationPlanRequestApi'
 import {
   canAccessTeamAnalytics,
   canAddAthlete,
@@ -869,6 +876,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!auth || auth.role !== 'treinador') {
         return { ok: false as const, error: 'Sign in as coach first.' }
     }
+    if (usesManualPaymentFlow()) {
+      return {
+        ok: false as const,
+        error: 'Manual billing is active. Submit a payment request and wait for admin approval.',
+      }
+    }
     const planId = selectedPlanId ?? subscription?.planId ?? 'team'
     if (isApprovalRequiredPlan(planId)) {
       return {
@@ -895,6 +908,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const activateDemoSubscription = useCallback(async () => {
     if (!auth || auth.role !== 'treinador') {
         return { ok: false as const, error: 'Sign in as coach first.' }
+    }
+    if (cloudMode && usesManualPaymentFlow()) {
+      return {
+        ok: false as const,
+        error: 'Your account must be approved by an administrator before you can access the app.',
+      }
     }
     const planId = selectedPlanId ?? subscription?.planId ?? 'team'
     if (isApprovalRequiredPlan(planId)) {
@@ -929,6 +948,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async (planId: PlanId) => {
       if (!auth || auth.role !== 'treinador') {
         return { ok: false as const, error: 'Sign in as coach first.' }
+      }
+
+      if (cloudMode && usesManualPaymentFlow()) {
+        return {
+          ok: false as const,
+          error: 'Plan changes are handled manually. Contact support or use the admin panel.',
+        }
       }
 
       if (isApprovalRequiredPlan(planId)) {
@@ -1339,12 +1365,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const result = await cloudRegisterCoach(name, email, password)
         if (!result.ok) return result
         setAuth(result.session)
-        setView('coach-home')
-        void applyCloudSessionData(result.session)
-          .then(() => syncCoachSubscription(result.session))
-          .catch((err) => {
+        try {
+          await applyCloudSessionData(result.session)
+          await syncCoachSubscription(result.session)
+
+          if (usesManualPaymentFlow() && result.session.role === 'treinador') {
+            const planId = selectedPlanId ?? 'team'
+            if (!isApprovalRequiredPlan(planId)) {
+              await submitOrganizationPlanRequest(
+                {
+                  contactName: result.session.name,
+                  email: result.session.email,
+                  organizationName: result.session.organizationName || `${result.session.name}'s Team`,
+                  planId,
+                  billingInterval: selectedBillingInterval,
+                  message: 'Payment request auto-submitted on coach registration.',
+                },
+                true,
+              )
+            }
+          }
+        } catch (err) {
           console.error('Failed to load coach data after registration', err)
-        })
+        }
         return { ok: true as const }
       }
 
@@ -1381,7 +1424,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await refreshOrganizationMembers()
       return { ok: true as const }
     },
-    [applyCloudSessionData, cloudMode, refreshOrganizationMembers, selectedPlanId, syncCoachSubscription],
+    [
+      applyCloudSessionData,
+      cloudMode,
+      refreshOrganizationMembers,
+      selectedBillingInterval,
+      selectedPlanId,
+      syncCoachSubscription,
+    ],
   )
 
   const registerAthlete = useCallback(

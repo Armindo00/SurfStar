@@ -7,8 +7,24 @@ export function isDemoSubscriptionEnabled(): boolean {
   return value === 'true' || value === true
 }
 
+function isStripeConfiguredInEnv(): boolean {
+  const keys = [
+    'VITE_STRIPE_LINK_TEAM',
+    'VITE_STRIPE_LINK_CLUB',
+    'VITE_STRIPE_LINK_TEAM_ANNUAL',
+    'VITE_STRIPE_LINK_CLUB_ANNUAL',
+  ] as const
+  return keys.some((key) => {
+    const value = import.meta.env[key]
+    return typeof value === 'string' && value.trim().length > 0
+  })
+}
+
 /** All coach plans go through admin approval + manual payment (no Stripe checkout). */
 export function isManualPaymentsEnabled(): boolean {
   const value = import.meta.env.VITE_MANUAL_PAYMENTS
-  return value === 'true' || value === true
+  if (value === 'false' || value === false) return false
+  if (value === 'true' || value === true) return true
+  // Launch default: cloud without Stripe → manual billing until Stripe is configured
+  return isCloudEnabled() && !isStripeConfiguredInEnv()
 }

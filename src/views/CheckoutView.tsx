@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   formatPlanPrice,
   formatPlanPriceSuffix,
@@ -48,6 +48,7 @@ export function CheckoutView() {
   const [error, setError] = useState('')
   const [awaitingPayment, setAwaitingPayment] = useState(false)
   const [openRequest, setOpenRequest] = useState<CoachPlanRequest | null>(null)
+  const autoSubmitAttempted = useRef(false)
 
   const rawPlanId = selectedPlanId ?? subscription?.planId ?? 'team'
   const planId = isApprovalRequiredPlan(rawPlanId) ? 'team' : rawPlanId
@@ -68,6 +69,57 @@ export function CheckoutView() {
   useEffect(() => {
     void loadOpenRequest()
   }, [loadOpenRequest])
+
+  useEffect(() => {
+    if (!manualFlow || !cloudMode || !auth || auth.role !== 'treinador') return
+    if (autoSubmitAttempted.current || approvalBlocked) return
+
+    autoSubmitAttempted.current = true
+    void (async () => {
+      setBusy(true)
+      try {
+        const existing = await fetchCoachPlanRequest()
+        if (existing.ok && existing.request) {
+          setOpenRequest(existing.request)
+          return
+        }
+
+        await submitOrganizationPlanRequest(
+          {
+            contactName: auth.name,
+            email: auth.email,
+            organizationName: auth.organizationName || `${auth.name}'s Team`,
+            planId: planId as PlanId,
+            billingInterval: selectedBillingInterval,
+            message: 'Payment request submitted while waiting for admin approval.',
+          },
+          cloudMode,
+        )
+        await loadOpenRequest()
+      } finally {
+        setBusy(false)
+      }
+    })()
+  }, [
+    approvalBlocked,
+    auth,
+    cloudMode,
+    loadOpenRequest,
+    manualFlow,
+    planId,
+    selectedBillingInterval,
+  ])
+
+  useEffect(() => {
+    if (!manualFlow || !openRequest || openRequest.activated_at || isActive) return
+
+    const timer = window.setInterval(() => {
+      void loadOpenRequest()
+      void refreshSubscription()
+    }, 5000)
+
+    return () => window.clearInterval(timer)
+  }, [manualFlow, openRequest, isActive, loadOpenRequest, refreshSubscription])
 
   useEffect(() => {
     if (manualFlow) return
@@ -181,11 +233,11 @@ export function CheckoutView() {
         <div className="checkout-brand">
           <AppLogo size="lg" />
           <div>
-            <h1>{manualFlow ? 'Request plan access' : 'Activate subscription'}</h1>
+            <h1>{manualFlow ? 'Waiting for admin approval' : 'Activate subscription'}</h1>
             <p className="muted">
               Hi {auth?.name ?? 'coach'} —{' '}
               {manualFlow
-                ? 'submit your payment request and we will activate your account after confirmation.'
+                ? 'your account is created but access is locked until an administrator approves your payment request.'
                 : 'confirm your plan to enter the app.'}
             </p>
           </div>
@@ -254,7 +306,7 @@ export function CheckoutView() {
 
             {manualFlow && openRequest ? (
               <div className="checkout-pending checkout-pending--manual">
-                <p className="checkout-pending__title">Payment request submitted</p>
+                <p className="checkout-pending__title">Access pending</p>
                 <dl className="checkout-request-meta">
                   <div>
                     <dt>Status</dt>
@@ -275,29 +327,28 @@ export function CheckoutView() {
                 </dl>
                 <p className="muted">
                   {openRequest.status === 'pending'
-                    ? 'We will review your request and email you payment details (IBAN / MB Way) within 2 business days.'
+                    ? 'Your request is in the admin queue. We will review it and send payment details within 2 business days. This page refreshes automatically once your access is activated.'
                     : openRequest.status === 'approved' && openRequest.payment_status === 'unpaid'
-                      ? 'Your request was approved. Complete payment using the details we sent, then we activate your account.'
-                      : 'Your request is being processed.'}
+                      ? 'Approved — complete payment using the details we sent. Your account unlocks automatically after the administrator confirms payment.'
+                      : 'Your request is being processed. This page refreshes automatically.'}
                 </p>
                 <button
                   type="button"
                   className="btn btn--secondary btn--block"
-                  onClick={() => void loadOpenRequest()}
+                  onClick={() => {
+                    void loadOpenRequest()
+                    void refreshSubscription()
+                  }}
                   disabled={busy}
                 >
-                  Refresh status
+                  Check now
                 </button>
               </div>
             ) : manualFlow ? (
-              <button
-                type="button"
-                className="btn btn--gold btn--block btn--lg"
-                onClick={() => void handlePay()}
-                disabled={busy}
-              >
-                {busy ? 'Submitting…' : 'Submit payment request'}
-              </button>
+              <div className="checkout-pending checkout-pending--manual">
+                <p className="checkout-pending__title">Submitting your request…</p>
+                <p className="muted">Please wait while we register your payment request with the administrator.</p>
+              </div>
             ) : isPending || awaitingPayment ? (
               <div className="checkout-pending">
                 <p className="checkout-pending__title">Waiting for payment confirmation…</p>
