@@ -3099,7 +3099,8 @@ body {
   font-weight: 400;
 }
 
-.athlete-portal__nav-badge {
+.athlete-portal__nav-badge,
+.nav-badge {
   flex-shrink: 0;
   min-width: 1.35rem;
   padding: 0.2rem 0.5rem;

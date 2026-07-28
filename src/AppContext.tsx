@@ -173,6 +173,7 @@ import {
   saveResumeState,
   validateAndNormalizeResume,
 } from './resumeStore'
+import { countUnseen, markSeenIds } from './seenStore'
 
 function mergeSessionFeedback(
   serverRows: SessionAthleteFeedback[],
@@ -410,6 +411,8 @@ type AppContextValue = {
   openSessionFeedback: (sessionId: string) => void
   clearPrioritySessionFeedback: () => void
   priorityFeedbackSessionId: string | null
+  markSeen: (domain: string, itemIds: string[]) => void
+  countUnseen: (domain: string, items: { id: string }[]) => number
   submitContactMessage: (input: {
     kind: ContactMessageKind
     name: string
@@ -535,6 +538,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   })
   const [priorityFeedbackSessionId, setPriorityFeedbackSessionId] = useState<string | null>(null)
+  const [seenRevision, setSeenRevision] = useState(0)
   const [view, setView] = useState<AppView>('coach-home')
   const [athletes, setAthletes] = useState<Athlete[]>(() =>
     cloudMode ? [] : migrateLegacyLocalAthletes(store.getAthletes()),
@@ -3183,6 +3187,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPriorityFeedbackSessionId(null)
   }, [])
 
+  const markSeen = useCallback(
+    (domain: string, itemIds: string[]) => {
+      if (!auth) return
+      markSeenIds(resumeUserKey(auth), domain, itemIds)
+      setSeenRevision((value) => value + 1)
+    },
+    [auth],
+  )
+
+  const countUnseenItems = useCallback(
+    (domain: string, items: { id: string }[]) => {
+      if (!auth) return 0
+      void seenRevision
+      return countUnseen(items, resumeUserKey(auth), domain)
+    },
+    [auth, seenRevision],
+  )
+
   const submitContactMessage = useCallback(
     async (input: {
       kind: ContactMessageKind
@@ -3374,6 +3396,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openSessionFeedback,
       clearPrioritySessionFeedback,
       priorityFeedbackSessionId,
+      markSeen,
+      countUnseen: countUnseenItems,
       submitContactMessage,
     }),
     [
@@ -3526,6 +3550,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openSessionFeedback,
       clearPrioritySessionFeedback,
       priorityFeedbackSessionId,
+      markSeen,
+      countUnseenItems,
+      seenRevision,
       submitContactMessage,
     ],
   )

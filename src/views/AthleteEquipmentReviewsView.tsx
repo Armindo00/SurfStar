@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { AthleteEquipmentReviewsList } from '../components/AthleteEquipmentReviewsList'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
+import { UNSEEN } from '../unseenDomains'
 
 export function AthleteEquipmentReviewsView() {
   const {
@@ -11,6 +12,7 @@ export function AthleteEquipmentReviewsView() {
     athleteLinks,
     equipmentEvaluations,
     refreshAthleteEquipment,
+    markSeen,
     setView,
   } = useApp()
 
@@ -19,6 +21,14 @@ export function AthleteEquipmentReviewsView() {
   }, [auth, refreshAthleteEquipment])
 
   const athleteId = auth?.role === 'atleta' ? auth.athleteId : ''
+
+  useEffect(() => {
+    if (auth?.role !== 'atleta') return
+    const reviewIds = equipmentEvaluations
+      .filter((item) => item.athleteId === athleteId)
+      .map((item) => item.id)
+    markSeen(UNSEEN.athleteEquipmentReviews, reviewIds)
+  }, [athleteId, auth, equipmentEvaluations, markSeen])
 
   return (
     <div className="ss-flow">

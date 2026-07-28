@@ -3,6 +3,7 @@ import { useApp } from '../AppContext'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { canAddCoach, canManageOrganizationCoaches, coachSeatLimitMessage } from '../planUtils'
 import { getPlan } from '../plans'
+import { UNSEEN } from '../unseenDomains'
 
 export function OrganizationView() {
   const {
@@ -15,6 +16,7 @@ export function OrganizationView() {
     updateOrganizationName,
     openTeamAcademyRequest,
     setView,
+    markSeen,
   } = useApp()
 
   const [inviteEmail, setInviteEmail] = useState('')
@@ -32,6 +34,14 @@ export function OrganizationView() {
   useEffect(() => {
     void refreshOrganizationMembers()
   }, [refreshOrganizationMembers])
+
+  useEffect(() => {
+    const ids = organizationMembers
+      .filter((member) => member.status === 'pending')
+      .map((member) => member.id)
+    if (ids.length === 0) return
+    markSeen(UNSEEN.coachOrgInvites, ids)
+  }, [markSeen, organizationMembers])
 
   useEffect(() => {
     if (auth?.role === 'treinador') {

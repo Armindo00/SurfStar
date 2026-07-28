@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
+import { UNSEEN } from '../unseenDomains'
 import type { AthleteBoard, AthleteFin } from '../types'
 
 type BoardDraft = {
@@ -62,6 +63,7 @@ export function AthleteMaterialView() {
     saveAthleteFin,
     deleteAthleteFin,
     refreshAthleteEquipment,
+    countUnseen,
     setView,
   } = useApp()
 
@@ -69,10 +71,15 @@ export function AthleteMaterialView() {
     if (auth?.role === 'atleta') void refreshAthleteEquipment(auth.athleteId)
   }, [auth, refreshAthleteEquipment])
 
-  const equipmentReviewCount =
-    auth?.role === 'atleta'
-      ? equipmentEvaluations.filter((item) => item.athleteId === auth.athleteId).length
-      : 0
+  const equipmentReviewItems = useMemo(
+    () =>
+      auth?.role === 'atleta'
+        ? equipmentEvaluations.filter((item) => item.athleteId === auth.athleteId)
+        : [],
+    [auth, equipmentEvaluations],
+  )
+
+  const unseenEquipmentReviews = countUnseen(UNSEEN.athleteEquipmentReviews, equipmentReviewItems)
 
   const [boardDraft, setBoardDraft] = useState<BoardDraft>(emptyBoard)
   const [finDraft, setFinDraft] = useState<FinDraft>(emptyFin)
@@ -200,9 +207,11 @@ export function AthleteMaterialView() {
           className="btn btn--secondary btn--block"
           onClick={() => setView('athlete-equipment-reviews')}
         >
-          {equipmentReviewCount > 0
-            ? `View coach reviews (${equipmentReviewCount})`
-            : 'View coach reviews'}
+          {unseenEquipmentReviews > 0
+            ? `View coach reviews (${unseenEquipmentReviews} new)`
+            : equipmentReviewItems.length > 0
+              ? `View coach reviews (${equipmentReviewItems.length})`
+              : 'View coach reviews'}
         </button>
       </div>
 

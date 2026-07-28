@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
+import { NavBadge } from '../components/NavBadge'
 import { useApp } from '../AppContext'
+import { UNSEEN } from '../unseenDomains'
 import {
   buildAthleteHeatDetails,
   buildAthleteSessionSummaries,
@@ -53,6 +55,8 @@ export function AthletePortal() {
     equipmentEvaluations,
     openContact,
     refreshAthleteEquipment,
+    markSeen,
+    countUnseen,
   } = useApp()
   const [pairingBusy, setPairingBusy] = useState<string | null>(null)
   const [pairingError, setPairingError] = useState('')
@@ -172,10 +176,32 @@ export function AthletePortal() {
 
   const pendingCheckins = pendingSessionFeedback.length
 
-  const equipmentReviewCount = useMemo(
-    () => equipmentEvaluations.filter((item) => item.athleteId === athleteId).length,
+  const equipmentReviewItems = useMemo(
+    () => equipmentEvaluations.filter((item) => item.athleteId === athleteId),
     [equipmentEvaluations, athleteId],
   )
+
+  const heatItems = useMemo(
+    () => heatDetails.map((heat) => ({ id: `${heat.sessionId}:${heat.heatLabel}` })),
+    [heatDetails],
+  )
+
+  const sessionHistoryItems = useMemo(
+    () => sessionSummaries.map((row) => ({ id: row.session.id })),
+    [sessionSummaries],
+  )
+
+  const unseenEquipmentReviews = countUnseen(UNSEEN.athleteEquipmentReviews, equipmentReviewItems)
+  const unseenPairing = countUnseen(
+    UNSEEN.athletePairing,
+    pendingLinks.map((link) => ({ id: link.id })),
+  )
+  const unseenCheckins = countUnseen(
+    UNSEEN.athleteCheckins,
+    pendingSessionFeedback.map((session) => ({ id: session.id })),
+  )
+  const unseenTrainingHistory = countUnseen(UNSEEN.athleteTrainingHistory, sessionHistoryItems)
+  const unseenHeats = countUnseen(UNSEEN.athleteHeats, heatItems)
 
   const sharingCoachCount = activeLinks.filter((link) =>
     Object.values(link.shareSettings).some(Boolean),
@@ -192,18 +218,23 @@ export function AthletePortal() {
       id: 'equipment-reviews',
       label: 'Coach equipment reviews',
       description:
-        equipmentReviewCount > 0
-          ? `${equipmentReviewCount} review${equipmentReviewCount === 1 ? '' : 's'} from your coaches`
-          : 'Ratings and comments on your gear',
+        unseenEquipmentReviews > 0
+          ? `${unseenEquipmentReviews} new review${unseenEquipmentReviews === 1 ? '' : 's'} from your coaches`
+          : equipmentReviewItems.length > 0
+            ? `${equipmentReviewItems.length} review${equipmentReviewItems.length === 1 ? '' : 's'} from your coaches`
+            : 'Ratings and comments on your gear',
       icon: '★',
-      badge: equipmentReviewCount || undefined,
+      badge: unseenEquipmentReviews || undefined,
     },
     {
       id: 'coaches',
       label: 'Linked coaches',
-      description: 'Pairing code and requests',
+      description:
+        unseenPairing > 0
+          ? `${unseenPairing} new coach request${unseenPairing === 1 ? '' : 's'}`
+          : 'Pairing code and requests',
       icon: '◉',
-      badge: pendingLinks.length || undefined,
+      badge: unseenPairing || undefined,
     },
     {
       id: 'shared-stats',
@@ -217,9 +248,12 @@ export function AthletePortal() {
     {
       id: 'checkins',
       label: 'Mental check-ins',
-      description: 'Complete after each session',
+      description:
+        unseenCheckins > 0
+          ? `${unseenCheckins} check-in${unseenCheckins === 1 ? '' : 's'} waiting`
+          : 'Complete after each session',
       icon: '◎',
-      badge: pendingCheckins || undefined,
+      badge: unseenCheckins || undefined,
     },
     {
       id: 'evolution',
@@ -230,17 +264,26 @@ export function AthletePortal() {
     {
       id: 'heats',
       label: 'Heat history',
-      description: heatDetails.length > 0 ? `${heatDetails.length} heats` : 'Competition results',
+      description:
+        unseenHeats > 0
+          ? `${unseenHeats} new heat result${unseenHeats === 1 ? '' : 's'}`
+          : heatDetails.length > 0
+            ? `${heatDetails.length} heats`
+            : 'Competition results',
       icon: '★',
+      badge: unseenHeats || undefined,
     },
     {
       id: 'training-history',
       label: 'Training history',
       description:
-        sessionSummaries.length > 0
-          ? `${sessionSummaries.length} sessions`
-          : 'Training sessions shared by your coaches',
+        unseenTrainingHistory > 0
+          ? `${unseenTrainingHistory} new session${unseenTrainingHistory === 1 ? '' : 's'}`
+          : sessionSummaries.length > 0
+            ? `${sessionSummaries.length} sessions`
+            : 'Training sessions shared by your coaches',
       icon: '☰',
+      badge: unseenTrainingHistory || undefined,
     },
   ]
 
@@ -259,6 +302,7 @@ export function AthletePortal() {
     try {
       const result = await respondToPairing(linkId, accept)
       if (!result.ok) setPairingError(result.error ?? 'Could not update request.')
+      else markSeen(UNSEEN.athletePairing, [linkId])
     } finally {
       setPairingBusy(null)
     }
@@ -275,7 +319,45 @@ export function AthletePortal() {
     }
   }
 
+  const markActionSeen = (id: DashboardAction['id']) => {
+    switch (id) {
+      case 'equipment-reviews':
+        markSeen(
+          UNSEEN.athleteEquipmentReviews,
+          equipmentReviewItems.map((item) => item.id),
+        )
+        break
+      case 'coaches':
+        markSeen(
+          UNSEEN.athletePairing,
+          pendingLinks.map((link) => link.id),
+        )
+        break
+      case 'checkins':
+        markSeen(
+          UNSEEN.athleteCheckins,
+          pendingSessionFeedback.map((session) => session.id),
+        )
+        break
+      case 'training-history':
+        markSeen(
+          UNSEEN.athleteTrainingHistory,
+          sessionHistoryItems.map((item) => item.id),
+        )
+        break
+      case 'heats':
+        markSeen(
+          UNSEEN.athleteHeats,
+          heatItems.map((item) => item.id),
+        )
+        break
+      default:
+        break
+    }
+  }
+
   const handleAction = (id: DashboardAction['id']) => {
+    markActionSeen(id)
     if (id === 'material') {
       setView('athlete-material')
       return
@@ -445,7 +527,7 @@ export function AthletePortal() {
               </span>
             </span>
             {action.badge ? (
-              <span className="athlete-portal__nav-badge">{action.badge}</span>
+              <NavBadge count={action.badge} className="athlete-portal__nav-badge" />
             ) : (
               <span className="athlete-portal__nav-chevron" aria-hidden="true">
                 ›

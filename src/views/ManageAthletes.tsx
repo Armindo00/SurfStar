@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useApp } from '../AppContext'
+import { UNSEEN } from '../unseenDomains'
 import { athleteLimitMessage, canUsePsychologyCheckins, planUpgradeHint } from '../planUtils'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -49,6 +50,7 @@ export function ManageAthletes() {
     updateAthleteShareSettings,
     setAthleteBlocked,
     setView,
+    markSeen,
   } = useApp()
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
@@ -60,6 +62,12 @@ export function ManageAthletes() {
   const [revokeTarget, setRevokeTarget] = useState<{ linkId: string; name: string } | null>(null)
 
   const pendingLinks = coachLinks.filter((l) => l.status === 'pending')
+
+  useEffect(() => {
+    const ids = coachLinks.filter((link) => link.status === 'pending').map((link) => link.id)
+    if (ids.length === 0) return
+    markSeen(UNSEEN.coachPairing, ids)
+  }, [coachLinks, markSeen])
   const planId = subscription?.planId ?? 'team'
   const psychologyCheckinsAvailable = canUsePsychologyCheckins(planId)
   const activeCount = coachAthletes.filter((a) => !a.blocked).length

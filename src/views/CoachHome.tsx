@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { NavBadge } from '../components/NavBadge'
 import { useApp } from '../AppContext'
+import { UNSEEN } from '../unseenDomains'
 import {
   athleteLimitMessage,
   canManageOrganizationCoaches,
@@ -101,14 +103,35 @@ function CoachOnboarding() {
 }
 
 export function CoachHome() {
-  const { auth, subscription, setView, beginDraftSession, logout, coachAthletes, completedCoachSessions, openContact } =
-    useApp()
+  const {
+    auth,
+    subscription,
+    setView,
+    beginDraftSession,
+    logout,
+    coachAthletes,
+    completedCoachSessions,
+    openContact,
+    coachLinks,
+    organizationMembers,
+    countUnseen,
+  } = useApp()
   const name = auth?.role === 'treinador' ? auth.name : 'Coach'
   const plan = subscription ? getPlan(subscription.planId) : null
   const planId = subscription?.planId ?? 'team'
   const hasCustomTraining = canUseCustomTraining(planId)
   const orgName = auth?.role === 'treinador' ? auth.organizationName : null
   const isNewCoach = coachAthletes.length === 0 && completedCoachSessions.length === 0
+
+  const unseenAthletePairing = countUnseen(
+    UNSEEN.coachPairing,
+    coachLinks.filter((link) => link.status === 'pending').map((link) => ({ id: link.id })),
+  )
+
+  const unseenOrgInvites = countUnseen(
+    UNSEEN.coachOrgInvites,
+    organizationMembers.filter((member) => member.status === 'pending').map((member) => ({ id: member.id })),
+  )
 
   return (
     <div className="dashboard">
@@ -157,14 +180,16 @@ export function CoachHome() {
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('manage-athletes')}>
           <span>Manage athletes</span>
-          <span aria-hidden="true">›</span>
+          <NavBadge count={unseenAthletePairing} className="nav-badge" />
+          {!unseenAthletePairing ? <span aria-hidden="true">›</span> : null}
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('organization')}>
           <span>
             Team & coaches
             {!canManageOrganizationCoaches(planId) ? ' · Team Academy' : ''}
           </span>
-          <span aria-hidden="true">›</span>
+          <NavBadge count={unseenOrgInvites} className="nav-badge" />
+          {!unseenOrgInvites ? <span aria-hidden="true">›</span> : null}
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('manage-spots')}>
           <span>Spots & conditions</span>

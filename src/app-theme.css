@@ -877,7 +877,8 @@ body {
   color: var(--landing-muted) !important;
 }
 
-.app-shell .athlete-portal__nav-badge {
+.app-shell .athlete-portal__nav-badge,
+.app-shell .nav-badge {
   background: rgba(201, 169, 98, 0.85) !important;
   color: #0a1628 !important;
 }

@@ -21,6 +21,7 @@ import { SkeletonCard } from '../components/Skeleton'
 import { useToast } from '../components/ToastProvider'
 import { getPlan, type PlanId } from '../plans'
 import { useApp } from '../AppContext'
+import { UNSEEN } from '../unseenDomains'
 import type { ContactMessage, ContactMessageStatus } from '../types'
 
 type AdminTab = 'dashboard' | 'requests' | 'accounts' | 'contact'
@@ -46,7 +47,7 @@ function planLabel(planId: string | null): string {
 }
 
 export function AdminView() {
-  const { auth, cloudMode, setView } = useApp()
+  const { auth, cloudMode, setView, markSeen, countUnseen } = useApp()
   const { showToast } = useToast()
   const [tab, setTab] = useState<AdminTab>('dashboard')
   const [stats, setStats] = useState<AdminDashboardStats | null>(null)
@@ -63,8 +64,11 @@ export function AdminView() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({})
+  const [pendingPlanRequestItems, setPendingPlanRequestItems] = useState<{ id: string }[]>([])
 
   const isAdmin = auth?.role === 'treinador' && auth.isPlatformAdmin
+
+  const unseenPlanRequests = countUnseen(UNSEEN.adminPlanRequests, pendingPlanRequestItems)
 
   const loadDashboard = useCallback(async () => {
     setLoading(true)
@@ -121,6 +125,26 @@ export function AdminView() {
     const result = await adminFetchContactMessages('new')
     if (result.ok) setNewContactCount(result.messages.length)
   }, [])
+
+  const refreshPendingPlanRequestItems = useCallback(async () => {
+    const result = await adminFetchPlanRequests('pending')
+    if (result.ok) {
+      setPendingPlanRequestItems(result.requests.map((request) => ({ id: request.id })))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isAdmin || !cloudMode) return
+    void refreshPendingPlanRequestItems()
+  }, [isAdmin, cloudMode, refreshPendingPlanRequestItems])
+
+  useEffect(() => {
+    if (tab !== 'requests' || requests.length === 0) return
+    const pendingIds = requests
+      .filter((request) => request.status === 'pending')
+      .map((request) => request.id)
+    if (pendingIds.length > 0) markSeen(UNSEEN.adminPlanRequests, pendingIds)
+  }, [tab, requests, markSeen])
 
   useEffect(() => {
     if (!isAdmin || !cloudMode) return
@@ -245,8 +269,8 @@ export function AdminView() {
             onClick={() => setTab(id)}
           >
             {label}
-            {id === 'requests' && stats && stats.pending_requests > 0 ? (
-              <span className="admin-tabs__badge">{stats.pending_requests}</span>
+            {id === 'requests' && unseenPlanRequests > 0 ? (
+              <span className="admin-tabs__badge">{unseenPlanRequests}</span>
             ) : null}
             {id === 'contact' && newContactCount > 0 ? (
               <span className="admin-tabs__badge">{newContactCount}</span>
