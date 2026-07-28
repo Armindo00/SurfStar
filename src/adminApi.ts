@@ -8,6 +8,11 @@ export type AdminDashboardStats = {
   pending_requests: number
   awaiting_payment: number
   blocked_accounts: number
+  active_subscriptions: number
+  renewals_due_7d: number
+  renewals_overdue: number
+  monthly_subscribers: number
+  annual_subscribers: number
 }
 
 export type AdminPlanRequest = {
@@ -45,8 +50,11 @@ export type AdminAccount = {
   blocked: boolean
   is_platform_admin: boolean
   created_at: string
+  tax_id?: string | null
   plan_id: string | null
   plan_status: string | null
+  billing_interval?: BillingInterval | null
+  current_period_end?: string | null
   organization_name: string | null
   organization_id: string | null
   requested_plan_id?: string | null
@@ -55,6 +63,28 @@ export type AdminAccount = {
   requested_plan_payment_status?: string | null
   requested_plan_activated_at?: string | null
 }
+
+export type AdminBillingSubscription = {
+  coach_id: string
+  name: string
+  email: string
+  tax_id: string | null
+  organization_name: string | null
+  organization_id: string | null
+  plan_id: PlanId
+  plan_status: string
+  billing_interval: BillingInterval
+  current_period_end: string | null
+  blocked: boolean
+}
+
+export type AdminSubscriptionFilter =
+  | 'all'
+  | 'due_7d'
+  | 'due_30d'
+  | 'overdue'
+  | 'monthly'
+  | 'annual'
 
 type RpcResult = { ok: boolean; error?: string }
 
@@ -80,8 +110,40 @@ export async function adminFetchDashboard(): Promise<
       pending_requests: data.pending_requests as number,
       awaiting_payment: (data.awaiting_payment as number | undefined) ?? 0,
       blocked_accounts: data.blocked_accounts as number,
+      active_subscriptions: (data.active_subscriptions as number | undefined) ?? 0,
+      renewals_due_7d: (data.renewals_due_7d as number | undefined) ?? 0,
+      renewals_overdue: (data.renewals_overdue as number | undefined) ?? 0,
+      monthly_subscribers: (data.monthly_subscribers as number | undefined) ?? 0,
+      annual_subscribers: (data.annual_subscribers as number | undefined) ?? 0,
     },
   }
+}
+
+export async function adminFetchBillingSubscriptions(
+  filter: AdminSubscriptionFilter = 'all',
+): Promise<{ ok: true; subscriptions: AdminBillingSubscription[] } | { ok: false; error: string }> {
+  const { data, error } = await getSupabase().rpc('admin_list_billing_subscriptions', {
+    p_filter: filter,
+    p_limit: 100,
+  })
+  if (error || !data?.ok) {
+    return { ok: false, error: parseError(error, data as RpcResult) }
+  }
+  return { ok: true, subscriptions: (data.subscriptions ?? []) as AdminBillingSubscription[] }
+}
+
+export async function adminConfirmSubscriptionRenewal(
+  coachId: string,
+  notes?: string,
+): Promise<{ ok: true; currentPeriodEnd?: string } | { ok: false; error: string }> {
+  const { data, error } = await getSupabase().rpc('admin_confirm_subscription_renewal', {
+    p_coach_id: coachId,
+    p_notes: notes ?? null,
+  })
+  if (error || !data?.ok) {
+    return { ok: false, error: parseError(error, data as RpcResult) }
+  }
+  return { ok: true, currentPeriodEnd: data.current_period_end as string | undefined }
 }
 
 export type AdminRequestFilter =

@@ -9,9 +9,11 @@ import {
   adminReviewPlanRequest,
   adminSetAccountBlocked,
   type AdminAccount,
+  type AdminBillingSubscription,
   type AdminDashboardStats,
   type AdminPlanRequest,
   type AdminRequestFilter,
+  type AdminSubscriptionFilter,
 } from '../adminApi'
 import {
   adminFetchContactMessages,
@@ -32,8 +34,9 @@ import {
 import { useApp } from '../AppContext'
 import { UNSEEN } from '../unseenDomains'
 import type { ContactMessage, ContactMessageStatus } from '../types'
+import { AdminSubscriptionsTab, loadAdminSubscriptions } from './admin/AdminSubscriptionsTab'
 
-type AdminTab = 'dashboard' | 'requests' | 'accounts' | 'contact'
+type AdminTab = 'dashboard' | 'requests' | 'subscriptions' | 'accounts' | 'contact'
 
 function formatDate(value: string | null): string {
   if (!value) return '—'
@@ -117,10 +120,13 @@ function accountPlanInfo(account: AdminAccount): {
     activePlanId &&
     (activeStatus === 'active' || activeStatus === 'trialing')
   ) {
-    const interval = account.requested_billing_interval ?? 'monthly'
+    const interval = account.billing_interval ?? account.requested_billing_interval ?? 'monthly'
+    const renewal = account.current_period_end
+      ? `Renews ${formatDate(account.current_period_end)}`
+      : 'No renewal date'
     return {
       headline: planLabel(activePlanId),
-      subline: `${activeStatus === 'trialing' ? 'Trialing' : 'Active subscription'} · ${billingIntervalLabel(interval)}`,
+      subline: `${activeStatus === 'trialing' ? 'Trialing' : 'Active subscription'} · ${billingIntervalLabel(interval)} · ${renewal}`,
       tone: 'active',
     }
   }
@@ -161,6 +167,8 @@ export function AdminView() {
   const [tab, setTab] = useState<AdminTab>('dashboard')
   const [stats, setStats] = useState<AdminDashboardStats | null>(null)
   const [requests, setRequests] = useState<AdminPlanRequest[]>([])
+  const [subscriptions, setSubscriptions] = useState<AdminBillingSubscription[]>([])
+  const [subscriptionFilter, setSubscriptionFilter] = useState<AdminSubscriptionFilter>('all')
   const [accounts, setAccounts] = useState<AdminAccount[]>([])
   const [contactMessages, setContactMessages] = useState<ContactMessage[]>([])
   const [newContactCount, setNewContactCount] = useState(0)
@@ -200,6 +208,17 @@ export function AdminView() {
     }
     setRequests(result.requests)
   }, [requestFilter])
+
+  const loadSubscriptions = useCallback(async () => {
+    setLoading(true)
+    const result = await loadAdminSubscriptions(subscriptionFilter)
+    setLoading(false)
+    if (!result.ok) {
+      setError(result.error)
+      return
+    }
+    setSubscriptions(result.subscriptions)
+  }, [subscriptionFilter])
 
   const loadAccounts = useCallback(async () => {
     setLoading(true)
@@ -263,13 +282,19 @@ export function AdminView() {
   }, [tab, requests, markSeen])
 
   useEffect(() => {
+    if (!isAdmin || !cloudMode || tab !== 'subscriptions') return
+    void loadSubscriptions()
+  }, [subscriptionFilter, tab, isAdmin, cloudMode, loadSubscriptions])
+
+  useEffect(() => {
     if (!isAdmin || !cloudMode) return
     setError('')
     if (tab === 'dashboard') void loadDashboard()
     if (tab === 'requests') void loadRequests()
+    if (tab === 'subscriptions') void loadSubscriptions()
     if (tab === 'accounts') void loadAccounts()
     if (tab === 'contact') void loadContactMessages()
-  }, [tab, isAdmin, cloudMode, loadDashboard, loadRequests, loadAccounts, loadContactMessages])
+  }, [tab, isAdmin, cloudMode, loadDashboard, loadRequests, loadSubscriptions, loadAccounts, loadContactMessages])
 
   useEffect(() => {
     if (!isAdmin || !cloudMode) return
@@ -356,6 +381,15 @@ export function AdminView() {
     }
   }
 
+  const goToTab = (nextTab: AdminTab, options?: { requestFilter?: AdminRequestFilter; subscriptionFilter?: AdminSubscriptionFilter; contactFilter?: typeof contactFilter }) => {
+    if (options?.requestFilter) setRequestFilter(options.requestFilter)
+    if (options?.subscriptionFilter) setSubscriptionFilter(options.subscriptionFilter)
+    if (options?.contactFilter) setContactFilter(options.contactFilter)
+    setTab(nextTab)
+  }
+
+  const renewalAttentionCount = (stats?.renewals_due_7d ?? 0) + (stats?.renewals_overdue ?? 0)
+
   const updateContactStatus = async (message: ContactMessage, status: ContactMessageStatus) => {
     setBusyId(message.id)
     setError('')
@@ -400,6 +434,7 @@ export function AdminView() {
           [
             ['dashboard', 'Overview'],
             ['requests', 'Payments'],
+            ['subscriptions', 'Subscriptions'],
             ['accounts', 'Accounts'],
             ['contact', 'Contact'],
           ] as const
@@ -414,6 +449,9 @@ export function AdminView() {
             {id === 'requests' && unseenPlanRequests > 0 ? (
               <span className="admin-tabs__badge">{unseenPlanRequests}</span>
             ) : null}
+            {id === 'subscriptions' && renewalAttentionCount > 0 ? (
+              <span className="admin-tabs__badge">{renewalAttentionCount}</span>
+            ) : null}
             {id === 'contact' && newContactCount > 0 ? (
               <span className="admin-tabs__badge">{newContactCount}</span>
             ) : null}
@@ -427,6 +465,68 @@ export function AdminView() {
 
       {!loading && tab === 'dashboard' && stats ? (
         <>
+          {(stats.pending_requests > 0 ||
+            stats.awaiting_payment > 0 ||
+            stats.renewals_due_7d > 0 ||
+            stats.renewals_overdue > 0 ||
+            newContactCount > 0) && (
+            <section className="admin-attention">
+              <h2 className="admin-attention__title">Needs attention</h2>
+              <div className="admin-attention__grid">
+                {stats.pending_requests > 0 ? (
+                  <button
+                    type="button"
+                    className="admin-attention-card admin-attention-card--pending"
+                    onClick={() => goToTab('requests', { requestFilter: 'pending' })}
+                  >
+                    <strong>{stats.pending_requests}</strong>
+                    <span>Pending review</span>
+                  </button>
+                ) : null}
+                {stats.awaiting_payment > 0 ? (
+                  <button
+                    type="button"
+                    className="admin-attention-card admin-attention-card--awaiting"
+                    onClick={() => goToTab('requests', { requestFilter: 'awaiting_payment' })}
+                  >
+                    <strong>{stats.awaiting_payment}</strong>
+                    <span>Awaiting payment</span>
+                  </button>
+                ) : null}
+                {stats.renewals_due_7d > 0 ? (
+                  <button
+                    type="button"
+                    className="admin-attention-card admin-attention-card--due"
+                    onClick={() => goToTab('subscriptions', { subscriptionFilter: 'due_7d' })}
+                  >
+                    <strong>{stats.renewals_due_7d}</strong>
+                    <span>Renewals due this week</span>
+                  </button>
+                ) : null}
+                {stats.renewals_overdue > 0 ? (
+                  <button
+                    type="button"
+                    className="admin-attention-card admin-attention-card--overdue"
+                    onClick={() => goToTab('subscriptions', { subscriptionFilter: 'overdue' })}
+                  >
+                    <strong>{stats.renewals_overdue}</strong>
+                    <span>Overdue renewals</span>
+                  </button>
+                ) : null}
+                {newContactCount > 0 ? (
+                  <button
+                    type="button"
+                    className="admin-attention-card admin-attention-card--contact"
+                    onClick={() => goToTab('contact', { contactFilter: 'new' })}
+                  >
+                    <strong>{newContactCount}</strong>
+                    <span>New messages</span>
+                  </button>
+                ) : null}
+              </div>
+            </section>
+          )}
+
           <div className="admin-stats">
             <div className="admin-stat-card">
               <strong>{stats.coaches}</strong>
@@ -441,6 +541,18 @@ export function AdminView() {
               <span>Organizations</span>
             </div>
             <div className="admin-stat-card admin-stat-card--highlight">
+              <strong>{stats.active_subscriptions}</strong>
+              <span>Active subscriptions</span>
+            </div>
+            <div className="admin-stat-card">
+              <strong>{stats.monthly_subscribers}</strong>
+              <span>Monthly</span>
+            </div>
+            <div className="admin-stat-card">
+              <strong>{stats.annual_subscribers}</strong>
+              <span>Annual</span>
+            </div>
+            <div className="admin-stat-card admin-stat-card--highlight">
               <strong>{stats.pending_requests}</strong>
               <span>Pending review</span>
             </div>
@@ -453,10 +565,43 @@ export function AdminView() {
               <span>Blocked accounts</span>
             </div>
           </div>
-          <p className="muted admin-page__hint">
-            Manual billing workflow: approve the request → send payment details (IBAN / MB Way) → confirm payment to
-            activate the coach account.
-          </p>
+
+          <div className="admin-workflow">
+            <article className="admin-workflow-card">
+              <h3>New sign-ups</h3>
+              <p className="muted">
+                Approve request → send IBAN / MB Way from contact@surfstar.app → confirm payment to activate.
+              </p>
+              <button type="button" className="btn btn--secondary btn--small" onClick={() => goToTab('requests')}>
+                Open Payments
+              </button>
+            </article>
+            <article className="admin-workflow-card">
+              <h3>Recurring billing</h3>
+              <p className="muted">
+                Track monthly and annual renewals. Confirm payment to extend the subscription period automatically.
+              </p>
+              <button
+                type="button"
+                className="btn btn--secondary btn--small"
+                onClick={() => goToTab('subscriptions', { subscriptionFilter: 'due_7d' })}
+              >
+                Open Subscriptions
+              </button>
+            </article>
+            <article className="admin-workflow-card">
+              <h3>Accounts & support</h3>
+              <p className="muted">Block accounts, manually activate plans, and respond to contact messages.</p>
+              <div className="admin-workflow-card__actions">
+                <button type="button" className="btn btn--ghost btn--small" onClick={() => goToTab('accounts')}>
+                  Accounts
+                </button>
+                <button type="button" className="btn btn--ghost btn--small" onClick={() => goToTab('contact')}>
+                  Contact
+                </button>
+              </div>
+            </article>
+          </div>
         </>
       ) : null}
 
@@ -696,6 +841,26 @@ export function AdminView() {
         </div>
       ) : null}
 
+      {!loading && tab === 'subscriptions' ? (
+        <AdminSubscriptionsTab
+          filter={subscriptionFilter}
+          onFilterChange={setSubscriptionFilter}
+          subscriptions={subscriptions}
+          loading={loading}
+          busyId={busyId}
+          error={error}
+          notesDraft={notesDraft}
+          onNotesChange={(coachId, notes) =>
+            setNotesDraft((prev) => ({ ...prev, [coachId]: notes }))
+          }
+          onReload={loadSubscriptions}
+          onError={setError}
+          onBusyChange={setBusyId}
+          onToast={(message) => showToast(message, 'success')}
+          onDashboardRefresh={loadDashboard}
+        />
+      ) : null}
+
       {!loading && tab === 'accounts' ? (
         <div className="admin-panel">
           <div className="admin-toolbar admin-toolbar--wrap">
@@ -778,6 +943,24 @@ export function AdminView() {
                             ? ` · ${billingIntervalLabel(account.requested_billing_interval)}`
                             : ''}
                         </dd>
+                      </div>
+                    ) : null}
+                    {account.billing_interval ? (
+                      <div>
+                        <dt>Billing cycle</dt>
+                        <dd>{billingIntervalLabel(account.billing_interval)}</dd>
+                      </div>
+                    ) : null}
+                    {account.current_period_end ? (
+                      <div>
+                        <dt>Renewal date</dt>
+                        <dd>{formatDate(account.current_period_end)}</dd>
+                      </div>
+                    ) : null}
+                    {account.tax_id ? (
+                      <div>
+                        <dt>Tax ID / VAT</dt>
+                        <dd>{account.tax_id}</dd>
                       </div>
                     ) : null}
                     <div>
