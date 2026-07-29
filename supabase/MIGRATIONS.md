@@ -24,6 +24,9 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 18 | `patch-billing-address-fields.sql` | Split address into street, postal code, city, country |
 | 19 | `patch-admin-plan-display.sql` | Admin accounts: show requested plan from payment requests |
 | 20 | `patch-admin-billing-management.sql` | Billing cycle on subscriptions, renewals tab, confirm renewal RPC |
+| 21 | `add-subscription-renewal-automation.sql` | Auto renewal emails (5d, 1d, expired) + auto-block on expiry |
+
+See **`supabase/RENEWAL_EMAILS.md`** for deploying the daily cron edge function.
 
 ## Production reset
 

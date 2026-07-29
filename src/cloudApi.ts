@@ -292,7 +292,18 @@ async function buildAuthSessionFromUser(user: {
 
   if (profile.blocked) {
     const supabase = getSupabase()
+    const { data: sub } = await supabase
+      .from('coach_subscriptions')
+      .select('status')
+      .eq('coach_id', profile.id)
+      .maybeSingle()
     await supabase.auth.signOut()
+    if (sub?.status === 'past_due') {
+      return {
+        error:
+          'Your account is blocked because your subscription payment is overdue. Contact contact@surfstar.app after paying to restore access.',
+      }
+    }
     return { error: 'Your account is blocked. Contact SurfStar support if you think this is a mistake.' }
   }
 
