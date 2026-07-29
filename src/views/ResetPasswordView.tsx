@@ -59,7 +59,7 @@ export function ResetPasswordView() {
         <header className="auth-card__head auth-card__head--compact">
           <h2 className="auth-card__title">Reset expired</h2>
           <p className="muted auth-card__lead">
-            Request a new 6-digit code from the sign-in page and enter it in the app.
+            Request a new code from the sign-in page and enter it in the app.
           </p>
         </header>
         <div className="auth-form">

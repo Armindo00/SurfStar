@@ -5,9 +5,13 @@ import { OtpCodeInput } from '../components/OtpCodeInput'
 import { ResetPasswordSheet } from '../components/ResetPasswordSheet'
 import { useApp } from '../AppContext'
 import type { UserRole } from '../types'
+import {
+  normalizePasswordResetCode,
+  PASSWORD_RESET_OTP_LENGTH,
+} from '../passwordRecoveryUtils'
 
 function normalizeCode(value: string): string {
-  return value.replace(/\D/g, '').slice(0, 6)
+  return normalizePasswordResetCode(value)
 }
 
 export function ForgotPasswordView() {
@@ -50,8 +54,8 @@ export function ForgotPasswordView() {
     e.preventDefault()
     setError('')
     const normalized = normalizeCode(code)
-    if (normalized.length !== 6) {
-      setError('Enter the 6-digit code from your email.')
+    if (normalized.length !== PASSWORD_RESET_OTP_LENGTH) {
+      setError(`Enter the ${PASSWORD_RESET_OTP_LENGTH}-digit code from your email.`)
       return
     }
 
@@ -105,7 +109,7 @@ export function ForgotPasswordView() {
             <header className="auth-card__head auth-card__head--compact">
               <h2 className="auth-card__title">Forgot password</h2>
               <p className="muted auth-card__lead">
-                Enter your account email. We&apos;ll send a 6-digit code from{' '}
+                Enter your account email. We&apos;ll send an {PASSWORD_RESET_OTP_LENGTH}-digit code from{' '}
                 <strong>{contactEmail}</strong> so you can set a new password.
               </p>
             </header>
@@ -134,7 +138,7 @@ export function ForgotPasswordView() {
             <header className="auth-card__head auth-card__head--compact">
               <h2 className="auth-card__title">Enter reset code</h2>
               <p className="muted auth-card__lead">
-                Check your inbox for an email from SurfStar. Paste the 6-digit code below.
+                Check your inbox for an email from SurfStar. Paste the {PASSWORD_RESET_OTP_LENGTH}-digit code below.
               </p>
             </header>
             <form className="auth-form" onSubmit={(e) => void verifyCode(e)}>

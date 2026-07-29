@@ -1,5 +1,12 @@
 const RECOVERY_FLAG_KEY = 'surfstar-password-recovery'
 
+/** Supabase email OTP length (configurable in Auth settings; SurfStar uses 8). */
+export const PASSWORD_RESET_OTP_LENGTH = 8
+
+export function normalizePasswordResetCode(value: string): string {
+  return value.replace(/\D/g, '').slice(0, PASSWORD_RESET_OTP_LENGTH)
+}
+
 export function isRecoveryHash(): boolean {
   const hash = window.location.hash.replace(/^#/, '')
   if (!hash) return false

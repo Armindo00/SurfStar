@@ -7,6 +7,7 @@ import {
   cloudSetupSelfRegisteredAthlete,
 } from './cloudPairingApi'
 import { isValidEmail, normalizeEmail, validatePasswordStrength } from './passwordUtils'
+import { normalizePasswordResetCode, PASSWORD_RESET_OTP_LENGTH } from './passwordRecoveryUtils'
 import { normalizeTaxId, normalizeBillingAddress, billingAddressFromRow, formatBillingAddress, type BillingAddress } from './billingUtils'
 import type {
   AuthSession,
@@ -560,12 +561,15 @@ export async function cloudVerifyRecoveryOtp(
   token: string,
 ): Promise<{ ok: true; session: AuthSession } | { ok: false; error: string }> {
   const normalized = normalizeEmail(email)
-  const code = token.replace(/\D/g, '')
+  const code = normalizePasswordResetCode(token)
   if (!isValidEmail(normalized)) {
     return { ok: false, error: 'Enter a valid email address.' }
   }
-  if (code.length !== 6) {
-    return { ok: false, error: 'Enter the 6-digit code from your email.' }
+  if (code.length !== PASSWORD_RESET_OTP_LENGTH) {
+    return {
+      ok: false,
+      error: `Enter the ${PASSWORD_RESET_OTP_LENGTH}-digit code from your email.`,
+    }
   }
 
   const { data, error } = await getSupabase().auth.verifyOtp({

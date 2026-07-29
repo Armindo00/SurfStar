@@ -1,38 +1,41 @@
 import { useRef, type ClipboardEvent, type KeyboardEvent } from 'react'
+import { normalizePasswordResetCode, PASSWORD_RESET_OTP_LENGTH } from '../passwordRecoveryUtils'
 
 type Props = {
   value: string
   onChange: (value: string) => void
   disabled?: boolean
+  length?: number
 }
 
-function normalizeDigits(value: string): string {
-  return value.replace(/\D/g, '').slice(0, 6)
-}
-
-export function OtpCodeInput({ value, onChange, disabled }: Props) {
+export function OtpCodeInput({
+  value,
+  onChange,
+  disabled,
+  length = PASSWORD_RESET_OTP_LENGTH,
+}: Props) {
   const refs = useRef<Array<HTMLInputElement | null>>([])
-  const digits = Array.from({ length: 6 }, (_, index) => value[index] ?? '')
+  const digits = Array.from({ length }, (_, index) => value[index] ?? '')
 
   const update = (next: string) => {
-    onChange(normalizeDigits(next))
+    onChange(normalizePasswordResetCode(next).slice(0, length))
   }
 
   const focusIndex = (index: number) => {
-    refs.current[Math.max(0, Math.min(index, 5))]?.focus()
+    refs.current[Math.max(0, Math.min(index, length - 1))]?.focus()
   }
 
   const handleChange = (index: number, raw: string) => {
-    const cleaned = normalizeDigits(raw)
+    const cleaned = raw.replace(/\D/g, '')
     if (cleaned.length > 1) {
       update(cleaned)
-      focusIndex(cleaned.length >= 6 ? 5 : cleaned.length)
+      focusIndex(Math.min(cleaned.length, length) - 1)
       return
     }
 
     const next = `${value.slice(0, index)}${cleaned}${value.slice(index + 1)}`
     update(next)
-    if (cleaned && index < 5) focusIndex(index + 1)
+    if (cleaned && index < length - 1) focusIndex(index + 1)
   }
 
   const handleKeyDown = (index: number, event: KeyboardEvent<HTMLInputElement>) => {
@@ -43,9 +46,9 @@ export function OtpCodeInput({ value, onChange, disabled }: Props) {
 
   const handlePaste = (event: ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault()
-    const pasted = normalizeDigits(event.clipboardData.getData('text'))
+    const pasted = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, length)
     update(pasted)
-    focusIndex(pasted.length >= 6 ? 5 : pasted.length)
+    focusIndex(Math.min(pasted.length, length) - 1)
   }
 
   return (
@@ -61,13 +64,13 @@ export function OtpCodeInput({ value, onChange, disabled }: Props) {
           inputMode="numeric"
           pattern="[0-9]*"
           autoComplete={index === 0 ? 'one-time-code' : 'off'}
-          maxLength={6}
+          maxLength={length}
           value={digit}
           disabled={disabled}
           onChange={(event) => handleChange(index, event.target.value)}
           onKeyDown={(event) => handleKeyDown(index, event)}
           onPaste={handlePaste}
-          aria-label={`Digit ${index + 1} of 6`}
+          aria-label={`Digit ${index + 1} of ${length}`}
         />
       ))}
     </div>
