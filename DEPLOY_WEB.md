@@ -21,7 +21,14 @@ Sim — **já faz sentido**. Assim abres no telemóvel com um link `https://...`
    - Copia **anon public** key → `VITE_SUPABASE_ANON_KEY`
 4. **Authentication → Providers → Email**:
    - Desliga **Confirm email** (para entrar logo após registo, ideal para testes).
-5. **SQL Editor** — corre **todos** os scripts por ordem (ver [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md)), incluindo `fix-subscription-security.sql` para produção.
+5. **Authentication → URL Configuration**:
+   - **Site URL:** `https://www.surfstar.app`
+   - **Redirect URLs:** inclui `https://www.surfstar.app/reset-password` e `https://www.surfstar.app/forgot-password`
+6. **Authentication → Email Templates → Reset password** — usa o código OTP (não só o link):
+   - No corpo do email inclui `{{ .Token }}` (código de 6 dígitos)
+   - Exemplo: *"Your SurfStar reset code is: **{{ .Token }}**"*
+   - Configura o remetente como **SurfStar** / `contact@surfstar.app` (SMTP customizado em Authentication → SMTP)
+7. **SQL Editor** — corre **todos** os scripts por ordem (ver [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md)), incluindo `fix-subscription-security.sql` para produção.
 
 ---
 

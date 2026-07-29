@@ -555,6 +555,32 @@ export async function cloudChangePassword(
   return { ok: true, session: built }
 }
 
+export async function cloudVerifyRecoveryOtp(
+  email: string,
+  token: string,
+): Promise<{ ok: true; session: AuthSession } | { ok: false; error: string }> {
+  const normalized = normalizeEmail(email)
+  const code = token.replace(/\D/g, '')
+  if (!isValidEmail(normalized)) {
+    return { ok: false, error: 'Enter a valid email address.' }
+  }
+  if (code.length !== 6) {
+    return { ok: false, error: 'Enter the 6-digit code from your email.' }
+  }
+
+  const { data, error } = await getSupabase().auth.verifyOtp({
+    email: normalized,
+    token: code,
+    type: 'recovery',
+  })
+  if (error) return { ok: false, error: error.message }
+  if (!data.user) return { ok: false, error: 'Invalid or expired code.' }
+
+  const built = await buildAuthSessionFromUser(data.user)
+  if ('error' in built) return { ok: false, error: built.error }
+  return { ok: true, session: built }
+}
+
 export async function cloudResetPassword(
   email: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -563,7 +589,7 @@ export async function cloudResetPassword(
     return { ok: false, error: 'Enter a valid email address.' }
   }
 
-  const redirectTo = `${window.location.origin}/login`
+  const redirectTo = `${window.location.origin}/reset-password`
   const { error } = await getSupabase().auth.resetPasswordForEmail(normalized, { redirectTo })
   if (error) return { ok: false, error: error.message }
   return { ok: true }

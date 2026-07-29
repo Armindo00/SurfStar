@@ -2557,6 +2557,25 @@ body {
   text-underline-offset: 0.18em;
 }
 
+.auth-otp-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.35rem;
+  letter-spacing: 0.35em;
+  text-align: center;
+}
+
+.auth-code-hint {
+  margin: -0.35rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.reset-password-sheet__intro {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
 .auth-page .auth-submit.btn--primary {
   margin-top: 0.15rem;
   background: linear-gradient(135deg, #dbbf6a 0%, #b8943f 100%) !important;

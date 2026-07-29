@@ -23,6 +23,7 @@ import {
   cloudRegisterAthlete,
   cloudRegisterCoach,
   cloudResetPassword,
+  cloudVerifyRecoveryOtp,
   cloudSaveConditions,
   cloudSaveCustomTemplates,
   cloudSaveSpots,
@@ -52,6 +53,14 @@ import {
   validatePasswordStrength,
   verifyPassword,
 } from './passwordUtils'
+import {
+  clearPasswordRecoveryPending,
+  isPasswordRecoveryPending,
+  isRecoveryHash,
+  markPasswordRecoveryPending,
+  navigateToResetPassword,
+} from './passwordRecoveryUtils'
+import { isResetPasswordPath } from './routing'
 import type {
   ContactMessageKind,
   AppView,
@@ -237,6 +246,14 @@ type AppContextValue = {
   openForgotPassword: (role?: UserRole) => void
   forgotPasswordRole: UserRole
   requestPasswordReset: (email: string) => Promise<{ ok: true } | { ok: false; error: string }>
+  verifyPasswordResetCode: (
+    email: string,
+    code: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>
+  passwordRecoveryPending: boolean
+  completePasswordRecovery: (
+    newPassword: string,
+  ) => Promise<{ ok: true; role: UserRole } | { ok: false; error: string }>
   startCheckout: () => Promise<{ ok: true } | { ok: false; error: string }>
   activateDemoSubscription: () => Promise<{ ok: true } | { ok: false; error: string }>
   refreshSubscription: () => Promise<void>
@@ -534,6 +551,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
   const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([])
   const [forgotPasswordRole, setForgotPasswordRole] = useState<UserRole>('treinador')
+  const [passwordRecoveryPending, setPasswordRecoveryPending] = useState(
+    () =>
+      isRecoveryHash() ||
+      isPasswordRecoveryPending() ||
+      isResetPasswordPath(window.location.pathname),
+  )
+  const passwordRecoveryPendingRef = useRef(passwordRecoveryPending)
+  passwordRecoveryPendingRef.current = passwordRecoveryPending
   const [athleteBoards, setAthleteBoards] = useState<AthleteBoard[]>([])
   const [athleteFins, setAthleteFins] = useState<AthleteFin[]>([])
   const [equipmentEvaluations, setEquipmentEvaluations] = useState<EquipmentEvaluation[]>([])
@@ -859,6 +884,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPublicView('team-academy-request')
   }, [setPublicView])
 
+  const activatePasswordRecovery = useCallback(() => {
+    passwordRecoveryPendingRef.current = true
+    setPasswordRecoveryPending(true)
+    markPasswordRecoveryPending()
+    navigateToResetPassword()
+  }, [])
+
   const openForgotPassword = useCallback((role: UserRole = 'treinador') => {
     setForgotPasswordRole(role)
     window.history.pushState({}, '', '/forgot-password')
@@ -872,6 +904,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return cloudResetPassword(email)
     },
     [cloudMode],
+  )
+
+  const verifyPasswordResetCode = useCallback(
+    async (email: string, code: string) => {
+      if (!cloudMode) {
+        return { ok: false as const, error: 'Password reset is only available in cloud mode.' }
+      }
+
+      const result = await cloudVerifyRecoveryOtp(email, code)
+      if (!result.ok) return result
+
+      activatePasswordRecovery()
+      setAuth(result.session)
+      return { ok: true as const }
+    },
+    [activatePasswordRecovery, cloudMode],
+  )
+
+  const completePasswordRecovery = useCallback(
+    async (newPassword: string) => {
+      if (!cloudMode) {
+        return { ok: false as const, error: 'Password reset is only available in cloud mode.' }
+      }
+
+      const pwdError = validatePasswordStrength(newPassword)
+      if (pwdError) return { ok: false as const, error: pwdError }
+
+      const result = await cloudChangePassword(newPassword)
+      if (!result.ok) return result
+
+      const role = result.session.role
+      passwordRecoveryPendingRef.current = false
+      setPasswordRecoveryPending(false)
+      clearPasswordRecoveryPending()
+
+      if (auth) clearResumeState(resumeUserKey(auth))
+      await cloudLogout()
+      setAuth(null)
+      setActiveSessionId(null)
+      setActiveWaveId(null)
+      setActiveHeatId(null)
+      setActiveAthleteId(null)
+      setSubscription(null)
+
+      return { ok: true as const, role }
+    },
+    [auth, cloudMode],
   )
 
   const startCheckout = useCallback(async () => {
@@ -1194,12 +1273,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     void (async () => {
       try {
+        if (
+          isRecoveryHash() ||
+          isPasswordRecoveryPending() ||
+          isResetPasswordPath(window.location.pathname)
+        ) {
+          activatePasswordRecovery()
+        }
+
         unsub = await cloudOnAuthChange((next, event) => {
           if (!mounted) return
           const previous = authRef.current
+
+          if (event === 'PASSWORD_RECOVERY') {
+            activatePasswordRecovery()
+          }
+
           setAuth(next)
           if (next) {
             if (event === 'TOKEN_REFRESHED') return
+
+            if (passwordRecoveryPendingRef.current || event === 'PASSWORD_RECOVERY') {
+              return
+            }
 
             setTimeout(() => {
               void applySessionData(next).then((sessions) => {
@@ -1233,11 +1329,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const session = await cloudGetSession()
         if (session && mounted) {
           setAuth(session)
-          void applySessionData(session).then((sessions) => {
-            if (mounted && sessions) {
-              applyResumeFromStore(session, sessions)
-            }
-          })
+          if (!passwordRecoveryPendingRef.current) {
+            void applySessionData(session).then((sessions) => {
+              if (mounted && sessions) {
+                applyResumeFromStore(session, sessions)
+              }
+            })
+          }
         }
       } catch (error) {
         console.error('SurfStar cloud init failed', error)
@@ -1250,7 +1348,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       mounted = false
       unsub?.()
     }
-  }, [applyCloudSessionData, applyResumeFromStore, cloudMode, refreshOrganizationMembers, syncCoachSubscription])
+  }, [
+    activatePasswordRecovery,
+    applyCloudSessionData,
+    applyResumeFromStore,
+    cloudMode,
+    refreshOrganizationMembers,
+    syncCoachSubscription,
+  ])
 
   const loginAsCoach = useCallback(
     async (email: string, password: string) => {
@@ -1509,6 +1614,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     if (auth) clearResumeState(resumeUserKey(auth))
+    passwordRecoveryPendingRef.current = false
+    setPasswordRecoveryPending(false)
+    clearPasswordRecoveryPending()
     if (cloudMode) await cloudLogout()
     else authStore.setSession(null)
     setAuth(null)
@@ -3329,6 +3437,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openForgotPassword,
       forgotPasswordRole,
       requestPasswordReset,
+      verifyPasswordResetCode,
+      passwordRecoveryPending,
+      completePasswordRecovery,
       startCheckout,
       activateDemoSubscription,
       refreshSubscription,
@@ -3485,6 +3596,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openForgotPassword,
       forgotPasswordRole,
       requestPasswordReset,
+      verifyPasswordResetCode,
+      passwordRecoveryPending,
+      completePasswordRecovery,
       startCheckout,
       activateDemoSubscription,
       refreshSubscription,

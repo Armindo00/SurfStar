@@ -6,6 +6,7 @@ import { AppLogo } from './components/AppLogo'
 import { ChangePasswordView } from './views/ChangePasswordView'
 import { CheckoutView } from './views/CheckoutView'
 import { ForgotPasswordView } from './views/ForgotPasswordView'
+import { ResetPasswordView } from './views/ResetPasswordView'
 import { LandingView } from './views/LandingView'
 import { PlanDetailView } from './views/PlanDetailView'
 import { SubscriptionView } from './views/SubscriptionView'
@@ -41,7 +42,7 @@ import { StartSession } from './views/StartSession'
 import { TeamAnalyticsView } from './views/TeamAnalyticsView'
 import { TrainingSessionsView } from './views/TrainingSessionsView'
 import { TrainingSessionView } from './views/TrainingSessionView'
-import { isAuthPublicView, isForgotPasswordPath } from './routing'
+import { isAuthPublicView, isForgotPasswordPath, isResetPasswordPath } from './routing'
 import './App.css'
 import './app-theme.css'
 import './plan-marketing.css'
@@ -102,7 +103,7 @@ function AppHeader() {
 }
 
 function Shell() {
-  const { auth, authReady, role, view, publicView, planDetailPlanId, hasActiveSubscription } = useApp()
+  const { auth, authReady, role, view, publicView, planDetailPlanId, hasActiveSubscription, passwordRecoveryPending } = useApp()
 
   if (!authReady) {
     return (
@@ -113,6 +114,10 @@ function Shell() {
         </div>
       </div>
     )
+  }
+
+  if (passwordRecoveryPending || isResetPasswordPath(window.location.pathname)) {
+    return <ResetPasswordView />
   }
 
   if (!auth) {

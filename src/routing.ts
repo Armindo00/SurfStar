@@ -56,6 +56,10 @@ export function isForgotPasswordPath(pathname: string): boolean {
   return pathname === '/forgot-password'
 }
 
+export function isResetPasswordPath(pathname: string): boolean {
+  return pathname === '/reset-password'
+}
+
 export function navigateToLandingPricing(replace = false) {
   if (replace) {
     window.history.replaceState({}, '', '/#packs')
