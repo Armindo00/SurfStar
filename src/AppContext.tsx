@@ -139,6 +139,7 @@ import {
   cancelLocalSubscription,
   changeLocalSubscriptionPlan,
   cloudCancelSubscription,
+  cloudCancelManualSubscription,
   cloudChangeSubscriptionPlan,
   cloudChangeSubscriptionPlanDirect,
   fetchCoachSubscription,
@@ -1141,6 +1142,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const sub = cancelLocalSubscription(auth.organizationId, auth.coachId)
       setSubscription(sub)
       showToast('Subscription canceled.', 'success')
+      return { ok: true as const }
+    }
+
+    if (usesManualPaymentFlow()) {
+      const result = await cloudCancelManualSubscription()
+      if (!result.ok) return result
+
+      await refreshSubscription()
+      showToast(
+        result.currentPeriodEnd
+          ? `Subscription canceled. Access until ${formatShortDate(result.currentPeriodEnd)}.`
+          : result.alreadyCanceled
+            ? 'Subscription is already canceled.'
+            : 'Subscription canceled.',
+        'success',
+      )
       return { ok: true as const }
     }
 

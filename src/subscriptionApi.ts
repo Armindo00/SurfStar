@@ -31,6 +31,10 @@ function writeLocalSubscriptions(subs: CoachSubscription[]) {
 
 export function isSubscriptionActive(sub: CoachSubscription | null | undefined): boolean {
   if (!sub) return false
+  if (sub.status === 'canceled') {
+    if (!sub.currentPeriodEnd) return false
+    return new Date(sub.currentPeriodEnd).getTime() > Date.now()
+  }
   if (sub.status !== 'active' && sub.status !== 'trialing') return false
   if (!sub.currentPeriodEnd) return true
   return new Date(sub.currentPeriodEnd).getTime() > Date.now()
@@ -286,6 +290,26 @@ export async function cloudCancelSubscription(): Promise<
   return {
     ok: true,
     currentPeriodEnd: result.current_period_end ?? null,
+  }
+}
+
+export async function cloudCancelManualSubscription(): Promise<
+  { ok: true; currentPeriodEnd?: string | null; alreadyCanceled?: boolean } | { ok: false; error: string }
+> {
+  const { data, error } = await getSupabase().rpc('coach_cancel_manual_subscription')
+  if (error) {
+    if (error.message.includes('coach_cancel_manual_subscription')) {
+      return { ok: false, error: 'Manual cancellation is not configured yet. Contact contact@surfstar.app.' }
+    }
+    return { ok: false, error: error.message }
+  }
+  if (!data?.ok) {
+    return { ok: false, error: data?.error ?? 'Could not cancel subscription.' }
+  }
+  return {
+    ok: true,
+    currentPeriodEnd: (data.current_period_end as string | null | undefined) ?? null,
+    alreadyCanceled: Boolean(data.already_canceled),
   }
 }
 

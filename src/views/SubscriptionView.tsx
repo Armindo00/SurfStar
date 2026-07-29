@@ -36,6 +36,7 @@ export function SubscriptionView() {
   const activeCount = coachAthletes.filter((a) => !a.blocked).length
   const isActive = isSubscriptionActive(subscription)
   const isCanceled = subscription?.status === 'canceled'
+  const canceledWithAccess = isCanceled && isActive
   const manualFlow = usesManualPaymentFlow()
 
   const submitPassword = async (e: FormEvent) => {
@@ -130,19 +131,21 @@ export function SubscriptionView() {
               <p className="muted">
                 Status:{' '}
                 <strong>
-                  {subscription.status === 'active'
-                    ? 'Active'
-                    : subscription.status === 'trialing'
-                      ? 'Trial'
-                      : subscription.status === 'pending'
-                        ? 'Pending payment'
-                        : 'Canceled'}
+                  {canceledWithAccess
+                    ? 'Canceled (access until period end)'
+                    : subscription.status === 'active'
+                      ? 'Active'
+                      : subscription.status === 'trialing'
+                        ? 'Trial'
+                        : subscription.status === 'pending'
+                          ? 'Pending payment'
+                          : 'Canceled'}
                 </strong>
               </p>
             ) : null}
             {subscription?.currentPeriodEnd ? (
               <p className="muted">
-                {isCanceled ? 'Access until' : 'Renews'}:{' '}
+                {canceledWithAccess || isCanceled ? 'Access until' : 'Renews'}:{' '}
                 {formatAppDate(subscription.currentPeriodEnd, {
                   day: '2-digit',
                   month: 'long',
@@ -235,18 +238,20 @@ export function SubscriptionView() {
       <div className="ss-card stats-panel subscription-cancel-panel">
         <h2 className="stats-panel__title">Cancel subscription</h2>
         <p className="muted">
-          {cloudMode
-            ? 'Your subscription stays active until the end of the current billing period. You can resubscribe anytime.'
-            : 'Canceling stops access to coach features on this device.'}
+          {manualFlow
+            ? 'Your subscription stays active until the end of the current billing period. To renew later, contact contact@surfstar.app.'
+            : cloudMode
+              ? 'Your subscription stays active until the end of the current billing period. You can resubscribe anytime.'
+              : 'Canceling stops access to coach features on this device.'}
         </p>
         {!showCancelConfirm ? (
           <button
             type="button"
             className="btn btn--danger btn--block"
-            disabled={!isActive || cancelBusy || planBusy !== null}
+            disabled={!isActive || cancelBusy || planBusy !== null || canceledWithAccess}
             onClick={() => setShowCancelConfirm(true)}
           >
-            Cancel subscription
+            {canceledWithAccess ? 'Cancellation scheduled' : 'Cancel subscription'}
           </button>
         ) : (
           <div className="subscription-cancel-confirm">

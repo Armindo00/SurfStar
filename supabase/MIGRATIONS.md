@@ -18,6 +18,7 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 12 | `add-organization-plan-requests.sql` | Team Academy approval request form |
 | 13 | `add-platform-admin.sql` | Admin panel, block accounts, approve requests |
 | 14 | `add-athlete-equipment-feedback.sql` | Athlete quiver, coach ratings, session wellbeing feedback |
+| 14b | `add-psychology-survey-scores.sql` | Post-session psychology 0–5 scores (Coach Premium+) |
 | 15 | `add-contact-messages.sql` | Contact / feedback form + admin inbox |
 | 16 | `add-manual-payments.sql` | **Manual billing:** payment requests for all plans, admin confirm & activate |
 | 17 | `add-billing-details.sql` | NIF + billing address on signup and payment requests |
@@ -26,10 +27,18 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 20 | `patch-admin-billing-management.sql` | Billing cycle on subscriptions, renewals tab, confirm renewal RPC |
 | 21 | `add-subscription-renewal-automation.sql` | Auto renewal emails (5d, 1d, expired) + auto-block on expiry |
 | 22 | `add-admin-notification-emails.sql` | Admin email alerts: payment requests, Team Academy, contact form |
+| 23 | `add-coach-notification-emails.sql` | Coach emails: request received, payment IBAN, account activated |
+| 24 | `add-coach-manual-subscription-cancel.sql` | Coach self-cancel at period end (manual billing, no Stripe) |
 
 See **`supabase/RENEWAL_EMAILS.md`** for deploying the daily cron edge function.
 
 See **`supabase/ADMIN_NOTIFY.md`** for deploying instant admin notification emails.
+
+See **`supabase/COACH_EMAILS.md`** for deploying coach transactional emails.
+
+## Verify migrations
+
+Run **`supabase/check-migrations.sql`** in SQL Editor — it lists OK / FALTA for steps 1–24 (plus optional demo mode). Fix anything marked **FALTA** before launch.
 
 ## Production reset
 

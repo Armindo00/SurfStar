@@ -175,9 +175,134 @@ insert into _surfstar_migration_check values
   )
   then 'OK' else 'FALTA' end,
   'Tabela contact_messages + RPC submit_contact_message'
+),
+(
+  145,
+  'add-psychology-survey-scores.sql',
+  case when exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'session_athlete_feedback'
+      and column_name = 'psychology_scores'
+  )
+  then 'OK' else 'FALTA' end,
+  'Coluna session_athlete_feedback.psychology_scores (0-5 survey)'
+),
+(
+  16,
+  'add-manual-payments.sql',
+  case when exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'organization_plan_requests'
+      and column_name = 'payment_status'
+  ) and exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'fetch_coach_plan_request'
+  )
+  then 'OK' else 'FALTA' end,
+  'Billing manual: payment_status + fetch_coach_plan_request'
+),
+(
+  17,
+  'add-billing-details.sql',
+  case when exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'tax_id'
+  )
+  then 'OK' else 'FALTA' end,
+  'NIF / tax_id em profiles e payment requests'
+),
+(
+  18,
+  'patch-billing-address-fields.sql',
+  case when exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'billing_street'
+  )
+  then 'OK' else 'FALTA' end,
+  'Morada estruturada (rua, codigo postal, cidade, pais)'
+),
+(
+  19,
+  'patch-admin-plan-display.sql',
+  case when exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.proname = 'admin_list_accounts'
+      and p.pronargs = 4
+  )
+  then 'OK' else 'FALTA' end,
+  'Admin accounts: plano pedido visivel na lista'
+),
+(
+  20,
+  'patch-admin-billing-management.sql',
+  case when exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'admin_list_billing_subscriptions'
+  ) and exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'admin_confirm_subscription_renewal'
+  )
+  then 'OK' else 'FALTA' end,
+  'Admin renovacoes + billing subscriptions tab'
+),
+(
+  21,
+  'add-subscription-renewal-automation.sql',
+  case when exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'subscription_renewal_reminders'
+  ) and exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'run_daily_subscription_renewal_lifecycle'
+  )
+  then 'OK' else 'FALTA' end,
+  'Emails renovacao automaticos + auto-block'
+),
+(
+  22,
+  'add-admin-notification-emails.sql',
+  case when exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'admin_notification_queue'
+  ) and exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'get_admin_notification_emails'
+  )
+  then 'OK' else 'FALTA' end,
+  'Alertas email para contact@surfstar.app'
+),
+(
+  23,
+  'add-coach-notification-emails.sql',
+  case when exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'coach_notification_queue'
+  ) and exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'fetch_pending_coach_notifications'
+  )
+  then 'OK' else 'FALTA' end,
+  'Emails transaccionais ao coach (pedido, IBAN, activacao)'
+),
+(
+  24,
+  'add-coach-manual-subscription-cancel.sql',
+  case when exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'coach_cancel_manual_subscription'
+  )
+  then 'OK' else 'FALTA' end,
+  'Cancelamento manual de subscricao pelo coach'
 );
 
--- Passo 16 (opcional): demo mode para checkout sem Stripe
+-- Passo 25 (opcional): demo mode para checkout sem Stripe
 do $$
 begin
   if not exists (
@@ -185,7 +310,7 @@ begin
     where table_schema = 'public' and table_name = 'app_settings'
   ) then
     insert into _surfstar_migration_check values (
-      16, 'enable-demo-mode.sql', 'FALTA',
+      25, 'enable-demo-mode.sql', 'FALTA',
       'Primeiro corre fix-subscription-security.sql (passo 9)'
     );
   elsif exists (
@@ -194,11 +319,11 @@ begin
       and coalesce(value #>> '{}', 'false') = 'true'
   ) then
     insert into _surfstar_migration_check values (
-      16, 'enable-demo-mode.sql', 'OK', 'Demo activo (checkout sem Stripe)'
+      25, 'enable-demo-mode.sql', 'OK', 'Demo activo (checkout sem Stripe)'
     );
   else
     insert into _surfstar_migration_check values (
-      16, 'enable-demo-mode.sql', 'FALTA', 'Corre enable-demo-mode.sql (opcional)'
+      25, 'enable-demo-mode.sql', 'OPCIONAL', 'So para dev — enable-demo-mode.sql'
     );
   end if;
 end $$;
@@ -207,4 +332,5 @@ select ordem, ficheiro, estado, o_que_verifica
 from _surfstar_migration_check
 order by ordem;
 
--- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 15)
+-- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 24)
+-- Passo 145 (psychology) corre depois do 14 e antes do 16 se ainda faltar
