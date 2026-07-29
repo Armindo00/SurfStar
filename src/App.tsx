@@ -42,7 +42,7 @@ import { StartSession } from './views/StartSession'
 import { TeamAnalyticsView } from './views/TeamAnalyticsView'
 import { TrainingSessionsView } from './views/TrainingSessionsView'
 import { TrainingSessionView } from './views/TrainingSessionView'
-import { isAuthPublicView, isForgotPasswordPath, isResetPasswordPath } from './routing'
+import { isAuthPublicView } from './routing'
 import './App.css'
 import './app-theme.css'
 import './plan-marketing.css'
@@ -103,7 +103,16 @@ function AppHeader() {
 }
 
 function Shell() {
-  const { auth, authReady, role, view, publicView, planDetailPlanId, hasActiveSubscription, passwordRecoveryPending } = useApp()
+  const {
+    auth,
+    authReady,
+    role,
+    view,
+    publicView,
+    planDetailPlanId,
+    hasActiveSubscription,
+    passwordRecoveryPending,
+  } = useApp()
 
   if (!authReady) {
     return (
@@ -116,12 +125,12 @@ function Shell() {
     )
   }
 
-  if (passwordRecoveryPending || isResetPasswordPath(window.location.pathname)) {
+  if (passwordRecoveryPending || publicView === 'reset-password') {
     return <ResetPasswordView />
   }
 
   if (!auth) {
-    if (isForgotPasswordPath(window.location.pathname)) {
+    if (publicView === 'forgot-password') {
       return <ForgotPasswordView />
     }
     if (publicView === 'landing') {

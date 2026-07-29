@@ -12,6 +12,8 @@ const PATHS: Record<Exclude<PublicView, 'plan-detail'>, string> = {
   privacy: '/privacy',
   terms: '/terms',
   contact: '/contact',
+  'forgot-password': '/forgot-password',
+  'reset-password': '/reset-password',
 }
 
 export function pathForPublicView(view: PublicView): string {
@@ -39,7 +41,8 @@ export function publicViewFromPath(pathname: string): PublicView {
   if (pathname === '/privacy') return 'privacy'
   if (pathname === '/terms') return 'terms'
   if (pathname === '/contact') return 'contact'
-  if (pathname === '/forgot-password') return 'coach-sign-in'
+  if (pathname === '/forgot-password') return 'forgot-password'
+  if (pathname === '/reset-password') return 'reset-password'
   return 'landing'
 }
 

@@ -891,10 +891,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     navigateToResetPassword()
   }, [])
 
-  const openForgotPassword = useCallback((role: UserRole = 'treinador') => {
-    setForgotPasswordRole(role)
-    window.history.pushState({}, '', '/forgot-password')
-  }, [])
+  const openForgotPassword = useCallback(
+    (role: UserRole = 'treinador') => {
+      setForgotPasswordRole(role)
+      setPublicView('forgot-password')
+    },
+    [setPublicView],
+  )
 
   const requestPasswordReset = useCallback(
     async (email: string) => {
