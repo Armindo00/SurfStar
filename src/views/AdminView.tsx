@@ -16,6 +16,11 @@ import {
   type AdminSubscriptionFilter,
 } from '../adminApi'
 import {
+  adminFetchAccountDeletionRequests,
+  adminProcessAccountDeletionRequest,
+  type AccountDeletionRequest,
+} from '../accountDeletionApi'
+import {
   adminFetchContactMessages,
   adminUpdateContactMessageStatus,
 } from '../contactApi'
@@ -171,6 +176,7 @@ export function AdminView() {
   const [subscriptionFilter, setSubscriptionFilter] = useState<AdminSubscriptionFilter>('all')
   const [accounts, setAccounts] = useState<AdminAccount[]>([])
   const [contactMessages, setContactMessages] = useState<ContactMessage[]>([])
+  const [deletionRequests, setDeletionRequests] = useState<AccountDeletionRequest[]>([])
   const [newContactCount, setNewContactCount] = useState(0)
   const [requestFilter, setRequestFilter] = useState<AdminRequestFilter>('pending')
   const [contactFilter, setContactFilter] = useState<'new' | 'read' | 'resolved' | 'all'>('new')
@@ -235,6 +241,11 @@ export function AdminView() {
     setAccounts(result.accounts)
   }, [accountRole, accountSearch, blockedOnly])
 
+  const loadDeletionRequests = useCallback(async () => {
+    const result = await adminFetchAccountDeletionRequests('pending')
+    if (result.ok) setDeletionRequests(result.requests)
+  }, [])
+
   const loadContactMessages = useCallback(async () => {
     setLoading(true)
     const result = await adminFetchContactMessages(contactFilter === 'all' ? null : contactFilter)
@@ -292,9 +303,12 @@ export function AdminView() {
     if (tab === 'dashboard') void loadDashboard()
     if (tab === 'requests') void loadRequests()
     if (tab === 'subscriptions') void loadSubscriptions()
-    if (tab === 'accounts') void loadAccounts()
+    if (tab === 'accounts') {
+      void loadAccounts()
+      void loadDeletionRequests()
+    }
     if (tab === 'contact') void loadContactMessages()
-  }, [tab, isAdmin, cloudMode, loadDashboard, loadRequests, loadSubscriptions, loadAccounts, loadContactMessages])
+  }, [tab, isAdmin, cloudMode, loadDashboard, loadRequests, loadSubscriptions, loadAccounts, loadContactMessages, loadDeletionRequests])
 
   useEffect(() => {
     if (!isAdmin || !cloudMode) return
@@ -390,6 +404,27 @@ export function AdminView() {
 
   const renewalAttentionCount = (stats?.renewals_due_7d ?? 0) + (stats?.renewals_overdue ?? 0)
 
+  const processDeletionRequest = async (request: AccountDeletionRequest, action: 'approve' | 'reject') => {
+    const label = action === 'approve' ? 'permanently delete this account' : 'reject this deletion request'
+    if (!window.confirm(`Are you sure you want to ${label} for ${request.email}?`)) return
+
+    setBusyId(request.id)
+    setError('')
+    try {
+      const result = await adminProcessAccountDeletionRequest(request.id, action)
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
+      showToast(action === 'approve' ? 'Account deleted.' : 'Deletion request rejected.', 'success')
+      await loadDeletionRequests()
+      await loadAccounts()
+      await loadDashboard()
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   const updateContactStatus = async (message: ContactMessage, status: ContactMessageStatus) => {
     setBusyId(message.id)
     setError('')
@@ -454,6 +489,9 @@ export function AdminView() {
             ) : null}
             {id === 'contact' && newContactCount > 0 ? (
               <span className="admin-tabs__badge">{newContactCount}</span>
+            ) : null}
+            {id === 'accounts' && deletionRequests.length > 0 ? (
+              <span className="admin-tabs__badge">{deletionRequests.length}</span>
             ) : null}
           </button>
         ))}
@@ -863,6 +901,46 @@ export function AdminView() {
 
       {!loading && tab === 'accounts' ? (
         <div className="admin-panel">
+          {deletionRequests.length > 0 ? (
+            <section className="admin-deletion-requests">
+              <h3 className="stats-panel__title">Account deletion requests</h3>
+              <p className="muted">Approve only after verifying the user identity. Deletion is permanent.</p>
+              <div className="admin-list">
+                {deletionRequests.map((request) => (
+                  <article key={request.id} className="admin-card admin-card--danger">
+                    <div className="admin-card__head">
+                      <div>
+                        <h2>{request.email}</h2>
+                        <p className="muted">
+                          {request.role === 'treinador' ? 'Coach' : 'Athlete'} · {formatDate(request.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    {request.reason ? <p className="admin-card__message">{request.reason}</p> : null}
+                    <div className="admin-card__actions">
+                      <button
+                        type="button"
+                        className="btn btn--danger btn--small"
+                        disabled={busyId === request.id}
+                        onClick={() => void processDeletionRequest(request, 'approve')}
+                      >
+                        {busyId === request.id ? 'Processing…' : 'Approve & delete'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--small"
+                        disabled={busyId === request.id}
+                        onClick={() => void processDeletionRequest(request, 'reject')}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <div className="admin-toolbar admin-toolbar--wrap">
             <label className="field field--pro admin-toolbar__field">
               <span>Search</span>

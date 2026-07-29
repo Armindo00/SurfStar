@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NavBadge } from '../components/NavBadge'
+import { DeleteAccountPanel } from '../components/DeleteAccountPanel'
 import { useApp } from '../AppContext'
 import { UNSEEN } from '../unseenDomains'
 import {
@@ -558,6 +559,8 @@ export function AthletePortal() {
       <button type="button" className="btn btn--outline btn--block" onClick={openContact}>
         Contact SurfStar
       </button>
+
+      <DeleteAccountPanel roleLabel="athlete" />
 
       <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>
         Sign out

@@ -32,7 +32,7 @@ const PRIVACY = {
     },
     {
       heading: 'Your rights',
-      body: 'You may request access, correction, or deletion of your account data by contacting us. Athletes can revoke coach access from the athlete portal.',
+      body: 'You may request deletion of your account from Account & subscription (coaches) or the athlete portal. We process requests within 30 days. You may also contact us for access or correction.',
     },
     {
       heading: 'Retention',

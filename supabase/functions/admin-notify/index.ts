@@ -16,7 +16,7 @@ const smtpPass = Deno.env.get('SMTP_PASSWORD')
 const smtpFrom = Deno.env.get('SMTP_FROM') ?? 'contact@surfstar.app'
 const smtpFromName = Deno.env.get('SMTP_FROM_NAME') ?? 'SurfStar'
 
-type EventType = 'payment_request' | 'team_academy_request' | 'contact_message'
+type EventType = 'payment_request' | 'team_academy_request' | 'contact_message' | 'account_deletion_request'
 
 type NotificationRow = {
   id: string
@@ -99,6 +99,39 @@ function buildAdminEmail(notification: NotificationRow): { subject: string; html
       </table>
       <div style="background:#f4f4f5;border-radius:8px;padding:1rem;white-space:pre-wrap;">${escapeHtml(asString(p.message))}</div>
       <p style="margin-top:1rem;color:#666;">Open <strong>Admin → Contact</strong> in the SurfStar app.</p>
+    </div>`
+
+    return { subject, html, text }
+  }
+
+  if (notification.event_type === 'account_deletion_request') {
+    const role = asString(p.role) === 'treinador' ? 'Coach' : 'Athlete'
+    const subject = `[SurfStar] Account deletion request — ${asString(p.email)}`
+    const text = [
+      'Account deletion request on SurfStar',
+      '',
+      `Name: ${asString(p.name)}`,
+      `Email: ${asString(p.email)}`,
+      `Role: ${role}`,
+      `Requested: ${created}`,
+      '',
+      p.reason ? `Reason:\n${asString(p.reason)}` : '(No reason provided)',
+      '',
+      'Open Admin → Accounts in the SurfStar app to approve or reject.',
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    const html = `<div style="font-family:system-ui,sans-serif;line-height:1.5;color:#111;max-width:640px;">
+      <h2 style="margin:0 0 0.75rem;">Account deletion request</h2>
+      <table style="border-collapse:collapse;width:100%;margin-bottom:1rem;">
+        <tr><td style="padding:0.25rem 0.75rem 0.25rem 0;color:#666;">Name</td><td><strong>${escapeHtml(asString(p.name))}</strong></td></tr>
+        <tr><td style="padding:0.25rem 0.75rem 0.25rem 0;color:#666;">Email</td><td>${escapeHtml(asString(p.email))}</td></tr>
+        <tr><td style="padding:0.25rem 0.75rem 0.25rem 0;color:#666;">Role</td><td>${escapeHtml(role)}</td></tr>
+        <tr><td style="padding:0.25rem 0.75rem 0.25rem 0;color:#666;">Requested</td><td>${escapeHtml(created)}</td></tr>
+      </table>
+      ${p.reason ? `<div style="background:#f4f4f5;border-radius:8px;padding:1rem;white-space:pre-wrap;">${escapeHtml(asString(p.reason))}</div>` : ''}
+      <p style="margin-top:1rem;color:#666;">Open <strong>Admin → Accounts</strong> to approve or reject.</p>
     </div>`
 
     return { subject, html, text }

@@ -4,6 +4,7 @@ import { formatAppDate } from '../dateFormat'
 import { athleteLimitMessage, coachSeatLimitMessage, canManageOrganizationCoaches } from '../planUtils'
 import { cloudOpenBillingPortal, isSubscriptionActive } from '../subscriptionApi'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { DeleteAccountPanel } from '../components/DeleteAccountPanel'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { useApp } from '../AppContext'
 
@@ -310,6 +311,12 @@ export function SubscriptionView() {
           </button>
         </form>
       </div>
+
+      <DeleteAccountPanel
+        roleLabel="coach"
+        subscriptionActive={isActive}
+        subscriptionCanceled={isCanceled || canceledWithAccess}
+      />
     </div>
   )
 }

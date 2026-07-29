@@ -300,9 +300,22 @@ insert into _surfstar_migration_check values
   )
   then 'OK' else 'FALTA' end,
   'Cancelamento manual de subscricao pelo coach'
+),
+(
+  25,
+  'add-account-deletion.sql',
+  case when exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'account_deletion_requests'
+  ) and exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'request_account_deletion'
+  )
+  then 'OK' else 'FALTA' end,
+  'Pedidos GDPR de eliminacao de conta'
 );
 
--- Passo 25 (opcional): demo mode para checkout sem Stripe
+-- Passo 26 (opcional): demo mode para checkout sem Stripe
 do $$
 begin
   if not exists (
@@ -310,7 +323,7 @@ begin
     where table_schema = 'public' and table_name = 'app_settings'
   ) then
     insert into _surfstar_migration_check values (
-      25, 'enable-demo-mode.sql', 'FALTA',
+      26, 'enable-demo-mode.sql', 'FALTA',
       'Primeiro corre fix-subscription-security.sql (passo 9)'
     );
   elsif exists (
@@ -319,11 +332,11 @@ begin
       and coalesce(value #>> '{}', 'false') = 'true'
   ) then
     insert into _surfstar_migration_check values (
-      25, 'enable-demo-mode.sql', 'OK', 'Demo activo (checkout sem Stripe)'
+      26, 'enable-demo-mode.sql', 'OK', 'Demo activo (checkout sem Stripe)'
     );
   else
     insert into _surfstar_migration_check values (
-      25, 'enable-demo-mode.sql', 'OPCIONAL', 'So para dev — enable-demo-mode.sql'
+      26, 'enable-demo-mode.sql', 'OPCIONAL', 'So para dev — enable-demo-mode.sql'
     );
   end if;
 end $$;
@@ -332,5 +345,5 @@ select ordem, ficheiro, estado, o_que_verifica
 from _surfstar_migration_check
 order by ordem;
 
--- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 24)
+-- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 25)
 -- Passo 145 (psychology) corre depois do 14 e antes do 16 se ainda faltar

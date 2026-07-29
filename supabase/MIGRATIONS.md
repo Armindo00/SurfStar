@@ -29,6 +29,7 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 22 | `add-admin-notification-emails.sql` | Admin email alerts: payment requests, Team Academy, contact form |
 | 23 | `add-coach-notification-emails.sql` | Coach emails: request received, payment IBAN, account activated |
 | 24 | `add-coach-manual-subscription-cancel.sql` | Coach self-cancel at period end (manual billing, no Stripe) |
+| 25 | `add-account-deletion.sql` | GDPR account deletion requests + admin purge (requires #22 admin notify) |
 
 See **`supabase/RENEWAL_EMAILS.md`** for deploying the daily cron edge function.
 
@@ -38,7 +39,7 @@ See **`supabase/COACH_EMAILS.md`** for deploying coach transactional emails.
 
 ## Verify migrations
 
-Run **`supabase/check-migrations.sql`** in SQL Editor — it lists OK / FALTA for steps 1–24 (plus optional demo mode). Fix anything marked **FALTA** before launch.
+Run **`supabase/check-migrations.sql`** in SQL Editor — it lists OK / FALTA for steps 1–25 (plus optional demo mode). Fix anything marked **FALTA** before launch.
 
 ## Production reset
 
