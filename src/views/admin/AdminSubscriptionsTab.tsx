@@ -12,14 +12,13 @@ import {
   renewalStatusTone,
   subscriptionAmount,
 } from '../../adminBillingUtils'
-import { formatAppDateTime } from '../../dateFormat'
-import { getPlan, type BillingInterval, type PlanId } from '../../plans'
+import { AdminFilterPills } from './AdminFilterPills'
+import { billingIntervalLabel, formatAdminDate, planLabel } from './adminUtils'
 
 type Props = {
   filter: AdminSubscriptionFilter
   onFilterChange: (filter: AdminSubscriptionFilter) => void
   subscriptions: AdminBillingSubscription[]
-  loading: boolean
   busyId: string | null
   error: string
   notesDraft: Record<string, string>
@@ -31,26 +30,14 @@ type Props = {
   onDashboardRefresh: () => Promise<void>
 }
 
-function formatDate(value: string | null): string {
-  if (!value) return '—'
-  return formatAppDateTime(value, {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-function planLabel(planId: string): string {
-  try {
-    return getPlan(planId as PlanId).name
-  } catch {
-    return planId
-  }
-}
-
-function billingIntervalLabel(interval: BillingInterval | string): string {
-  return interval === 'annual' ? 'Annual' : 'Monthly'
-}
+const FILTER_OPTIONS: { value: AdminSubscriptionFilter; label: string }[] = [
+  { value: 'all', label: 'All active' },
+  { value: 'due_7d', label: 'Due 7 days' },
+  { value: 'due_30d', label: 'Due 30 days' },
+  { value: 'overdue', label: 'Overdue' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'annual', label: 'Annual' },
+]
 
 export async function loadAdminSubscriptions(
   filter: AdminSubscriptionFilter,
@@ -62,7 +49,6 @@ export function AdminSubscriptionsTab({
   filter,
   onFilterChange,
   subscriptions,
-  loading,
   busyId,
   error,
   notesDraft,
@@ -82,7 +68,7 @@ export function AdminSubscriptionsTab({
         onError(result.error)
         return
       }
-      const nextDate = result.currentPeriodEnd ? formatDate(result.currentPeriodEnd) : 'extended'
+      const nextDate = result.currentPeriodEnd ? formatAdminDate(result.currentPeriodEnd) : 'extended'
       onToast(`Renewal confirmed. Next period ends ${nextDate}.`)
       await onReload()
       await onDashboardRefresh()
@@ -110,102 +96,74 @@ export function AdminSubscriptionsTab({
 
   return (
     <div className="admin-panel">
-      <p className="muted admin-page__hint">
-        Active subscriptions and renewals. After receiving payment (IBAN / MB Way), confirm renewal to extend the
-        billing period by one month or one year.
+      <p className="admin-panel__intro muted">
+        Active subscriptions and renewals. After receiving payment, confirm renewal to extend the billing period.
       </p>
 
-      <div className="admin-toolbar admin-toolbar--wrap">
-        <label className="field field--pro admin-toolbar__field">
-          <span>Filter</span>
-          <select value={filter} onChange={(e) => onFilterChange(e.target.value as AdminSubscriptionFilter)}>
-            <option value="all">All active</option>
-            <option value="due_7d">Due within 7 days</option>
-            <option value="due_30d">Due within 30 days</option>
-            <option value="overdue">Overdue</option>
-            <option value="monthly">Monthly billing</option>
-            <option value="annual">Annual billing</option>
-          </select>
-        </label>
-        <button type="button" className="btn btn--secondary btn--small" onClick={() => void onReload()}>
+      <div className="admin-toolbar admin-toolbar--filters">
+        <AdminFilterPills label="Show" value={filter} options={FILTER_OPTIONS} onChange={onFilterChange} />
+        <button type="button" className="btn btn--ghost btn--small admin-toolbar__refresh" onClick={() => void onReload()}>
           Refresh
         </button>
       </div>
 
       {error ? <p className="login-error admin-page__error">{error}</p> : null}
-      {loading ? null : subscriptions.length === 0 ? (
-        <p className="muted">No subscriptions match this filter.</p>
+
+      {subscriptions.length === 0 ? (
+        <p className="admin-empty">No subscriptions match this filter.</p>
       ) : (
         <div className="admin-list">
           {subscriptions.map((sub) => {
             const renewalStatus = getRenewalStatus(sub.current_period_end)
             const daysLeft = daysUntilRenewal(sub.current_period_end)
             const amount = subscriptionAmount(sub.plan_id, sub.billing_interval)
+            const renewalHint =
+              daysLeft !== null
+                ? daysLeft < 0
+                  ? `${Math.abs(daysLeft)} days overdue`
+                  : `${daysLeft} days left`
+                : null
 
             return (
-              <article key={sub.coach_id} className="admin-card">
+              <article key={sub.coach_id} className="admin-card admin-card--compact">
                 <div className="admin-card__head">
                   <div>
                     <h2>{sub.name}</h2>
-                    <p className="muted">
+                    <p className="muted admin-card__subtitle">
                       {sub.email}
                       {sub.organization_name ? ` · ${sub.organization_name}` : ''}
+                    </p>
+                    <p className="admin-card__summary">
+                      {planLabel(sub.plan_id)} · {billingIntervalLabel(sub.billing_interval)} · {amount} · Renews{' '}
+                      {formatAdminDate(sub.current_period_end)}
+                      {renewalHint ? ` (${renewalHint})` : ''}
                     </p>
                   </div>
                   <div className="admin-card__badges">
                     <span className={`admin-badge admin-badge--${renewalStatusTone(renewalStatus)}`}>
                       {renewalStatusLabel(renewalStatus)}
                     </span>
-                    <span className="admin-badge admin-badge--plan">{billingIntervalLabel(sub.billing_interval)}</span>
                     {sub.blocked ? <span className="admin-badge admin-badge--blocked">Blocked</span> : null}
                   </div>
                 </div>
 
-                <div className="admin-plan-banner admin-plan-banner--active">
-                  <span className="admin-plan-banner__eyebrow">Active subscription</span>
-                  <strong className="admin-plan-banner__title">
-                    {planLabel(sub.plan_id)} · {billingIntervalLabel(sub.billing_interval)} · {amount}
-                  </strong>
-                  <p className="admin-plan-banner__hint muted">
-                    Renews {formatDate(sub.current_period_end)}
-                    {daysLeft !== null
-                      ? daysLeft < 0
-                        ? ` (${Math.abs(daysLeft)} days overdue)`
-                        : ` (${daysLeft} days left)`
-                      : ''}
-                  </p>
-                </div>
-
-                <dl className="admin-meta">
-                  <div>
-                    <dt>Plan</dt>
-                    <dd>{planLabel(sub.plan_id)} ({sub.plan_id})</dd>
-                  </div>
-                  <div>
-                    <dt>Billing cycle</dt>
-                    <dd>{billingIntervalLabel(sub.billing_interval)}</dd>
-                  </div>
-                  <div>
-                    <dt>Amount due</dt>
-                    <dd>{amount}</dd>
-                  </div>
-                  <div>
-                    <dt>Period ends</dt>
-                    <dd>{formatDate(sub.current_period_end)}</dd>
-                  </div>
-                  {sub.tax_id ? (
+                <details className="admin-details">
+                  <summary>Subscription details</summary>
+                  <dl className="admin-meta admin-meta--compact">
                     <div>
-                      <dt>Tax ID / VAT</dt>
-                      <dd>{sub.tax_id}</dd>
+                      <dt>Status</dt>
+                      <dd>{sub.plan_status}</dd>
                     </div>
-                  ) : null}
-                  <div>
-                    <dt>Status</dt>
-                    <dd>{sub.plan_status}</dd>
-                  </div>
-                </dl>
+                    {sub.tax_id ? (
+                      <div>
+                        <dt>Tax ID / VAT</dt>
+                        <dd>{sub.tax_id}</dd>
+                      </div>
+                    ) : null}
+                  </dl>
+                </details>
 
-                <label className="field field--pro">
+                <label className="field field--pro admin-card__notes-field">
                   <span>Payment notes (optional)</span>
                   <textarea
                     rows={2}
@@ -215,7 +173,7 @@ export function AdminSubscriptionsTab({
                   />
                 </label>
 
-                <div className="admin-card__actions">
+                <div className="admin-card__actions admin-card__actions--primary">
                   <button
                     type="button"
                     className="btn btn--gold btn--small"
