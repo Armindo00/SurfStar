@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { getContactEmail } from '../config'
 import { AuthShell } from '../components/AuthShell'
+import { OtpCodeInput } from '../components/OtpCodeInput'
 import { ResetPasswordSheet } from '../components/ResetPasswordSheet'
 import { useApp } from '../AppContext'
 import type { UserRole } from '../types'
@@ -139,17 +140,7 @@ export function ForgotPasswordView() {
             <form className="auth-form" onSubmit={(e) => void verifyCode(e)}>
               <label className="auth-field">
                 <span>Reset code</span>
-                <input
-                  className="auth-otp-input"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  value={code}
-                  onChange={(e) => setCode(normalizeCode(e.target.value))}
-                  placeholder="000000"
-                  maxLength={6}
-                  required
-                />
+                <OtpCodeInput value={code} onChange={setCode} disabled={busy} />
               </label>
               <p className="muted auth-code-hint">
                 Sent to <strong>{email}</strong>

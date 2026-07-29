@@ -2557,11 +2557,31 @@ body {
   text-underline-offset: 0.18em;
 }
 
-.auth-otp-input {
+.auth-otp-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.auth-otp-cell {
+  width: 100%;
+  min-height: 3.1rem;
+  padding: 0.5rem 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.32);
+  color: var(--landing-text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 1.35rem;
-  letter-spacing: 0.35em;
+  font-weight: 700;
   text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth-otp-cell:focus {
+  outline: none;
+  border-color: rgba(201, 169, 98, 0.55);
+  box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.15);
 }
 
 .auth-code-hint {
