@@ -40,6 +40,7 @@ import { useApp } from '../AppContext'
 import { UNSEEN } from '../unseenDomains'
 import type { ContactMessage, ContactMessageStatus } from '../types'
 import { AdminSubscriptionsTab, loadAdminSubscriptions } from './admin/AdminSubscriptionsTab'
+import { AdminManualPaymentSettings } from './admin/AdminManualPaymentSettings'
 
 type AdminTab = 'dashboard' | 'requests' | 'subscriptions' | 'accounts' | 'contact'
 
@@ -608,7 +609,7 @@ export function AdminView() {
             <article className="admin-workflow-card">
               <h3>New sign-ups</h3>
               <p className="muted">
-                Approve request → send IBAN / MB Way from contact@surfstar.app → confirm payment to activate.
+                Approve request → coach receives payment details by email → confirm payment to activate.
               </p>
               <button type="button" className="btn btn--secondary btn--small" onClick={() => goToTab('requests')}>
                 Open Payments
@@ -645,6 +646,8 @@ export function AdminView() {
 
       {!loading && tab === 'requests' ? (
         <div className="admin-panel">
+          <AdminManualPaymentSettings onToast={(message) => showToast(message, 'success')} />
+
           <div className="admin-toolbar">
             <label className="field field--pro admin-toolbar__field">
               <span>Filter</span>

@@ -284,3 +284,48 @@ export async function adminActivateCoachPlan(
 export async function syncPlatformAdminBootstrap(): Promise<void> {
   await getSupabase().rpc('sync_platform_admin_bootstrap')
 }
+
+export type ManualPaymentDetails = {
+  account_name: string
+  iban: string
+  mbway: string
+  payment_reference_hint: string
+}
+
+export async function adminFetchManualPaymentDetails(): Promise<
+  { ok: true; details: ManualPaymentDetails } | { ok: false; error: string }
+> {
+  const { data, error } = await getSupabase().rpc('admin_get_manual_payment_details')
+  if (error) {
+    if (error.message.includes('admin_get_manual_payment_details')) {
+      return { ok: false, error: 'Payment settings not configured. Run add-admin-manual-payment-settings.sql.' }
+    }
+    return { ok: false, error: error.message }
+  }
+  if (!data?.ok) return { ok: false, error: data?.error ?? 'Could not load payment settings.' }
+  const details = data.details as ManualPaymentDetails
+  return {
+    ok: true,
+    details: {
+      account_name: details.account_name ?? 'SurfStar',
+      iban: details.iban ?? '',
+      mbway: details.mbway ?? '',
+      payment_reference_hint:
+        details.payment_reference_hint ?? 'Use your registered email as the payment reference.',
+    },
+  }
+}
+
+export async function adminUpdateManualPaymentDetails(input: ManualPaymentDetails): Promise<
+  { ok: true; details: ManualPaymentDetails } | { ok: false; error: string }
+> {
+  const { data, error } = await getSupabase().rpc('admin_update_manual_payment_details', {
+    p_account_name: input.account_name.trim(),
+    p_iban: input.iban.trim(),
+    p_mbway: input.mbway.trim(),
+    p_payment_reference_hint: input.payment_reference_hint.trim(),
+  })
+  if (error) return { ok: false, error: error.message }
+  if (!data?.ok) return { ok: false, error: data?.error ?? 'Could not save payment settings.' }
+  return { ok: true, details: data.details as ManualPaymentDetails }
+}

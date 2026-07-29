@@ -30,6 +30,7 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 23 | `add-coach-notification-emails.sql` | Coach emails: request received, payment IBAN, account activated |
 | 24 | `add-coach-manual-subscription-cancel.sql` | Coach self-cancel at period end (manual billing, no Stripe) |
 | 25 | `add-account-deletion.sql` | GDPR account deletion requests + admin purge (requires #22 admin notify) |
+| 26 | `add-admin-manual-payment-settings.sql` | Admin UI: edit IBAN / MB Way for coach approval emails |
 
 See **`supabase/RENEWAL_EMAILS.md`** for deploying the daily cron edge function.
 

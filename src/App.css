@@ -7379,6 +7379,40 @@ body {
   gap: 0.45rem;
 }
 
+.admin-payment-settings {
+  margin-bottom: 1rem;
+  padding: 0;
+  overflow: hidden;
+}
+
+.admin-payment-settings__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.1rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-payment-settings__toggle strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.admin-payment-settings__toggle small {
+  display: block;
+}
+
+.admin-payment-settings__form {
+  padding: 0 1.1rem 1.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .checkout-manual-total {
   margin: 0 0 1rem;
   padding: 0.75rem 1rem;
