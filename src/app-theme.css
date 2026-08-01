@@ -2686,3 +2686,81 @@ body {
 .help-section--contact .btn {
   margin-top: 0.35rem;
 }
+
+/* Athlete PDF report — isolated light document (overrides dark app theme) */
+.app-shell .athlete-report-backdrop {
+  color-scheme: light;
+}
+
+.app-shell .athlete-report,
+.app-shell .athlete-report-print-root .athlete-report__comment-field {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18) !important;
+}
+
+.app-shell .athlete-report__header h1,
+.app-shell .athlete-report__section h2,
+.app-shell .athlete-report__section > p,
+.app-shell .athlete-report__meta dd,
+.app-shell .athlete-report__kpi-grid strong,
+.app-shell .athlete-report__breakdown strong,
+.app-shell .athlete-report__comment,
+.app-shell .athlete-report .data-table td {
+  color: #0f172a !important;
+}
+
+.app-shell .athlete-report__eyebrow,
+.app-shell .athlete-report__subtitle,
+.app-shell .athlete-report__meta dt,
+.app-shell .athlete-report__kpi-grid span,
+.app-shell .athlete-report__note,
+.app-shell .athlete-report__breakdown li span,
+.app-shell .athlete-report__footer p {
+  color: #475569 !important;
+}
+
+.app-shell .athlete-report .data-table thead {
+  background: #e2e8f0 !important;
+}
+
+.app-shell .athlete-report .data-table th {
+  color: #334155 !important;
+}
+
+.app-shell .athlete-report .data-table td {
+  border-bottom-color: #e2e8f0 !important;
+}
+
+.app-shell .athlete-report .data-table tbody tr:nth-child(even) {
+  background: #f8fafc !important;
+}
+
+.app-shell .athlete-report__comment-field span {
+  color: #334155 !important;
+}
+
+.app-shell .athlete-report__comment-field textarea {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.app-shell .athlete-report__comment-field textarea::placeholder {
+  color: #64748b !important;
+}
+
+.app-shell .athlete-report__comment-field .muted {
+  color: #64748b !important;
+}
+
+.app-shell .athlete-report__kpi-grid article {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+.app-shell .athlete-report__comment {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
