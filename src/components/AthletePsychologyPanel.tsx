@@ -6,17 +6,17 @@ import {
 } from '../athletePsychologyStats'
 import { PSYCHOLOGY_SURVEY_QUESTIONS } from '../psychologySurvey'
 import { formatShortDate } from '../dateFormat'
-import { analyticsPeriodLabel, type AnalyticsPeriod } from '../teamAnalyticsStats'
+import { describeAnalyticsRange, type AnalyticsRange } from '../analyticsRange'
 import { TRAINING_MODE_LABELS, type TrainingSession } from '../types'
 
 type Props = {
   athleteId: string
   coachId: string
-  period: AnalyticsPeriod
+  range: AnalyticsRange
   sessions: TrainingSession[]
 }
 
-export function AthletePsychologyPanel({ athleteId, coachId, period, sessions }: Props) {
+export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: Props) {
   const { sessionAthleteFeedback } = useApp()
 
   const psychology = useMemo(
@@ -26,12 +26,12 @@ export function AthletePsychologyPanel({ athleteId, coachId, period, sessions }:
         sessions,
         coachId,
         athleteId,
-        period,
+        range,
       ),
-    [athleteId, coachId, period, sessionAthleteFeedback, sessions],
+    [athleteId, coachId, range, sessionAthleteFeedback, sessions],
   )
 
-  const periodLabel = analyticsPeriodLabel(period)
+  const periodLabel = describeAnalyticsRange(range)
 
   return (
     <div className="athlete-psychology-panel">
@@ -47,7 +47,7 @@ export function AthletePsychologyPanel({ athleteId, coachId, period, sessions }:
         <div className="ss-card stats-panel analytics-empty-period">
           <h2 className="stats-panel__title">No check-ins in this period</h2>
           <p className="muted">
-            The athlete has not submitted the post-session questionnaire in the last {periodLabel}.
+            The athlete has not submitted the post-session questionnaire in {periodLabel}.
             {psychology.legacyCheckIns > 0
               ? ` ${psychology.legacyCheckIns} older check-in${psychology.legacyCheckIns === 1 ? '' : 's'} used the previous format.`
               : ''}

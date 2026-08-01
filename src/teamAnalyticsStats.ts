@@ -1,5 +1,12 @@
 import { heatIsFinished, heatResultBreakdown } from './heatUtils'
 import {
+  buildEvolutionSlotsForRange,
+  parseAnalyticsRangeBounds,
+  presetAnalyticsRange,
+  sessionTimestamp,
+  type AnalyticsRange,
+} from './analyticsRange'
+import {
   computeAthleteComboStats,
   computeAthleteGeneralStats,
   computeAthleteTechnicalStats,
@@ -46,7 +53,7 @@ export type EvolutionPoint = {
 export type EvolutionMonthPoint = EvolutionPoint
 
 export type AthletePeriodAnalytics = {
-  period: AnalyticsPeriod
+  range: AnalyticsRange
   sessions: TrainingSession[]
   general: ReturnType<typeof computeAthleteGeneralStats>
   evolution: EvolutionPoint[]
@@ -348,22 +355,44 @@ export function buildAthleteEvolution(
   return bucketEvolutionPoints(sessions, athleteId, evolutionSlotsForPeriod(period))
 }
 
+export function filterAthleteSessionsByRange(
+  sessions: TrainingSession[],
+  coachId: string,
+  athleteId: string,
+  range: AnalyticsRange,
+): TrainingSession[] {
+  const { start, end } = parseAnalyticsRangeBounds(range)
+  return filterAthleteSessions(sessions, coachId, athleteId).filter((session) => {
+    const when = sessionTimestamp(session)
+    return when >= start.getTime() && when <= end.getTime()
+  })
+}
+
+export function buildAthleteRangeAnalytics(
+  allSessions: TrainingSession[],
+  coachId: string,
+  athleteId: string,
+  range: AnalyticsRange,
+): AthletePeriodAnalytics {
+  const sessions = filterAthleteSessionsByRange(allSessions, coachId, athleteId, range)
+
+  return {
+    range,
+    sessions,
+    general: computeAthleteGeneralStats(sessions, athleteId),
+    evolution: bucketEvolutionPoints(sessions, athleteId, buildEvolutionSlotsForRange(range)),
+    technical: computeAthleteTechnicalStats(sessions, athleteId),
+    combo: computeAthleteComboStats(sessions, athleteId),
+  }
+}
+
 export function buildAthletePeriodAnalytics(
   allSessions: TrainingSession[],
   coachId: string,
   athleteId: string,
   period: AnalyticsPeriod = '6m',
 ): AthletePeriodAnalytics {
-  const sessions = filterAthleteSessionsByPeriod(allSessions, coachId, athleteId, period)
-
-  return {
-    period,
-    sessions,
-    general: computeAthleteGeneralStats(sessions, athleteId),
-    evolution: buildAthleteEvolution(sessions, athleteId, period),
-    technical: computeAthleteTechnicalStats(sessions, athleteId),
-    combo: computeAthleteComboStats(sessions, athleteId),
-  }
+  return buildAthleteRangeAnalytics(allSessions, coachId, athleteId, presetAnalyticsRange(period))
 }
 
 export function buildAthleteSixMonthAnalytics(

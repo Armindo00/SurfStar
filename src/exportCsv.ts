@@ -1,5 +1,8 @@
 import type { AthletePeriodAnalytics } from './teamAnalyticsStats'
-import { analyticsPeriodLabel } from './teamAnalyticsStats'
+import {
+  describeAnalyticsRangeLong,
+  evolutionColumnLabel,
+} from './analyticsRange'
 import { buildAthleteHeatAnalytics, EARLY_HEAT_TOTAL_TARGET, MAJOR_HEAT_WAVE_SCORE } from './heatAnalyticsStats'
 import type { Athlete, SurfSpot, TrainingSession } from './types'
 import {
@@ -60,16 +63,22 @@ export function exportAthleteAnalyticsCsv(
   analytics: AthletePeriodAnalytics,
   athleteId: string,
 ) {
-  const periodLabel = analyticsPeriodLabel(analytics.period)
-  const evolutionColumn =
-    analytics.period === '6m' ? 'Month' : analytics.period === '1m' ? 'Week' : 'Day'
+  const periodLabel = describeAnalyticsRangeLong(analytics.range)
+  const evolutionColumn = evolutionColumnLabel(analytics.range)
 
   const rows: string[][] = [
     ['Athlete', athleteName],
-    ['Period', `Last ${periodLabel}`],
+    ['Period', periodLabel],
+  ]
+
+  if (analytics.range.kind === 'custom' && analytics.range.title) {
+    rows.push(['Report title', analytics.range.title])
+  }
+
+  rows.push(
     [],
     [evolutionColumn, 'Sessions', 'Success rate %', 'Avg level (tech + combos)', 'Potential rate %', 'Waves'],
-  ]
+  )
 
   for (const point of analytics.evolution) {
     rows.push([
@@ -115,5 +124,9 @@ export function exportAthleteAnalyticsCsv(
   }
 
   const safeName = athleteName.replace(/[^\w\-]+/g, '-').toLowerCase()
-  downloadCsv(`surfstar-analytics-${safeName}.csv`, rows)
+  const rangeStamp =
+    analytics.range.kind === 'custom'
+      ? `${analytics.range.fromDate}_${analytics.range.toDate}`
+      : analytics.range.period
+  downloadCsv(`surfstar-analytics-${safeName}-${rangeStamp}.csv`, rows)
 }

@@ -3,6 +3,7 @@ import { AthleteMaterialPanel } from '../components/AthleteMaterialPanel'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 import { buildAthletePsychologyAnalytics, feedbackHasPsychologySurvey } from '../athletePsychologyStats'
+import { presetAnalyticsRange } from '../analyticsRange'
 import { formatMaterialDate } from '../materialUtils'
 import { PSYCHOLOGY_SURVEY_QUESTIONS } from '../psychologySurvey'
 import { mentalStateLabel } from '../mentalState'
@@ -61,7 +62,7 @@ export function CoachAthleteInsightsView() {
       coachSessions,
       auth.coachId,
       insightsAthlete.id,
-      '6m',
+      presetAnalyticsRange('6m'),
     )
   }, [auth, insightsAthlete, sessionAthleteFeedback, trainingSessions])
 

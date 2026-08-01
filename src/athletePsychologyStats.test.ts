@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { presetAnalyticsRange } from './analyticsRange'
 import { buildAthletePsychologyAnalytics } from './athletePsychologyStats'
 import { createDefaultPsychologySurveyScores } from './psychologySurvey'
 import type { SessionAthleteFeedback, TrainingSession } from './types'
@@ -49,7 +50,13 @@ describe('buildAthletePsychologyAnalytics', () => {
       feedback('s2', '2026-07-22T12:30:00.000Z'),
     ]
 
-    const analytics = buildAthletePsychologyAnalytics(rows, sessions, 'coach-1', 'a1', '1m')
+    const analytics = buildAthletePsychologyAnalytics(
+      rows,
+      sessions,
+      'coach-1',
+      'a1',
+      presetAnalyticsRange('1m'),
+    )
 
     expect(analytics.checkIns).toBe(2)
     expect(analytics.feedbackRate).toBe(100)

@@ -15,8 +15,12 @@ import {
   formatCombinedLevelSummary,
   LEVELS,
 } from '../sessionStats'
-import type { AthletePeriodAnalytics, AnalyticsPeriod } from '../teamAnalyticsStats'
-import { analyticsPeriodLabel } from '../teamAnalyticsStats'
+import {
+  describeAnalyticsRange,
+  evolutionChartTitle,
+  evolutionColumnLabel,
+} from '../analyticsRange'
+import type { AthletePeriodAnalytics } from '../teamAnalyticsStats'
 import {
   COMBO_LEVEL_LABELS,
   MANEUVER_LABELS,
@@ -56,21 +60,8 @@ function RateBar({ value }: { value: number }) {
   )
 }
 
-function evolutionPeriodLabel(period: AnalyticsPeriod): string {
-  if (period === '6m') return 'Month'
-  if (period === '1m') return 'Week'
-  return 'Day'
-}
-
-function evolutionChartTitle(period: AnalyticsPeriod): string {
-  if (period === '6m') return 'Evolution over 6 months'
-  if (period === '1m') return 'Evolution over 4 weeks'
-  return 'Evolution over 7 days'
-}
-
 type Props = {
   topic: AnalyticsTopic
-  period: AnalyticsPeriod
   analytics: AthletePeriodAnalytics
   heatAnalytics: AthleteHeatAnalyticsSummary
   sessionSummaries: AthleteSessionSummary[]
@@ -80,7 +71,6 @@ type Props = {
 
 export function AthleteAnalyticsTopicSheet({
   topic,
-  period,
   analytics,
   heatAnalytics,
   sessionSummaries,
@@ -89,7 +79,7 @@ export function AthleteAnalyticsTopicSheet({
 }: Props) {
   const meta = TOPIC_META[topic]
   const general = analytics.general
-  const periodLabel = analyticsPeriodLabel(period)
+  const periodLabel = describeAnalyticsRange(analytics.range)
 
   const sessionCountByMode = analytics.sessions.reduce(
     (acc, session) => {
@@ -155,10 +145,10 @@ export function AthleteAnalyticsTopicSheet({
               ) : null}
 
               <EvolutionLineChart
-                title={evolutionChartTitle(period)}
+                title={evolutionChartTitle(analytics.range)}
                 subtitle="Success rate, combined avg level, and wave potential over time"
                 points={analytics.evolution}
-                periodColumnLabel={evolutionPeriodLabel(period)}
+                periodColumnLabel={evolutionColumnLabel(analytics.range)}
               />
             </>
           ) : null}
@@ -259,7 +249,7 @@ export function AthleteAnalyticsTopicSheet({
                 title="Potential rate over time"
                 subtitle="Share of waves marked with scoring potential"
                 points={analytics.evolution}
-                periodColumnLabel={evolutionPeriodLabel(period)}
+                periodColumnLabel={evolutionColumnLabel(analytics.range)}
               />
             </>
           ) : null}

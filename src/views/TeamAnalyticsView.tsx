@@ -1,24 +1,24 @@
 import { useMemo, useState } from 'react'
+import { AnalyticsRangePicker } from '../components/AnalyticsRangePicker'
+import { AthleteReportSheet } from '../components/AthleteReportSheet'
 import {
   AthleteAnalyticsTopicSheet,
   type AnalyticsTopic,
 } from '../components/AthleteAnalyticsTopicSheet'
-import { AthleteMaterialPanel } from '../components/AthleteMaterialPanel'
 import { AthletePsychologyPanel } from '../components/AthletePsychologyPanel'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
+import { AthleteMaterialPanel } from '../components/AthleteMaterialPanel'
+import { presetAnalyticsRange, describeAnalyticsRange, type AnalyticsRange } from '../analyticsRange'
 import { exportAthleteAnalyticsCsv } from '../exportCsv'
 import { formatAverageLevelValue, formatCombinedLevelSummary } from '../sessionStats'
 import { canAccessTeamAnalytics, canUsePsychologyCheckins, planUpgradeHint } from '../planUtils'
 import { buildAthleteSessionSummaries } from '../athleteStats'
 import { buildAthleteHeatAnalytics } from '../heatAnalyticsStats'
 import {
-  ANALYTICS_PERIOD_OPTIONS,
-  analyticsPeriodLabel,
-  buildAthletePeriodAnalytics,
+  buildAthleteRangeAnalytics,
   buildAthleteSixMonthAnalytics,
   TEAM_ANALYTICS_MONTHS,
-  type AnalyticsPeriod,
 } from '../teamAnalyticsStats'
 
 function RateBar({ value }: { value: number }) {
@@ -45,7 +45,8 @@ export function TeamAnalyticsView() {
   const { coachAthletes, trainingSessions, auth, subscription, getSpot, setView } = useApp()
   const [search, setSearch] = useState('')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
-  const [period, setPeriod] = useState<AnalyticsPeriod>('6m')
+  const [range, setRange] = useState<AnalyticsRange>(() => presetAnalyticsRange('6m'))
+  const [showReport, setShowReport] = useState(false)
   const [activeTopic, setActiveTopic] = useState<AnalyticsTopic | null>(null)
   const [profileSection, setProfileSection] = useState<AthleteProfileSection>('training')
 
@@ -66,8 +67,8 @@ export function TeamAnalyticsView() {
 
   const analytics = useMemo(() => {
     if (!coachId || !selectedAthleteId) return null
-    return buildAthletePeriodAnalytics(trainingSessions, coachId, selectedAthleteId, period)
-  }, [coachId, period, selectedAthleteId, trainingSessions])
+    return buildAthleteRangeAnalytics(trainingSessions, coachId, selectedAthleteId, range)
+  }, [coachId, range, selectedAthleteId, trainingSessions])
 
   const heatAnalytics = useMemo(() => {
     if (!analytics || !selectedAthleteId) {
@@ -180,7 +181,9 @@ export function TeamAnalyticsView() {
 
   if (selectedAthlete && analytics) {
     const general = analytics.general
-    const periodLabel = analyticsPeriodLabel(period)
+    const periodLabel = describeAnalyticsRange(analytics.range)
+    const coachName = auth?.role === 'treinador' ? auth.name : 'Coach'
+    const organizationName = auth?.role === 'treinador' ? auth.organizationName : null
 
     return (
       <div className="ss-flow stats-page team-analytics-page">
@@ -191,7 +194,8 @@ export function TeamAnalyticsView() {
             setSearch('')
             setActiveTopic(null)
             setProfileSection('training')
-            setPeriod('6m')
+            setRange(presetAnalyticsRange('6m'))
+            setShowReport(false)
           }}
         />
 
@@ -206,13 +210,22 @@ export function TeamAnalyticsView() {
               {analytics.sessions.length === 1 ? '' : 's'}
             </p>
           </div>
-          <button
-            type="button"
-            className="btn btn--secondary btn--small team-analytics-hero__export"
-            onClick={() => exportAthleteAnalyticsCsv(selectedAthlete.name, analytics, selectedAthlete.id)}
-          >
-            Export CSV
-          </button>
+          <div className="team-analytics-hero__actions">
+            <button
+              type="button"
+              className="btn btn--secondary btn--small"
+              onClick={() => exportAthleteAnalyticsCsv(selectedAthlete.name, analytics, selectedAthlete.id)}
+            >
+              Export CSV
+            </button>
+            <button
+              type="button"
+              className="btn btn--gold btn--small"
+              onClick={() => setShowReport(true)}
+            >
+              PDF report
+            </button>
+          </div>
         </div>
 
         <div className="ss-card analytics-period-bar">
@@ -221,27 +234,17 @@ export function TeamAnalyticsView() {
             <p className="muted">
               {profileSection === 'material'
                 ? 'Equipment is managed outside the time range — switch to training or psychology to filter by period.'
-                : 'Choose how far back to analyze this athlete.'}
+                : 'Choose a preset or custom dates for camp trips and parent reports.'}
             </p>
           </div>
           {profileSection !== 'material' ? (
-            <div className="chip-row chip-row--pro analytics-period-bar__chips" role="tablist" aria-label="Time range">
-              {ANALYTICS_PERIOD_OPTIONS.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={period === option.id}
-                  className={`chip ${period === option.id ? 'chip--active' : ''}`}
-                  onClick={() => {
-                    setPeriod(option.id)
-                    setActiveTopic(null)
-                  }}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+            <AnalyticsRangePicker
+              range={range}
+              onChange={(nextRange) => {
+                setRange(nextRange)
+                setActiveTopic(null)
+              }}
+            />
           ) : null}
         </div>
 
@@ -299,7 +302,7 @@ export function TeamAnalyticsView() {
             <AthletePsychologyPanel
               athleteId={selectedAthlete.id}
               coachId={coachId}
-              period={period}
+              range={range}
               sessions={analytics.sessions}
             />
           ) : (
@@ -312,8 +315,8 @@ export function TeamAnalyticsView() {
           <div className="ss-card stats-panel analytics-empty-period">
             <h2 className="stats-panel__title">No data in this period</h2>
             <p className="muted">
-              {selectedAthlete.name} has no completed sessions in the last {periodLabel}. Try a
-              longer time range.
+              {selectedAthlete.name} has no completed sessions in {periodLabel}. Try a longer time
+              range or different dates.
             </p>
           </div>
         ) : (
@@ -376,12 +379,24 @@ export function TeamAnalyticsView() {
         {activeTopic && analytics ? (
           <AthleteAnalyticsTopicSheet
             topic={activeTopic}
-            period={period}
             analytics={analytics}
             heatAnalytics={heatAnalytics}
             sessionSummaries={sessionSummaries}
             getSpot={getSpot}
             onClose={() => setActiveTopic(null)}
+          />
+        ) : null}
+
+        {showReport && analytics ? (
+          <AthleteReportSheet
+            athleteName={selectedAthlete.name}
+            coachName={coachName}
+            organizationName={organizationName}
+            analytics={analytics}
+            heatAnalytics={heatAnalytics}
+            sessionSummaries={sessionSummaries}
+            getSpot={getSpot}
+            onClose={() => setShowReport(false)}
           />
         ) : null}
       </div>
