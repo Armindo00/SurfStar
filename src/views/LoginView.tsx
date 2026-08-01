@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { AuthShell } from '../components/AuthShell'
+import { LegalFooterLinks } from '../components/LegalFooterLinks'
+import { TermsAcceptanceField } from '../components/TermsAcceptanceField'
 import {
   normalizeBillingAddress,
   normalizeTaxId,
@@ -85,6 +87,8 @@ export function LoginView() {
     openCoachPlanSelection,
     openAthleteSignIn,
     openAthleteSignUp,
+    openPrivacy,
+    openTerms,
   } = useApp()
 
   const screen = publicView as AuthPublicView
@@ -125,6 +129,7 @@ export function LoginView() {
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   const selectedPlan = selectedPlanId && isCoach ? getPlan(selectedPlanId) : null
 
@@ -164,6 +169,10 @@ export function LoginView() {
       const trimmedEmail = email.trim()
 
       if (isRegister) {
+        if (!acceptedTerms) {
+          setError('Please accept the Terms of Service and Privacy Policy.')
+          return
+        }
         if (password !== passwordConfirm) {
           setError('Passwords do not match.')
           return
@@ -330,6 +339,15 @@ export function LoginView() {
           </label>
         ) : null}
 
+        {isRegister ? (
+          <TermsAcceptanceField
+            checked={acceptedTerms}
+            onChange={setAcceptedTerms}
+            onPrivacy={openPrivacy}
+            onTerms={openTerms}
+          />
+        ) : null}
+
         {error ? <p className="auth-alert auth-alert--error">{error}</p> : null}
 
         {!isRegister && cloudMode ? (
@@ -364,6 +382,8 @@ export function LoginView() {
           {copy.otherRoleActionLabel}
         </button>
       </p>
+
+      <LegalFooterLinks className="auth-legal-footer" onPrivacy={openPrivacy} onTerms={openTerms} layout="stack" />
     </AuthShell>
   )
 }

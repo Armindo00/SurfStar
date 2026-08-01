@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { CookieConsent } from './components/CookieConsent'
 import { ToastProvider } from './components/ToastProvider'
 import { AppProvider, useApp } from './AppContext'
 import { AppLogo } from './components/AppLogo'
@@ -223,6 +224,7 @@ export default function App() {
       <ToastProvider>
         <AppProvider>
           <Shell />
+          <CookieConsent />
         </AppProvider>
       </ToastProvider>
     </ErrorBoundary>

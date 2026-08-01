@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
+import { LegalFooterLinks } from '../components/LegalFooterLinks'
 import { PackCard } from '../components/PackCard'
 import { AppLogo } from '../components/AppLogo'
 import { SUBSCRIPTION_PLANS } from '../plans'
@@ -638,12 +639,7 @@ export function LandingView() {
             <button type="button" className="landing-footer__btn" onClick={openContact}>
               Contact SurfStar
             </button>
-            <button type="button" className="landing-footer__btn" onClick={openPrivacy}>
-              Privacy Policy
-            </button>
-            <button type="button" className="landing-footer__btn" onClick={openTerms}>
-              Terms of Service
-            </button>
+            <LegalFooterLinks onPrivacy={openPrivacy} onTerms={openTerms} layout="stack" className="landing-footer__legal" />
           </div>
         </div>
         <p className="landing-footer__copy">© {new Date().getFullYear()} SurfStar</p>

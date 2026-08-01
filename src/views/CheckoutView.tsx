@@ -14,6 +14,7 @@ import {
 } from '../plans'
 import { AppLogo } from '../components/AppLogo'
 import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
+import { LegalFooterLinks } from '../components/LegalFooterLinks'
 import { ManualBillingNotice } from '../components/ManualBillingNotice'
 import { useApp } from '../AppContext'
 import { buildStripeCheckoutUrl, isSubscriptionActive } from '../subscriptionApi'
@@ -43,6 +44,8 @@ export function CheckoutView() {
     subscription,
     openLanding,
     openTeamAcademyRequest,
+    openPrivacy,
+    openTerms,
     logout,
     cloudMode,
   } = useApp()
@@ -399,6 +402,8 @@ export function CheckoutView() {
             </p>
           </>
         ) : null}
+
+        <LegalFooterLinks className="checkout-legal-footer" onPrivacy={openPrivacy} onTerms={openTerms} layout="stack" />
 
         <button type="button" className="btn btn--ghost btn--block" onClick={logout}>
           Sign out

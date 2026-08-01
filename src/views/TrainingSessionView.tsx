@@ -21,6 +21,8 @@ export function TrainingSessionView() {
   const [focusAthleteId, setFocusAthleteId] = useState<string | null>(null)
   const [maneuver, setManeuver] = useState<ManeuverKind | null>(null)
 
+  const sessionMode = activeSession ? resolveSessionMode(activeSession) : null
+
   const sessionAthletes = useMemo(() => {
     if (!activeSession) return []
     return activeSession.athleteIds
@@ -34,6 +36,11 @@ export function TrainingSessionView() {
 
   const focusedAthlete = focusAthleteId ? getAthlete(focusAthleteId) : undefined
 
+  useEffect(() => {
+    if (!sessionMode || sessionMode === 'tecnico') return
+    setView(sessionFlowViewForMode(sessionMode))
+  }, [sessionMode, setView])
+
   if (!activeSession) {
     return (
       <div className="ss-flow">
@@ -44,13 +51,6 @@ export function TrainingSessionView() {
       </div>
     )
   }
-
-  const sessionMode = resolveSessionMode(activeSession)
-
-  useEffect(() => {
-    if (sessionMode === 'tecnico') return
-    setView(sessionFlowViewForMode(sessionMode))
-  }, [sessionMode, setView])
 
   if (sessionMode !== 'tecnico') {
     return (
