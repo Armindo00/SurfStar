@@ -2764,3 +2764,25 @@ body {
   background: #f8fafc !important;
   border-color: #cbd5e1 !important;
 }
+
+.app-shell .athlete-report__lead,
+.app-shell .athlete-report__subsection-title,
+.app-shell .athlete-report__detail-table th[scope='row'],
+.app-shell .athlete-report__detail-table td,
+.app-shell .athlete-report__matrix-table th,
+.app-shell .athlete-report__matrix-table td {
+  color: #0f172a !important;
+}
+
+.app-shell .athlete-report__table-caption,
+.app-shell .athlete-report__detail-table th[scope='row'] {
+  color: #475569 !important;
+}
+
+.app-shell .athlete-report__detail-table th[scope='row'] {
+  background: #f8fafc !important;
+}
+
+.app-shell .athlete-report .athlete-report__detail-table thead {
+  background: #e2e8f0 !important;
+}

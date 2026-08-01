@@ -14,6 +14,7 @@ import { exportAthleteAnalyticsCsv } from '../exportCsv'
 import { formatAverageLevelValue, formatCombinedLevelSummary } from '../sessionStats'
 import { canAccessTeamAnalytics, canUsePsychologyCheckins, planUpgradeHint } from '../planUtils'
 import { buildAthleteSessionSummaries } from '../athleteStats'
+import { buildAthletePsychologyAnalytics } from '../athletePsychologyStats'
 import { buildAthleteHeatAnalytics } from '../heatAnalyticsStats'
 import {
   buildAthleteRangeAnalytics,
@@ -42,7 +43,7 @@ type TopicTile = {
 type AthleteProfileSection = 'training' | 'psychology' | 'material'
 
 export function TeamAnalyticsView() {
-  const { coachAthletes, trainingSessions, auth, subscription, getSpot, setView } = useApp()
+  const { coachAthletes, trainingSessions, auth, subscription, getSpot, setView, sessionAthleteFeedback } = useApp()
   const [search, setSearch] = useState('')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
   const [range, setRange] = useState<AnalyticsRange>(() => presetAnalyticsRange('6m'))
@@ -97,6 +98,24 @@ export function TeamAnalyticsView() {
     if (!analytics || !selectedAthleteId) return []
     return buildAthleteSessionSummaries(analytics.sessions, selectedAthleteId)
   }, [analytics, selectedAthleteId])
+
+  const reportPsychology = useMemo(() => {
+    if (!coachId || !selectedAthleteId || !analytics || !psychologyAvailable) return null
+    return buildAthletePsychologyAnalytics(
+      sessionAthleteFeedback,
+      analytics.sessions,
+      coachId,
+      selectedAthleteId,
+      range,
+    )
+  }, [
+    analytics,
+    coachId,
+    psychologyAvailable,
+    range,
+    selectedAthleteId,
+    sessionAthleteFeedback,
+  ])
 
   const topicTiles = useMemo((): TopicTile[] => {
     if (!analytics) return []
@@ -396,6 +415,8 @@ export function TeamAnalyticsView() {
             heatAnalytics={heatAnalytics}
             sessionSummaries={sessionSummaries}
             getSpot={getSpot}
+            athleteId={selectedAthlete.id}
+            psychology={reportPsychology}
             onClose={() => setShowReport(false)}
           />
         ) : null}

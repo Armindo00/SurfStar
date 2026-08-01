@@ -5,6 +5,7 @@ import {
   describeAnalyticsRangeLong,
   evolutionColumnLabel,
 } from '../analyticsRange'
+import type { AthletePsychologyAnalytics } from '../athletePsychologyStats'
 import type { AthleteSessionSummary } from '../athleteStats'
 import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
 import { formatShortDate, formatShortDateTime } from '../dateFormat'
@@ -16,6 +17,7 @@ import {
 import type { AthletePeriodAnalytics } from '../teamAnalyticsStats'
 import { formatSessionDate, resolveSessionSpotName } from '../sessionHistoryUtils'
 import { TRAINING_MODE_LABELS, type SurfSpot } from '../types'
+import { AthleteReportDetailSections } from './AthleteReportDetailSections'
 
 type Props = {
   athleteName: string
@@ -25,6 +27,8 @@ type Props = {
   heatAnalytics: AthleteHeatAnalyticsSummary
   sessionSummaries: AthleteSessionSummary[]
   getSpot: (id: string) => SurfSpot | undefined
+  athleteId: string
+  psychology?: AthletePsychologyAnalytics | null
   onClose: () => void
 }
 
@@ -40,6 +44,8 @@ export function AthleteReportSheet({
   heatAnalytics,
   sessionSummaries,
   getSpot,
+  athleteId,
+  psychology,
   onClose,
 }: Props) {
   const [coachComment, setCoachComment] = useState('')
@@ -208,36 +214,13 @@ export function AthleteReportSheet({
             </section>
           ) : null}
 
-          {analytics.technical ? (
-            <section className="athlete-report__section">
-              <h2>Technical training</h2>
-              <p>
-                Success rate {analytics.technical.overallSuccessRate}% · Avg level{' '}
-                {formatAverageLevelValue(analytics.technical.averageLevel)} · {general.technicalStars} stars
-              </p>
-            </section>
-          ) : null}
-
-          {analytics.combo ? (
-            <section className="athlete-report__section">
-              <h2>Combos</h2>
-              <p>
-                Success rate {analytics.combo.overallSuccessRate}% · Avg level{' '}
-                {formatAverageLevelValue(analytics.combo.averageLevel)} · {general.comboStars} stars
-              </p>
-            </section>
-          ) : null}
-
-          {heatAnalytics.heatsTotal > 0 ? (
-            <section className="athlete-report__section">
-              <h2>Competition</h2>
-              <p>
-                {general.heatParticipations} heats · {general.heatWins} wins · Avg score{' '}
-                {heatAnalytics.avgHeatScore?.toFixed(2) ?? '—'}
-                {general.championshipWins > 0 ? ` · ${general.championshipWins} championship title(s)` : ''}
-              </p>
-            </section>
-          ) : null}
+          <AthleteReportDetailSections
+            analytics={analytics}
+            general={general}
+            heatAnalytics={heatAnalytics}
+            athleteId={athleteId}
+            psychology={psychology}
+          />
 
           {sessionSummaries.length > 0 ? (
             <section className="athlete-report__section">

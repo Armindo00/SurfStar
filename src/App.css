@@ -8264,6 +8264,56 @@ a.legal-footer-links__btn {
   line-height: 1.55;
 }
 
+.athlete-report__lead {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.athlete-report__subsection-title {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.athlete-report__subsection-stack {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.athlete-report__subsection {
+  padding-top: 0.25rem;
+}
+
+.athlete-report__table-caption {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.athlete-report__detail-table th[scope='row'] {
+  width: 42%;
+  font-weight: 600;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.athlete-report__matrix-table {
+  font-size: 0.75rem;
+}
+
+.athlete-report__matrix-table th,
+.athlete-report__matrix-table td {
+  text-align: center;
+}
+
+.athlete-report__matrix-table th:first-child,
+.athlete-report__matrix-table td:first-child {
+  text-align: left;
+}
+
 .athlete-report__kpi-grid strong {
   color: #0f172a;
 }
