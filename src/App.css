@@ -4216,13 +4216,22 @@ body {
   max-width: 100%;
   border-radius: var(--radius);
   border: 1px solid var(--ss-border);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
 }
 
 .evolution-chart__table {
   font-size: 0.82rem;
-  min-width: 18rem;
+  width: max-content;
+  min-width: 100%;
   margin: 0;
+}
+
+.evolution-chart__table th,
+.evolution-chart__table td {
+  white-space: nowrap;
 }
 
 .evolution-chart__table thead th {
