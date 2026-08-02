@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { LanguageFlag } from './LanguageFlag'
 import { LOCALE_META } from '../i18n/localeMeta'
 import { SUPPORTED_LOCALES, useI18n, type SupportedLocale } from '../i18n'
 
@@ -57,9 +58,7 @@ export function LanguagePicker({ compact = false }: Props) {
           aria-label={t('language.title')}
           onClick={() => setOpen((value) => !value)}
         >
-          <span className="language-picker__flag" aria-hidden="true">
-            {current.flag}
-          </span>
+          <LanguageFlag locale={locale} className="language-picker__flag" />
           {!compact ? (
             <span className="language-picker__current">{t(current.labelKey)}</span>
           ) : null}
@@ -86,9 +85,7 @@ export function LanguagePicker({ compact = false }: Props) {
                     }
                     onClick={() => pick(code)}
                   >
-                    <span className="language-picker__flag" aria-hidden="true">
-                      {meta.flag}
-                    </span>
+                    <LanguageFlag locale={code} className="language-picker__flag" />
                     <span className="language-picker__label">{t(meta.labelKey)}</span>
                     {selected ? (
                       <span className="language-picker__check" aria-hidden="true">

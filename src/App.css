@@ -4410,17 +4410,6 @@ body {
   padding-bottom: 0.25rem;
 }
 
-.auth-panel__language {
-  display: flex;
-  justify-content: flex-end;
-  padding: 0.75rem 1rem 0;
-  max-width: 100%;
-}
-
-.auth-panel__language .language-picker--compact {
-  margin: 0;
-}
-
 @media (max-width: 767px) {
   .landing-nav {
     flex-wrap: wrap;
@@ -9381,9 +9370,17 @@ a.legal-footer-links__btn {
 }
 
 .language-picker__flag {
-  font-size: 1.15rem;
-  line-height: 1;
+  display: inline-flex;
   flex-shrink: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.language-picker__flag svg {
+  display: block;
+  width: 1.35rem;
+  height: auto;
 }
 
 .language-picker__current {

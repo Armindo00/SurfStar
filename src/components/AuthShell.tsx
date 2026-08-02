@@ -38,9 +38,9 @@ export function AuthShell({ children, onBack, backLabel, showTagline = false }: 
       </aside>
 
       <main className="auth-panel">
-        <div className="auth-panel__language">
+        <header className="auth-panel__top">
           <LanguagePicker compact />
-        </div>
+        </header>
         <div className="auth-card">
           {onBack ? (
             <button type="button" className="auth-back" onClick={onBack}>
