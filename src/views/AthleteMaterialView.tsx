@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import { UNSEEN } from '../unseenDomains'
 import type { AthleteBoard, AthleteFin } from '../types'
 
@@ -53,6 +54,7 @@ function formatBoardSpecs(board: AthleteBoard): string {
 }
 
 export function AthleteMaterialView() {
+  const { t } = useI18n()
   const {
     auth,
     athleteBoards,
@@ -194,10 +196,10 @@ export function AthleteMaterialView() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="My equipment" onBack={() => setView('athlete-portal')} />
+      <ScreenHeader title={t('nav.myEquipment')} onBack={() => setView('athlete-portal')} />
 
       <div className="ss-card material-section material-section--cta">
-        <h2 className="page-title">Coach reviews</h2>
+        <h2 className="page-title">{t('ui.material.coachReviews')}</h2>
         <p className="muted">
           See speed, control and release ratings — and comments — that your coaches left on your
           boards and fins.
@@ -216,7 +218,7 @@ export function AthleteMaterialView() {
       </div>
 
       <div className="ss-card material-section">
-        <h2 className="page-title">Board quiver</h2>
+        <h2 className="page-title">{t('ui.material.boardQuiver')}</h2>
         <p className="muted">
           Log length, width, thickness and volume — your coach can see this quiver.
         </p>
@@ -314,7 +316,7 @@ export function AthleteMaterialView() {
       </div>
 
       <div className="ss-card material-section">
-        <h2 className="page-title">Fins</h2>
+        <h2 className="page-title">{t('ui.material.fins')}</h2>
         <p className="muted">Template, size and notes for your fins.</p>
 
         <div className="material-form-grid">

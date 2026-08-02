@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { HEAT_DURATIONS, type HeatDurationMinutes } from '../types'
 import { MAX_HEAT_ATHLETES } from '../heatUtils'
+import { useI18n } from '../i18n'
 
 type Props = {
   poolAthleteIds: string[]
@@ -19,6 +20,8 @@ export function CreateHeatModal({
   onClose,
   onCreate,
 }: Props) {
+  const { t, messages } = useI18n()
+  const h = messages.session.heat as Record<string, string>
   const [selected, setSelected] = useState<string[]>([])
   const [duration, setDuration] = useState<HeatDurationMinutes>(defaultDuration)
 
@@ -40,17 +43,17 @@ export function CreateHeatModal({
       >
         <div className="sheet__head sheet__head--pro">
           <div>
-            <p className="sheet__eyebrow">Championship</p>
-            <h2>New heat {heatNumber}</h2>
+            <p className="sheet__eyebrow">{t('nav.championship')}</p>
+            <h2>{t('session.heat.newHeat', { number: heatNumber })}</h2>
           </div>
-          <button type="button" className="sheet__close" onClick={onClose} aria-label="Close">
+          <button type="button" className="sheet__close" onClick={onClose} aria-label={t('common.close')}>
             ✕
           </button>
         </div>
 
-        <p className="muted stats-panel__sub">Pick up to {MAX_HEAT_ATHLETES} surfers and heat length.</p>
+        <p className="muted stats-panel__sub">{t('session.heat.pickSurfersHint', { max: MAX_HEAT_ATHLETES })}</p>
 
-        <p className="field-label">Duration</p>
+        <p className="field-label">{h.duration}</p>
         <div className="chip-row chip-row--pro">
           {HEAT_DURATIONS.map((d) => (
             <button
@@ -59,12 +62,12 @@ export function CreateHeatModal({
               className={duration === d ? 'chip chip--active' : 'chip'}
               onClick={() => setDuration(d)}
             >
-              {d} min
+              {t('session.setup.heatMinutes', { minutes: d })}
             </button>
           ))}
         </div>
 
-        <p className="field-label">Surfers in this heat</p>
+        <p className="field-label">{h.surfersInHeat}</p>
         <div className="athlete-grid">
           {poolAthleteIds.map((id) => {
             const on = selected.includes(id)
@@ -93,7 +96,7 @@ export function CreateHeatModal({
           disabled={selected.length === 0}
           onClick={() => onCreate(selected, duration)}
         >
-          Create heat
+          {h.createHeat}
         </button>
       </div>
     </div>

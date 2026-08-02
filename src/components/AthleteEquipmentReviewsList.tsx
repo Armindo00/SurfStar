@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useI18n } from '../i18n'
 import { EquipmentRatingChart } from './EquipmentRatingChart'
 import { formatMaterialDate } from '../materialUtils'
 import type { AthleteBoard, AthleteFin, CoachAthleteLink, EquipmentEvaluation } from '../types'
@@ -18,17 +19,18 @@ export function AthleteEquipmentReviewsList({
   fins,
   athleteLinks,
 }: Props) {
+  const { t } = useI18n()
   const coachName = useMemo(() => {
     const map = new Map<string, string>()
     for (const link of athleteLinks) {
       if (link.coachName) map.set(link.coachId, link.coachName)
     }
-    return (coachId: string) => map.get(coachId) ?? 'Coach'
-  }, [athleteLinks])
+    return (coachId: string) => map.get(coachId) ?? t('ui.organization.coach')
+  }, [athleteLinks, t])
 
   const equipmentName = (type: EquipmentEvaluation['equipmentType'], id: string) => {
-    if (type === 'board') return boards.find((board) => board.id === id)?.name ?? 'Board'
-    return fins.find((fin) => fin.id === id)?.name ?? 'Fins'
+    if (type === 'board') return boards.find((board) => board.id === id)?.name ?? t('ui.material.boardQuiver')
+    return fins.find((fin) => fin.id === id)?.name ?? t('ui.material.fins')
   }
 
   const myEvaluations = useMemo(
@@ -42,20 +44,15 @@ export function AthleteEquipmentReviewsList({
   if (myEvaluations.length === 0) {
     return (
       <div className="ss-card material-section">
-        <p className="muted">
-          No coach reviews yet. When a coach rates your boards or fins, their scores and comments
-          will appear here.
-        </p>
+        <p className="muted">{t('ui.material.noReviewsYet')}</p>
       </div>
     )
   }
 
   return (
     <div className="ss-card material-section">
-      <h2 className="page-title">Coach reviews</h2>
-      <p className="muted stats-panel__sub">
-        Speed, control and release ratings (0–10) with optional comments from each coach.
-      </p>
+      <h2 className="page-title">{t('ui.material.coachReviews')}</h2>
+      <p className="muted stats-panel__sub">{t('ui.material.coachReviewsHint')}</p>
       <ul className="evaluation-history">
         {myEvaluations.map((item) => (
           <li key={item.id} className="evaluation-history__item">
@@ -63,18 +60,14 @@ export function AthleteEquipmentReviewsList({
             <div className="evaluation-history__head">
               <strong>
                 {equipmentName(item.equipmentType, item.equipmentId)} ·{' '}
-                {item.equipmentType === 'board' ? 'Board' : 'Fins'}
+                {item.equipmentType === 'board' ? t('ui.material.boardQuiver') : t('ui.material.fins')}
               </strong>
               <span className="muted">{formatMaterialDate(item.createdAt)}</span>
             </div>
             <EquipmentRatingChart speed={item.speed} control={item.control} release={item.release} />
             {item.notes?.trim() ? (
               <p className="evaluation-history__note">{item.notes}</p>
-            ) : (
-              <p className="muted evaluation-history__note evaluation-history__note--empty">
-                No written comment for this review.
-              </p>
-            )}
+            ) : null}
           </li>
         ))}
       </ul>

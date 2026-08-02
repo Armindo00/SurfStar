@@ -4,20 +4,22 @@ import {
   adminUpdateManualPaymentDetails,
   type ManualPaymentDetails,
 } from '../../adminApi'
+import { useI18n } from '../../i18n'
 
 type Props = {
   onToast: (message: string) => void
 }
 
-const EMPTY: ManualPaymentDetails = {
-  account_name: 'SurfStar',
-  iban: '',
-  mbway: '',
-  payment_reference_hint: 'Use your registered email as the payment reference.',
-}
-
 export function AdminManualPaymentSettings({ onToast }: Props) {
-  const [details, setDetails] = useState<ManualPaymentDetails>(EMPTY)
+  const { t, messages } = useI18n()
+  const a = messages.ui.admin as Record<string, string>
+
+  const [details, setDetails] = useState<ManualPaymentDetails>({
+    account_name: 'SurfStar',
+    iban: '',
+    mbway: '',
+    payment_reference_hint: a.paymentReferenceDefault,
+  })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -47,7 +49,7 @@ export function AdminManualPaymentSettings({ onToast }: Props) {
         return
       }
       setDetails(result.details)
-      onToast('Payment details saved. They will appear in coach approval emails.')
+      onToast(a.paymentDetailsSavedToast)
     } finally {
       setSaving(false)
     }
@@ -64,13 +66,13 @@ export function AdminManualPaymentSettings({ onToast }: Props) {
         aria-expanded={open}
       >
         <span>
-          <strong>Payment details (IBAN / MB Way)</strong>
+          <strong>{a.manualPaymentTitle}</strong>
           <small className="muted">
             {loading
-              ? 'Loading…'
+              ? a.manualPaymentLoading
               : configured
-                ? 'Configured — included in approval emails'
-                : 'Not set — coaches are asked to contact support'}
+                ? a.manualPaymentConfigured
+                : a.manualPaymentNotSet}
           </small>
         </span>
         <span aria-hidden="true">{open ? '▾' : '▸'}</span>
@@ -78,11 +80,9 @@ export function AdminManualPaymentSettings({ onToast }: Props) {
 
       {open ? (
         <form className="admin-payment-settings__form form-pro" onSubmit={(e) => void submit(e)}>
-          <p className="muted">
-            When you approve a payment request, the coach receives these details by email automatically.
-          </p>
+          <p className="muted">{a.manualPaymentIntro}</p>
           <label className="field field--pro">
-            <span>Account name</span>
+            <span>{a.accountName}</span>
             <input
               value={details.account_name}
               onChange={(e) => setDetails((prev) => ({ ...prev, account_name: e.target.value }))}
@@ -108,16 +108,16 @@ export function AdminManualPaymentSettings({ onToast }: Props) {
             />
           </label>
           <label className="field field--pro">
-            <span>Payment reference note</span>
+            <span>{a.paymentReferenceNote}</span>
             <input
               value={details.payment_reference_hint}
               onChange={(e) => setDetails((prev) => ({ ...prev, payment_reference_hint: e.target.value }))}
-              placeholder="Use your registered email as the payment reference."
+              placeholder={a.paymentReferenceDefault}
             />
           </label>
           {error ? <p className="login-error">{error}</p> : null}
           <button type="submit" className="btn btn--secondary btn--small" disabled={saving || loading}>
-            {saving ? 'Saving…' : 'Save payment details'}
+            {saving ? t('common.saving') : a.savePaymentDetails}
           </button>
         </form>
       ) : null}

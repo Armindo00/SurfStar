@@ -1,5 +1,9 @@
 import type { ReactNode } from 'react'
+import { useI18n } from '../i18n'
+import type { PlanFeaturePreviewCopy } from '../i18n/types'
 import type { FeatureShowcaseId } from '../planFeatureShowcases'
+
+type FeaturePreviewCopy = PlanFeaturePreviewCopy
 
 type Props = {
   variant: FeatureShowcaseId
@@ -14,6 +18,9 @@ export function PlanFeaturePreview({
   framed = true,
   size = 'default',
 }: Props) {
+  const { t, messages } = useI18n()
+  const fp = messages.plans.featurePreview
+
   const content = (
     <div
       className={[
@@ -25,7 +32,7 @@ export function PlanFeaturePreview({
         .join(' ')}
       aria-hidden="true"
     >
-      {renderPreview(variant)}
+      {renderPreview(variant, fp, t)}
     </div>
   )
 
@@ -45,32 +52,36 @@ export function PlanFeaturePreview({
   )
 }
 
-function renderPreview(variant: FeatureShowcaseId) {
+function renderPreview(
+  variant: FeatureShowcaseId,
+  fp: FeaturePreviewCopy,
+  t: (key: string, params?: Record<string, string | number>) => string,
+) {
   switch (variant) {
     case 'live-stats':
-      return <LiveStatsPreview />
+      return <LiveStatsPreview fp={fp} />
     case 'technical-training':
-      return <TechnicalTrainingPreview />
+      return <TechnicalTrainingPreview fp={fp} />
     case 'heats-championship':
-      return <HeatsPreview />
+      return <HeatsPreview fp={fp} t={t} />
     case 'team-analytics':
-      return <TeamAnalyticsPreview />
+      return <TeamAnalyticsPreview fp={fp} />
     case 'gear-quiver':
-      return <GearQuiverPreview />
+      return <GearQuiverPreview fp={fp} />
     case 'equipment-ratings':
-      return <EquipmentRatingsPreview />
+      return <EquipmentRatingsPreview fp={fp} />
     case 'psychology-checkins':
-      return <PsychologyPreview />
+      return <PsychologyPreview fp={fp} />
     case 'custom-training':
-      return <CustomTrainingPreview />
+      return <CustomTrainingPreview fp={fp} />
     case 'sea-analysis':
-      return <SeaAnalysisPreview />
+      return <SeaAnalysisPreview fp={fp} t={t} />
     case 'athlete-sharing':
-      return <SharingPreview />
+      return <SharingPreview fp={fp} />
     case 'multi-coach':
-      return <MultiCoachPreview />
+      return <MultiCoachPreview fp={fp} t={t} />
     case 'organization-roster':
-      return <OrganizationPreview />
+      return <OrganizationPreview fp={fp} />
     default:
       return null
   }
@@ -98,15 +109,15 @@ function PreviewShell({
   )
 }
 
-function LiveStatsPreview() {
+function LiveStatsPreview({ fp }: { fp: FeaturePreviewCopy }) {
   return (
-    <PreviewShell pill="Live stats" title="Carcavelos · Technical" accent="blue">
+    <PreviewShell pill={fp.liveStats.pill} title={fp.liveStats.title} accent="blue">
       <div className="plan-feature-preview__kpis plan-feature-preview__kpis--accent">
         <div className="plan-feature-preview__kpi plan-feature-preview__kpi--highlight">
-          <span>87%</span><small>Success</small>
+          <span>87%</span><small>{fp.liveStats.success}</small>
         </div>
-        <div className="plan-feature-preview__kpi"><span>24</span><small>Waves</small></div>
-        <div className="plan-feature-preview__kpi"><span>3</span><small>Athletes</small></div>
+        <div className="plan-feature-preview__kpi"><span>24</span><small>{fp.liveStats.waves}</small></div>
+        <div className="plan-feature-preview__kpi"><span>3</span><small>{fp.liveStats.athletes}</small></div>
       </div>
       <div className="plan-feature-preview__bars">
         {[
@@ -127,9 +138,9 @@ function LiveStatsPreview() {
   )
 }
 
-function TechnicalTrainingPreview() {
+function TechnicalTrainingPreview({ fp }: { fp: FeaturePreviewCopy }) {
   return (
-    <PreviewShell pill="Technical · Wave 12" title="John Silva · Frontside" accent="blue">
+    <PreviewShell pill={fp.technicalTraining.pill} title={fp.technicalTraining.title} accent="blue">
       <div className="plan-feature-preview__maneuver-grid">
         <div className="plan-feature-preview__maneuver plan-feature-preview__maneuver--ok">
           <span>Rail</span><strong>L3</strong><em>✓</em>
@@ -142,17 +153,23 @@ function TechnicalTrainingPreview() {
         </div>
       </div>
       <div className="plan-feature-preview__meta-row">
-        <span className="plan-feature-preview__chip plan-feature-preview__chip--ok">With potential</span>
-        <span className="plan-feature-preview__chip">Backside</span>
+        <span className="plan-feature-preview__chip plan-feature-preview__chip--ok">{fp.technicalTraining.withPotential}</span>
+        <span className="plan-feature-preview__chip">{fp.technicalTraining.backside}</span>
       </div>
     </PreviewShell>
   )
 }
 
-function HeatsPreview() {
+function HeatsPreview({
+  fp,
+  t,
+}: {
+  fp: FeaturePreviewCopy
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
   return (
-    <PreviewShell pill="Championship · Heat 2" title="Supertubos · Final" accent="gold">
-      <div className="plan-feature-preview__timer">04:32 remaining</div>
+    <PreviewShell pill={fp.heatsChampionship.pill} title={fp.heatsChampionship.title} accent="gold">
+      <div className="plan-feature-preview__timer">{t('plans.featurePreview.heatsChampionship.timer', { time: '04:32' })}</div>
       <div className="plan-feature-preview__podium">
         <div className="plan-feature-preview__podium-row plan-feature-preview__podium-row--first">
           <span>1</span><div><strong>Ana Costa</strong><small>14.50 pts · 8.50 + 6.00</small></div>
@@ -162,19 +179,19 @@ function HeatsPreview() {
         </div>
       </div>
       <div className="plan-feature-preview__meta-row">
-        <span className="plan-feature-preview__chip plan-feature-preview__chip--warn">Interference logged</span>
+        <span className="plan-feature-preview__chip plan-feature-preview__chip--warn">{fp.heatsChampionship.interference}</span>
       </div>
     </PreviewShell>
   )
 }
 
-function TeamAnalyticsPreview() {
+function TeamAnalyticsPreview({ fp }: { fp: FeaturePreviewCopy }) {
   return (
-    <PreviewShell pill="Team analytics · 6 months" title="Ana Costa profile" accent="purple">
+    <PreviewShell pill={fp.teamAnalytics.pill} title={fp.teamAnalytics.title} accent="purple">
       <div className="plan-feature-preview__kpis">
-        <div className="plan-feature-preview__kpi"><span>3.2</span><small>Avg level</small></div>
-        <div className="plan-feature-preview__kpi"><span>18</span><small>Sessions</small></div>
-        <div className="plan-feature-preview__kpi"><span>74%</span><small>Potential</small></div>
+        <div className="plan-feature-preview__kpi"><span>3.2</span><small>{fp.teamAnalytics.avgLevel}</small></div>
+        <div className="plan-feature-preview__kpi"><span>18</span><small>{fp.teamAnalytics.sessions}</small></div>
+        <div className="plan-feature-preview__kpi"><span>74%</span><small>{fp.teamAnalytics.potential}</small></div>
       </div>
       <div className="plan-feature-preview__chart">
         {[40, 55, 48, 62, 58, 74].map((h, i) => (
@@ -182,17 +199,17 @@ function TeamAnalyticsPreview() {
         ))}
       </div>
       <div className="plan-feature-preview__tabs">
-        <span className="plan-feature-preview__tab plan-feature-preview__tab--active">Training</span>
-        <span className="plan-feature-preview__tab">Psychology</span>
-        <span className="plan-feature-preview__tab">Equipment</span>
+        <span className="plan-feature-preview__tab plan-feature-preview__tab--active">{fp.teamAnalytics.training}</span>
+        <span className="plan-feature-preview__tab">{fp.teamAnalytics.psychology}</span>
+        <span className="plan-feature-preview__tab">{fp.teamAnalytics.equipment}</span>
       </div>
     </PreviewShell>
   )
 }
 
-function GearQuiverPreview() {
+function GearQuiverPreview({ fp }: { fp: FeaturePreviewCopy }) {
   return (
-    <PreviewShell pill="Gear quiver" title="My boards & fins" accent="green">
+    <PreviewShell pill={fp.gearQuiver.pill} title={fp.gearQuiver.title} accent="green">
       <ul className="plan-feature-preview__gear-list">
         <li>
           <span className="plan-feature-preview__gear-icon">🏄</span>
@@ -211,9 +228,9 @@ function GearQuiverPreview() {
   )
 }
 
-function EquipmentRatingsPreview() {
+function EquipmentRatingsPreview({ fp }: { fp: FeaturePreviewCopy }) {
   return (
-    <PreviewShell pill="Equipment ratings" title="Hypto Krypto · Session" accent="green">
+    <PreviewShell pill={fp.equipmentRatings.pill} title={fp.equipmentRatings.title} accent="green">
       <div className="plan-feature-preview__ratings">
         {[
           { label: 'Speed', stars: 4 },
@@ -226,14 +243,14 @@ function EquipmentRatingsPreview() {
           </div>
         ))}
       </div>
-      <p className="plan-feature-preview__foot">Rated after Carcavelos · Technical</p>
+      <p className="plan-feature-preview__foot">{fp.equipmentRatings.foot}</p>
     </PreviewShell>
   )
 }
 
-function PsychologyPreview() {
+function PsychologyPreview({ fp }: { fp: FeaturePreviewCopy }) {
   return (
-    <PreviewShell pill="Quick check-in" title="Post-session wellbeing" accent="purple">
+    <PreviewShell pill={fp.psychologyCheckins.pill} title={fp.psychologyCheckins.title} accent="purple">
       <ul className="plan-feature-preview__survey">
         {[
           ['Heat confidence', '4'],
@@ -255,9 +272,9 @@ function PsychologyPreview() {
   )
 }
 
-function CustomTrainingPreview() {
+function CustomTrainingPreview({ fp }: { fp: FeaturePreviewCopy }) {
   return (
-    <PreviewShell pill="Custom training" title="Cutback focus · Carcavelos" accent="gold">
+    <PreviewShell pill={fp.customTraining.pill} title={fp.customTraining.title} accent="gold">
       <div className="plan-feature-preview__skill-grid">
         <span className="plan-feature-preview__skill plan-feature-preview__skill--active">Cutback</span>
         <span className="plan-feature-preview__skill">Re-entry</span>
@@ -265,28 +282,38 @@ function CustomTrainingPreview() {
         <span className="plan-feature-preview__skill">Layback</span>
       </div>
       <div className="plan-feature-preview__kpis">
-        <div className="plan-feature-preview__kpi plan-feature-preview__kpi--highlight"><span>76%</span><small>Success</small></div>
-        <div className="plan-feature-preview__kpi"><span>12:40</span><small>Timer</small></div>
-        <div className="plan-feature-preview__kpi"><span>18</span><small>Logs</small></div>
+        <div className="plan-feature-preview__kpi plan-feature-preview__kpi--highlight"><span>76%</span><small>{fp.customTraining.success}</small></div>
+        <div className="plan-feature-preview__kpi"><span>12:40</span><small>{fp.customTraining.timer}</small></div>
+        <div className="plan-feature-preview__kpi"><span>18</span><small>{fp.customTraining.logs}</small></div>
       </div>
     </PreviewShell>
   )
 }
 
-function SeaAnalysisPreview() {
+function SeaAnalysisPreview({
+  fp,
+  t,
+}: {
+  fp: FeaturePreviewCopy
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
   return (
-    <PreviewShell pill="Sea analysis · 18:42 left" title="Supertubos · Offshore" accent="blue">
+    <PreviewShell
+      pill={t('plans.featurePreview.seaAnalysis.pill', { time: '18:42' })}
+      title={fp.seaAnalysis.title}
+      accent="blue"
+    >
       <div className="plan-feature-preview__recommend">
-        <span>Recommended peak</span>
-        <strong>Peak 1</strong>
-        <p>Stronger sets · faster arrivals · higher wave score</p>
+        <span>{fp.seaAnalysis.recommendedPeak}</span>
+        <strong>{fp.seaAnalysis.peak1}</strong>
+        <p>{fp.seaAnalysis.peakDesc}</p>
       </div>
       <div className="plan-feature-preview__peak-compare">
         <div className="plan-feature-preview__peak plan-feature-preview__peak--win">
-          <span>Peak 1</span><strong>42</strong><small>18 obs</small>
+          <span>Peak 1</span><strong>42</strong><small>{t('plans.featurePreview.seaAnalysis.obs', { count: 18 })}</small>
         </div>
         <div className="plan-feature-preview__peak">
-          <span>Peak 2</span><strong>31</strong><small>14 obs</small>
+          <span>Peak 2</span><strong>31</strong><small>{t('plans.featurePreview.seaAnalysis.obs', { count: 14 })}</small>
         </div>
       </div>
       <div className="plan-feature-preview__meta-row">
@@ -298,9 +325,9 @@ function SeaAnalysisPreview() {
   )
 }
 
-function SharingPreview() {
+function SharingPreview({ fp }: { fp: FeaturePreviewCopy }) {
   return (
-    <PreviewShell pill="Athlete sharing" title="John Silva · Permissions" accent="green">
+    <PreviewShell pill={fp.athleteSharing.pill} title={fp.athleteSharing.title} accent="green">
       <ul className="plan-feature-preview__toggle-list">
         {[
           ['Technical training stats', true],
@@ -310,7 +337,7 @@ function SharingPreview() {
         ].map(([label, on]) => (
           <li key={label as string} className={on ? 'is-on' : ''}>
             <span>{label as string}</span>
-            <em>{on ? 'ON' : 'OFF'}</em>
+            <em>{on ? fp.athleteSharing.on : fp.athleteSharing.off}</em>
           </li>
         ))}
       </ul>
@@ -318,29 +345,35 @@ function SharingPreview() {
   )
 }
 
-function MultiCoachPreview() {
+function MultiCoachPreview({
+  fp,
+  t,
+}: {
+  fp: FeaturePreviewCopy
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
   return (
-    <PreviewShell pill="Organization" title="Team Academy · Coaches" accent="gold">
+    <PreviewShell pill={fp.multiCoach.pill} title={fp.multiCoach.title} accent="gold">
       <ul className="plan-feature-preview__coach-list">
-        <li><strong>Head coach</strong><span className="plan-feature-preview__chip plan-feature-preview__chip--ok">Admin</span></li>
-        <li><strong>Assistant coach 1</strong><span className="plan-feature-preview__chip plan-feature-preview__chip--ok">Active</span></li>
-        <li><strong>Assistant coach 2</strong><span className="plan-feature-preview__chip plan-feature-preview__chip--ok">Active</span></li>
+        <li><strong>{fp.multiCoach.headCoach}</strong><span className="plan-feature-preview__chip plan-feature-preview__chip--ok">{fp.multiCoach.admin}</span></li>
+        <li><strong>{t('plans.featurePreview.multiCoach.assistantCoach', { n: 1 })}</strong><span className="plan-feature-preview__chip plan-feature-preview__chip--ok">{fp.multiCoach.active}</span></li>
+        <li><strong>{t('plans.featurePreview.multiCoach.assistantCoach', { n: 2 })}</strong><span className="plan-feature-preview__chip plan-feature-preview__chip--ok">{fp.multiCoach.active}</span></li>
       </ul>
-      <p className="plan-feature-preview__foot">Up to 5 coach accounts included</p>
+      <p className="plan-feature-preview__foot">{fp.multiCoach.foot}</p>
     </PreviewShell>
   )
 }
 
-function OrganizationPreview() {
+function OrganizationPreview({ fp }: { fp: FeaturePreviewCopy }) {
   return (
-    <PreviewShell pill="Team Academy" title="Peniche Surf School" accent="gold">
+    <PreviewShell pill={fp.organizationRoster.pill} title={fp.organizationRoster.title} accent="gold">
       <div className="plan-feature-preview__kpis plan-feature-preview__kpis--accent">
-        <div className="plan-feature-preview__kpi"><span>48</span><small>Athletes</small></div>
-        <div className="plan-feature-preview__kpi"><span>4</span><small>Coaches</small></div>
-        <div className="plan-feature-preview__kpi plan-feature-preview__kpi--highlight"><span>126</span><small>Sessions</small></div>
+        <div className="plan-feature-preview__kpi"><span>48</span><small>{fp.organizationRoster.athletes}</small></div>
+        <div className="plan-feature-preview__kpi"><span>4</span><small>{fp.organizationRoster.coaches}</small></div>
+        <div className="plan-feature-preview__kpi plan-feature-preview__kpi--highlight"><span>126</span><small>{fp.organizationRoster.sessions}</small></div>
       </div>
       <div className="plan-feature-preview__org-bar">
-        <span>Shared roster</span>
+        <span>{fp.organizationRoster.sharedRoster}</span>
         <div><i style={{ width: '78%' }} /></div>
       </div>
     </PreviewShell>

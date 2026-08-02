@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { getComplaintsBookUrl } from '../legalConfig'
+import { useI18n } from '../i18n'
 
 const STORAGE_KEY = 'surfstar_cookie_consent_v1'
 
 export function CookieConsent() {
+  const { messages } = useI18n()
+  const c = messages.components.cookieConsent
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -26,13 +29,12 @@ export function CookieConsent() {
   if (!visible) return null
 
   return (
-    <div className="cookie-consent" role="dialog" aria-label="Cookie notice">
+    <div className="cookie-consent" role="dialog" aria-label={c.ariaLabel}>
       <div className="cookie-consent__inner">
         <p className="cookie-consent__text">
-          We use essential cookies and local storage to keep you signed in and save session progress. We do not use
-          advertising cookies. See our{' '}
+          {c.text}{' '}
           <a href="/privacy" className="cookie-consent__link">
-            Privacy Policy
+            {c.privacyPolicy}
           </a>
           .
         </p>
@@ -43,10 +45,10 @@ export function CookieConsent() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Livro de reclamações
+            {c.complaintsBook}
           </a>
           <button type="button" className="btn btn--gold btn--small" onClick={accept}>
-            Accept
+            {c.accept}
           </button>
         </div>
       </div>

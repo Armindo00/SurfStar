@@ -1,0 +1,16 @@
+export const errors = {
+  generic: 'Algo salió mal. Inténtalo de nuevo.',
+  signInFailed: 'Error al iniciar sesión.',
+  signInConnection: 'Error al iniciar sesión. Comprueba tu conexión e inténtalo de nuevo.',
+  createAccountFailed: 'No se pudo crear la cuenta.',
+  updateRequestFailed: 'No se pudo actualizar la solicitud.',
+  leaveCoachFailed: 'No se pudo dejar al entrenador.',
+  sendResetCodeFailed: 'No se pudo enviar el código de restablecimiento.',
+  resendCodeFailed: 'No se pudo reenviar el código.',
+  invalidOrExpiredCode: 'Código inválido o caducado.',
+  unknownError: 'Se produjo un error inesperado.',
+  loadFailed: 'Error al cargar los datos.',
+  saveFailed: 'Error al guardar los cambios.',
+  deleteFailed: 'Error al eliminar.',
+  networkError: 'Error de red. Comprueba tu conexión.',
+} as const

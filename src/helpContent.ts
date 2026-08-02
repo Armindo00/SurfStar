@@ -1,164 +1,91 @@
 import { getAppSiteUrl } from './config'
+import { getLocale } from './i18n'
+import { getMessages } from './i18n/messages'
+import type { SupportedLocale } from './i18n/types'
+import { trainingModeLabel } from './i18n/labels'
 import type { PlanId } from './plans'
 import type { TrainingMode } from './types'
-import { TRAINING_MODE_LABELS } from './types'
 
 export type TrainingHelpGuide = {
   mode: TrainingMode
   planLabel: string
   summary: string
-  steps: string[]
+  steps: readonly string[]
 }
 
-export const TRAINING_HELP_GUIDES: TrainingHelpGuide[] = [
-  {
-    mode: 'tecnico',
-    planLabel: 'All plans',
-    summary:
-      'Wave-by-wave logging for rail, top turn, and progressive maneuvers — with level, side, and success tracking.',
-    steps: [
-      'Tap New session → choose Technical training, spot, and sea conditions.',
-      'Select the athletes who are training, then tap Start session.',
-      'Tap an athlete tile to open the register sheet for their current wave.',
-      'Log each maneuver (R / T / P), pick the level (1–3 or ★), frontside or backside, and success or miss.',
-      'Open Live stats anytime to see success rate and breakdowns update in real time.',
-    ],
-  },
-  {
-    mode: 'combos',
-    planLabel: 'All plans',
-    summary: 'Track linked maneuver sequences (combos) with levels and success rates.',
-    steps: [
-      'Tap New session → choose Combos, then spot and conditions.',
-      'Select athletes and start the session.',
-      'For each wave, tap the athlete and log the combo level achieved (Combo 1–3 or ★).',
-      'Mark success or fail for that combo attempt.',
-      'Review combo stats in Live stats or Team analytics after the session.',
-    ],
-  },
-  {
-    mode: 'heats',
-    planLabel: 'Coach plan and above',
-    summary: 'Run a single timed heat — score each athlete wave-by-wave like a contest heat.',
-    steps: [
-      'Tap New session → choose Heats and set the heat length (e.g. 15 or 20 minutes).',
-      'Select up to four athletes for the heat, then start.',
-      'Log each wave with scores and interferences as they happen.',
-      'When the heat ends, review placements and totals on the heat screen.',
-      'Finished heats appear in session history and Team analytics.',
-    ],
-  },
-  {
-    mode: 'campeonato',
-    planLabel: 'Coach plan and above',
-    summary:
-      'Full knockout contest — add all surfers, pick heat size (2 or 4), and SurfStar builds every round until the final.',
-    steps: [
-      'Tap New session → Championship, set heat length and surfers per heat (2 = top 1 advances, 4 = top 2 advance).',
-      'Select all athletes in the contest and tap Start championship.',
-      'SurfStar splits the opening round into heats of 3 or 4 (e.g. quarterfinals with 8 surfers = 2 heats of 4).',
-      'When a round has multiple heats, tap Start all heats — they share one clock and you score each heat side by side.',
-      'Continue through semifinals and final until a champion is crowned.',
-    ],
-  },
-  {
-    mode: 'sea-analysis',
-    planLabel: 'Coach Premium',
-    summary:
-      'Timed 30-minute ocean observation on two peaks — log wave types and get a peak recommendation.',
-    steps: [
-      'Tap New session → choose Sea analysis, spot, and conditions (no athletes needed).',
-      'Start the session and tap Start timer when you begin observing.',
-      'Log wave types on Peak 1 and Peak 2 as sets arrive (sets, intermediates, small waves).',
-      'SurfStar scores each peak and shows which one is firing best.',
-      'End the session to save the timeline and recommendation to history.',
-    ],
-  },
-  {
-    mode: 'custom',
-    planLabel: 'Coach Premium',
-    summary:
-      'Your own training format — custom skill buttons, levels, success/fail, timer, and written rules.',
-    steps: [
-      'Go to Custom training templates and create a template (buttons, levels, timer, rules).',
-      'Tap New session → choose Custom training and pick your template.',
-      'Select athletes and start — the register shows your custom buttons instead of built-in maneuvers.',
-      'Tap a skill button, pick level and outcome, and log directly or per wave depending on your template.',
-      'If a timer is enabled, start it from the register sheet when your drill begins.',
-    ],
-  },
-]
+function interpolate(template: string, params: Record<string, string>): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (_, name: string) => params[name] ?? '')
+}
 
-export const COACH_QUICK_TIPS = [
-  'Set up spots and sea conditions first under Spots & conditions — they appear in every new session.',
-  'Link athletes via pairing code under Manage athletes before the first beach session.',
-  'Use End session from the menu to save everything to Past sessions and Team analytics.',
-]
+export function getCoachQuickTips(locale: SupportedLocale = getLocale()): readonly string[] {
+  return getMessages(locale).help.coachQuickTips
+}
 
-export const ATHLETE_HELP_SECTIONS = [
-  {
-    title: 'Your pairing code',
-    body:
-      'Share your code with a coach. They send a link request — you must tap Accept before they can log sessions for you.',
-  },
-  {
-    title: 'Stats from your coaches',
-    body:
-      'Each coach chooses what to share: technical stats, combos, session history, and heat details. Stats from all linked coaches appear here in one place.',
-  },
-  {
-    title: 'Leaving a coach',
-    body:
-      'Under Linked coaches, tap Leave to revoke access. Past sessions they logged stay in your history according to their share settings.',
-  },
-]
+export function getTrainingHelpGuides(locale: SupportedLocale = getLocale()): TrainingHelpGuide[] {
+  const guides = getMessages(locale).help.trainingGuides
+  return (Object.keys(guides) as TrainingMode[]).map((mode) => ({
+    mode,
+    ...guides[mode],
+  }))
+}
 
-export function getInstallHelp() {
+/** @deprecated Use getTrainingHelpGuides(locale) */
+export const TRAINING_HELP_GUIDES: TrainingHelpGuide[] = getTrainingHelpGuides()
+
+/** @deprecated Use getCoachQuickTips(locale) */
+export const COACH_QUICK_TIPS = [...getCoachQuickTips()]
+
+export function getAthleteHelpSections(locale: SupportedLocale = getLocale()) {
+  const help = getMessages(locale).athlete.help
+  return [help.pairingCode, help.statsFromCoaches, help.leavingCoach]
+}
+
+/** @deprecated Use getAthleteHelpSections(locale) */
+export const ATHLETE_HELP_SECTIONS = getAthleteHelpSections()
+
+export function getInstallHelp(locale: SupportedLocale = getLocale()) {
+  const install = getMessages(locale).help.install
   const siteHost = getAppSiteUrl().replace(/^https?:\/\//, '')
   return {
-    title: 'Add SurfStar to your home screen',
-    lead:
-      'Install SurfStar like an app for one-tap access at the beach. Works on iPhone and Android — no App Store download required.',
+    title: install.title,
+    lead: install.lead,
     iphone: {
-      title: 'iPhone (Safari)',
-      steps: [
-        `Open ${siteHost} in Safari (Chrome on iPhone does not support home screen install the same way).`,
-        'Tap the Share button at the bottom of the screen (□ with an arrow pointing up).',
-        'Scroll the share menu and tap Add to Home Screen.',
-        'Edit the name if you like, then tap Add — the SurfStar icon appears on your home screen.',
-        'Open SurfStar from that icon for full-screen, app-like experience.',
-      ],
+      title: install.iphone.title,
+      steps: install.iphone.steps.map((step) => interpolate(step, { siteHost })),
     },
     android: {
-      title: 'Android (Chrome)',
-      steps: [
-        `Open ${siteHost} in Google Chrome.`,
-        'Tap the menu (⋮) in the top-right corner.',
-        'Tap Install app or Add to Home screen (wording may vary by phone).',
-        'Confirm on the prompt — SurfStar is added to your home screen and app drawer.',
-        'On Samsung Internet: tap ≡ menu → Add page to → Home screen.',
-      ],
+      title: install.android.title,
+      steps: install.android.steps.map((step) => interpolate(step, { siteHost })),
     },
-    note: 'If you already installed SurfStar, you can ignore this section.',
+    note: install.note,
   }
 }
 
-/** @deprecated Use getInstallHelp() for the current site URL. */
+/** @deprecated Use getInstallHelp(locale) */
 export const INSTALL_HELP = getInstallHelp()
 
 export function trainingGuideLabel(mode: TrainingMode): string {
-  return TRAINING_MODE_LABELS[mode]
+  return trainingModeLabel(mode)
 }
 
-export function planBadgeForMode(mode: TrainingMode, planId: PlanId): string | null {
-  const guide = TRAINING_HELP_GUIDES.find((g) => g.mode === mode)
+export function planBadgeForMode(
+  mode: TrainingMode,
+  planId: PlanId,
+  locale: SupportedLocale = getLocale(),
+): string | null {
+  const guides = getMessages(locale).help.trainingGuides
+  const labels = getMessages(locale).plans.planLabels
+  const guide = guides[mode]
   if (!guide) return null
   if (mode === 'tecnico' || mode === 'combos') return null
-  if ((mode === 'heats' || mode === 'campeonato') && (planId === 'team' || planId === 'club' || planId === 'organization')) {
-    return 'Included in your plan'
+  if (
+    (mode === 'heats' || mode === 'campeonato') &&
+    (planId === 'team' || planId === 'club' || planId === 'organization')
+  ) {
+    return labels.includedInPlan
   }
   if (mode === 'custom' || mode === 'sea-analysis') {
-    return planId === 'club' || planId === 'organization' ? 'Included in your plan' : guide.planLabel
+    return planId === 'club' || planId === 'organization' ? labels.includedInPlan : guide.planLabel
   }
   if (mode === 'heats' || mode === 'campeonato') return guide.planLabel
   return guide.planLabel

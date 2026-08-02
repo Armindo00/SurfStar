@@ -1,10 +1,7 @@
 import type { LevelSuccessStats } from '../sessionStats'
 import { LEVELS } from '../sessionStats'
+import { levelLabelEn } from '../i18n/labels'
 import type { ManeuverLevel } from '../types'
-
-export function levelLabelEn(level: ManeuverLevel) {
-  return level === 'estrela' ? 'Star ★' : `Level ${level}`
-}
 
 export function findPredominantSuccessLevel(
   byLevel: Record<ManeuverLevel, LevelSuccessStats>,

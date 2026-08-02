@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useI18n } from '../i18n'
 import { useApp } from '../AppContext'
 import { formatAppTime } from '../dateFormat'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -10,6 +11,9 @@ import type { ComboAttemptLog, ManeuverLog } from '../types'
 import { formatComboEntry, formatCustomEntry, formatManeuverEntry } from '../waveDisplay'
 
 export function SavedWavesView() {
+  const { t, messages } = useI18n()
+  const r = messages.session.register
+  const sw = messages.ui.savedWaves
   const {
     activeSession,
     activeAthleteId,
@@ -49,10 +53,10 @@ export function SavedWavesView() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Saved waves" onBack={() => setView(backView)} />
+      <ScreenHeader title={t('nav.savedWaves')} onBack={() => setView(backView)} />
       <div className="ss-card">
         {!activeSession || waves.length === 0 ? (
-          <p className="muted">No waves recorded in this session yet.</p>
+          <p className="muted">{sw.empty}</p>
         ) : (
           <ul className="wave-list wave-list--editable">
             {waves.map((w) => {
@@ -64,13 +68,13 @@ export function SavedWavesView() {
                 <li key={w.id} className="wave-list__block">
                   <div className="wave-list__head">
                     <div>
-                      <strong>{getAthlete(w.athleteId)?.name ?? 'Athlete'}</strong>
+                      <strong>{getAthlete(w.athleteId)?.name ?? t('roles.athlete')}</strong>
                       <span>
                         {formatAppTime(w.startedAt, {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}{' '}
-                        · {w.hasPotential ? 'With potential' : 'No potential'}
+                        · {w.hasPotential ? sw.withPotential : sw.noPotential}
                       </span>
                     </div>
                     <button
@@ -78,7 +82,7 @@ export function SavedWavesView() {
                       className="btn btn--ghost btn--small record-row-actions__delete"
                       onClick={() => setDeleteWaveId(w.id)}
                     >
-                      Delete wave
+                      {sw.deleteWave}
                     </button>
                   </div>
 
@@ -118,7 +122,7 @@ export function SavedWavesView() {
                       ))}
                     </ul>
                   ) : (
-                    <small className="muted">No attempts logged</small>
+                    <small className="muted">{sw.noAttemptsLogged}</small>
                   )}
                 </li>
               )
@@ -140,8 +144,8 @@ export function SavedWavesView() {
 
       {deleteManeuver ? (
         <ConfirmDeleteModal
-          title="Delete maneuver?"
-          message="Remove this entry from the saved wave?"
+          title={r.deleteManeuver}
+          message={r.removeFromSavedWave}
           onConfirm={() => {
             deleteManeuverLog(deleteManeuver.waveId, deleteManeuver.logId)
             setDeleteManeuver(null)
@@ -163,8 +167,8 @@ export function SavedWavesView() {
 
       {deleteCombo ? (
         <ConfirmDeleteModal
-          title="Delete combo attempt?"
-          message="Remove this entry from the saved wave?"
+          title={r.deleteComboAttempt}
+          message={r.removeFromSavedWave}
           onConfirm={() => {
             deleteComboAttempt(deleteCombo.waveId, deleteCombo.logId)
             setDeleteCombo(null)
@@ -175,8 +179,8 @@ export function SavedWavesView() {
 
       {deleteCustom ? (
         <ConfirmDeleteModal
-          title="Delete attempt?"
-          message="Remove this entry from the saved wave?"
+          title={r.deleteAttempt}
+          message={r.removeFromSavedWave}
           onConfirm={() => {
             deleteCustomAttempt(deleteCustom.waveId, deleteCustom.logId)
             setDeleteCustom(null)
@@ -187,8 +191,8 @@ export function SavedWavesView() {
 
       {deleteWaveId ? (
         <ConfirmDeleteModal
-          title="Delete entire wave?"
-          message="This removes the wave and all entries logged on it."
+          title={r.deleteEntireWave}
+          message={r.deleteEntireWaveMessage}
           onConfirm={() => {
             deleteWaveRecord(deleteWaveId)
             setDeleteWaveId(null)

@@ -1,6 +1,7 @@
 import { useApp } from '../AppContext'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { exportSessionsCsv } from '../exportCsv'
+import { useI18n } from '../i18n'
 import {
   athleteNamesForSession,
   buildCoachSessionHeadline,
@@ -8,44 +9,46 @@ import {
   formatSessionDuration,
   resolveSessionSpotName,
 } from '../sessionHistoryUtils'
-import { TRAINING_MODE_LABELS } from '../types'
+import { trainingModeLabel } from '../i18n/labels'
 
 export function TrainingSessionsView() {
   const { completedCoachSessions, getSpot, getAthlete, openHistorySession, setView } = useApp()
+  const { t } = useI18n()
+  const count = completedCoachSessions.length
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Past sessions" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.pastSessions')} onBack={() => setView('coach-home')} />
 
       <div className="ss-card history-intro">
         <div className="history-intro__head">
           <div>
-            <h2 className="page-title">Session history</h2>
-            <p className="muted">
-              Completed trainings saved to your account. Tap a session for full stats and coach notes.
-            </p>
+            <h2 className="page-title">{t('session.history.title')}</h2>
+            <p className="muted">{t('session.history.intro')}</p>
             <p className="history-intro__count">
-              <strong>{completedCoachSessions.length}</strong> completed session
-              {completedCoachSessions.length === 1 ? '' : 's'}
+              <strong>{count}</strong>{' '}
+              {count === 1
+                ? t('session.history.completedSession', { count })
+                : t('session.history.completedSessions', { count })}
             </p>
           </div>
-          {completedCoachSessions.length > 0 ? (
+          {count > 0 ? (
             <button
               type="button"
               className="btn btn--secondary btn--small history-intro__export"
               onClick={() => exportSessionsCsv(completedCoachSessions, getAthlete, getSpot)}
             >
-              Export CSV
+              {t('session.history.exportCsv')}
             </button>
           ) : null}
         </div>
       </div>
 
-      {completedCoachSessions.length === 0 ? (
+      {count === 0 ? (
         <div className="ss-card history-empty">
-          <p className="muted">No completed sessions yet.</p>
+          <p className="muted">{t('session.history.empty')}</p>
           <button type="button" className="btn btn--primary btn--block" onClick={() => setView('coach-home')}>
-            Start a new session
+            {t('session.history.startNew')}
           </button>
         </div>
       ) : (
@@ -62,14 +65,14 @@ export function TrainingSessionsView() {
                   onClick={() => openHistorySession(session.id)}
                 >
                   <div className="history-card__top">
-                    <span className="history-card__mode">{TRAINING_MODE_LABELS[session.mode]}</span>
+                    <span className="history-card__mode">{trainingModeLabel(session.mode)}</span>
                     <span className="history-card__date">{formatSessionDate(endedAt)}</span>
                   </div>
                   <strong className="history-card__headline">
                     {buildCoachSessionHeadline(session, getAthlete)}
                   </strong>
                   <p className="history-card__meta">
-                    {spotName} · {session.condition || 'No condition'}
+                    {spotName} · {session.condition || t('session.history.noCondition')}
                   </p>
                   <p className="history-card__meta">
                     {athleteNamesForSession(session, getAthlete)} ·{' '}

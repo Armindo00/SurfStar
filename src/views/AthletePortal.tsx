@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NavBadge } from '../components/NavBadge'
 import { DeleteAccountPanel } from '../components/DeleteAccountPanel'
+import { LanguagePicker } from '../components/LanguagePicker'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import { UNSEEN } from '../unseenDomains'
 import {
   buildAthleteHeatDetails,
@@ -59,6 +61,8 @@ export function AthletePortal() {
     markSeen,
     countUnseen,
   } = useApp()
+  const { t, messages } = useI18n()
+  const A = messages.athlete
   const [pairingBusy, setPairingBusy] = useState<string | null>(null)
   const [pairingError, setPairingError] = useState('')
   const [sheet, setSheet] = useState<AthletePortalSheet | null>(null)
@@ -96,7 +100,7 @@ export function AthletePortal() {
     for (const link of athleteLinks) {
       if (link.coachName) map.set(link.coachId, link.coachName)
     }
-    return (coachId: string) => map.get(coachId) ?? 'Coach'
+    return (coachId: string) => map.get(coachId) ?? t('roles.coach')
   }, [athleteLinks])
 
   const coachesWithShare = (key: keyof AthleteShareSettings) =>
@@ -211,78 +215,113 @@ export function AthletePortal() {
   const dashboardActions: DashboardAction[] = [
     {
       id: 'material',
-      label: 'Equipment management',
-      description: 'Boards, fins and setup',
+      label: A.actions.equipmentManagement.label,
+      description: A.actions.equipmentManagement.description ?? '',
       icon: '⇄',
     },
     {
       id: 'equipment-reviews',
-      label: 'Coach equipment reviews',
+      label: A.actions.equipmentReviews.label,
       description:
         unseenEquipmentReviews > 0
-          ? `${unseenEquipmentReviews} new review${unseenEquipmentReviews === 1 ? '' : 's'} from your coaches`
+          ? t(
+              unseenEquipmentReviews === 1
+                ? 'athlete.actions.equipmentReviews.descriptionNew'
+                : 'athlete.actions.equipmentReviews.descriptionNewPlural',
+              { count: unseenEquipmentReviews },
+            )
           : equipmentReviewItems.length > 0
-            ? `${equipmentReviewItems.length} review${equipmentReviewItems.length === 1 ? '' : 's'} from your coaches`
-            : 'Ratings and comments on your gear',
+            ? t(
+                equipmentReviewItems.length === 1
+                  ? 'athlete.actions.equipmentReviews.descriptionCount'
+                  : 'athlete.actions.equipmentReviews.descriptionCountPlural',
+                { count: equipmentReviewItems.length },
+              )
+            : A.actions.equipmentReviews.descriptionDefault ?? '',
       icon: '★',
       badge: unseenEquipmentReviews || undefined,
     },
     {
       id: 'coaches',
-      label: 'Linked coaches',
+      label: A.actions.linkedCoaches.label,
       description:
         unseenPairing > 0
-          ? `${unseenPairing} new coach request${unseenPairing === 1 ? '' : 's'}`
-          : 'Pairing code and requests',
+          ? t(
+              unseenPairing === 1
+                ? 'athlete.actions.linkedCoaches.descriptionNew'
+                : 'athlete.actions.linkedCoaches.descriptionNewPlural',
+              { count: unseenPairing },
+            )
+          : A.actions.linkedCoaches.descriptionDefault ?? '',
       icon: '◉',
       badge: unseenPairing || undefined,
     },
     {
       id: 'shared-stats',
-      label: 'Shared statistics',
+      label: A.actions.sharedStatistics.label,
       description:
         sharingCoachCount > 0
-          ? `${sharingCoachCount} coach${sharingCoachCount === 1 ? '' : 'es'} sharing data`
-          : 'Details shared by your coaches',
+          ? t(
+              sharingCoachCount === 1
+                ? 'athlete.actions.sharedStatistics.descriptionSharing'
+                : 'athlete.actions.sharedStatistics.descriptionSharingPlural',
+              { count: sharingCoachCount },
+            )
+          : A.actions.sharedStatistics.descriptionDefault ?? '',
       icon: '▤',
     },
     {
       id: 'checkins',
-      label: 'Mental check-ins',
+      label: A.actions.mentalCheckins.label,
       description:
         unseenCheckins > 0
-          ? `${unseenCheckins} check-in${unseenCheckins === 1 ? '' : 's'} waiting`
-          : 'Complete after each session',
+          ? t(
+              unseenCheckins === 1
+                ? 'athlete.actions.mentalCheckins.descriptionWaiting'
+                : 'athlete.actions.mentalCheckins.descriptionWaitingPlural',
+              { count: unseenCheckins },
+            )
+          : A.actions.mentalCheckins.descriptionDefault ?? '',
       icon: '◎',
       badge: unseenCheckins || undefined,
     },
     {
       id: 'evolution',
-      label: 'Evolution chart',
-      description: '6 months · 1 month · 1 week',
+      label: A.actions.evolution.label,
+      description: A.actions.evolution.description ?? '',
       icon: '↗',
     },
     {
       id: 'heats',
-      label: 'Heat history',
+      label: A.actions.heatHistory.label,
       description:
         unseenHeats > 0
-          ? `${unseenHeats} new heat result${unseenHeats === 1 ? '' : 's'}`
+          ? t(
+              unseenHeats === 1
+                ? 'athlete.actions.heatHistory.descriptionNew'
+                : 'athlete.actions.heatHistory.descriptionNewPlural',
+              { count: unseenHeats },
+            )
           : heatDetails.length > 0
-            ? `${heatDetails.length} heats`
-            : 'Competition results',
+            ? t('athlete.actions.heatHistory.descriptionCount', { count: heatDetails.length })
+            : A.actions.heatHistory.descriptionDefault ?? '',
       icon: '★',
       badge: unseenHeats || undefined,
     },
     {
       id: 'training-history',
-      label: 'Training history',
+      label: A.actions.trainingHistory.label,
       description:
         unseenTrainingHistory > 0
-          ? `${unseenTrainingHistory} new session${unseenTrainingHistory === 1 ? '' : 's'}`
+          ? t(
+              unseenTrainingHistory === 1
+                ? 'athlete.actions.trainingHistory.descriptionNew'
+                : 'athlete.actions.trainingHistory.descriptionNewPlural',
+              { count: unseenTrainingHistory },
+            )
           : sessionSummaries.length > 0
-            ? `${sessionSummaries.length} sessions`
-            : 'Training sessions shared by your coaches',
+            ? t('athlete.actions.trainingHistory.descriptionCount', { count: sessionSummaries.length })
+            : A.actions.trainingHistory.descriptionDefault ?? '',
       icon: '☰',
       badge: unseenTrainingHistory || undefined,
     },
@@ -302,7 +341,7 @@ export function AthletePortal() {
     setPairingBusy(linkId)
     try {
       const result = await respondToPairing(linkId, accept)
-      if (!result.ok) setPairingError(result.error ?? 'Could not update request.')
+      if (!result.ok) setPairingError(result.error ?? t('errors.updateRequestFailed'))
       else markSeen(UNSEEN.athletePairing, [linkId])
     } finally {
       setPairingBusy(null)
@@ -314,7 +353,7 @@ export function AthletePortal() {
     setPairingBusy(linkId)
     try {
       const result = await revokePairing(linkId)
-      if (!result.ok) setPairingError(result.error ?? 'Could not leave coach.')
+      if (!result.ok) setPairingError(result.error ?? t('errors.leaveCoachFailed'))
     } finally {
       setPairingBusy(null)
     }
@@ -373,7 +412,7 @@ export function AthletePortal() {
   if (!isAthlete || !auth) {
     return (
       <div className="ss-card">
-        <p className="muted">Sign in as an athlete.</p>
+        <p className="muted">{A.signInRequired}</p>
       </div>
     )
   }
@@ -433,46 +472,44 @@ export function AthletePortal() {
   return (
     <div className="dashboard athlete-portal">
       <header className="dashboard__hero">
-        <p className="dashboard__hello">Hello,</p>
+        <p className="dashboard__hello">{A.hello}</p>
         <h1 className="dashboard__name">{auth.name}</h1>
-        <p className="muted">Your statistics across all linked coaches</p>
+        <p className="muted">{A.dashboardSubtitle}</p>
       </header>
 
       <div className="ss-card athlete-portal__section athlete-portal__general">
-        <h2 className="page-title">General statistics</h2>
-        <p className="muted stats-panel__sub">
-          Combined from every coach you train with — your progress stays with you.
-        </p>
+        <h2 className="page-title">{t('athlete.generalStatistics')}</h2>
+        <p className="muted stats-panel__sub">{A.generalStatisticsSub}</p>
 
         <div className="kpi-grid athlete-portal__kpi">
           <article className="kpi-card">
-            <span className="kpi-card__label">Total waves</span>
+            <span className="kpi-card__label">{A.totalWaves}</span>
             <strong className="kpi-card__value">{stats.totalWaves}</strong>
           </article>
           <article className="kpi-card kpi-card--accent">
-            <span className="kpi-card__label">Total trainings</span>
+            <span className="kpi-card__label">{A.totalTrainings}</span>
             <strong className="kpi-card__value">{stats.totalTrainings}</strong>
           </article>
           <article className="kpi-card kpi-card--success">
-            <span className="kpi-card__label">Heat wins</span>
+            <span className="kpi-card__label">{A.heatWins}</span>
             <strong className="kpi-card__value">{stats.heatWins}</strong>
-            <small className="kpi-card__hint">{stats.heatParticipations} heats</small>
+            <small className="kpi-card__hint">{t('athlete.heats', { count: stats.heatParticipations })}</small>
           </article>
           <article className="kpi-card kpi-card--success">
-            <span className="kpi-card__label">Championship wins</span>
+            <span className="kpi-card__label">{A.championshipWins}</span>
             <strong className="kpi-card__value">{stats.championshipWins}</strong>
             <small className="kpi-card__hint">
-              {stats.championshipWins === 1 ? 'title won' : 'titles won'}
+              {stats.championshipWins === 1 ? A.titleWon : A.titlesWon}
             </small>
           </article>
           <article className="kpi-card">
-            <span className="kpi-card__label">Avg heat score</span>
+            <span className="kpi-card__label">{A.avgHeatScore}</span>
             <strong className="kpi-card__value">
               {stats.avgHeatScore !== null ? formatHeatTotal(stats.avgHeatScore) : '—'}
             </strong>
           </article>
           <article className="kpi-card kpi-card--success athlete-potential-kpi">
-            <span className="kpi-card__label">Waves with potential</span>
+            <span className="kpi-card__label">{A.wavesWithPotential}</span>
             {stats.withPotentialRate !== null ? (
               <>
                 <strong className="kpi-card__value">{stats.withPotentialRate}%</strong>
@@ -481,12 +518,12 @@ export function AthletePortal() {
             ) : (
               <>
                 <strong className="kpi-card__value">—</strong>
-                <small className="kpi-card__hint">No waves logged yet</small>
+                <small className="kpi-card__hint">{A.noWavesLogged}</small>
               </>
             )}
           </article>
           <article className="kpi-card kpi-card--accent">
-            <span className="kpi-card__label">Avg level · technical + combos</span>
+            <span className="kpi-card__label">{A.avgLevelCombined}</span>
             <strong className="kpi-card__value">
               {formatAverageLevelValue(stats.avgOverallManeuverLevel)}
             </strong>
@@ -501,16 +538,19 @@ export function AthletePortal() {
             )}
           </article>
           <article className="kpi-card kpi-card--star">
-            <span className="kpi-card__label">Stars landed</span>
+            <span className="kpi-card__label">{A.starsLanded}</span>
             <strong className="kpi-card__value">{stats.totalStars} ★</strong>
             <small className="kpi-card__hint">
-              {stats.technicalStars} technical · {stats.comboStars} combo
+              {t('athlete.starsBreakdown', {
+                technical: stats.technicalStars,
+                combo: stats.comboStars,
+              })}
             </small>
           </article>
         </div>
       </div>
 
-      <nav className="action-list athlete-portal__nav" aria-label="Athlete dashboard sections">
+      <nav className="action-list athlete-portal__nav" aria-label={A.dashboardNavLabel}>
         {dashboardActions.map((action) => (
           <button
             key={action.id}
@@ -540,30 +580,32 @@ export function AthletePortal() {
 
       {mySessions.length === 0 ? (
         <div className="ss-card athlete-portal__hint">
-          <p className="muted">No completed sessions visible for you yet. Share your pairing code with a coach.</p>
+          <p className="muted">{A.noSessionsHint}</p>
         </div>
       ) : null}
 
       {mySessions.length > 0 && !hasEvolutionData && sharingCoachCount === 0 ? (
         <div className="ss-card athlete-portal__hint">
-          <p className="muted">
-            Your coaches can share more detailed stats from <strong>Athletes & pairing</strong>.
-          </p>
+          <p className="muted">{A.shareMoreHint}</p>
         </div>
       ) : null}
 
       <button type="button" className="btn btn--outline btn--block" onClick={() => setView('help')}>
-        Help & install guide
+        {A.helpAndInstall}
       </button>
 
       <button type="button" className="btn btn--outline btn--block" onClick={openContact}>
-        Contact SurfStar
+        {A.contactSurfStar}
       </button>
+
+      <div className="ss-card stats-panel">
+        <LanguagePicker />
+      </div>
 
       <DeleteAccountPanel roleLabel="athlete" />
 
       <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>
-        Sign out
+        {A.signOut}
       </button>
     </div>
   )

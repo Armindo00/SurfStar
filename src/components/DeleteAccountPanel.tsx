@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { cloudFetchMyAccountDeletionRequest, cloudRequestAccountDeletion } from '../accountDeletionApi'
 import { getContactEmail } from '../config'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 
 type Props = {
   roleLabel: 'coach' | 'athlete'
@@ -11,12 +12,16 @@ type Props = {
 
 export function DeleteAccountPanel({ roleLabel, subscriptionActive, subscriptionCanceled }: Props) {
   const { cloudMode, logout } = useApp()
+  const { messages, t } = useI18n()
+  const d = messages.components.deleteAccount
   const [reason, setReason] = useState('')
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [pending, setPending] = useState(false)
+
+  const roleWord = roleLabel === 'coach' ? d.roleCoach : d.roleAthlete
 
   useEffect(() => {
     if (!cloudMode) return
@@ -46,9 +51,7 @@ export function DeleteAccountPanel({ roleLabel, subscriptionActive, subscription
       }
       setPending(true)
       setConfirmOpen(false)
-      setSuccess(
-        'Deletion request submitted. We will process it within 30 days and email you at the address on your account.',
-      )
+      setSuccess(d.successMessage)
     } finally {
       setBusy(false)
     }
@@ -57,12 +60,12 @@ export function DeleteAccountPanel({ roleLabel, subscriptionActive, subscription
   if (pending) {
     return (
       <div className="ss-card stats-panel subscription-delete-panel">
-        <h2 className="stats-panel__title">Delete account</h2>
+        <h2 className="stats-panel__title">{d.title}</h2>
         <p className="login-success">
-          Your deletion request is pending review. Contact {getContactEmail()} if you submitted this by mistake.
+          {t('components.deleteAccount.pendingMessage', { email: getContactEmail() })}
         </p>
         <button type="button" className="btn btn--ghost btn--block" onClick={() => void logout()}>
-          Sign out
+          {d.signOut}
         </button>
       </div>
     )
@@ -70,39 +73,33 @@ export function DeleteAccountPanel({ roleLabel, subscriptionActive, subscription
 
   return (
     <div className="ss-card stats-panel subscription-delete-panel">
-      <h2 className="stats-panel__title">Delete account</h2>
-      <p className="muted">
-        Request permanent deletion of your SurfStar {roleLabel} account and personal data. This cannot be undone once
-        processed.
-      </p>
+      <h2 className="stats-panel__title">{d.title}</h2>
+      <p className="muted">{t('components.deleteAccount.description', { role: roleWord })}</p>
       {roleLabel === 'coach' && subscriptionActive && !subscriptionCanceled ? (
-        <p className="checkout-notice__lead">
-          We recommend canceling your subscription first. You can still request deletion while subscribed — access ends
-          when the account is deleted.
-        </p>
+        <p className="checkout-notice__lead">{d.cancelSubscriptionHint}</p>
       ) : null}
       {!confirmOpen ? (
         <button type="button" className="btn btn--danger btn--block" onClick={() => setConfirmOpen(true)}>
-          Request account deletion
+          {d.requestDeletion}
         </button>
       ) : (
         <form className="form-pro" onSubmit={(e) => void submit(e)}>
           <label className="field field--pro">
-            <span>Reason (optional)</span>
+            <span>{d.reasonOptional}</span>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               maxLength={2000}
-              placeholder="Tell us why you are leaving (optional)"
+              placeholder={d.reasonPlaceholder}
             />
           </label>
-          <p className="muted">By submitting, you confirm you want your account and personal data permanently deleted.</p>
+          <p className="muted">{d.confirmHint}</p>
           {error ? <p className="login-error">{error}</p> : null}
           {success ? <p className="login-success">{success}</p> : null}
           <div className="subscription-cancel-confirm__actions">
             <button type="submit" className="btn btn--danger" disabled={busy}>
-              {busy ? 'Submitting…' : 'Confirm deletion request'}
+              {busy ? d.submitting : d.confirmDeletion}
             </button>
             <button
               type="button"
@@ -110,7 +107,7 @@ export function DeleteAccountPanel({ roleLabel, subscriptionActive, subscription
               disabled={busy}
               onClick={() => setConfirmOpen(false)}
             >
-              Cancel
+              {d.cancel}
             </button>
           </div>
         </form>

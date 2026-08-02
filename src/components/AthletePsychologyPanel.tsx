@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import {
   buildAthletePsychologyAnalytics,
   feedbackHasPsychologySurvey,
@@ -7,7 +8,8 @@ import {
 import { PSYCHOLOGY_SURVEY_QUESTIONS } from '../psychologySurvey'
 import { formatShortDate } from '../dateFormat'
 import { describeAnalyticsRange, type AnalyticsRange } from '../analyticsRange'
-import { TRAINING_MODE_LABELS, type TrainingSession } from '../types'
+import { trainingModeLabel } from '../i18n/labels'
+import type { TrainingSession } from '../types'
 
 type Props = {
   athleteId: string
@@ -18,6 +20,7 @@ type Props = {
 
 export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: Props) {
   const { sessionAthleteFeedback } = useApp()
+  const { t } = useI18n()
 
   const psychology = useMemo(
     () =>
@@ -36,7 +39,7 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
   return (
     <div className="athlete-psychology-panel">
       <div className="ss-card stats-panel athlete-psychology-panel__intro">
-        <h2 className="stats-panel__title">Psychological profile</h2>
+        <h2 className="stats-panel__title">{t('ui.psychology.psychologicalProfile')}</h2>
         <p className="muted stats-panel__sub">
           Quick 0–5 check-ins after each session — mood, confidence, focus, satisfaction and mental
           fatigue.
@@ -45,7 +48,7 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
 
       {psychology.checkIns === 0 ? (
         <div className="ss-card stats-panel analytics-empty-period">
-          <h2 className="stats-panel__title">No check-ins in this period</h2>
+          <h2 className="stats-panel__title">{t('ui.psychology.noCheckinsInPeriod')}</h2>
           <p className="muted">
             The athlete has not submitted the post-session questionnaire in {periodLabel}.
             {psychology.legacyCheckIns > 0
@@ -75,7 +78,7 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
           </div>
 
           <div className="ss-card stats-panel">
-            <h2 className="stats-panel__title">Question averages (0–5)</h2>
+            <h2 className="stats-panel__title">{t('ui.psychology.questionAverages')}</h2>
             <p className="muted stats-panel__sub">Average score per question in this period.</p>
             <ul className="psych-state-distribution">
               {psychology.byQuestion.map((entry) => (
@@ -96,14 +99,14 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
           </div>
 
           <div className="ss-card stats-panel">
-            <h2 className="stats-panel__title">Session timeline</h2>
+            <h2 className="stats-panel__title">{t('ui.psychology.sessionTimeline')}</h2>
             <p className="muted stats-panel__sub">Latest check-ins in chronological order.</p>
             <ul className="feedback-timeline athlete-psychology-panel__timeline">
               {psychology.timeline.map(({ feedback, session, averageScore }) => (
                 <li key={feedback.id} className="feedback-timeline__item">
                   <div className="feedback-timeline__head">
                     <strong>
-                      {session ? TRAINING_MODE_LABELS[session.mode] : 'Session'}
+                      {session ? trainingModeLabel(session.mode) : 'Session'}
                       {averageScore !== null ? ` · avg ${averageScore.toFixed(1)}/5` : ''}
                     </strong>
                     <span className="muted">{formatShortDate(feedback.submittedAt)}</span>
@@ -118,7 +121,7 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
                       ))}
                     </ul>
                   ) : feedback.mentalState ? (
-                    <p className="muted">Legacy check-in · {feedback.mentalState}</p>
+                    <p className="muted">{t('ui.psychology.legacyCheckin', { state: feedback.mentalState })}</p>
                   ) : null}
                   {feedback.writtenNote ? (
                     <p className="feedback-timeline__note">{feedback.writtenNote}</p>

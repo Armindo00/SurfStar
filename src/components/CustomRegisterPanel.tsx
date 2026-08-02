@@ -3,6 +3,7 @@ import { CustomAttemptModal } from './CustomAttemptModal'
 import { CustomTimer } from './CustomTimer'
 import { WaveRegisterSummary } from './WaveRegisterSummary'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import {
   buttonDisplayLabel,
   countWaveCustomAttempts,
@@ -34,6 +35,8 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
     endCustomTimer,
     setView,
   } = useApp()
+  const { t, messages } = useI18n()
+  const r = messages.session.register as Record<string, string>
 
   const [pending, setPending] = useState<PendingAttempt | null>(null)
 
@@ -97,15 +100,18 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
     setPending(null)
   }
 
+  const templateName = template?.name ?? t('ui.session.customTrainingFallback')
+  const timerMinutes = template?.timer?.durationMinutes ?? 15
+
   return (
     <div className="register-panel">
       <div className="register-panel__head">
         <button type="button" className="btn btn--ghost" onClick={onBack}>
-          ← Athletes
+          {r.backToAthletes}
         </button>
         <div>
           <p className="register-panel__eyebrow">
-            Live register · {template?.name ?? 'Custom training'}
+            {t('session.register.liveRegisterWithName', { name: templateName })}
           </p>
           <h2>{athleteName}</h2>
         </div>
@@ -115,13 +121,13 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
 
       {timerEnabled && activeSession && !activeSession.customTimerStartedAt ? (
         <button type="button" className="btn btn--primary btn--block btn--lg" onClick={startCustomTimer}>
-          Start {template?.timer?.durationMinutes ?? 15} min timer
+          {t('session.register.startTimer', { minutes: timerMinutes })}
         </button>
       ) : null}
 
       {timerEnabled && timerRunning ? (
         <button type="button" className="btn btn--danger btn--block" onClick={endCustomTimer}>
-          Stop timer
+          {r.stopTimer}
         </button>
       ) : null}
 
@@ -133,7 +139,9 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
           ) : null}
           {maxAttempts !== null ? (
             <p className="muted custom-rules-panel__hint">
-              Max {maxAttempts} attempt{maxAttempts === 1 ? '' : 's'} per wave
+              {maxAttempts === 1
+                ? t('session.register.maxAttemptsPerWave', { count: maxAttempts })
+                : t('session.register.maxAttemptsPerWavePlural', { count: maxAttempts })}
             </p>
           ) : null}
         </div>
@@ -141,13 +149,13 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
 
       {useWaves && !waveOpen ? (
         <button type="button" className="btn btn--primary btn--block btn--lg" onClick={startOpenWave}>
-          Start wave
+          {r.startWave}
         </button>
       ) : useWaves && waveOpen ? (
         <>
           <WaveRegisterSummary mode="custom" />
 
-          <p className="muted keypad-legend">Tap a skill button to log an attempt on this wave.</p>
+          <p className="muted keypad-legend">{r.customTapToLogWave}</p>
 
           <div className="custom-button-grid">
             {buttons.map((button) => (
@@ -166,18 +174,18 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
 
           {canMarkNoPotential ? (
             <button type="button" className="btn btn--block btn-np-wide" onClick={registerNoPotentialWave}>
-              No potential
+              {r.noPotential}
             </button>
           ) : null}
 
           <button type="button" className="btn btn--primary btn--block" onClick={closeActiveWave}>
-            Close wave
+            {r.closeWave}
           </button>
         </>
       ) : !useWaves ? (
         <>
           <WaveRegisterSummary mode="custom" />
-          <p className="muted keypad-legend">Tap a skill button to log directly — no wave required.</p>
+          <p className="muted keypad-legend">{r.customTapToLogDirect}</p>
           <div className="custom-button-grid">
             {buttons.map((button) => (
               <button
@@ -196,16 +204,16 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
       ) : null}
 
       {buttons.length === 0 ? (
-        <p className="muted">This template has no skill buttons. Edit the template to add buttons.</p>
+        <p className="muted">{r.noSkillButtons}</p>
       ) : null}
 
       <div className="register-panel__links">
         <button type="button" className="btn btn--ghost btn--block" onClick={() => setView('session-stats')}>
-          Live stats
+          {t('session.liveStats')}
         </button>
         {useWaves ? (
           <button type="button" className="btn btn--ghost btn--block" onClick={() => setView('saved-waves')}>
-            Saved waves
+            {t('nav.savedWaves')}
           </button>
         ) : null}
       </div>

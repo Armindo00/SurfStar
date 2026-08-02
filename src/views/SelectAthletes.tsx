@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useI18n } from '../i18n'
 import { useApp } from '../AppContext'
 import {
   describeFullBracket,
@@ -9,6 +10,7 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import { MAX_HEAT_ATHLETES } from '../heatUtils'
 
 export function SelectAthletes() {
+  const { t } = useI18n()
   const {
     activeCoachAthletes,
     draft,
@@ -47,57 +49,61 @@ export function SelectAthletes() {
   if (isSeaAnalysis) {
     return (
       <div className="ss-flow">
-        <ScreenHeader title="Sea analysis" onBack={() => setView('start-session')} />
+        <ScreenHeader title={t('nav.seaAnalysis')} onBack={() => setView('start-session')} />
         <div className="ss-card">
-          <h2 className="page-title">Ready to observe</h2>
-          <p className="muted">
-            You will watch the ocean for 30 minutes and log sets and intermediate waves at Peak 1 and
-            Peak 2. No athletes need to be selected.
-          </p>
+          <h2 className="page-title">{t('ui.selectAthletes.readyToObserve')}</h2>
+          <p className="muted">{t('ui.selectAthletes.readyToObserveHint')}</p>
           <button type="button" className="btn btn--primary btn--block btn--lg" onClick={confirmAthletesAndStart}>
-            Open analysis screen
+            {t('ui.selectAthletes.openAnalysisScreen')}
           </button>
         </div>
       </div>
     )
   }
 
+  const selectHint = heatCap
+    ? t('ui.selectAthletes.heatSelectHint', { max: MAX_HEAT_ATHLETES })
+    : isCampeonato
+      ? t('ui.selectAthletes.championshipSelectHint')
+      : t('ui.selectAthletes.defaultSelectHint')
+
+  const surfersSelectedLabel =
+    selectedCount === 1
+      ? t('ui.selectAthletes.surfersSelected', { count: selectedCount })
+      : t('ui.selectAthletes.surfersSelectedPlural', { count: selectedCount })
+
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Athletes in session" onBack={() => setView('start-session')} />
+      <ScreenHeader title={t('nav.athletesInSession')} onBack={() => setView('start-session')} />
 
       <div className="ss-card">
-        <h2 className="page-title">Who is training today?</h2>
-        <p className="muted">
-          {heatCap
-            ? `Select up to ${MAX_HEAT_ATHLETES} surfers for this heat.`
-            : isCampeonato
-              ? 'Select everyone in today\'s contest. The bracket adapts automatically — every heat always has at least 2 surfers.'
-              : 'Tap to select or deselect. You can pick multiple athletes.'}
-        </p>
+        <h2 className="page-title">{t('ui.selectAthletes.whoIsTraining')}</h2>
+        <p className="muted">{selectHint}</p>
 
         {isCampeonato ? (
           <p className="muted stats-panel__sub">
-            {selectedCount} surfer{selectedCount === 1 ? '' : 's'} selected
+            {surfersSelectedLabel}
             {selectedCount >= 2 && bracketReady
-              ? ` · ${draft.championshipHeatSize === 2 ? 'top 1 per heat' : 'top 2 per heat'} · ${draft.championshipParallelHeats ? 'parallel' : 'sequential'}`
+              ? ` · ${draft.championshipHeatSize === 2 ? t('ui.selectAthletes.bracketTop1') : t('ui.selectAthletes.bracketTop2')} · ${draft.championshipParallelHeats ? t('ui.selectAthletes.parallel') : t('ui.selectAthletes.sequential')}`
               : ''}
           </p>
         ) : null}
 
         {bracketPreview.length > 0 ? (
-          <p className="muted stats-panel__sub">Rounds: {bracketPreview.join(' → ')}</p>
+          <p className="muted stats-panel__sub">
+            {t('ui.selectAthletes.roundsPreview', { rounds: bracketPreview.join(' → ') })}
+          </p>
         ) : null}
 
         {bracketDetail ? (
           <p className="champ-bracket-preview-detail">{bracketDetail}</p>
         ) : isCampeonato && selectedCount === 1 ? (
-          <p className="muted stats-panel__sub">Select at least one more surfer to build the bracket.</p>
+          <p className="muted stats-panel__sub">{t('ui.selectAthletes.selectMoreForBracket')}</p>
         ) : null}
 
         <div className="athlete-grid">
           {activeCoachAthletes.length === 0 ? (
-            <p className="muted">No active athletes. Pair with athletes using their code in Athletes & pairing.</p>
+            <p className="muted">{t('ui.selectAthletes.noActiveAthletes')}</p>
           ) : null}
           {activeCoachAthletes.map((a) => {
             const selected = draft.athleteIds.includes(a.id)
@@ -127,7 +133,7 @@ export function SelectAthletes() {
           }
           onClick={confirmAthletesAndStart}
         >
-          {isCampeonato ? 'Start championship' : 'Start training'}
+          {isCampeonato ? t('ui.selectAthletes.startChampionship') : t('ui.selectAthletes.startTraining')}
         </button>
       </div>
     </div>

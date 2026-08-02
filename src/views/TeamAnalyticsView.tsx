@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useI18n } from '../i18n'
 import { AnalyticsRangePicker } from '../components/AnalyticsRangePicker'
 import { AthleteReportSheet } from '../components/AthleteReportSheet'
 import {
@@ -43,6 +44,7 @@ type TopicTile = {
 type AthleteProfileSection = 'training' | 'psychology' | 'material'
 
 export function TeamAnalyticsView() {
+  const { t } = useI18n()
   const { coachAthletes, trainingSessions, auth, subscription, getSpot, setView, sessionAthleteFeedback } = useApp()
   const [search, setSearch] = useState('')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
@@ -125,71 +127,93 @@ export function TeamAnalyticsView() {
     return [
       {
         id: 'performance',
-        label: 'Performance',
+        label: t('analytics.topics.performance'),
         value: formatAverageLevelValue(general.avgOverallManeuverLevel),
         hint:
           general.totalStars > 0
-            ? `${formatCombinedLevelSummary(general)} · ${general.totalStars} stars`
+            ? t('analytics.topicHints.performanceStars', {
+                summary: formatCombinedLevelSummary(general),
+                count: general.totalStars,
+              })
             : formatCombinedLevelSummary(general),
         accent: true,
       },
       {
         id: 'volume',
-        label: 'Training volume',
+        label: t('analytics.topics.volume'),
         value: String(general.totalTrainings),
-        hint: `${general.totalWaves} waves logged`,
+        hint: t('analytics.topics.wavesLogged', { count: general.totalWaves }),
       },
       {
         id: 'wave-quality',
-        label: 'Wave quality',
+        label: t('analytics.topics.waveQuality'),
         value: general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`,
-        hint: `${general.withPotential} with potential`,
+        hint: t('analytics.topics.withPotential', { count: general.withPotential }),
         accent: true,
       },
       {
         id: 'technical',
-        label: 'Technical',
+        label: t('analytics.topics.technical'),
         value: analytics.technical
           ? `${analytics.technical.overallSuccessRate}%`
           : '—',
         hint: analytics.technical
-          ? `Avg ${formatAverageLevelValue(analytics.technical.averageLevel)} · ${general.technicalStars} stars`
-          : 'No sessions in period',
+          ? t('analytics.topicHints.technicalAvg', {
+              level: formatAverageLevelValue(analytics.technical.averageLevel),
+              stars: general.technicalStars,
+            })
+          : t('analytics.topics.noSessionsInPeriod'),
       },
       {
         id: 'combos',
-        label: 'Combos',
+        label: t('analytics.topics.combos'),
         value: analytics.combo ? `${analytics.combo.overallSuccessRate}%` : '—',
         hint: analytics.combo
-          ? `Avg ${formatAverageLevelValue(analytics.combo.averageLevel)} · ${general.comboStars} stars`
-          : 'No sessions in period',
+          ? t('analytics.topicHints.technicalAvg', {
+              level: formatAverageLevelValue(analytics.combo.averageLevel),
+              stars: general.comboStars,
+            })
+          : t('analytics.topics.noSessionsInPeriod'),
       },
       {
         id: 'competition',
-        label: 'Competition',
+        label: t('analytics.topics.competition'),
         value: String(general.heatWins),
         hint:
           general.championshipWins > 0
-            ? `${general.championshipWins} championship win${general.championshipWins === 1 ? '' : 's'} · ${general.heatParticipations} heats`
+            ? t('analytics.topicHints.competitionChampionship', {
+                wins:
+                  general.championshipWins === 1
+                    ? t('analytics.topics.championshipWins', { count: general.championshipWins })
+                    : t('analytics.topics.championshipWinsPlural', { count: general.championshipWins }),
+                heats: t('analytics.topics.heats', { count: general.heatParticipations }),
+              })
             : heatAnalytics.heatsWithTiming > 0
-              ? `Avg ${heatAnalytics.avgHeatScore?.toFixed(2) ?? '—'} · open ${heatAnalytics.avgBestWaveOpening?.toFixed(2) ?? '—'} · close ${heatAnalytics.avgBestWaveClosing?.toFixed(2) ?? '—'}`
+              ? t('analytics.topicHints.competitionRhythm', {
+                  score: heatAnalytics.avgHeatScore?.toFixed(2) ?? '—',
+                  open: heatAnalytics.avgBestWaveOpening?.toFixed(2) ?? '—',
+                  close: heatAnalytics.avgBestWaveClosing?.toFixed(2) ?? '—',
+                })
               : general.heatParticipations > 0
-                ? `${general.heatParticipations} heats · avg ${general.avgHeatScore?.toFixed(2) ?? '—'}`
-                : 'No heats in period',
+                ? t('analytics.topicHints.competitionHeats', {
+                    heats: general.heatParticipations,
+                    score: general.avgHeatScore?.toFixed(2) ?? '—',
+                  })
+                : t('analytics.topics.noHeatsInPeriod'),
         success: general.heatWins > 0 || general.championshipWins > 0,
       },
     ]
-  }, [analytics, heatAnalytics])
+  }, [analytics, heatAnalytics, t])
 
   if (!hasAccess) {
     return (
       <div className="ss-flow">
-        <ScreenHeader title="Team analytics" onBack={() => setView('coach-home')} />
+        <ScreenHeader title={t('nav.teamAnalytics')} onBack={() => setView('coach-home')} />
         <div className="ss-card stats-panel">
-          <h2 className="stats-panel__title">Feature locked</h2>
+          <h2 className="stats-panel__title">{t('analytics.featureLocked')}</h2>
           <p className="muted">{planUpgradeHint(planId, 'analytics')}</p>
           <button type="button" className="btn btn--primary btn--block" onClick={() => setView('subscription')}>
-            View subscription
+            {t('analytics.viewSubscription')}
           </button>
         </div>
       </div>
@@ -201,13 +225,13 @@ export function TeamAnalyticsView() {
   if (selectedAthlete && analytics) {
     const general = analytics.general
     const periodLabel = describeAnalyticsRange(analytics.range)
-    const coachName = auth?.role === 'treinador' ? auth.name : 'Coach'
+    const coachName = auth?.role === 'treinador' ? auth.name : t('analytics.coachDefault')
     const organizationName = auth?.role === 'treinador' ? auth.organizationName : null
 
     return (
       <div className="ss-flow stats-page team-analytics-page">
         <ScreenHeader
-          title="Team analytics"
+          title={t('nav.teamAnalytics')}
           onBack={() => {
             setSelectedAthleteId(null)
             setSearch('')
@@ -225,8 +249,10 @@ export function TeamAnalyticsView() {
           <div className="team-analytics-hero__copy">
             <h2 className="page-title">{selectedAthlete.name}</h2>
             <p className="muted">
-              {periodLabel} · {analytics.sessions.length} completed session
-              {analytics.sessions.length === 1 ? '' : 's'}
+              {periodLabel} ·{' '}
+              {analytics.sessions.length === 1
+                ? t('analytics.completedSessions', { count: analytics.sessions.length })
+                : t('analytics.completedSessionsPlural', { count: analytics.sessions.length })}
             </p>
           </div>
           <div className="team-analytics-hero__actions">
@@ -235,25 +261,25 @@ export function TeamAnalyticsView() {
               className="btn btn--secondary btn--small"
               onClick={() => exportAthleteAnalyticsCsv(selectedAthlete.name, analytics, selectedAthlete.id)}
             >
-              Export CSV
+              {t('analytics.exportCsv')}
             </button>
             <button
               type="button"
               className="btn btn--gold btn--small"
               onClick={() => setShowReport(true)}
             >
-              PDF report
+              {t('analytics.pdfReport')}
             </button>
           </div>
         </div>
 
         <div className="ss-card analytics-period-bar">
           <div className="analytics-period-bar__copy">
-            <span className="analytics-period-bar__label">Time range</span>
+            <span className="analytics-period-bar__label">{t('analytics.timeRange')}</span>
             <p className="muted">
               {profileSection === 'material'
-                ? 'Equipment is managed outside the time range — switch to training or psychology to filter by period.'
-                : 'Choose a preset or custom dates for camp trips and parent reports.'}
+                ? t('analytics.timeRangeMaterialHint')
+                : t('analytics.timeRangeHint')}
             </p>
           </div>
           {profileSection !== 'material' ? (
@@ -267,7 +293,7 @@ export function TeamAnalyticsView() {
           ) : null}
         </div>
 
-        <nav className="admin-tabs athlete-profile-tabs" aria-label="Athlete profile sections">
+        <nav className="admin-tabs athlete-profile-tabs" aria-label={t('analytics.profileTabsAria')}>
           <button
             type="button"
             className={
@@ -280,7 +306,7 @@ export function TeamAnalyticsView() {
               setActiveTopic(null)
             }}
           >
-            Training stats
+            {t('analytics.profileTabs.trainingStats')}
           </button>
           {psychologyAvailable ? (
             <button
@@ -295,7 +321,7 @@ export function TeamAnalyticsView() {
                 setActiveTopic(null)
               }}
             >
-              Psychology
+              {t('analytics.profileTabs.psychology')}
             </button>
           ) : null}
           <button
@@ -310,7 +336,7 @@ export function TeamAnalyticsView() {
               setActiveTopic(null)
             }}
           >
-            Equipment
+            {t('analytics.profileTabs.equipment')}
           </button>
         </nav>
 
@@ -326,37 +352,39 @@ export function TeamAnalyticsView() {
             />
           ) : (
             <div className="ss-card stats-panel analytics-empty-period">
-              <h2 className="stats-panel__title">Psychology check-ins</h2>
+              <h2 className="stats-panel__title">{t('analytics.psychologyCheckins')}</h2>
               <p className="muted">{planUpgradeHint(planId, 'psychology')}</p>
             </div>
           )
         ) : analytics.sessions.length === 0 ? (
           <div className="ss-card stats-panel analytics-empty-period">
-            <h2 className="stats-panel__title">No data in this period</h2>
+            <h2 className="stats-panel__title">{t('analytics.noDataInPeriod')}</h2>
             <p className="muted">
-              {selectedAthlete.name} has no completed sessions in {periodLabel}. Try a longer time
-              range or different dates.
+              {t('analytics.noDataInPeriodBody', {
+                athleteName: selectedAthlete.name,
+                periodLabel,
+              })}
             </p>
           </div>
         ) : (
           <>
             <div className="analytics-overview-strip">
               <article className="analytics-overview-strip__item analytics-overview-strip__item--accent">
-                <span>Avg level</span>
+                <span>{t('analytics.overview.avgLevel')}</span>
                 <strong>{formatAverageLevelValue(general.avgOverallManeuverLevel)}</strong>
               </article>
               <article className="analytics-overview-strip__item">
-                <span>Sessions</span>
+                <span>{t('analytics.overview.sessions')}</span>
                 <strong>{general.totalTrainings}</strong>
               </article>
               <article className="analytics-overview-strip__item">
-                <span>Potential</span>
+                <span>{t('analytics.overview.potential')}</span>
                 <strong>
                   {general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`}
                 </strong>
               </article>
               <article className="analytics-overview-strip__item">
-                <span>Stars</span>
+                <span>{t('analytics.overview.stars')}</span>
                 <strong>{general.totalStars}</strong>
               </article>
             </div>
@@ -390,7 +418,7 @@ export function TeamAnalyticsView() {
             </div>
 
             <p className="muted analytics-topic-grid__footnote">
-              Tap a topic to open a detailed breakdown for the selected period.
+              {t('analytics.topicFootnote')}
             </p>
           </>
         )}
@@ -426,19 +454,17 @@ export function TeamAnalyticsView() {
 
   return (
     <div className="ss-flow team-analytics-page">
-      <ScreenHeader title="Team analytics" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.teamAnalytics')} onBack={() => setView('coach-home')} />
 
       <div className="ss-card team-analytics-intro">
-        <h2 className="page-title">Pick an athlete</h2>
-        <p className="muted">
-          Search by name and open the athlete profile with training stats, psychology, and equipment.
-        </p>
+        <h2 className="page-title">{t('analytics.pickAthlete')}</h2>
+        <p className="muted">{t('analytics.pickAthleteSub')}</p>
 
         <label className="field field--pro team-analytics-search">
-          <span>Search athlete</span>
+          <span>{t('analytics.searchAthlete')}</span>
           <input
             type="search"
-            placeholder="Type a name…"
+            placeholder={t('analytics.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -447,14 +473,14 @@ export function TeamAnalyticsView() {
 
       {coachAthletes.length === 0 ? (
         <div className="ss-card history-empty">
-          <p className="muted">No athletes yet.</p>
+          <p className="muted">{t('analytics.noAthletes')}</p>
           <button type="button" className="btn btn--primary btn--block" onClick={() => setView('manage-athletes')}>
-            Add athletes
+            {t('analytics.addAthletes')}
           </button>
         </div>
       ) : filteredAthletes.length === 0 ? (
         <div className="ss-card history-empty">
-          <p className="muted">No athlete matches “{search.trim()}”.</p>
+          <p className="muted">{t('analytics.noMatch', { query: search.trim() })}</p>
         </div>
       ) : (
         <ul className="team-analytics-list">
@@ -474,11 +500,20 @@ export function TeamAnalyticsView() {
                   <span className="team-analytics-list__body">
                     <strong>{athlete.name}</strong>
                     <small>
-                      Last {TEAM_ANALYTICS_MONTHS} months · {preview.sessions.length} session
-                      {preview.sessions.length === 1 ? '' : 's'} · {preview.general.totalWaves} waves ·{' '}
-                      {preview.general.withPotentialRate === null
-                        ? '—'
-                        : `${preview.general.withPotentialRate}% potential`}
+                      {t('analytics.listPreview', {
+                        months: TEAM_ANALYTICS_MONTHS,
+                        sessions:
+                          preview.sessions.length === 1
+                            ? t('analytics.completedSessions', { count: preview.sessions.length })
+                            : t('analytics.listPreviewSessionsPlural', {
+                                sessions: preview.sessions.length,
+                              }),
+                        waves: preview.general.totalWaves,
+                        potential:
+                          preview.general.withPotentialRate === null
+                            ? '—'
+                            : `${preview.general.withPotentialRate}%`,
+                      })}
                     </small>
                   </span>
                   <span className="team-analytics-list__chev" aria-hidden="true">

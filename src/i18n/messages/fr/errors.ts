@@ -1,0 +1,16 @@
+export const errors = {
+  generic: 'Une erreur s\'est produite. Veuillez réessayer.',
+  signInFailed: 'Échec de la connexion.',
+  signInConnection: 'Échec de la connexion. Vérifiez votre connexion et réessayez.',
+  createAccountFailed: 'Impossible de créer le compte.',
+  updateRequestFailed: 'Impossible de mettre à jour la demande.',
+  leaveCoachFailed: 'Impossible de quitter l\'entraîneur.',
+  sendResetCodeFailed: 'Impossible d\'envoyer le code de réinitialisation.',
+  resendCodeFailed: 'Impossible de renvoyer le code.',
+  invalidOrExpiredCode: 'Code invalide ou expiré.',
+  unknownError: 'Une erreur inattendue s\'est produite.',
+  loadFailed: 'Échec du chargement des données.',
+  saveFailed: 'Échec de l\'enregistrement des modifications.',
+  deleteFailed: 'Échec de la suppression.',
+  networkError: 'Erreur réseau. Vérifiez votre connexion.',
+} as const

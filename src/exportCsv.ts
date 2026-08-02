@@ -12,7 +12,7 @@ import {
   formatSessionDuration,
   resolveSessionSpotName,
 } from './sessionHistoryUtils'
-import { TRAINING_MODE_LABELS } from './types'
+import { trainingModeLabel } from './i18n/labels'
 
 function escapeCsv(value: string | number | null | undefined): string {
   const text = value == null ? '' : String(value)
@@ -44,7 +44,7 @@ export function exportSessionsCsv(
     const endedAt = session.endedAt ?? session.startedAt
     rows.push([
       formatSessionDate(endedAt),
-      TRAINING_MODE_LABELS[session.mode],
+      trainingModeLabel(session.mode),
       athleteNamesForSession(session, getAthlete),
       resolveSessionSpotName(session, getSpot),
       session.condition || '',

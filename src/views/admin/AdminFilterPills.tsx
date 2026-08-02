@@ -1,3 +1,5 @@
+import { useI18n } from '../../i18n'
+
 type Option<T extends string> = {
   value: T
   label: string
@@ -9,13 +11,23 @@ type Props<T extends string> = {
   value: T
   options: Option<T>[]
   onChange: (value: T) => void
+  filterAriaLabel?: string
 }
 
-export function AdminFilterPills<T extends string>({ label, value, options, onChange }: Props<T>) {
+export function AdminFilterPills<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  filterAriaLabel,
+}: Props<T>) {
+  const { messages } = useI18n()
+  const filterFallback = messages.ui.admin.filter
+
   return (
     <div className="admin-filter-pills">
       {label ? <span className="admin-filter-pills__label">{label}</span> : null}
-      <div className="admin-filter-pills__row" role="tablist" aria-label={label ?? 'Filter'}>
+      <div className="admin-filter-pills__row" role="tablist" aria-label={label ?? filterAriaLabel ?? filterFallback}>
         {options.map((option) => (
           <button
             key={option.value}

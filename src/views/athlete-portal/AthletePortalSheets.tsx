@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useI18n } from '../../i18n'
 import { useApp } from '../../AppContext'
 import { EvolutionLineChart } from '../../components/EvolutionLineChart'
 import { ScreenHeader } from '../../components/ScreenHeader'
@@ -23,16 +24,14 @@ import {
   buildAthleteEvolution,
   type AnalyticsPeriod,
 } from '../../teamAnalyticsStats'
-import {
-  COMBO_LEVEL_LABELS,
-  MANEUVER_LABELS,
-  TRAINING_MODE_LABELS,
-  type CoachAthleteLink,
-  type ManeuverKind,
-  type SessionAthleteFeedback,
-  type AthleteShareSettings,
-  type SurfSpot,
-  type TrainingSession,
+import { comboLevelLabel, maneuverLabel, trainingModeLabel } from '../../i18n/labels'
+import type {
+  AthleteShareSettings,
+  CoachAthleteLink,
+  ManeuverKind,
+  SessionAthleteFeedback,
+  SurfSpot,
+  TrainingSession,
 } from '../../types'
 import type { AthletePortalSheet } from './types'
 
@@ -107,20 +106,18 @@ function CoachesSheet({
   onPairingResponse,
   onLeaveCoach,
 }: AthletePortalSheetProps) {
+  const { t } = useI18n()
   return (
     <div className="athlete-sheet">
-      <ScreenHeader title="Linked coaches" onBack={onClose} />
+      <ScreenHeader title={t('nav.linkedCoaches')} onBack={onClose} />
       <div className="athlete-sheet__body">
         <div className="ss-card pairing-panel">
-          <h2 className="page-title">Your pairing code</h2>
-          <p className="muted stats-panel__sub">
-            Share this code with any coach. They send a request — you must accept before they can log
-            your sessions.
-          </p>
+          <h2 className="page-title">{t('ui.athleteSheets.pairingCode')}</h2>
+          <p className="muted stats-panel__sub">{t('ui.athleteSheets.pairingCodeHint')}</p>
           <div className="pairing-code-box">
             <strong className="pairing-code-box__code">{auth.pairingCode || '—'}</strong>
             <button type="button" className="btn btn--ghost btn--small" onClick={onCopyCode}>
-              Copy
+              {t('ui.athleteSheets.copy')}
             </button>
           </div>
           {pairingError ? <p className="login-error">{pairingError}</p> : null}
@@ -128,13 +125,13 @@ function CoachesSheet({
 
         {pendingLinks.length > 0 ? (
           <div className="ss-card athlete-sheet__block">
-            <h3 className="pairing-panel__title">Coach requests</h3>
+            <h3 className="pairing-panel__title">{t('ui.athleteSheets.coachRequests')}</h3>
             <ul className="pairing-list">
               {pendingLinks.map((link) => (
                 <li key={link.id} className="pairing-list__item pairing-list__item--actions">
                   <span className="pairing-list__info">
                     <strong>{link.coachName ?? 'Coach'}</strong>
-                    <small>wants to link with you</small>
+                    <small>{t('ui.athleteSheets.wantsToLink')}</small>
                   </span>
                   <span className="pairing-list__buttons">
                     <button
@@ -143,7 +140,7 @@ function CoachesSheet({
                       disabled={pairingBusy === link.id}
                       onClick={() => onPairingResponse(link.id, true)}
                     >
-                      Accept
+                      {t('ui.athleteSheets.accept')}
                     </button>
                     <button
                       type="button"
@@ -151,7 +148,7 @@ function CoachesSheet({
                       disabled={pairingBusy === link.id}
                       onClick={() => onPairingResponse(link.id, false)}
                     >
-                      Decline
+                      {t('ui.athleteSheets.decline')}
                     </button>
                   </span>
                 </li>
@@ -161,14 +158,14 @@ function CoachesSheet({
         ) : null}
 
         <div className="ss-card athlete-sheet__block">
-          <h3 className="pairing-panel__title">Linked coaches</h3>
+          <h3 className="pairing-panel__title">{t('ui.athleteSheets.linkedCoachesTitle')}</h3>
           {activeLinks.length > 0 ? (
             <ul className="pairing-list">
               {activeLinks.map((link) => (
                 <li key={link.id} className="pairing-list__item pairing-list__item--actions">
                   <span className="pairing-list__info">
                     <strong>{link.coachName ?? 'Coach'}</strong>
-                    <small>Active</small>
+                    <small>{t('ui.athleteSheets.active')}</small>
                   </span>
                   <button
                     type="button"
@@ -176,13 +173,13 @@ function CoachesSheet({
                     disabled={pairingBusy === link.id}
                     onClick={() => onLeaveCoach(link.id)}
                   >
-                    Leave
+                    {t('ui.athleteSheets.leave')}
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="muted">No coaches linked yet. Share your code to get started.</p>
+            <p className="muted">{t('ui.athleteSheets.noCoachesLinked')}</p>
           )}
         </div>
       </div>
@@ -196,16 +193,17 @@ function SharedStatsSheet({
   technicalStats,
   comboStats,
 }: AthletePortalSheetProps) {
+  const { t } = useI18n()
   const sharingCoaches = activeLinks.filter((link) =>
     SHARE_LABELS.some(({ key }) => link.shareSettings[key]),
   )
 
   return (
     <div className="athlete-sheet">
-      <ScreenHeader title="Shared statistics" onBack={onClose} />
+      <ScreenHeader title={t('nav.sharedStatistics')} onBack={onClose} />
       <div className="athlete-sheet__body">
         <div className="ss-card athlete-sheet__block">
-          <h2 className="page-title">What each coach shares</h2>
+          <h2 className="page-title">{t('ui.athleteSheets.whatEachCoachShares')}</h2>
           <p className="muted stats-panel__sub">
             Coaches choose what to show you from their sessions. Your general stats always stay with
             you.
@@ -226,26 +224,28 @@ function SharedStatsSheet({
               ))}
             </ul>
           ) : (
-            <p className="muted">No coach has shared detailed stats yet.</p>
+            <p className="muted">{t('ui.athleteSheets.noCoachSharedStats')}</p>
           )}
         </div>
 
         {technicalStats ? (
           <div className="ss-card stats-panel athlete-sheet__block">
-            <h2 className="stats-panel__title">Technical training</h2>
+            <h2 className="stats-panel__title">{t('ui.athleteSheets.technicalTraining')}</h2>
             <p className="muted stats-panel__sub">
-              {technicalStats.successfulManeuvers} successes in {technicalStats.totalManeuvers}{' '}
-              attempts
+              {t('ui.stats.successesInAttempts', {
+                successes: technicalStats.successfulManeuvers,
+                attempts: technicalStats.totalManeuvers,
+              })}
             </p>
             <div className="kpi-grid athlete-portal__kpi athlete-portal__kpi--compact">
               <article className="kpi-card kpi-card--success">
-                <span className="kpi-card__label">Overall success</span>
+                <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
                 <strong className="kpi-card__value">{technicalStats.overallSuccessRate}%</strong>
                 <RateBar value={technicalStats.overallSuccessRate} />
               </article>
             </div>
             <SideCompareChart
-              title="All maneuvers (R · T · P)"
+              title={t('athlete.sheets.allManeuvers')}
               overallRate={technicalStats.overallSuccessRate}
               bySide={technicalStats.bySide}
             />
@@ -256,8 +256,11 @@ function SharedStatsSheet({
                 return (
                   <SideCompareChart
                     key={kind}
-                    title={MANEUVER_LABELS[kind]}
-                    subtitle={`${block.successes}/${block.total} successes overall`}
+                    title={maneuverLabel(kind)}
+                    subtitle={t('athlete.sheets.successesOverall', {
+                      successes: block.successes,
+                      total: block.total,
+                    })}
                     overallRate={block.rate}
                     bySide={block.bySide}
                   />
@@ -269,13 +272,16 @@ function SharedStatsSheet({
 
         {comboStats ? (
           <div className="ss-card stats-panel athlete-sheet__block">
-            <h2 className="stats-panel__title">Combos</h2>
+            <h2 className="stats-panel__title">{t('ui.athleteSheets.combos')}</h2>
             <p className="muted stats-panel__sub">
-              {comboStats.successfulAttempts} successes in {comboStats.totalAttempts} attempts
+              {t('ui.stats.successesInAttempts', {
+                successes: comboStats.successfulAttempts,
+                attempts: comboStats.totalAttempts,
+              })}
             </p>
             <div className="kpi-grid athlete-portal__kpi athlete-portal__kpi--compact">
               <article className="kpi-card kpi-card--success">
-                <span className="kpi-card__label">Overall success</span>
+                <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
                 <strong className="kpi-card__value">{comboStats.overallSuccessRate}%</strong>
                 <RateBar value={comboStats.overallSuccessRate} />
               </article>
@@ -292,7 +298,7 @@ function SharedStatsSheet({
                 return (
                   <SideCompareChart
                     key={String(lvl)}
-                    title={COMBO_LEVEL_LABELS[lvl]}
+                    title={comboLevelLabel(lvl)}
                     subtitle={`${row.successes}/${row.attempts} successes overall`}
                     overallRate={row.rate}
                     bySide={row.bySide}
@@ -324,6 +330,7 @@ function CheckinsSheet({
   activeLinks,
   coachName,
 }: AthletePortalSheetProps) {
+  const { t } = useI18n()
   const { openSessionFeedback } = useApp()
   const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null)
 
@@ -369,11 +376,11 @@ function CheckinsSheet({
 
   return (
     <div className="athlete-sheet">
-      <ScreenHeader title="Mental check-ins" onBack={onClose} />
+      <ScreenHeader title={t('nav.mentalCheckins')} onBack={onClose} />
       <div className="athlete-sheet__body">
         {checkinSessions.length > 0 ? (
           <div className="ss-card athlete-sheet__block">
-            <h2 className="page-title">Training sessions</h2>
+            <h2 className="page-title">{t('ui.athleteSheets.trainingSessions')}</h2>
             <p className="muted stats-panel__sub">
               {pendingCount > 0
                 ? `${pendingCount} check-in${pendingCount === 1 ? '' : 's'} still waiting. Tap a session to view details or complete it.`
@@ -399,7 +406,7 @@ function CheckinsSheet({
                       onClick={() => toggleSession(session.id)}
                     >
                       <div className="athlete-checkin-list__summary">
-                        <strong>{TRAINING_MODE_LABELS[session.mode]}</strong>
+                        <strong>{trainingModeLabel(session.mode)}</strong>
                         <p className="muted">
                           {formatSessionDateTime(sessionDate)} · {coachName(session.coachId)}
                         </p>
@@ -465,6 +472,7 @@ function CheckinsSheet({
 }
 
 function HeatsSheet({ onClose, heatDetails, mySessions, coachName }: AthletePortalSheetProps) {
+  const { t } = useI18n()
   const sessionCoach = useMemo(
     () => new Map(mySessions.map((session) => [session.id, session.coachId])),
     [mySessions],
@@ -472,7 +480,7 @@ function HeatsSheet({ onClose, heatDetails, mySessions, coachName }: AthletePort
 
   return (
     <div className="athlete-sheet">
-      <ScreenHeader title="Heat history" onBack={onClose} />
+      <ScreenHeader title={t('nav.heatHistory')} onBack={onClose} />
       <div className="athlete-sheet__body">
         {heatDetails.length > 0 ? (
           <ul className="athlete-history-list athlete-history-list--cards">
@@ -496,7 +504,7 @@ function HeatsSheet({ onClose, heatDetails, mySessions, coachName }: AthletePort
           </ul>
         ) : (
           <div className="ss-card athlete-sheet__block">
-            <p className="muted">No heat results shared by your coaches yet.</p>
+            <p className="muted">{t('ui.athleteSheets.noHeatResults')}</p>
           </div>
         )}
       </div>
@@ -510,16 +518,17 @@ function TrainingHistorySheet({
   getSpot,
   coachName,
 }: AthletePortalSheetProps) {
+  const { t } = useI18n()
   return (
     <div className="athlete-sheet">
-      <ScreenHeader title="Training history" onBack={onClose} />
+      <ScreenHeader title={t('nav.trainingHistory')} onBack={onClose} />
       <div className="athlete-sheet__body">
         {sessionSummaries.length > 0 ? (
           <ul className="athlete-history-list athlete-history-list--cards">
             {sessionSummaries.map(({ session, headline }) => (
               <li key={session.id}>
                 <div>
-                  <strong>{TRAINING_MODE_LABELS[session.mode]}</strong>
+                  <strong>{trainingModeLabel(session.mode)}</strong>
                   <p className="muted">
                     {resolveSessionSpotName(session, getSpot)} · {session.condition} ·{' '}
                     {formatSessionDate(session.endedAt ?? session.startedAt)}
@@ -534,7 +543,7 @@ function TrainingHistorySheet({
           </ul>
         ) : (
           <div className="ss-card athlete-sheet__block">
-            <p className="muted">No training history shared by your coaches yet.</p>
+            <p className="muted">{t('ui.athleteSheets.noTrainingHistory')}</p>
           </div>
         )}
       </div>
@@ -543,6 +552,7 @@ function TrainingHistorySheet({
 }
 
 function EvolutionSheet({ onClose, mySessions, athleteId }: AthletePortalSheetProps) {
+  const { t } = useI18n()
   const [period, setPeriod] = useState<AnalyticsPeriod>('6m')
   const points = useMemo(
     () => buildAthleteEvolution(mySessions, athleteId, period),
@@ -551,7 +561,7 @@ function EvolutionSheet({ onClose, mySessions, athleteId }: AthletePortalSheetPr
 
   return (
     <div className="athlete-sheet">
-      <ScreenHeader title="Evolution" onBack={onClose} />
+      <ScreenHeader title={t('nav.evolution')} onBack={onClose} />
       <div className="athlete-sheet__body">
         <EvolutionLineChart
           title={`Your evolution · ${analyticsPeriodLabel(period)}`}

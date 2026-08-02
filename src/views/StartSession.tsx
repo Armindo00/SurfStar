@@ -2,22 +2,11 @@ import { useApp } from '../AppContext'
 import { formatAppDateTime } from '../dateFormat'
 import { canUseTrainingMode } from '../planUtils'
 import { ScreenHeader } from '../components/ScreenHeader'
-import { HEAT_DURATIONS, TRAINING_MODE_LABELS, type TrainingMode } from '../types'
+import { useI18n } from '../i18n'
+import { trainingModeLabel } from '../i18n/labels'
+import { HEAT_DURATIONS, type TrainingMode } from '../types'
 
 const ALL_MODES: TrainingMode[] = ['tecnico', 'combos', 'custom', 'heats', 'campeonato', 'sea-analysis']
-
-function lockedModesHint(lockedModes: TrainingMode[]): string {
-  const labels = lockedModes.map((m) => TRAINING_MODE_LABELS[m]).join(', ')
-  const needsCoach = lockedModes.some((m) => m === 'heats' || m === 'campeonato')
-  const needsPremium = lockedModes.some((m) => m === 'custom' || m === 'sea-analysis')
-
-  if (needsPremium && needsCoach) {
-    return `${labels} — Custom training & Sea analysis on Coach Premium and Team Academy.`
-  }
-  if (needsPremium) return `${labels} — available on Coach Premium and Team Academy plans.`
-  if (needsCoach) return `${labels} — available on Coach plan and above.`
-  return `${labels} — upgrade your plan to unlock.`
-}
 
 export function StartSession() {
   const {
@@ -35,16 +24,28 @@ export function StartSession() {
     setDraftChampionshipParallelHeats,
     setView,
   } = useApp()
+  const { t } = useI18n()
+  const s = (key: string, params?: Record<string, string | number>) => t(`session.setup.${key}`, params)
 
   const planId = subscription?.planId ?? 'team'
   const modes = ALL_MODES.filter((mode) => canUseTrainingMode(planId, mode))
   const lockedModes = ALL_MODES.filter((mode) => !canUseTrainingMode(planId, mode))
 
+  const lockedModesHint = (() => {
+    const labels = lockedModes.map((m) => trainingModeLabel(m)).join(', ')
+    const needsCoach = lockedModes.some((m) => m === 'heats' || m === 'campeonato')
+    const needsPremium = lockedModes.some((m) => m === 'custom' || m === 'sea-analysis')
+    if (needsPremium && needsCoach) return s('lockedModesPremiumAndCoach', { modes: labels })
+    if (needsPremium) return s('lockedModesPremium', { modes: labels })
+    if (needsCoach) return s('lockedModesCoach', { modes: labels })
+    return s('lockedModesUpgrade', { modes: labels })
+  })()
+
   const showHeatDuration = draft.mode === 'heats' || draft.mode === 'campeonato'
   const isCampeonato = draft.mode === 'campeonato'
   const isSeaAnalysis = draft.mode === 'sea-analysis'
   const isCustom = draft.mode === 'custom'
-  const selectedTemplate = customTemplates.find((t) => t.id === draft.customTemplateId)
+  const selectedTemplate = customTemplates.find((tmpl) => tmpl.id === draft.customTemplateId)
 
   const startedLabel = formatAppDateTime(new Date(), {
     day: '2-digit',
@@ -56,12 +57,12 @@ export function StartSession() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="New session" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.newSession')} onBack={() => setView('coach-home')} />
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Session setup</h2>
-        <p className="muted stats-panel__sub">Choose the training type before you hit the water.</p>
+        <h2 className="stats-panel__title">{s('title')}</h2>
+        <p className="muted stats-panel__sub">{s('subtitle')}</p>
 
-        <p className="field-label">Training type</p>
+        <p className="field-label">{s('trainingType')}</p>
         <div className="chip-row chip-row--pro chip-row--modes">
           {modes.map((mode) => (
             <button
@@ -70,27 +71,25 @@ export function StartSession() {
               className={draft.mode === mode ? 'chip chip--active' : 'chip'}
               onClick={() => setDraftMode(mode)}
             >
-              {TRAINING_MODE_LABELS[mode]}
+              {trainingModeLabel(mode)}
             </button>
           ))}
         </div>
 
-        {lockedModes.length > 0 ? (
-          <p className="plan-lock-note muted">{lockedModesHint(lockedModes)}</p>
-        ) : null}
+        {lockedModes.length > 0 ? <p className="plan-lock-note muted">{lockedModesHint}</p> : null}
 
         {isCustom ? (
           <>
-            <p className="field-label">Training template</p>
+            <p className="field-label">{s('trainingTemplate')}</p>
             {customTemplates.length === 0 ? (
               <div className="custom-start-empty">
-                <p className="muted">Create a template first to use custom training.</p>
+                <p className="muted">{s('noTemplatesHint')}</p>
                 <button
                   type="button"
                   className="btn btn--primary btn--block"
                   onClick={() => setView('manage-custom-templates')}
                 >
-                  Manage custom templates
+                  {s('manageCustomTemplates')}
                 </button>
               </div>
             ) : (
@@ -111,12 +110,13 @@ export function StartSession() {
                 </div>
                 {selectedTemplate ? (
                   <p className="muted stats-panel__sub">
-                    {selectedTemplate.buttons.length} skill button
-                    {selectedTemplate.buttons.length === 1 ? '' : 's'}
+                    {selectedTemplate.buttons.length === 1
+                      ? s('skillButtons', { count: selectedTemplate.buttons.length })
+                      : s('skillButtonsPlural', { count: selectedTemplate.buttons.length })}
                     {selectedTemplate.timer.enabled
-                      ? ` · ${selectedTemplate.timer.durationMinutes} min timer`
+                      ? ` · ${s('timerMinutes', { minutes: selectedTemplate.timer.durationMinutes })}`
                       : ''}
-                    {selectedTemplate.useWaves ? ' · wave-based' : ' · direct logging'}
+                    {selectedTemplate.useWaves ? ` · ${s('waveBased')}` : ` · ${s('directLogging')}`}
                   </p>
                 ) : null}
                 <button
@@ -124,22 +124,18 @@ export function StartSession() {
                   className="btn btn--ghost btn--block"
                   onClick={() => setView('manage-custom-templates')}
                 >
-                  Edit templates
+                  {s('editTemplates')}
                 </button>
               </>
             )}
           </>
         ) : null}
 
-        {isSeaAnalysis ? (
-          <p className="muted stats-panel__sub">
-            Fixed <strong>30 minute</strong> observation window · Peak 1 & Peak 2 · no athletes required.
-          </p>
-        ) : null}
+        {isSeaAnalysis ? <p className="muted stats-panel__sub">{s('seaAnalysisHint')}</p> : null}
 
         {showHeatDuration ? (
           <>
-            <p className="field-label">Heat length</p>
+            <p className="field-label">{s('heatLength')}</p>
             <div className="chip-row chip-row--pro">
               {HEAT_DURATIONS.map((d) => (
                 <button
@@ -148,7 +144,7 @@ export function StartSession() {
                   className={draft.heatDurationMinutes === d ? 'chip chip--active' : 'chip'}
                   onClick={() => setDraftHeatDuration(d)}
                 >
-                  {d} min
+                  {s('heatMinutes', { minutes: d })}
                 </button>
               ))}
             </div>
@@ -157,74 +153,68 @@ export function StartSession() {
 
         {isCampeonato ? (
           <>
-            <p className="field-label">Surfers per heat</p>
+            <p className="field-label">{s('surfersPerHeat')}</p>
             <div className="chip-row chip-row--pro">
               <button
                 type="button"
                 className={draft.championshipHeatSize === 2 ? 'chip chip--active' : 'chip'}
                 onClick={() => setDraftChampionshipHeatSize(2)}
               >
-                2 · top 1 advances
+                {s('heatSize2')}
               </button>
               <button
                 type="button"
                 className={draft.championshipHeatSize === 4 ? 'chip chip--active' : 'chip'}
                 onClick={() => setDraftChampionshipHeatSize(4)}
               >
-                4 · top 2 advance
+                {s('heatSize4')}
               </button>
             </div>
-            <p className="muted stats-panel__sub">
-              Select all athletes next — SurfStar builds quarterfinals, semifinals and the final from your total count (heats of 3 or 4).
-            </p>
+            <p className="muted stats-panel__sub">{s('championshipHint')}</p>
 
-            <p className="field-label">Heat scheduling</p>
+            <p className="field-label">{s('heatScheduling')}</p>
             <div className="chip-row chip-row--pro">
               <button
                 type="button"
                 className={draft.championshipParallelHeats ? 'chip chip--active' : 'chip'}
                 onClick={() => setDraftChampionshipParallelHeats(true)}
               >
-                Same time (parallel)
+                {s('parallelHeats')}
               </button>
               <button
                 type="button"
                 className={!draft.championshipParallelHeats ? 'chip chip--active' : 'chip'}
                 onClick={() => setDraftChampionshipParallelHeats(false)}
               >
-                One at a time (sequential)
+                {s('sequentialHeats')}
               </button>
             </div>
             <p className="muted stats-panel__sub">
-              {draft.championshipParallelHeats
-                ? 'All heats in a round start together with one shared timer.'
-                : 'Run each heat separately — finish one before starting the next in the same round.'}
+              {draft.championshipParallelHeats ? s('parallelHint') : s('sequentialHint')}
             </p>
           </>
         ) : null}
 
         <div className="form-pro">
-          <p className="field-label">Spot</p>
+          <p className="field-label">{s('spot')}</p>
           {spots.length === 0 ? (
             <div className="custom-start-empty">
-              <p className="muted">
-                You have not added any spots yet. Add at least one spot before starting a session.
-              </p>
+              <p className="muted">{s('noSpotsHint')}</p>
               <button
                 type="button"
                 className="btn btn--primary btn--block"
                 onClick={() => setView('manage-spots')}
               >
-                Add spots
+                {s('addSpots')}
               </button>
             </div>
           ) : (
             <label className="field field--pro">
-              <span>Spot</span>
+              <span>{s('spot')}</span>
               <select value={draft.spotId} onChange={(e) => setDraftSpot(e.target.value)}>
-                {spots.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
+                {spots.map((spot) => (
+                  <option key={spot.id} value={spot.id}>
+                    {spot.name}
                   </option>
                 ))}
               </select>
@@ -232,9 +222,9 @@ export function StartSession() {
           )}
 
           <label className="field field--pro">
-            <span>Sea conditions</span>
+            <span>{s('seaConditions')}</span>
             <select value={draft.condition} onChange={(e) => setDraftCondition(e.target.value)}>
-              <option value="">Select…</option>
+              <option value="">{t('common.select')}</option>
               {conditions.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -244,7 +234,7 @@ export function StartSession() {
           </label>
 
           <label className="field field--pro">
-            <span>Session time</span>
+            <span>{s('sessionTime')}</span>
             <input type="text" readOnly value={startedLabel} className="input-readonly" />
           </label>
         </div>
@@ -261,7 +251,7 @@ export function StartSession() {
           }
           onClick={() => setView('select-athletes')}
         >
-          Continue
+          {s('continue')}
         </button>
       </div>
     </div>

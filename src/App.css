@@ -4395,6 +4395,32 @@ body {
   white-space: nowrap;
 }
 
+.landing-nav__language {
+  display: flex;
+  align-items: center;
+}
+
+.landing-nav__language .language-picker--compact {
+  margin: 0;
+}
+
+.landing-nav__language--mobile {
+  width: 100%;
+  justify-content: center;
+  padding-bottom: 0.25rem;
+}
+
+.auth-panel__language {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.75rem 1rem 0;
+  max-width: 100%;
+}
+
+.auth-panel__language .language-picker--compact {
+  margin: 0;
+}
+
 @media (max-width: 767px) {
   .landing-nav {
     flex-wrap: wrap;
@@ -9306,5 +9332,20 @@ a.legal-footer-links__btn {
   .session-feedback-states__grid {
     grid-template-columns: 1fr;
   }
+}
+
+.language-picker {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.language-picker--compact .language-picker__options {
+  flex-wrap: wrap;
+}
+
+.language-picker__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 

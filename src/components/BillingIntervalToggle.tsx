@@ -1,4 +1,5 @@
 import { getAnnualSavingsLabel, type BillingInterval } from '../plans'
+import { useI18n } from '../i18n'
 
 type Props = {
   value: BillingInterval
@@ -7,17 +8,19 @@ type Props = {
 }
 
 export function BillingIntervalToggle({ value, onChange, className }: Props) {
+  const { messages } = useI18n()
+  const b = messages.plans.billing
   const rootClass = className ? `billing-toggle ${className}` : 'billing-toggle'
 
   return (
-    <div className={rootClass} role="group" aria-label="Billing interval">
+    <div className={rootClass} role="group" aria-label={b.intervalLabel}>
       <button
         type="button"
         className={value === 'monthly' ? 'billing-toggle__btn billing-toggle__btn--active' : 'billing-toggle__btn'}
         onClick={() => onChange('monthly')}
         aria-pressed={value === 'monthly'}
       >
-        Monthly
+        {b.monthly}
       </button>
       <button
         type="button"
@@ -25,7 +28,7 @@ export function BillingIntervalToggle({ value, onChange, className }: Props) {
         onClick={() => onChange('annual')}
         aria-pressed={value === 'annual'}
       >
-        Annual
+        {b.annual}
         <span className="billing-toggle__save">{getAnnualSavingsLabel()}</span>
       </button>
     </div>

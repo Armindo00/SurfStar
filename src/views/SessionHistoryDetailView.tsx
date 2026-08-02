@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useI18n } from '../i18n'
 import { HeatLiveStatsPanel } from '../components/HeatLiveStatsPanel'
 import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessChart'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -14,13 +15,8 @@ import {
 import { computeComboSessionStats, computeSessionStats, LEVELS } from '../sessionStats'
 import { computeCustomSessionStats } from '../customTrainingStats'
 import { isHeatLikeSession } from '../sessionModeUtils'
-import {
-  COMBO_LEVEL_LABELS,
-  MANEUVER_LABELS,
-  TRAINING_MODE_LABELS,
-  type ManeuverKind,
-  type TrainingSession,
-} from '../types'
+import { comboLevelLabel, maneuverLabel, trainingModeLabel } from '../i18n/labels'
+import type { ManeuverKind, TrainingSession } from '../types'
 
 const KINDS: ManeuverKind[] = ['rail', 'top-turn', 'progressive']
 
@@ -39,34 +35,35 @@ function TechnicalStatsBlock({
   session: TrainingSession
   athleteId: string
 }) {
+  const { t } = useI18n()
   const stats = computeSessionStats(session, athleteId)
 
   return (
     <>
       <div className="kpi-grid">
         <article className="kpi-card">
-          <span className="kpi-card__label">Waves</span>
+          <span className="kpi-card__label">{t('ui.stats.waves')}</span>
           <strong className="kpi-card__value">{stats.waveStats.totalWaves}</strong>
         </article>
         <article className="kpi-card kpi-card--accent">
-          <span className="kpi-card__label">With potential</span>
+          <span className="kpi-card__label">{t('ui.stats.withPotential')}</span>
           <strong className="kpi-card__value">{stats.waveStats.withPotential}</strong>
         </article>
         <article className="kpi-card">
-          <span className="kpi-card__label">No potential</span>
+          <span className="kpi-card__label">{t('ui.stats.noPotential')}</span>
           <strong className="kpi-card__value">{stats.waveStats.withoutPotential}</strong>
         </article>
         <article className="kpi-card kpi-card--success">
-          <span className="kpi-card__label">Overall success</span>
+          <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
           <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>
           <RateBar value={stats.overallSuccessRate} />
         </article>
       </div>
 
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Maneuvers — overview</h2>
+        <h2 className="stats-panel__title">{t('ui.stats.maneuversOverview')}</h2>
         <SideCompareChart
-          title="All maneuvers (R · T · P)"
+          title={t('analytics.allManeuvers')}
           overallRate={stats.overallSuccessRate}
           bySide={stats.bySide}
         />
@@ -75,7 +72,7 @@ function TechnicalStatsBlock({
       {KINDS.map((kind) => (
         <div key={kind} className="ss-card stats-panel">
           <header className="stats-panel__head">
-            <h2 className="stats-panel__title">{MANEUVER_LABELS[kind]}</h2>
+            <h2 className="stats-panel__title">{maneuverLabel(kind)}</h2>
             <span className="stats-badge">
               {stats.byKind[kind].successes}/{stats.byKind[kind].total} · {stats.byKind[kind].rate}%
             </span>
@@ -94,17 +91,18 @@ function ComboStatsBlock({
   session: TrainingSession
   athleteId: string
 }) {
+  const { t } = useI18n()
   const stats = computeComboSessionStats(session, athleteId)
 
   return (
     <>
       <div className="kpi-grid">
         <article className="kpi-card">
-          <span className="kpi-card__label">Waves</span>
+          <span className="kpi-card__label">{t('ui.stats.waves')}</span>
           <strong className="kpi-card__value">{stats.waveStats.totalWaves}</strong>
         </article>
         <article className="kpi-card kpi-card--success">
-          <span className="kpi-card__label">Overall success</span>
+          <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
           <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>
           <RateBar value={stats.overallSuccessRate} />
         </article>
@@ -112,7 +110,7 @@ function ComboStatsBlock({
 
       <div className="ss-card stats-panel">
         <SideCompareChart
-          title="All combo levels"
+          title={t('analytics.allComboLevels')}
           overallRate={stats.overallSuccessRate}
           bySide={stats.bySide}
         />
@@ -125,8 +123,11 @@ function ComboStatsBlock({
             return (
               <SideCompareChart
                 key={String(lvl)}
-                title={COMBO_LEVEL_LABELS[lvl]}
-                subtitle={`${row.successes}/${row.attempts} successes overall`}
+                title={comboLevelLabel(lvl)}
+                subtitle={t('session.register.successesOverall', {
+                  successes: row.successes,
+                  total: row.attempts,
+                })}
                 overallRate={row.rate}
                 bySide={row.bySide}
               />
@@ -145,17 +146,18 @@ function CustomStatsBlock({
   session: TrainingSession
   athleteId: string
 }) {
+  const { t } = useI18n()
   const stats = computeCustomSessionStats(session, athleteId)
 
   return (
     <>
       <div className="kpi-grid">
         <article className="kpi-card">
-          <span className="kpi-card__label">Attempts</span>
+          <span className="kpi-card__label">{t('ui.stats.attempts')}</span>
           <strong className="kpi-card__value">{stats.totalAttempts}</strong>
         </article>
         <article className="kpi-card kpi-card--success">
-          <span className="kpi-card__label">Overall success</span>
+          <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
           <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>
           <RateBar value={stats.overallSuccessRate} />
         </article>
@@ -176,6 +178,7 @@ function CustomStatsBlock({
 }
 
 export function SessionHistoryDetailView() {
+  const { t } = useI18n()
   const { historySession, getSpot, getAthlete, closeHistorySession } = useApp()
 
   const getAthleteName = useMemo(
@@ -186,8 +189,8 @@ export function SessionHistoryDetailView() {
   if (!historySession || !historySession.endedAt) {
     return (
       <div className="ss-flow">
-        <ScreenHeader title="Session detail" onBack={closeHistorySession} />
-        <p className="muted">Session not found.</p>
+        <ScreenHeader title={t('nav.sessionDetail')} onBack={closeHistorySession} />
+        <p className="muted">{t('ui.session.sessionNotFound')}</p>
       </div>
     )
   }
@@ -196,24 +199,24 @@ export function SessionHistoryDetailView() {
 
   return (
     <div className={`ss-flow stats-page ${isHeatLikeSession(historySession) ? 'heat-live-stats-page' : ''}`}>
-      <ScreenHeader title="Session detail" onBack={closeHistorySession} />
+      <ScreenHeader title={t('nav.sessionDetail')} onBack={closeHistorySession} />
 
       <div className="ss-card history-detail-hero">
-        <span className="history-card__mode">{TRAINING_MODE_LABELS[historySession.mode]}</span>
+        <span className="history-card__mode">{trainingModeLabel(historySession.mode)}</span>
         <h2 className="page-title">{spotName}</h2>
         <p className="history-detail-hero__meta">
           {formatSessionDateTime(historySession.endedAt)} ·{' '}
           {formatSessionDuration(historySession.startedAt, historySession.endedAt)}
         </p>
         <p className="muted">
-          {historySession.condition || 'No condition'} ·{' '}
+          {historySession.condition || t('session.history.noCondition')} ·{' '}
           {athleteNamesForSession(historySession, getAthlete)}
         </p>
       </div>
 
       {historySession.coachNotes ? (
         <div className="ss-card history-notes">
-          <h3 className="stats-panel__title">Coach notes</h3>
+          <h3 className="stats-panel__title">{t('ui.stats.coachNotes')}</h3>
           <p className="history-notes__body">{historySession.coachNotes}</p>
         </div>
       ) : null}
@@ -222,7 +225,7 @@ export function SessionHistoryDetailView() {
         ? historySession.athleteIds.map((athleteId) => (
             <section key={athleteId} className="history-athlete-stats">
               <h2 className="stats-page__meta">
-                Athlete: <strong>{getAthleteName(athleteId)}</strong>
+                {t('ui.session.athleteLabel')} <strong>{getAthleteName(athleteId)}</strong>
               </h2>
               <TechnicalStatsBlock session={historySession} athleteId={athleteId} />
             </section>
@@ -233,7 +236,7 @@ export function SessionHistoryDetailView() {
         ? historySession.athleteIds.map((athleteId) => (
             <section key={athleteId} className="history-athlete-stats">
               <h2 className="stats-page__meta">
-                Athlete: <strong>{getAthleteName(athleteId)}</strong>
+                {t('ui.session.athleteLabel')} <strong>{getAthleteName(athleteId)}</strong>
               </h2>
               <ComboStatsBlock session={historySession} athleteId={athleteId} />
             </section>
@@ -244,7 +247,7 @@ export function SessionHistoryDetailView() {
         ? historySession.athleteIds.map((athleteId) => (
             <section key={athleteId} className="history-athlete-stats">
               <h2 className="stats-page__meta">
-                Athlete: <strong>{getAthleteName(athleteId)}</strong>
+                {t('ui.session.athleteLabel')} <strong>{getAthleteName(athleteId)}</strong>
                 {historySession.customTemplateName ? (
                   <span className="muted"> · {historySession.customTemplateName}</span>
                 ) : null}
@@ -266,7 +269,7 @@ export function SessionHistoryDetailView() {
 
       {historySession.mode === 'sea-analysis' && historySession.seaAnalysis ? (
         <div className="ss-card stats-panel">
-          <h2 className="stats-panel__title">Sea analysis results</h2>
+          <h2 className="stats-panel__title">{t('ui.stats.seaAnalysisResults')}</h2>
           <SeaAnalysisStatsPanel state={historySession.seaAnalysis} readOnly frozenAt={historySession.endedAt} />
         </div>
       ) : null}

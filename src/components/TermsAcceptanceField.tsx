@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+
 type Props = {
   checked: boolean
   onChange: (checked: boolean) => void
@@ -6,6 +8,9 @@ type Props = {
 }
 
 export function TermsAcceptanceField({ checked, onChange, onPrivacy, onTerms }: Props) {
+  const { messages } = useI18n()
+  const t = messages.components.termsAcceptance
+
   return (
     <label className="auth-terms">
       <input
@@ -15,7 +20,7 @@ export function TermsAcceptanceField({ checked, onChange, onPrivacy, onTerms }: 
         required
       />
       <span>
-        I agree to the{' '}
+        {t.prefix}{' '}
         <button
           type="button"
           className="auth-terms__link"
@@ -24,9 +29,9 @@ export function TermsAcceptanceField({ checked, onChange, onPrivacy, onTerms }: 
             onTerms()
           }}
         >
-          Terms of Service
+          {t.termsLink}
         </button>{' '}
-        and{' '}
+        {t.and}{' '}
         <button
           type="button"
           className="auth-terms__link"
@@ -35,9 +40,9 @@ export function TermsAcceptanceField({ checked, onChange, onPrivacy, onTerms }: 
             onPrivacy()
           }}
         >
-          Privacy Policy
+          {t.privacyLink}
         </button>
-        .
+        {t.suffix}
       </span>
     </label>
   )

@@ -1,4 +1,5 @@
 import { getComplaintsBookUrl } from '../legalConfig'
+import { useI18n } from '../i18n'
 
 type Props = {
   className?: string
@@ -8,29 +9,31 @@ type Props = {
 }
 
 export function LegalFooterLinks({ className, onPrivacy, onTerms, layout = 'inline' }: Props) {
+  const { messages } = useI18n()
+  const l = messages.components.legalFooter
   const complaintsUrl = getComplaintsBookUrl()
 
   return (
     <nav
       className={layout === 'stack' ? `legal-footer-links legal-footer-links--stack ${className ?? ''}` : `legal-footer-links ${className ?? ''}`}
-      aria-label="Legal"
+      aria-label={l.ariaLabel}
     >
       {onPrivacy ? (
         <button type="button" className="legal-footer-links__btn" onClick={onPrivacy}>
-          Privacy Policy
+          {l.privacyPolicy}
         </button>
       ) : (
         <a href="/privacy" className="legal-footer-links__btn">
-          Privacy Policy
+          {l.privacyPolicy}
         </a>
       )}
       {onTerms ? (
         <button type="button" className="legal-footer-links__btn" onClick={onTerms}>
-          Terms of Service
+          {l.termsOfService}
         </button>
       ) : (
         <a href="/terms" className="legal-footer-links__btn">
-          Terms of Service
+          {l.termsOfService}
         </a>
       )}
       <a
@@ -39,7 +42,7 @@ export function LegalFooterLinks({ className, onPrivacy, onTerms, layout = 'inli
         target="_blank"
         rel="noopener noreferrer"
       >
-        Livro de reclamações
+        {l.complaintsBook}
       </a>
     </nav>
   )

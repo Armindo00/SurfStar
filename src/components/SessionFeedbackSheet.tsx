@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import { formatShortDate } from '../dateFormat'
 import {
   createDefaultPsychologySurveyScores,
@@ -9,7 +10,7 @@ import {
   type PsychologySurveyKey,
   type PsychologySurveyScores,
 } from '../psychologySurvey'
-import { TRAINING_MODE_LABELS } from '../types'
+import { trainingModeLabel } from '../i18n/labels'
 import type { TrainingSession } from '../types'
 
 type Props = {
@@ -49,6 +50,8 @@ function PsychologyScaleRow({
 
 export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
   const { submitSessionFeedback } = useApp()
+  const { t, messages } = useI18n()
+  const sf = messages.components.sessionFeedback
   const [scores, setScores] = useState<PsychologySurveyScores>(createDefaultPsychologySurveyScores)
   const [writtenNote, setWrittenNote] = useState('')
   const [error, setError] = useState('')
@@ -57,7 +60,7 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
 
   const sessionLabel = useMemo(() => {
     const endedAt = session.endedAt ?? session.startedAt
-    return `${TRAINING_MODE_LABELS[session.mode]} · ${formatShortDate(endedAt)}`
+    return `${trainingModeLabel(session.mode)} · ${formatShortDate(endedAt)}`
   }, [session])
 
   useEffect(() => {
@@ -87,12 +90,12 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
         writtenNote: writtenNote.trim() || null,
       })
       if (!result.ok) {
-        setError(result.error || 'Could not submit check-in. Please try again.')
+        setError(result.error || sf.submitFailed)
         return
       }
       onSubmitted()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not submit check-in. Please try again.')
+      setError(err instanceof Error ? err.message : sf.submitFailed)
     } finally {
       setBusy(false)
     }
@@ -114,12 +117,10 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
         onClick={(event) => event.stopPropagation()}
       >
         <h2 id="session-feedback-title" className="page-title">
-          Quick check-in
+          {sf.title}
         </h2>
         <p className="muted">{sessionLabel}</p>
-        <p className="muted session-feedback-sheet__lead">
-          Rate each item from 0 to 5 — it takes less than a minute.
-        </p>
+        <p className="muted session-feedback-sheet__lead">{sf.lead}</p>
 
         <div className="psych-survey-list">
           {PSYCHOLOGY_SURVEY_QUESTIONS.map((question) => (
@@ -133,12 +134,12 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
         </div>
 
         <label className="field field--pro">
-          <span>{PSYCHOLOGY_SURVEY_COACH_NOTE_PROMPT} (optional)</span>
+          <span>{PSYCHOLOGY_SURVEY_COACH_NOTE_PROMPT} ({sf.optionalSuffix})</span>
           <textarea
             rows={3}
             value={writtenNote}
             onChange={(e) => setWrittenNote(e.target.value)}
-            placeholder="Optional comment for your coach…"
+            placeholder={sf.notePlaceholder}
           />
         </label>
 
@@ -150,10 +151,10 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
 
         <div className="session-feedback-sheet__actions">
           <button type="submit" className="btn btn--primary btn--block" disabled={busy}>
-            {busy ? 'Sending…' : 'Submit check-in'}
+            {busy ? t('common.sending') : sf.submit}
           </button>
           <button type="button" className="btn btn--ghost btn--block" disabled={busy} onClick={onSkip}>
-            Skip for now
+            {sf.skip}
           </button>
         </div>
       </form>

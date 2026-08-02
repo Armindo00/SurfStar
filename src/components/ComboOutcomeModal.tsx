@@ -1,4 +1,6 @@
-import { COMBO_LEVEL_LABELS, type ComboLevel, type WaveSide } from '../types'
+import { comboLevelLabel } from '../i18n/labels'
+import { useI18n } from '../i18n'
+import type { ComboLevel, WaveSide } from '../types'
 
 type Props = {
   level: ComboLevel
@@ -9,11 +11,19 @@ type Props = {
 function SideColumn({
   side,
   onLog,
+  frontsideLabel,
+  backsideLabel,
+  successLabel,
+  failLabel,
 }: {
   side: WaveSide
   onLog: Props['onLog']
+  frontsideLabel: string
+  backsideLabel: string
+  successLabel: string
+  failLabel: string
 }) {
-  const title = side === 'frontside' ? 'Frontside' : 'Backside'
+  const title = side === 'frontside' ? frontsideLabel : backsideLabel
 
   return (
     <div className="maneuver-column">
@@ -22,7 +32,7 @@ function SideColumn({
         <button
           type="button"
           className="btn-outcome btn-outcome--ok"
-          aria-label={`${title} — success`}
+          aria-label={`${title} — ${successLabel}`}
           onClick={() => onLog(side, true)}
         >
           ✓
@@ -30,7 +40,7 @@ function SideColumn({
         <button
           type="button"
           className="btn-outcome btn-outcome--fail"
-          aria-label={`${title} — miss`}
+          aria-label={`${title} — ${failLabel}`}
           onClick={() => onLog(side, false)}
         >
           ✕
@@ -41,6 +51,9 @@ function SideColumn({
 }
 
 export function ComboOutcomeModal({ level, onClose, onLog }: Props) {
+  const { t, messages } = useI18n()
+  const r = messages.session.register as Record<string, string>
+
   return (
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
       <div
@@ -52,18 +65,32 @@ export function ComboOutcomeModal({ level, onClose, onLog }: Props) {
       >
         <div className="sheet__head sheet__head--pro">
           <div>
-            <p className="sheet__eyebrow">Quick log</p>
-            <h2 id="combo-outcome-title">{COMBO_LEVEL_LABELS[level]}</h2>
+            <p className="sheet__eyebrow">{r.quickLog}</p>
+            <h2 id="combo-outcome-title">{comboLevelLabel(level)}</h2>
           </div>
-          <button type="button" className="sheet__close" onClick={onClose} aria-label="Close">
+          <button type="button" className="sheet__close" onClick={onClose} aria-label={t('common.close')}>
             ✕
           </button>
         </div>
 
         <div className="maneuver-modal-grid">
-          <SideColumn side="frontside" onLog={onLog} />
+          <SideColumn
+            side="frontside"
+            onLog={onLog}
+            frontsideLabel={r.frontside}
+            backsideLabel={r.backside}
+            successLabel={r.success}
+            failLabel={r.fail}
+          />
           <div className="maneuver-modal-divider" aria-hidden="true" />
-          <SideColumn side="backside" onLog={onLog} />
+          <SideColumn
+            side="backside"
+            onLog={onLog}
+            frontsideLabel={r.frontside}
+            backsideLabel={r.backside}
+            successLabel={r.success}
+            failLabel={r.fail}
+          />
         </div>
       </div>
     </div>

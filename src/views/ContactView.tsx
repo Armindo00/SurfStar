@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useI18n } from '../i18n'
 import { AuthShell } from '../components/AuthShell'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { CONTACT_KINDS } from '../contactKinds'
@@ -10,6 +11,7 @@ type Props = {
 }
 
 export function ContactView({ variant }: Props) {
+  const { t } = useI18n()
   const { auth, cloudMode, submitContactMessage, openLanding, setView } = useApp()
 
   const [kind, setKind] = useState<ContactMessageKind>('feedback')
@@ -56,17 +58,18 @@ export function ContactView({ variant }: Props) {
   const form = sent ? (
     <div className="contact-success">
       <p className="auth-alert auth-alert--success">
-        Thank you — your message was sent to the SurfStar team. We typically reply within 1–2 business
-        days{cloudMode ? '' : ' (saved locally in demo mode)'}.
+        {t('ui.contact.successMessage', {
+          demoSuffix: cloudMode ? '' : t('ui.contact.demoSuffix'),
+        })}
       </p>
       <button type="button" className="btn btn--primary btn--block" onClick={goBack}>
-        Back
+        {t('common.back')}
       </button>
     </div>
   ) : (
     <form className="auth-form contact-form" onSubmit={(e) => void submit(e)}>
       <label className="field field--pro">
-        <span>What is this about?</span>
+        <span>{t('ui.contact.whatAbout')}</span>
         <select value={kind} onChange={(e) => setKind(e.target.value as ContactMessageKind)}>
           {CONTACT_KINDS.map((item) => (
             <option key={item.id} value={item.id}>
@@ -78,12 +81,12 @@ export function ContactView({ variant }: Props) {
       </label>
 
       <label className="field field--pro">
-        <span>Your name</span>
+        <span>{t('ui.contact.yourName')}</span>
         <input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
       </label>
 
       <label className="field field--pro">
-        <span>Email</span>
+        <span>{t('ui.contact.email')}</span>
         <input
           type="email"
           value={email}
@@ -94,18 +97,18 @@ export function ContactView({ variant }: Props) {
       </label>
 
       <label className="field field--pro">
-        <span>Subject</span>
+        <span>{t('ui.contact.subject')}</span>
         <input
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           required
-          placeholder="Brief summary"
+          placeholder={t('ui.contact.subjectPlaceholder')}
           maxLength={120}
         />
       </label>
 
       <label className="field field--pro">
-        <span>Message</span>
+        <span>{t('ui.contact.message')}</span>
         <textarea
           rows={5}
           value={message}
@@ -113,26 +116,24 @@ export function ContactView({ variant }: Props) {
           required
           minLength={10}
           maxLength={4000}
-          placeholder="Tell us what you need — the more detail, the better we can help."
+          placeholder={t('ui.contact.messagePlaceholder')}
         />
       </label>
 
       {error ? <p className="login-error">{error}</p> : null}
 
       <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={busy}>
-        {busy ? 'Sending…' : 'Send message'}
+        {busy ? t('ui.contact.sending') : t('ui.contact.sendMessage')}
       </button>
     </form>
   )
 
   if (variant === 'public') {
     return (
-      <AuthShell onBack={openLanding} backLabel="Home" showTagline>
+      <AuthShell onBack={openLanding} backLabel={t('auth.home')} showTagline>
         <header className="auth-card__head auth-card__head--compact">
-          <h2 className="auth-card__title">Contact SurfStar</h2>
-          <p className="muted auth-card__lead">
-            Send feedback, report a bug, or ask for help. We read every message.
-          </p>
+          <h2 className="auth-card__title">{t('ui.contact.title')}</h2>
+          <p className="muted auth-card__lead">{t('ui.contact.publicLead')}</p>
         </header>
         {form}
       </AuthShell>
@@ -141,11 +142,9 @@ export function ContactView({ variant }: Props) {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Contact SurfStar" onBack={goBack} />
+      <ScreenHeader title={t('nav.contactSurfStar')} onBack={goBack} />
       <div className="ss-card contact-page-card">
-        <p className="muted">
-          Questions, ideas, or issues? Reach the SurfStar team directly — no need to leave the app.
-        </p>
+        <p className="muted">{t('ui.contact.appLead')}</p>
         {form}
       </div>
     </div>

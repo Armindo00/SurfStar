@@ -9,6 +9,9 @@ import {
   normalizeCustomDateRange,
   presetAnalyticsRange,
 } from './analyticsRange'
+import { setLocaleGlobal } from './i18n/I18nContext'
+
+setLocaleGlobal('en')
 
 describe('analyticsRange', () => {
   it('normalizes reversed custom dates', () => {

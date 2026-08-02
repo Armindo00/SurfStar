@@ -1,4 +1,5 @@
 import { contactKindLabel } from '../../contactKinds'
+import { useI18n } from '../../i18n'
 import type { ContactMessage, ContactMessageStatus } from '../../types'
 import { AdminFilterPills } from './AdminFilterPills'
 import { formatAdminDate } from './adminUtils'
@@ -14,27 +15,38 @@ type Props = {
   onUpdateStatus: (message: ContactMessage, status: ContactMessageStatus) => void
 }
 
-const FILTER_OPTIONS: { value: ContactFilter; label: string }[] = [
-  { value: 'new', label: 'New' },
-  { value: 'read', label: 'Read' },
-  { value: 'resolved', label: 'Resolved' },
-  { value: 'all', label: 'All' },
-]
-
 export function AdminContactTab({ messages, filter, onFilterChange, onRefresh, busyId, onUpdateStatus }: Props) {
+  const { messages: i18nMessages } = useI18n()
+  const a = i18nMessages.ui.admin as Record<string, string>
+  const coachRole = i18nMessages.roles.coach
+  const athleteRole = i18nMessages.roles.athlete
+
+  const filterOptions: { value: ContactFilter; label: string }[] = [
+    { value: 'new', label: a.contactFilterNew },
+    { value: 'read', label: a.contactFilterRead },
+    { value: 'resolved', label: a.contactFilterResolved },
+    { value: 'all', label: a.contactFilterAll },
+  ]
+
   return (
     <div className="admin-panel">
-      <p className="admin-panel__intro muted">Contact form submissions from coaches and athletes.</p>
+      <p className="admin-panel__intro muted">{a.contactIntro}</p>
 
       <div className="admin-toolbar admin-toolbar--filters">
-        <AdminFilterPills label="Status" value={filter} options={FILTER_OPTIONS} onChange={onFilterChange} />
+        <AdminFilterPills
+          label={a.statusFilter}
+          value={filter}
+          options={filterOptions}
+          onChange={onFilterChange}
+          filterAriaLabel={a.filter}
+        />
         <button type="button" className="btn btn--ghost btn--small admin-toolbar__refresh" onClick={onRefresh}>
-          Refresh
+          {a.refresh}
         </button>
       </div>
 
       {messages.length === 0 ? (
-        <p className="admin-empty">No contact messages match this filter.</p>
+        <p className="admin-empty">{a.noContactMessagesMatch}</p>
       ) : (
         <div className="admin-list">
           {messages.map((message) => (
@@ -44,7 +56,7 @@ export function AdminContactTab({ messages, filter, onFilterChange, onRefresh, b
                   <h2>{message.subject}</h2>
                   <p className="muted admin-card__subtitle">
                     {message.name} · {message.email}
-                    {message.userRole ? ` · ${message.userRole === 'treinador' ? 'Coach' : 'Athlete'}` : ''}
+                    {message.userRole ? ` · ${message.userRole === 'treinador' ? coachRole : athleteRole}` : ''}
                   </p>
                   <p className="admin-card__summary">
                     {contactKindLabel(message.kind)} · {formatAdminDate(message.createdAt)}
@@ -63,7 +75,7 @@ export function AdminContactTab({ messages, filter, onFilterChange, onRefresh, b
                     disabled={busyId === message.id}
                     onClick={() => onUpdateStatus(message, 'read')}
                   >
-                    Mark read
+                    {a.markRead}
                   </button>
                 ) : null}
                 {message.status !== 'resolved' ? (
@@ -73,7 +85,7 @@ export function AdminContactTab({ messages, filter, onFilterChange, onRefresh, b
                     disabled={busyId === message.id}
                     onClick={() => onUpdateStatus(message, 'resolved')}
                   >
-                    Resolve
+                    {a.resolve}
                   </button>
                 ) : null}
                 {message.status !== 'new' ? (
@@ -83,7 +95,7 @@ export function AdminContactTab({ messages, filter, onFilterChange, onRefresh, b
                     disabled={busyId === message.id}
                     onClick={() => onUpdateStatus(message, 'new')}
                   >
-                    Reopen
+                    {a.reopen}
                   </button>
                 ) : null}
               </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useI18n } from '../i18n'
 import { useApp } from '../AppContext'
 import { UNSEEN } from '../unseenDomains'
 import { athleteLimitMessage, canUsePsychologyCheckins, planUpgradeHint } from '../planUtils'
@@ -7,40 +8,20 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import type { AthleteShareSettings } from '../types'
 import { DEFAULT_ATHLETE_SHARE_SETTINGS, normalizeAthleteShareSettings } from '../types'
 
-const SHARE_OPTIONS: { key: keyof AthleteShareSettings; label: string; hint: string }[] = [
-  {
-    key: 'technicalStats',
-    label: 'Technical training stats',
-    hint: 'Maneuver success rates (R, T, P) and frontside/backside breakdown.',
-  },
-  {
-    key: 'comboStats',
-    label: 'Combo stats',
-    hint: 'Combo success by level and side.',
-  },
-  {
-    key: 'sessionHistory',
-    label: 'Training history',
-    hint: 'List of completed sessions with a short summary.',
-  },
-  {
-    key: 'heatDetails',
-    label: 'Heat breakdown',
-    hint: 'Per-heat score, placement, and wins.',
-  },
-]
-
-const PSYCHOLOGY_SHARE_OPTION: {
-  key: 'psychologyCheckins'
-  label: string
-  hint: string
-} = {
-  key: 'psychologyCheckins',
-  label: 'Psychology check-ins',
-  hint: 'After each session, ask this athlete for a quick 0–5 wellbeing questionnaire.',
-}
-
 export function ManageAthletes() {
+  const { t, messages } = useI18n()
+  const ma = messages.ui.manageAthletes
+  const shareOptions = ma as Record<keyof AthleteShareSettings, { label: string; hint: string }>
+  const SHARE_OPTIONS: { key: keyof AthleteShareSettings; label: string; hint: string }[] = [
+    { key: 'technicalStats', ...shareOptions.technicalStats },
+    { key: 'comboStats', ...shareOptions.comboStats },
+    { key: 'sessionHistory', ...shareOptions.sessionHistory },
+    { key: 'heatDetails', ...shareOptions.heatDetails },
+  ]
+  const PSYCHOLOGY_SHARE_OPTION = {
+    key: 'psychologyCheckins' as const,
+    ...shareOptions.psychologyCheckins,
+  }
   const {
     coachAthletes,
     coachLinks,
@@ -79,12 +60,14 @@ export function ManageAthletes() {
     try {
       const result = await requestPairingByCode(code)
       if (!result.ok) {
-        setError(result.error ?? 'Could not send request.')
+        setError(result.error ?? t('ui.manageAthletes.couldNotSendRequest'))
         return
       }
       setCode('')
       setSuccess(
-        `Request sent to ${result.athleteName ?? 'athlete'}. They must accept before you can add them to sessions.`,
+        t('ui.manageAthletes.requestSent', {
+          name: result.athleteName ?? t('ui.manageAthletes.athleteNameFallback'),
+        }),
       )
     } finally {
       setBusy(false)
@@ -103,7 +86,7 @@ export function ManageAthletes() {
     setActionBusyId(linkId)
     try {
       const result = await setAthleteBlocked(linkId, blocked)
-      if (!result.ok) setActionError(result.error ?? 'Could not update athlete.')
+      if (!result.ok) setActionError(result.error ?? t('ui.manageAthletes.couldNotUpdateAthlete'))
     } finally {
       setActionBusyId(null)
     }
@@ -116,7 +99,7 @@ export function ManageAthletes() {
     try {
       const result = await revokePairing(revokeTarget.linkId)
       if (!result.ok) {
-        setActionError(result.error ?? 'Could not remove athlete.')
+        setActionError(result.error ?? t('ui.manageAthletes.couldNotRemoveAthlete'))
         return
       }
       if (expandedAthleteId === revokeTarget.linkId) setExpandedAthleteId(null)
@@ -128,24 +111,31 @@ export function ManageAthletes() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Athletes & pairing" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.athletesAndPairing')} onBack={() => setView('coach-home')} />
       <p className="plan-limit-banner muted">
-        {athleteLimitMessage(planId)} · {activeCount} active · {pendingLinks.length} pending
+        {t('ui.manageAthletes.limitBanner', {
+          limit: athleteLimitMessage(planId),
+          activeCount,
+          pendingCount: pendingLinks.length,
+        })}
       </p>
       <div className="ss-card">
         <p className="muted stats-panel__sub">
-          Ask the athlete for their <strong>pairing code</strong> from their SurfStar account. After
-          they accept your request, you can add them to training sessions. Use <strong>Block</strong>{' '}
-          to suspend them on your team, or <strong>Remove</strong> to unlink (their stats stay on
-          their account).
+          {t('ui.manageAthletes.pairingIntroBeforeCode')}{' '}
+          <strong>{t('ui.manageAthletes.pairingCodeEmphasis')}</strong>{' '}
+          {t('ui.manageAthletes.pairingIntroAfterCode')}{' '}
+          <strong>{t('ui.manageAthletes.blockEmphasis')}</strong>{' '}
+          {t('ui.manageAthletes.pairingIntroBlock')}{' '}
+          <strong>{t('ui.manageAthletes.removeEmphasis')}</strong>{' '}
+          {t('ui.manageAthletes.pairingIntroRemove')}
         </p>
 
         <div className="athlete-login-form">
           <label className="field field--pro">
-            <span>Athlete pairing code</span>
+            <span>{t('ui.manageAthletes.pairingCodeLabel')}</span>
             <input
               type="text"
-              placeholder="e.g. A3K9P2"
+              placeholder={t('ui.manageAthletes.pairingCodePlaceholder')}
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
             />
@@ -158,19 +148,19 @@ export function ManageAthletes() {
             disabled={busy || !code.trim()}
             onClick={submitCode}
           >
-            {busy ? 'Sending…' : 'Send pairing request'}
+            {busy ? t('ui.manageAthletes.sending') : t('ui.manageAthletes.sendPairingRequest')}
           </button>
         </div>
 
         {pendingLinks.length > 0 ? (
           <div className="pairing-panel">
-            <h3 className="pairing-panel__title">Waiting for athlete confirmation</h3>
+            <h3 className="pairing-panel__title">{t('ui.manageAthletes.waitingConfirmation')}</h3>
             <ul className="pairing-list">
               {pendingLinks.map((link) => (
                 <li key={link.id} className="pairing-list__item">
                   <span className="pairing-list__info">
-                    <strong>{link.athleteName ?? 'Athlete'}</strong>
-                    <small>Pending</small>
+                    <strong>{link.athleteName ?? t('ui.manageAthletes.athleteFallback')}</strong>
+                    <small>{t('ui.manageAthletes.pending')}</small>
                   </span>
                 </li>
               ))}
@@ -182,7 +172,7 @@ export function ManageAthletes() {
 
         <ul className="ss-athlete-list ss-athlete-list--plain athlete-manage-list">
           {coachAthletes.length === 0 ? (
-            <li className="muted">No athletes linked yet.</li>
+            <li className="muted">{t('ui.manageAthletes.noAthletesLinked')}</li>
           ) : (
             coachAthletes.map((a) => {
               const shareSettings = normalizeAthleteShareSettings(
@@ -201,9 +191,13 @@ export function ManageAthletes() {
                   >
                     <span>
                       <strong>{a.name}</strong>
-                      <small>Code {a.pairingCode || '—'}</small>
+                      <small>
+                        {t('ui.manageAthletes.codeLabel', { code: a.pairingCode || '—' })}
+                      </small>
                       <span className="athlete-manage-list__badges">
-                        {a.blocked ? <span className="badge badge--danger">Blocked</span> : null}
+                        {a.blocked ? (
+                          <span className="badge badge--danger">{t('ui.manageAthletes.blocked')}</span>
+                        ) : null}
                       </span>
                     </span>
                     <span className="athlete-manage-list__toggle">{expanded ? '−' : '+'}</span>
@@ -221,10 +215,10 @@ export function ManageAthletes() {
                           onClick={() => toggleBlocked(a.linkId!, !a.blocked)}
                         >
                           {busyRow
-                            ? 'Saving…'
+                            ? t('ui.manageAthletes.saving')
                             : a.blocked
-                              ? 'Unblock athlete'
-                              : 'Block athlete'}
+                              ? t('ui.manageAthletes.unblockAthlete')
+                              : t('ui.manageAthletes.blockAthlete')}
                         </button>
                         <button
                           type="button"
@@ -232,14 +226,11 @@ export function ManageAthletes() {
                           disabled={busyRow}
                           onClick={() => setRevokeTarget({ linkId: a.linkId!, name: a.name })}
                         >
-                          Remove from my team
+                          {t('ui.manageAthletes.removeFromTeam')}
                         </button>
                       </div>
 
-                      <p className="athlete-share-panel__intro">
-                        Choose what this athlete can see from your sessions beyond the general
-                        dashboard.
-                      </p>
+                      <p className="athlete-share-panel__intro">{t('ui.manageAthletes.sharePanelIntro')}</p>
                       {SHARE_OPTIONS.map((option) => (
                         <label key={option.key} className="athlete-share-option">
                           <input
@@ -283,8 +274,8 @@ export function ManageAthletes() {
 
       {revokeTarget ? (
         <ConfirmDeleteModal
-          title={`Remove ${revokeTarget.name}?`}
-          message="This removes the athlete from your team. Their account and stats are kept — they can pair with you again later using their code."
+          title={t('ui.manageAthletes.removeTitle', { name: revokeTarget.name })}
+          message={t('ui.manageAthletes.removeMessage')}
           onConfirm={confirmRevoke}
           onCancel={() => setRevokeTarget(null)}
         />

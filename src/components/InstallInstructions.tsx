@@ -1,35 +1,40 @@
-import { INSTALL_HELP } from '../helpContent'
+import { getInstallHelp } from '../helpContent'
+import { useI18n } from '../i18n'
 import { isAppInstalled } from '../pwaInstall'
 
 export function InstallInstructions() {
+  const { locale, messages } = useI18n()
+  const install = getInstallHelp(locale)
   const installed = isAppInstalled()
 
   return (
     <div className="install-help">
-      <p className="muted">{INSTALL_HELP.lead}</p>
+      <p className="muted">{install.lead}</p>
       {installed ? (
-        <p className="install-help__installed login-success">SurfStar is already installed on this device.</p>
+        <p className="install-help__installed login-success">
+          {messages.components.installInstructions.alreadyInstalled}
+        </p>
       ) : null}
 
       <article className="install-help__platform">
-        <h3>{INSTALL_HELP.iphone.title}</h3>
+        <h3>{install.iphone.title}</h3>
         <ol className="install-help__steps">
-          {INSTALL_HELP.iphone.steps.map((step) => (
+          {install.iphone.steps.map((step) => (
             <li key={step}>{step}</li>
           ))}
         </ol>
       </article>
 
       <article className="install-help__platform">
-        <h3>{INSTALL_HELP.android.title}</h3>
+        <h3>{install.android.title}</h3>
         <ol className="install-help__steps">
-          {INSTALL_HELP.android.steps.map((step) => (
+          {install.android.steps.map((step) => (
             <li key={step}>{step}</li>
           ))}
         </ol>
       </article>
 
-      <p className="muted install-help__note">{INSTALL_HELP.note}</p>
+      <p className="muted install-help__note">{install.note}</p>
     </div>
   )
 }

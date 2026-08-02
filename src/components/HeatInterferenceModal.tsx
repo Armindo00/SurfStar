@@ -1,4 +1,5 @@
-import { HEAT_INTERFERENCE_LABELS, type HeatInterferenceType } from '../types'
+import { useI18n } from '../i18n'
+import { type HeatInterferenceType } from '../types'
 
 type Props = {
   athleteName: string
@@ -8,6 +9,10 @@ type Props = {
   onClear: () => void
 }
 
+function interferenceLabel(type: HeatInterferenceType, h: Record<string, string>): string {
+  return type === 'half-second' ? h.interferenceHalfSecond : h.interferenceDropSecond
+}
+
 export function HeatInterferenceModal({
   athleteName,
   current,
@@ -15,6 +20,9 @@ export function HeatInterferenceModal({
   onApply,
   onClear,
 }: Props) {
+  const { t, messages } = useI18n()
+  const h = messages.session.heat as Record<string, string>
+
   return (
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
       <div
@@ -25,25 +33,23 @@ export function HeatInterferenceModal({
       >
         <div className="sheet__head sheet__head--pro">
           <div>
-            <p className="sheet__eyebrow">Interference</p>
+            <p className="sheet__eyebrow">{h.interference}</p>
             <h2>{athleteName}</h2>
           </div>
-          <button type="button" className="sheet__close" onClick={onClose} aria-label="Close">
+          <button type="button" className="sheet__close" onClick={onClose} aria-label={t('common.close')}>
             ✕
           </button>
         </div>
 
-        <p className="muted stats-panel__sub">
-          Applies to this surfer&apos;s <strong>2nd best wave</strong> in the heat total.
-        </p>
+        <p className="muted stats-panel__sub">{h.interferenceAppliesTo}</p>
 
         <button
           type="button"
           className="btn btn--block heat-int-btn"
           onClick={() => onApply('half-second')}
         >
-          <strong>Halve 2nd best</strong>
-          <span className="muted">2nd counting wave counts at 50% (e.g. 6.00 → 3.00)</span>
+          <strong>{h.halveSecondBest}</strong>
+          <span className="muted">{h.halveSecondBestHint}</span>
         </button>
 
         <button
@@ -51,17 +57,17 @@ export function HeatInterferenceModal({
           className="btn btn--block heat-int-btn heat-int-btn--severe"
           onClick={() => onApply('drop-second')}
         >
-          <strong>Remove 2nd best</strong>
-          <span className="muted">Only the best wave counts toward the total</span>
+          <strong>{h.removeSecondBest}</strong>
+          <span className="muted">{h.removeSecondBestHint}</span>
         </button>
 
         {current ? (
           <>
             <p className="heat-int-current">
-              Active: <strong>{HEAT_INTERFERENCE_LABELS[current]}</strong>
+              {h.interferenceActive} <strong>{interferenceLabel(current, h)}</strong>
             </p>
             <button type="button" className="btn btn--ghost btn--block" onClick={onClear}>
-              Clear interference
+              {h.clearInterference}
             </button>
           </>
         ) : null}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useI18n } from '../i18n'
 import {
   adminActivateCoachPlan,
   adminActivatePlanRequest,
@@ -37,6 +38,7 @@ import { AdminSubscriptionsTab, loadAdminSubscriptions } from './admin/AdminSubs
 type AdminTab = 'dashboard' | 'requests' | 'subscriptions' | 'accounts' | 'contact'
 
 export function AdminView() {
+  const { t } = useI18n()
   const { auth, cloudMode, setView, markSeen, countUnseen } = useApp()
   const { showToast } = useToast()
   const [tab, setTab] = useState<AdminTab>('dashboard')
@@ -318,7 +320,7 @@ export function AdminView() {
   if (!cloudMode) {
     return (
       <div className="admin-page">
-        <ScreenHeader title="Admin" onBack={() => setView('coach-home')} />
+        <ScreenHeader title={t('admin.title')} onBack={() => setView('coach-home')} />
         <p className="muted admin-page__hint">The admin panel is only available in cloud mode (Supabase).</p>
       </div>
     )
@@ -327,7 +329,7 @@ export function AdminView() {
   if (!isAdmin) {
     return (
       <div className="admin-page">
-        <ScreenHeader title="Admin" onBack={() => setView('coach-home')} />
+        <ScreenHeader title={t('admin.title')} onBack={() => setView('coach-home')} />
         <p className="muted admin-page__hint">You do not have platform administrator permissions.</p>
       </div>
     )
@@ -409,9 +411,9 @@ export function AdminView() {
 
   return (
     <div className="admin-page">
-      <ScreenHeader title="SurfStar Admin" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('admin.surfStarAdmin')} onBack={() => setView('coach-home')} />
 
-      <nav className="admin-tabs" aria-label="Admin sections">
+      <nav className="admin-tabs" aria-label={t('admin.tabsLabel')}>
         {(
           [
             ['dashboard', 'Overview'],

@@ -3,6 +3,7 @@ import type { ComboLevel } from '../types'
 import { ComboOutcomeModal } from './ComboOutcomeModal'
 import { WaveRegisterSummary } from './WaveRegisterSummary'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import { waveHasLoggedAttempts } from '../sessionStats'
 
 type Props = {
@@ -27,6 +28,8 @@ export function ComboRegisterPanel({
     closeActiveWave,
     setView,
   } = useApp()
+  const { t, messages } = useI18n()
+  const r = messages.session.register as Record<string, string>
 
   const waveOpen = Boolean(activeWaveId)
 
@@ -45,25 +48,23 @@ export function ComboRegisterPanel({
     <div className="register-panel">
       <div className="register-panel__head">
         <button type="button" className="btn btn--ghost" onClick={onBack}>
-          ← Athletes
+          {r.backToAthletes}
         </button>
         <div>
-          <p className="register-panel__eyebrow">Live register · Combos</p>
+          <p className="register-panel__eyebrow">{r.liveRegisterCombos}</p>
           <h2>{athleteName}</h2>
         </div>
       </div>
 
       {!waveOpen ? (
         <button type="button" className="btn btn--primary btn--block btn--lg" onClick={startOpenWave}>
-          Start wave
+          {r.startWave}
         </button>
       ) : (
         <>
           <WaveRegisterSummary mode="combos" />
 
-          <p className="muted keypad-legend">
-            Wave open: pick combo level, then frontside or backside.
-          </p>
+          <p className="muted keypad-legend">{r.comboKeypadLegend}</p>
 
           <div className="ss-keypad ss-keypad--combo">
             <button type="button" className="key key--c1" onClick={() => setComboLevel(1)}>
@@ -82,22 +83,22 @@ export function ComboRegisterPanel({
 
           {canMarkNoPotential ? (
             <button type="button" className="btn btn--block btn-np-wide" onClick={registerNoPotentialWave}>
-              No potential
+              {r.noPotential}
             </button>
           ) : null}
 
           <button type="button" className="btn btn--primary btn--block" onClick={closeActiveWave}>
-            Close wave
+            {r.closeWave}
           </button>
         </>
       )}
 
       <div className="register-panel__links">
         <button type="button" className="btn btn--ghost btn--block" onClick={() => setView('session-stats')}>
-          Live stats
+          {t('session.liveStats')}
         </button>
         <button type="button" className="btn btn--ghost btn--block" onClick={() => setView('saved-waves')}>
-          Saved waves
+          {t('nav.savedWaves')}
         </button>
       </div>
 

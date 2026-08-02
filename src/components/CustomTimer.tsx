@@ -3,6 +3,7 @@ import {
   customTimerDurationMs,
   customTimerRemainingMs,
 } from '../customTrainingUtils'
+import { useI18n } from '../i18n'
 import type { TrainingSession } from '../types'
 
 function formatClock(ms: number) {
@@ -25,9 +26,12 @@ type Props = {
 }
 
 export function CustomTimer({ session, onTimeUp }: Props) {
+  const { t, messages } = useI18n()
+  const ct = messages.ui.customTimer as Record<string, string>
+
   const [now, setNow] = useState(() => Date.now())
   const timer = session.customTemplateSnapshot?.timer
-  const label = timer?.label?.trim() || 'Session timer'
+  const label = timer?.label?.trim() || ct.sessionTimer
   const durationMin = timer?.durationMinutes ?? 15
 
   useEffect(() => {
@@ -50,8 +54,8 @@ export function CustomTimer({ session, onTimeUp }: Props) {
     return (
       <div className="heat-timer heat-timer--idle">
         <span className="heat-timer__label">{label}</span>
-        <strong className="heat-timer__value">{durationMin} min</strong>
-        <span className="muted heat-timer__hint">Start the timer when the session begins</span>
+        <strong className="heat-timer__value">{t('ui.customTimer.durationMin', { minutes: durationMin })}</strong>
+        <span className="muted heat-timer__hint">{ct.startWhenBegins}</span>
       </div>
     )
   }
@@ -66,9 +70,11 @@ export function CustomTimer({ session, onTimeUp }: Props) {
         : '0:00'
     return (
       <div className="heat-timer heat-timer--done">
-        <span className="heat-timer__label">{label} · finished</span>
+        <span className="heat-timer__label">
+          {label} · {ct.finished}
+        </span>
         <strong className="heat-timer__value">{elapsed}</strong>
-        <span className="muted heat-timer__hint">Total elapsed</span>
+        <span className="muted heat-timer__hint">{ct.totalElapsed}</span>
       </div>
     )
   }
@@ -82,7 +88,7 @@ export function CustomTimer({ session, onTimeUp }: Props) {
       <strong className="heat-timer__value" aria-live="polite">
         {formatClock(ms)}
       </strong>
-      <span className="muted heat-timer__hint">Time remaining</span>
+      <span className="muted heat-timer__hint">{ct.timeRemaining}</span>
     </div>
   )
 }

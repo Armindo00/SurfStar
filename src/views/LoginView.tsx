@@ -14,62 +14,8 @@ import { TaxIdField } from '../components/TaxIdField'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { formatPlanPriceWithSuffix, getPlan } from '../plans'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import type { AuthPublicView } from '../types'
-
-const SCREEN_COPY: Record<
-  AuthPublicView,
-  {
-    roleLabel: string
-    modeLabel: string
-    title: string
-    submit: string
-    switchPrompt: string
-    switchActionLabel: string
-    otherRolePrompt: string
-    otherRoleActionLabel: string
-  }
-> = {
-  'coach-sign-in': {
-    roleLabel: 'Coach',
-    modeLabel: 'Sign in',
-    title: 'Coach sign in',
-    submit: 'Sign in',
-    switchPrompt: 'New coach?',
-    switchActionLabel: 'Create coach account',
-    otherRolePrompt: 'Are you an athlete?',
-    otherRoleActionLabel: 'Athlete sign in',
-  },
-  'coach-sign-up': {
-    roleLabel: 'Coach',
-    modeLabel: 'Create account',
-    title: 'Create coach account',
-    submit: 'Create coach account',
-    switchPrompt: 'Already have a coach account?',
-    switchActionLabel: 'Coach sign in',
-    otherRolePrompt: 'Are you an athlete?',
-    otherRoleActionLabel: 'Create athlete account',
-  },
-  'athlete-sign-in': {
-    roleLabel: 'Athlete',
-    modeLabel: 'Sign in',
-    title: 'Athlete sign in',
-    submit: 'Sign in',
-    switchPrompt: 'New athlete?',
-    switchActionLabel: 'Create athlete account',
-    otherRolePrompt: 'Are you a coach?',
-    otherRoleActionLabel: 'Coach sign in',
-  },
-  'athlete-sign-up': {
-    roleLabel: 'Athlete',
-    modeLabel: 'Create account',
-    title: 'Create athlete account',
-    submit: 'Create athlete account',
-    switchPrompt: 'Already have an athlete account?',
-    switchActionLabel: 'Athlete sign in',
-    otherRolePrompt: 'Are you a coach?',
-    otherRoleActionLabel: 'Create coach account',
-  },
-}
 
 export function LoginView() {
   const {
@@ -90,13 +36,14 @@ export function LoginView() {
     openPrivacy,
     openTerms,
   } = useApp()
+  const { t, messages } = useI18n()
 
   const screen = publicView as AuthPublicView
   const isCoach = screen.startsWith('coach')
   const isRegister = screen.endsWith('sign-up')
 
   const copy = (() => {
-    const base = SCREEN_COPY[screen]
+    const base = messages.auth.screens[screen]
     const switchAction =
       screen === 'coach-sign-in'
         ? openCoachPlanSelection
@@ -105,14 +52,13 @@ export function LoginView() {
           : screen === 'athlete-sign-in'
             ? openAthleteSignUp
             : openAthleteSignIn
-    const otherRoleAction =
-      isCoach
-        ? screen === 'coach-sign-up'
-          ? openAthleteSignUp
-          : openAthleteSignIn
-        : screen === 'athlete-sign-up'
-          ? openCoachPlanSelection
-          : openCoachSignIn
+    const otherRoleAction = isCoach
+      ? screen === 'coach-sign-up'
+        ? openAthleteSignUp
+        : openAthleteSignIn
+      : screen === 'athlete-sign-up'
+        ? openCoachPlanSelection
+        : openCoachSignIn
     return { ...base, switchAction, otherRoleAction }
   })()
 
@@ -170,11 +116,11 @@ export function LoginView() {
 
       if (isRegister) {
         if (!acceptedTerms) {
-          setError('Please accept the Terms of Service and Privacy Policy.')
+          setError(t('auth.acceptTermsError'))
           return
         }
         if (password !== passwordConfirm) {
-          setError('Passwords do not match.')
+          setError(t('auth.passwordsMismatch'))
           return
         }
         if (isCoach && cloudMode) {
@@ -218,24 +164,24 @@ export function LoginView() {
                 : undefined,
             )
           : await registerAthlete(name, trimmedEmail, password)
-        if (!result.ok) setError(result.error ?? 'Could not create account.')
+        if (!result.ok) setError(result.error ?? t('errors.createAccountFailed'))
         return
       }
 
       const result = isCoach
         ? await loginAsCoach(trimmedEmail, password)
         : await loginAsStudent(trimmedEmail, password)
-      if (!result.ok) setError(result.error ?? 'Sign in failed.')
+      if (!result.ok) setError(result.error ?? t('errors.signInFailed'))
     } catch (err) {
       console.error('Login submit failed', err)
-      setError(err instanceof Error ? err.message : 'Sign in failed. Check your connection and try again.')
+      setError(err instanceof Error ? err.message : t('errors.signInConnection'))
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <AuthShell onBack={openLanding} backLabel="Home" showTagline>
+    <AuthShell onBack={openLanding} backLabel={t('auth.home')} showTagline>
       <div className="auth-badges">
         <span className="auth-badge auth-badge--role">{copy.roleLabel}</span>
         <span className="auth-badge auth-badge--mode">{copy.modeLabel}</span>
@@ -247,7 +193,7 @@ export function LoginView() {
 
       {selectedPlan ? (
         <div className="auth-plan-banner">
-          <span className="auth-plan-banner__label">Selected plan</span>
+          <span className="auth-plan-banner__label">{t('auth.selectedPlan')}</span>
           <strong>
             {selectedPlan.name} · {formatPlanPriceWithSuffix(selectedPlan, selectedBillingInterval)}
           </strong>
@@ -257,13 +203,13 @@ export function LoginView() {
       <form className="auth-form" onSubmit={(e) => void submit(e)}>
         {isRegister ? (
           <label className="auth-field">
-            <span>Full name</span>
+            <span>{t('auth.fullName')}</span>
             <input
               type="text"
               autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={isCoach ? 'e.g. John Smith' : 'e.g. Jane Doe'}
+              placeholder={isCoach ? t('auth.namePlaceholderCoach') : t('auth.namePlaceholderAthlete')}
               required
             />
           </label>
@@ -271,10 +217,8 @@ export function LoginView() {
 
         {isRegister && isCoach && cloudMode ? (
           <div className="auth-billing-block">
-            <p className="auth-billing-block__title">Billing details</p>
-            <p className="auth-billing-block__lead muted">
-              Required for invoices and tax compliance. We bill coaches worldwide.
-            </p>
+            <p className="auth-billing-block__title">{t('auth.billingDetails')}</p>
+            <p className="auth-billing-block__lead muted">{t('auth.billingDetailsLead')}</p>
             <TaxIdField
               value={taxId}
               countryCode={billingCountryCode}
@@ -300,40 +244,44 @@ export function LoginView() {
         ) : null}
 
         <label className="auth-field">
-          <span>Email address</span>
+          <span>{t('auth.emailAddress')}</span>
           <input
             type="email"
             autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder={t('auth.emailPlaceholder')}
             required
           />
         </label>
 
         <label className="auth-field">
-          <span>Password</span>
+          <span>{t('auth.password')}</span>
           <input
             type="password"
             autoComplete={isRegister ? 'new-password' : 'current-password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             minLength={isRegister ? MIN_PASSWORD_LENGTH : undefined}
-            placeholder={isRegister ? `At least ${MIN_PASSWORD_LENGTH} characters` : 'Your password'}
+            placeholder={
+              isRegister
+                ? t('auth.passwordPlaceholderNew', { minLength: MIN_PASSWORD_LENGTH })
+                : t('auth.passwordPlaceholderSignIn')
+            }
             required
           />
         </label>
 
         {isRegister ? (
           <label className="auth-field">
-            <span>Confirm password</span>
+            <span>{t('auth.confirmPassword')}</span>
             <input
               type="password"
               autoComplete="new-password"
               value={passwordConfirm}
               onChange={(e) => setPasswordConfirm(e.target.value)}
               minLength={MIN_PASSWORD_LENGTH}
-              placeholder="Repeat password"
+              placeholder={t('auth.confirmPasswordPlaceholder')}
               required
             />
           </label>
@@ -356,15 +304,15 @@ export function LoginView() {
             className="auth-forgot"
             onClick={() => openForgotPassword(isCoach ? 'treinador' : 'atleta')}
           >
-            Forgot password?
+            {t('auth.forgotPassword')}
           </button>
         ) : null}
 
         <button type="submit" className="btn btn--primary btn--block btn--lg auth-submit" disabled={busy}>
           {busy
-            ? 'Please wait…'
+            ? t('auth.pleaseWait')
             : isRegister && selectedPlan
-              ? `Create account · ${selectedPlan.name}`
+              ? t('auth.createAccountWithPlan', { planName: selectedPlan.name })
               : copy.submit}
         </button>
       </form>

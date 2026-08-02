@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useI18n } from '../i18n'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { CustomTemplateEditor, normalizeEditorTemplate } from '../components/CustomTemplateEditor'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -9,6 +10,7 @@ import { cloneCustomTemplate, createEmptyCustomTemplate } from '../customTrainin
 import type { CustomTrainingTemplate } from '../types'
 
 export function ManageCustomTemplates() {
+  const { t } = useI18n()
   const {
     customTemplates,
     saveCustomTemplate,
@@ -36,9 +38,9 @@ export function ManageCustomTemplates() {
   if (!hasAccess) {
     return (
       <div className="ss-flow">
-        <ScreenHeader title="Custom training" onBack={() => setView('coach-home')} />
+        <ScreenHeader title={t('nav.customTraining')} onBack={() => setView('coach-home')} />
         <div className="ss-card stats-panel">
-          <h2 className="stats-panel__title">Coach Premium feature</h2>
+          <h2 className="stats-panel__title">{t('ui.customTemplates.coachPremiumFeature')}</h2>
           <p className="muted">
             Build your own training templates — skill buttons, levels, success tracking, timer, and
             rules — exclusive to Coach Premium.
@@ -60,7 +62,7 @@ export function ManageCustomTemplates() {
     return (
       <div className="ss-flow">
         <ScreenHeader
-          title={customTemplates.some((t) => t.id === editing.id) ? 'Edit template' : 'New template'}
+          title={customTemplates.some((tpl) => tpl.id === editing.id) ? t('ui.customTemplates.editTemplate') : t('ui.customTemplates.newTemplate')}
           onBack={() => setEditing(null)}
         />
         <CustomTemplateEditor
@@ -78,16 +80,13 @@ export function ManageCustomTemplates() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Custom training" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.customTraining')} onBack={() => setView('coach-home')} />
 
       <div className="ss-card spots-intro">
-        <h2 className="page-title">Your training formats</h2>
-        <p className="muted">
-          Build personalized sessions with your own buttons, levels, success tracking, timer, and
-          rules. Each template can reflect how you coach — beyond the built-in SurfStar modes.
-        </p>
+        <h2 className="page-title">{t('ui.customTemplates.yourTrainingFormats')}</h2>
+        <p className="muted">{t('ui.customTemplates.yourTrainingFormatsHint')}</p>
         <button type="button" className="btn btn--primary btn--block" onClick={startNew}>
-          + Create template
+          {t('ui.customTemplates.createTemplate')}
         </button>
       </div>
 

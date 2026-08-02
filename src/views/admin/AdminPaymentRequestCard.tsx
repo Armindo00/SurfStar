@@ -1,4 +1,5 @@
 import type { AdminPlanRequest } from '../../adminApi'
+import { useI18n } from '../../i18n'
 import {
   formatAdminDate,
   formatBillingAddress,
@@ -29,6 +30,9 @@ export function AdminPaymentRequestCard({
   onConfirmPayment,
   onActivateFree,
 }: Props) {
+  const { messages } = useI18n()
+  const a = messages.ui.admin as Record<string, string>
+
   const phase = requestPhase(request)
   const isOpen = !request.activated_at && request.status !== 'rejected'
   const billingAddress = formatBillingAddress(request)
@@ -42,7 +46,7 @@ export function AdminPaymentRequestCard({
             {request.contact_name} · {request.email}
           </p>
           <p className="admin-card__summary">
-            {planRequestSummary(request.plan_id, request.billing_interval)} · {requestAmount(request)} · Submitted{' '}
+            {planRequestSummary(request.plan_id, request.billing_interval)} · {requestAmount(request)} · {a.submitted}{' '}
             {formatAdminDate(request.created_at)}
           </p>
         </div>
@@ -52,54 +56,58 @@ export function AdminPaymentRequestCard({
       </div>
 
       {request.message ? <p className="admin-card__message">{request.message}</p> : null}
-      {request.notes ? <p className="muted admin-card__notes">Notes: {request.notes}</p> : null}
+      {request.notes ? (
+        <p className="muted admin-card__notes">
+          {a.notesPrefix} {request.notes}
+        </p>
+      ) : null}
 
       <details className="admin-details">
-        <summary>Billing & request details</summary>
+        <summary>{a.billingRequestDetails}</summary>
         <dl className="admin-meta admin-meta--compact">
           <div>
-            <dt>Plan</dt>
+            <dt>{a.plan}</dt>
             <dd>{planLabel(request.plan_id)}</dd>
           </div>
           <div>
-            <dt>Amount</dt>
+            <dt>{a.amount}</dt>
             <dd>{requestAmount(request)}</dd>
           </div>
           <div>
-            <dt>Coaches</dt>
+            <dt>{a.coaches}</dt>
             <dd>{request.coaches_count ?? '—'}</dd>
           </div>
           <div>
-            <dt>Account registered</dt>
-            <dd>{request.coach_registered ? 'Yes' : 'Not yet'}</dd>
+            <dt>{a.accountRegistered}</dt>
+            <dd>{request.coach_registered ? a.yes : a.notYet}</dd>
           </div>
           {request.tax_id ? (
             <div>
-              <dt>Tax ID / VAT</dt>
+              <dt>{a.taxIdVat}</dt>
               <dd>{request.tax_id}</dd>
             </div>
           ) : null}
           {billingAddress ? (
             <div className="admin-meta__wide">
-              <dt>Address</dt>
+              <dt>{a.address}</dt>
               <dd>{billingAddress}</dd>
             </div>
           ) : null}
           {request.reviewed_at ? (
             <div>
-              <dt>Reviewed</dt>
+              <dt>{a.reviewed}</dt>
               <dd>{formatAdminDate(request.reviewed_at)}</dd>
             </div>
           ) : null}
           {request.paid_at ? (
             <div>
-              <dt>Paid</dt>
+              <dt>{a.paid}</dt>
               <dd>{formatAdminDate(request.paid_at)}</dd>
             </div>
           ) : null}
           {request.activated_at ? (
             <div>
-              <dt>Activated</dt>
+              <dt>{a.activated}</dt>
               <dd>{formatAdminDate(request.activated_at)}</dd>
             </div>
           ) : null}
@@ -109,12 +117,12 @@ export function AdminPaymentRequestCard({
       {isOpen ? (
         <>
           <label className="field field--pro admin-card__notes-field">
-            <span>Internal notes (optional)</span>
+            <span>{a.internalNotes}</span>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => onNotesChange(e.target.value)}
-              placeholder="Payment reference, IBAN sent, etc."
+              placeholder={a.paymentReferencePlaceholder}
             />
           </label>
 
@@ -122,30 +130,30 @@ export function AdminPaymentRequestCard({
             {request.status === 'pending' ? (
               <>
                 <button type="button" className="btn btn--gold btn--small" disabled={busy} onClick={onApprove}>
-                  Approve & send payment details
+                  {a.approveSendPayment}
                 </button>
                 <button type="button" className="btn btn--secondary btn--small" disabled={busy} onClick={onReject}>
-                  Reject
+                  {a.reject}
                 </button>
               </>
             ) : (
               <button type="button" className="btn btn--gold btn--small" disabled={busy} onClick={onConfirmPayment}>
-                Confirm payment & activate
+                {a.confirmPaymentActivate}
               </button>
             )}
           </div>
 
           {request.status === 'pending' || request.payment_status === 'unpaid' ? (
             <details className="admin-details admin-details--secondary">
-              <summary>More actions</summary>
+              <summary>{a.moreActions}</summary>
               <div className="admin-card__actions admin-card__actions--secondary">
                 {request.status === 'pending' ? (
                   <button type="button" className="btn btn--ghost btn--small" disabled={busy} onClick={onConfirmPayment}>
-                    Confirm payment & activate
+                    {a.confirmPaymentActivate}
                   </button>
                 ) : null}
                 <button type="button" className="btn btn--ghost btn--small" disabled={busy} onClick={onActivateFree}>
-                  Activate without payment
+                  {a.activateWithoutPayment}
                 </button>
               </div>
             </details>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useI18n } from '../i18n'
 import {
   SEA_PEAK_LABELS,
   SEA_PEAKS,
@@ -16,6 +17,10 @@ type Props = {
 }
 
 export function SeaObservationEditModal({ peak: initialPeak, waveType: initialType, onSave, onClose }: Props) {
+  const { t, messages } = useI18n()
+  const s = messages.ui.seaAnalysis as Record<string, string>
+  const r = messages.session.register as Record<string, string>
+
   const [peak, setPeak] = useState(initialPeak)
   const [waveType, setWaveType] = useState(initialType)
 
@@ -30,15 +35,15 @@ export function SeaObservationEditModal({ peak: initialPeak, waveType: initialTy
       >
         <div className="sheet__head sheet__head--pro">
           <div>
-            <p className="sheet__eyebrow">Edit log</p>
-            <h2 id="sea-edit-title">Observation</h2>
+            <p className="sheet__eyebrow">{s.editLog}</p>
+            <h2 id="sea-edit-title">{s.observation}</h2>
           </div>
-          <button type="button" className="sheet__close" onClick={onClose} aria-label="Close">
+          <button type="button" className="sheet__close" onClick={onClose} aria-label={t('common.close')}>
             ✕
           </button>
         </div>
 
-        <p className="field-label">Peak</p>
+        <p className="field-label">{s.peak}</p>
         <div className="sea-edit-peak-pick">
           {SEA_PEAKS.map((p) => (
             <button
@@ -52,7 +57,7 @@ export function SeaObservationEditModal({ peak: initialPeak, waveType: initialTy
           ))}
         </div>
 
-        <p className="field-label">Wave type</p>
+        <p className="field-label">{s.waveType}</p>
         <div className="sea-edit-type-pick">
           {SEA_WAVE_TYPES.map((type) => (
             <button
@@ -71,7 +76,7 @@ export function SeaObservationEditModal({ peak: initialPeak, waveType: initialTy
           className="btn btn--primary btn--block btn--lg"
           onClick={() => onSave(peak, waveType)}
         >
-          Save changes
+          {r.saveChanges}
         </button>
       </div>
     </div>

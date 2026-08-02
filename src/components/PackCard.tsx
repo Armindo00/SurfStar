@@ -10,6 +10,7 @@ import {
   type BillingInterval,
   type PlanId,
 } from '../plans'
+import { useI18n } from '../i18n'
 
 type Props = {
   planId: PlanId
@@ -26,6 +27,8 @@ export function PackCard({
   onSelect,
   onOpenDetail,
 }: Props) {
+  const { messages, t } = useI18n()
+  const p = messages.plans.packCard
   const plan = getPlan(planId)
   const approvalRequired = isApprovalRequiredPlan(planId)
   const manualFlow = usesManualPaymentFlow()
@@ -46,10 +49,10 @@ export function PackCard({
               : 'pack-card'
       }
     >
-      {plan.highlighted ? <span className="pack-card__badge">Most popular</span> : null}
-      {approvalRequired ? <span className="pack-card__badge pack-card__badge--muted">By approval</span> : null}
+      {plan.highlighted ? <span className="pack-card__badge">{p.mostPopular}</span> : null}
+      {approvalRequired ? <span className="pack-card__badge pack-card__badge--muted">{p.byApproval}</span> : null}
       {manualFlow && !approvalRequired ? (
-        <span className="pack-card__badge pack-card__badge--muted">Manual billing</span>
+        <span className="pack-card__badge pack-card__badge--muted">{p.manualBilling}</span>
       ) : null}
 
       <header className="pack-card__head">
@@ -59,7 +62,7 @@ export function PackCard({
           onClick={() => onOpenDetail?.(planId)}
         >
           <h3 className="pack-card__name">{plan.name}</h3>
-          {onOpenDetail ? <span className="pack-card__name-hint">See all features</span> : null}
+          {onOpenDetail ? <span className="pack-card__name-hint">{p.seeAllFeatures}</span> : null}
         </button>
       </header>
 
@@ -73,9 +76,9 @@ export function PackCard({
       ) : null}
 
       {approvalRequired ? (
-        <p className="pack-card__approval-note muted">For schools, clubs & federations — we review every request.</p>
+        <p className="pack-card__approval-note muted">{p.approvalNote}</p>
       ) : manualFlow ? (
-        <p className="pack-card__approval-note muted">Register, submit a payment request, and we activate after confirmation.</p>
+        <p className="pack-card__approval-note muted">{p.manualFlowNote}</p>
       ) : null}
 
       <ul className="pack-card__features">
@@ -100,12 +103,16 @@ export function PackCard({
         }
         onClick={() => onSelect(planId)}
       >
-        {approvalRequired ? 'Request access' : manualFlow ? `Get ${plan.name}` : `Choose ${plan.name}`}
+        {approvalRequired
+          ? p.requestAccess
+          : manualFlow
+            ? t('plans.packCard.getPlan', { planName: plan.name })
+            : t('plans.packCard.choosePlan', { planName: plan.name })}
       </button>
 
       {onOpenDetail ? (
         <button type="button" className="pack-card__detail-link" onClick={() => onOpenDetail(planId)}>
-          Compare full feature list
+          {p.compareFullList}
         </button>
       ) : null}
     </article>

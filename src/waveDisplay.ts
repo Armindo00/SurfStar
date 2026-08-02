@@ -1,5 +1,6 @@
 import type { ComboAttemptLog, CustomAttemptLog, CustomTrainingTemplate, ManeuverLog, WaveSide } from './types'
-import { COMBO_LEVEL_LABELS, MANEUVER_SHORT } from './types'
+import { comboLevelLabel } from './i18n/labels'
+import { MANEUVER_SHORT } from './types'
 import { getCustomButton, getCustomLevel } from './customTrainingUtils'
 
 export function sideShort(side: WaveSide) {
@@ -14,7 +15,7 @@ export function formatManeuverEntry(log: ManeuverLog) {
 
 export function formatComboEntry(log: ComboAttemptLog) {
   const outcome = log.success ? '✓' : '✕'
-  return `${COMBO_LEVEL_LABELS[log.level]} · ${sideShort(log.side)} · ${outcome}`
+  return `${comboLevelLabel(log.level)} · ${sideShort(log.side)} · ${outcome}`
 }
 
 export function formatCustomEntry(

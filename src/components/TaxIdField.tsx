@@ -1,4 +1,5 @@
 import { getTaxIdHint, getTaxIdLabel } from '../billingUtils'
+import { useI18n } from '../i18n'
 
 type Props = {
   value: string
@@ -8,21 +9,23 @@ type Props = {
 }
 
 export function TaxIdField({ value, countryCode, onChange, variant = 'auth' }: Props) {
+  const { locale, messages } = useI18n()
+  const taxId = messages.billing.taxId
   const fieldClass = variant === 'auth' ? 'auth-field' : 'field field--pro'
 
   return (
     <label className={fieldClass}>
-      <span>{getTaxIdLabel(countryCode)}</span>
+      <span>{getTaxIdLabel(countryCode, locale)}</span>
       <input
         type="text"
         autoComplete="off"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={countryCode === 'PT' ? '123456789' : 'Tax ID or VAT number'}
+        placeholder={countryCode === 'PT' ? taxId.placeholderPt : taxId.placeholderDefault}
         required
       />
       <small className="billing-fields__hint billing-fields__hint--inline">
-        {getTaxIdHint(countryCode)}
+        {getTaxIdHint(countryCode, locale)}
       </small>
     </label>
   )

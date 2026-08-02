@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useI18n } from '../i18n'
 
 type Props = {
   title: string
@@ -7,10 +8,17 @@ type Props = {
 }
 
 export function ScreenHeader({ title, onBack, right }: Props) {
+  const { t } = useI18n()
+
   return (
     <header className="screen-header">
       {onBack ? (
-        <button type="button" className="screen-header__back" onClick={onBack} aria-label="Back">
+        <button
+          type="button"
+          className="screen-header__back"
+          onClick={onBack}
+          aria-label={t('common.back')}
+        >
           ←
         </button>
       ) : (

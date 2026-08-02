@@ -7,12 +7,13 @@ import {
   heatIsFinished,
   heatIsRunning,
 } from '../heatUtils'
+import { useI18n } from '../i18n'
 import type { TrainingSession } from '../types'
 
-function heatStatusLabel(running: boolean, finished: boolean): string {
-  if (running) return 'Running'
-  if (finished) return 'Finished'
-  return 'Not started'
+function heatStatusLabel(running: boolean, finished: boolean, h: Record<string, string>): string {
+  if (running) return h.statusRunning
+  if (finished) return h.statusFinished
+  return h.statusNotStarted
 }
 
 type Props = {
@@ -28,9 +29,15 @@ export function HeatLiveStatsPanel({
   session,
   getAthleteName,
   finishedOnly = false,
-  emptyMessage = 'No heats with surfers assigned yet.',
-  rhythmEmptyMessage = 'Start the heat timer to unlock rhythm stats for this surfer.',
+  emptyMessage,
+  rhythmEmptyMessage,
 }: Props) {
+  const { t, messages } = useI18n()
+  const h = messages.session.heat as Record<string, string>
+
+  const resolvedEmptyMessage = emptyMessage ?? h.noHeatsYet
+  const resolvedRhythmEmptyMessage = rhythmEmptyMessage ?? h.rhythmEmpty
+
   const snapshots = buildHeatLiveSnapshots(session).filter(
     ({ heat }) => !finishedOnly || heatIsFinished(heat),
   )
@@ -38,7 +45,7 @@ export function HeatLiveStatsPanel({
   if (snapshots.length === 0) {
     return (
       <div className="ss-card stats-panel">
-        <p className="muted">{emptyMessage}</p>
+        <p className="muted">{resolvedEmptyMessage}</p>
       </div>
     )
   }
@@ -55,10 +62,10 @@ export function HeatLiveStatsPanel({
               <div>
                 <h2 className="stats-panel__title">{heat.label}</h2>
                 <p className="muted stats-panel__sub">
-                  {heat.durationMinutes} min · {heatStatusLabel(running, finished)}
+                  {heat.durationMinutes} min · {heatStatusLabel(running, finished, h)}
                 </p>
               </div>
-              <span className="stats-badge">{athletes.length} surfers</span>
+              <span className="stats-badge">{t('session.heat.surfersCount', { count: athletes.length })}</span>
             </header>
 
             <div className="heat-live-stats__leaderboard">
@@ -79,17 +86,17 @@ export function HeatLiveStatsPanel({
 
                     <div className="kpi-grid heat-live-stats__kpis">
                       <article className="kpi-card kpi-card--compact">
-                        <span className="kpi-card__label">Waves</span>
+                        <span className="kpi-card__label">{h.wavesLabel}</span>
                         <strong className="kpi-card__value">{athlete.waveCount}</strong>
                       </article>
                       <article className="kpi-card kpi-card--compact">
-                        <span className="kpi-card__label">Best wave</span>
+                        <span className="kpi-card__label">{h.bestWave}</span>
                         <strong className="kpi-card__value">
                           {athlete.bestWave === null ? '—' : formatWaveScoreCompact(athlete.bestWave)}
                         </strong>
                       </article>
                       <article className="kpi-card kpi-card--compact kpi-card--accent">
-                        <span className="kpi-card__label">Counting</span>
+                        <span className="kpi-card__label">{h.counting}</span>
                         <strong className="kpi-card__value heat-live-stats__counting">
                           {athlete.countingScores.length === 0
                             ? '—'
@@ -103,30 +110,30 @@ export function HeatLiveStatsPanel({
                     {athlete.timing.hasTimerData ? (
                       <ul className="heat-live-stats__rhythm">
                         <li>
-                          <span>1st wave</span>
+                          <span>{h.firstWave}</span>
                           <strong>{formatHeatElapsedMinutes(athlete.timing.timeToFirstWaveMin)}</strong>
                         </li>
                         <li>
-                          <span>Total ≤10m</span>
+                          <span>{h.totalEarly10}</span>
                           <strong>{athlete.timing.earlyTotalFirst10Min?.toFixed(2) ?? '—'}</strong>
                         </li>
                         <li>
-                          <span>{EARLY_HEAT_TOTAL_TARGET}+ ≤10m</span>
+                          <span>{t('session.heat.earlyTarget10', { target: EARLY_HEAT_TOTAL_TARGET })}</span>
                           <strong>
-                            {athlete.timing.reachedTenPointsInEarlyWindow ? 'Yes' : 'No'}
+                            {athlete.timing.reachedTenPointsInEarlyWindow ? h.yes : h.no}
                           </strong>
                         </li>
                         <li>
-                          <span>Best open 5m</span>
+                          <span>{h.bestOpen5}</span>
                           <strong>{athlete.timing.bestWaveOpening?.toFixed(2) ?? '—'}</strong>
                         </li>
                         <li>
-                          <span>Best close 5m</span>
+                          <span>{h.bestClose5}</span>
                           <strong>{athlete.timing.bestWaveClosing?.toFixed(2) ?? '—'}</strong>
                         </li>
                       </ul>
                     ) : (
-                      <p className="muted heat-live-stats__rhythm-empty">{rhythmEmptyMessage}</p>
+                      <p className="muted heat-live-stats__rhythm-empty">{resolvedRhythmEmptyMessage}</p>
                     )}
                   </article>
                 )

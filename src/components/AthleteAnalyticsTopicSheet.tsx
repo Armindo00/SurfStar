@@ -21,14 +21,11 @@ import {
   evolutionColumnLabel,
 } from '../analyticsRange'
 import type { AthletePeriodAnalytics } from '../teamAnalyticsStats'
-import {
-  COMBO_LEVEL_LABELS,
-  MANEUVER_LABELS,
-  TRAINING_MODE_LABELS,
-  type ManeuverKind,
-} from '../types'
+import { comboLevelLabel, maneuverLabel, trainingModeLabel } from '../i18n/labels'
+import { useI18n } from '../i18n'
+import type { AnalyticsTopicSheetCopy } from '../i18n/types'
 import { formatSessionDate, resolveSessionSpotName } from '../sessionHistoryUtils'
-import type { SurfSpot } from '../types'
+import type { ManeuverKind, SurfSpot } from '../types'
 
 const KINDS: ManeuverKind[] = ['rail', 'top-turn', 'progressive']
 
@@ -39,18 +36,6 @@ export type AnalyticsTopic =
   | 'technical'
   | 'combos'
   | 'competition'
-
-const TOPIC_META: Record<
-  AnalyticsTopic,
-  { title: string; eyebrow: string }
-> = {
-  performance: { title: 'Performance', eyebrow: 'Levels & stars' },
-  volume: { title: 'Training volume', eyebrow: 'Sessions & waves' },
-  'wave-quality': { title: 'Wave quality', eyebrow: 'Potential selection' },
-  technical: { title: 'Technical training', eyebrow: 'Maneuver breakdown' },
-  combos: { title: 'Combos', eyebrow: 'Level-by-level detail' },
-  competition: { title: 'Competition', eyebrow: 'Heats & scores' },
-}
 
 function RateBar({ value }: { value: number }) {
   return (
@@ -69,6 +54,17 @@ type Props = {
   onClose: () => void
 }
 
+function topicTitle(topic: AnalyticsTopic, t: (key: string) => string): string {
+  if (topic === 'technical') return t('analytics.topicTitles.technicalTraining')
+  const key = topic === 'wave-quality' ? 'waveQuality' : topic
+  return t(`analytics.topics.${key}`)
+}
+
+function topicEyebrow(topic: AnalyticsTopic, t: (key: string) => string): string {
+  const key = topic === 'wave-quality' ? 'waveQuality' : topic
+  return t(`analytics.topicEyebrows.${key}`)
+}
+
 export function AthleteAnalyticsTopicSheet({
   topic,
   analytics,
@@ -77,7 +73,8 @@ export function AthleteAnalyticsTopicSheet({
   getSpot,
   onClose,
 }: Props) {
-  const meta = TOPIC_META[topic]
+  const { t, messages } = useI18n()
+  const s: AnalyticsTopicSheetCopy = messages.analytics.topicSheet
   const general = analytics.general
   const periodLabel = describeAnalyticsRange(analytics.range)
 
@@ -101,11 +98,11 @@ export function AthleteAnalyticsTopicSheet({
         <div className="sheet__head sheet__head--pro">
           <div>
             <p className="sheet__eyebrow">
-              {meta.eyebrow} · {periodLabel}
+              {topicEyebrow(topic, t)} · {periodLabel}
             </p>
-            <h2 id="analytics-topic-title">{meta.title}</h2>
+            <h2 id="analytics-topic-title">{topicTitle(topic, t)}</h2>
           </div>
-          <button type="button" className="sheet__close" onClick={onClose} aria-label="Close">
+          <button type="button" className="sheet__close" onClick={onClose} aria-label={t('common.close')}>
             ✕
           </button>
         </div>
@@ -115,24 +112,30 @@ export function AthleteAnalyticsTopicSheet({
             <>
               <div className="kpi-grid analytics-topic-sheet__kpis">
                 <article className="kpi-card kpi-card--accent">
-                  <span className="kpi-card__label">Combined avg level</span>
+                  <span className="kpi-card__label">{s.combinedAvgLevel}</span>
                   <strong className="kpi-card__value">
                     {formatAverageLevelValue(general.avgOverallManeuverLevel)}
                   </strong>
                   <small className="kpi-card__hint">{formatCombinedLevelSummary(general)}</small>
                 </article>
                 <article className="kpi-card kpi-card--success">
-                  <span className="kpi-card__label">Stars landed</span>
+                  <span className="kpi-card__label">{s.starsLanded}</span>
                   <strong className="kpi-card__value">{general.totalStars}</strong>
                   <small className="kpi-card__hint">
-                    Tech {general.technicalStars} · Combo {general.comboStars}
+                    {t('analytics.topicSheet.techComboShort', {
+                      technical: general.technicalStars,
+                      combo: general.comboStars,
+                    })}
                   </small>
                 </article>
                 <article className="kpi-card">
-                  <span className="kpi-card__label">Total attempts</span>
+                  <span className="kpi-card__label">{s.totalAttempts}</span>
                   <strong className="kpi-card__value">{general.totalManeuverAttempts}</strong>
                   <small className="kpi-card__hint">
-                    Tech {general.technicalAttemptCount} · Combo {general.comboAttemptCount}
+                    {t('analytics.topicSheet.techComboShort', {
+                      technical: general.technicalAttemptCount,
+                      combo: general.comboAttemptCount,
+                    })}
                   </small>
                 </article>
               </div>
@@ -146,7 +149,7 @@ export function AthleteAnalyticsTopicSheet({
 
               <EvolutionLineChart
                 title={evolutionChartTitle(analytics.range)}
-                subtitle="Success rate, combined avg level, and wave potential over time"
+                subtitle={t('analytics.evolutionChartTitle')}
                 points={analytics.evolution}
                 periodColumnLabel={evolutionColumnLabel(analytics.range)}
               />
@@ -157,22 +160,22 @@ export function AthleteAnalyticsTopicSheet({
             <>
               <div className="kpi-grid analytics-topic-sheet__kpis">
                 <article className="kpi-card kpi-card--accent">
-                  <span className="kpi-card__label">Completed sessions</span>
+                  <span className="kpi-card__label">{s.completedSessions}</span>
                   <strong className="kpi-card__value">{general.totalTrainings}</strong>
                 </article>
                 <article className="kpi-card">
-                  <span className="kpi-card__label">Waves logged</span>
+                  <span className="kpi-card__label">{s.wavesLogged}</span>
                   <strong className="kpi-card__value">{general.totalWaves}</strong>
                 </article>
               </div>
 
               {Object.keys(sessionCountByMode).length > 0 ? (
                 <div className="analytics-topic-sheet__breakdown">
-                  <h3 className="analytics-topic-sheet__section-title">By training type</h3>
+                  <h3 className="analytics-topic-sheet__section-title">{s.byTrainingType}</h3>
                   <ul className="analytics-topic-sheet__breakdown-list">
                     {Object.entries(sessionCountByMode).map(([mode, count]) => (
                       <li key={mode}>
-                        <span>{TRAINING_MODE_LABELS[mode as keyof typeof TRAINING_MODE_LABELS] ?? mode}</span>
+                        <span>{trainingModeLabel(mode)}</span>
                         <strong>{count}</strong>
                       </li>
                     ))}
@@ -182,12 +185,12 @@ export function AthleteAnalyticsTopicSheet({
 
               {sessionSummaries.length > 0 ? (
                 <div className="analytics-topic-sheet__section">
-                  <h3 className="analytics-topic-sheet__section-title">Session log</h3>
+                  <h3 className="analytics-topic-sheet__section-title">{s.sessionLog}</h3>
                   <ul className="team-analytics-sessions">
                     {sessionSummaries.map(({ session, headline }) => (
                       <li key={session.id} className="team-analytics-sessions__item">
                         <div>
-                          <strong>{TRAINING_MODE_LABELS[session.mode]}</strong>
+                          <strong>{trainingModeLabel(session.mode)}</strong>
                           <small>
                             {formatSessionDate(session.endedAt ?? session.startedAt)} ·{' '}
                             {resolveSessionSpotName(session, getSpot)} · {session.condition || '—'}
@@ -199,7 +202,7 @@ export function AthleteAnalyticsTopicSheet({
                   </ul>
                 </div>
               ) : (
-                <p className="muted">No completed sessions in this period.</p>
+                <p className="muted">{s.noSessionsInPeriod}</p>
               )}
             </>
           ) : null}
@@ -208,7 +211,7 @@ export function AthleteAnalyticsTopicSheet({
             <>
               <div className="kpi-grid analytics-topic-sheet__kpis">
                 <article className="kpi-card kpi-card--accent">
-                  <span className="kpi-card__label">With potential</span>
+                  <span className="kpi-card__label">{s.withPotential}</span>
                   <strong className="kpi-card__value">
                     {general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`}
                   </strong>
@@ -217,7 +220,7 @@ export function AthleteAnalyticsTopicSheet({
                   ) : null}
                 </article>
                 <article className="kpi-card">
-                  <span className="kpi-card__label">Without potential</span>
+                  <span className="kpi-card__label">{s.withoutPotential}</span>
                   <strong className="kpi-card__value">
                     {general.withoutPotentialRate === null ? '—' : `${general.withoutPotentialRate}%`}
                   </strong>
@@ -228,26 +231,26 @@ export function AthleteAnalyticsTopicSheet({
               </div>
 
               <div className="analytics-topic-sheet__breakdown">
-                <h3 className="analytics-topic-sheet__section-title">Wave counts</h3>
+                <h3 className="analytics-topic-sheet__section-title">{s.waveCounts}</h3>
                 <ul className="analytics-topic-sheet__breakdown-list">
                   <li>
-                    <span>Total waves</span>
+                    <span>{s.totalWaves}</span>
                     <strong>{general.totalWaves}</strong>
                   </li>
                   <li>
-                    <span>With potential</span>
+                    <span>{s.withPotential}</span>
                     <strong>{general.withPotential}</strong>
                   </li>
                   <li>
-                    <span>Without potential</span>
+                    <span>{s.withoutPotential}</span>
                     <strong>{general.withoutPotential}</strong>
                   </li>
                 </ul>
               </div>
 
               <EvolutionLineChart
-                title="Potential rate over time"
-                subtitle="Share of waves marked with scoring potential"
+                title={t('analytics.potentialRateOverTime')}
+                subtitle={t('analytics.potentialRateSubtitle')}
                 points={analytics.evolution}
                 periodColumnLabel={evolutionColumnLabel(analytics.range)}
               />
@@ -259,27 +262,29 @@ export function AthleteAnalyticsTopicSheet({
               <>
                 <div className="kpi-grid analytics-topic-sheet__kpis">
                   <article className="kpi-card kpi-card--accent">
-                    <span className="kpi-card__label">Avg technical level</span>
+                    <span className="kpi-card__label">{s.avgTechnicalLevel}</span>
                     <strong className="kpi-card__value">
                       {formatAverageLevelValue(analytics.technical.averageLevel)}
                     </strong>
                   </article>
                   <article className="kpi-card">
-                    <span className="kpi-card__label">Success rate</span>
+                    <span className="kpi-card__label">{s.successRate}</span>
                     <strong className="kpi-card__value">{analytics.technical.overallSuccessRate}%</strong>
                     <small className="kpi-card__hint">
-                      {analytics.technical.successfulManeuvers}/{analytics.technical.totalManeuvers}{' '}
-                      maneuvers
+                      {t('analytics.topicSheet.maneuversCount', {
+                        made: analytics.technical.successfulManeuvers,
+                        total: analytics.technical.totalManeuvers,
+                      })}
                     </small>
                   </article>
                   <article className="kpi-card kpi-card--star">
-                    <span className="kpi-card__label">Technical stars</span>
+                    <span className="kpi-card__label">{s.technicalStars}</span>
                     <strong className="kpi-card__value">{general.technicalStars}</strong>
                   </article>
                 </div>
 
                 <SideCompareChart
-                  title="All maneuvers"
+                  title={t('analytics.allManeuvers')}
                   overallRate={analytics.technical.overallSuccessRate}
                   bySide={analytics.technical.bySide}
                 />
@@ -287,7 +292,7 @@ export function AthleteAnalyticsTopicSheet({
                 {KINDS.map((kind) => (
                   <div key={kind} className="analytics-topic-sheet__section">
                     <header className="stats-panel__head">
-                      <h3 className="analytics-topic-sheet__section-title">{MANEUVER_LABELS[kind]}</h3>
+                      <h3 className="analytics-topic-sheet__section-title">{maneuverLabel(kind)}</h3>
                       <span className="stats-badge">
                         {analytics.technical!.byKind[kind].successes}/
                         {analytics.technical!.byKind[kind].total} ·{' '}
@@ -299,7 +304,7 @@ export function AthleteAnalyticsTopicSheet({
                 ))}
               </>
             ) : (
-              <p className="muted">No technical training sessions in this period.</p>
+              <p className="muted">{s.noTechnicalSessions}</p>
             )
           ) : null}
 
@@ -308,26 +313,29 @@ export function AthleteAnalyticsTopicSheet({
               <>
                 <div className="kpi-grid analytics-topic-sheet__kpis">
                   <article className="kpi-card kpi-card--accent">
-                    <span className="kpi-card__label">Avg combo level</span>
+                    <span className="kpi-card__label">{s.avgComboLevel}</span>
                     <strong className="kpi-card__value">
                       {formatAverageLevelValue(analytics.combo.averageLevel)}
                     </strong>
                   </article>
                   <article className="kpi-card">
-                    <span className="kpi-card__label">Success rate</span>
+                    <span className="kpi-card__label">{s.successRate}</span>
                     <strong className="kpi-card__value">{analytics.combo.overallSuccessRate}%</strong>
                     <small className="kpi-card__hint">
-                      {analytics.combo.successfulAttempts}/{analytics.combo.totalAttempts} attempts
+                      {t('analytics.topicSheet.attemptsCount', {
+                        made: analytics.combo.successfulAttempts,
+                        total: analytics.combo.totalAttempts,
+                      })}
                     </small>
                   </article>
                   <article className="kpi-card kpi-card--star">
-                    <span className="kpi-card__label">Combo stars</span>
+                    <span className="kpi-card__label">{s.comboStars}</span>
                     <strong className="kpi-card__value">{general.comboStars}</strong>
                   </article>
                 </div>
 
                 <SideCompareChart
-                  title="All combo levels"
+                  title={t('analytics.allComboLevels')}
                   overallRate={analytics.combo.overallSuccessRate}
                   bySide={analytics.combo.bySide}
                 />
@@ -338,8 +346,11 @@ export function AthleteAnalyticsTopicSheet({
                     return (
                       <SideCompareChart
                         key={String(lvl)}
-                        title={COMBO_LEVEL_LABELS[lvl]}
-                        subtitle={`${row.successes}/${row.attempts} successes overall`}
+                        title={comboLevelLabel(lvl)}
+                        subtitle={t('session.register.successesOverall', {
+                          successes: row.successes,
+                          total: row.attempts,
+                        })}
                         overallRate={row.rate}
                         bySide={row.bySide}
                       />
@@ -348,7 +359,7 @@ export function AthleteAnalyticsTopicSheet({
                 </div>
               </>
             ) : (
-              <p className="muted">No combo sessions in this period.</p>
+              <p className="muted">{s.noComboSessions}</p>
             )
           ) : null}
 
@@ -356,25 +367,27 @@ export function AthleteAnalyticsTopicSheet({
             <>
               <div className="kpi-grid analytics-topic-sheet__kpis">
                 <article className="kpi-card kpi-card--accent">
-                  <span className="kpi-card__label">Heat wins</span>
+                  <span className="kpi-card__label">{s.heatWins}</span>
                   <strong className="kpi-card__value">{general.heatWins}</strong>
-                  <small className="kpi-card__hint">{general.heatParticipations} heats</small>
+                  <small className="kpi-card__hint">
+                    {t('analytics.topicSheet.heatsCount', { count: general.heatParticipations })}
+                  </small>
                 </article>
                 <article className="kpi-card">
-                  <span className="kpi-card__label">Avg heat score</span>
+                  <span className="kpi-card__label">{s.avgHeatScore}</span>
                   <strong className="kpi-card__value">
                     {heatAnalytics.avgHeatScore === null ? '—' : heatAnalytics.avgHeatScore.toFixed(2)}
                   </strong>
                 </article>
                 <article className="kpi-card kpi-card--success">
-                  <span className="kpi-card__label">Championship wins</span>
+                  <span className="kpi-card__label">{s.championshipWins}</span>
                   <strong className="kpi-card__value">{general.championshipWins}</strong>
                   <small className="kpi-card__hint">
-                    {general.championshipWins === 1 ? 'title' : 'titles'} in period
+                    {general.championshipWins === 1 ? s.titleInPeriod : s.titlesInPeriod}
                   </small>
                 </article>
                 <article className="kpi-card">
-                  <span className="kpi-card__label">Win rate</span>
+                  <span className="kpi-card__label">{s.winRate}</span>
                   <strong className="kpi-card__value">
                     {general.heatParticipations
                       ? `${Math.round((general.heatWins / general.heatParticipations) * 100)}%`
@@ -386,27 +399,34 @@ export function AthleteAnalyticsTopicSheet({
               {heatAnalytics.heatsWithTiming > 0 ? (
                 <>
                   <p className="muted analytics-topic-sheet__note">
-                    Rhythm metrics use wave timestamps vs heat timer. Major score ={' '}
-                    {MAJOR_HEAT_WAVE_SCORE.toFixed(2)}+ pts. Based on{' '}
-                    {heatAnalytics.heatsWithTiming} heat
-                    {heatAnalytics.heatsWithTiming === 1 ? '' : 's'} with timer data.
+                    {t(
+                      heatAnalytics.heatsWithTiming === 1
+                        ? 'analytics.topicSheet.rhythmNote'
+                        : 'analytics.topicSheet.rhythmNotePlural',
+                      {
+                        score: MAJOR_HEAT_WAVE_SCORE.toFixed(2),
+                        count: heatAnalytics.heatsWithTiming,
+                      },
+                    )}
                   </p>
 
                   <div className="analytics-topic-sheet__section">
-                    <h3 className="analytics-topic-sheet__section-title">Opening & early rhythm</h3>
+                    <h3 className="analytics-topic-sheet__section-title">{s.openingEarlyRhythm}</h3>
                     <div className="kpi-grid analytics-topic-sheet__kpis">
                       <article className="kpi-card kpi-card--accent">
-                        <span className="kpi-card__label">Best wave · first 5 min</span>
+                        <span className="kpi-card__label">{s.bestWaveFirst5}</span>
                         <strong className="kpi-card__value">
                           {heatAnalytics.avgBestWaveOpening === null
                             ? '—'
                             : heatAnalytics.avgBestWaveOpening.toFixed(2)}
                         </strong>
-                        <small className="kpi-card__hint">Avg peak opening score</small>
+                        <small className="kpi-card__hint">{s.avgPeakOpening}</small>
                       </article>
                       <article className="kpi-card">
                         <span className="kpi-card__label">
-                          {EARLY_HEAT_TOTAL_TARGET}+ pts total · first 10 min
+                          {t('analytics.topicSheet.earlyTotalFirst10', {
+                            target: EARLY_HEAT_TOTAL_TARGET,
+                          })}
                         </span>
                         <strong className="kpi-card__value">
                           {heatAnalytics.earlyTenPointsRate === null
@@ -414,90 +434,106 @@ export function AthleteAnalyticsTopicSheet({
                             : `${heatAnalytics.earlyTenPointsRate}%`}
                         </strong>
                         <small className="kpi-card__hint">
-                          Avg early total{' '}
-                          {heatAnalytics.avgEarlyTotalFirst10Min?.toFixed(2) ?? '—'} pts
+                          {t('analytics.topicSheet.avgEarlyTotal', {
+                            total: heatAnalytics.avgEarlyTotalFirst10Min?.toFixed(2) ?? '—',
+                          })}
                         </small>
                       </article>
                       <article className="kpi-card">
-                        <span className="kpi-card__label">Time to 1st wave</span>
+                        <span className="kpi-card__label">{s.timeToFirstWave}</span>
                         <strong className="kpi-card__value">
                           {formatHeatElapsedMinutes(heatAnalytics.avgTimeToFirstWaveMin)}
                         </strong>
                         <small className="kpi-card__hint">
-                          {heatAnalytics.heatsWithFirstWave} heat
-                          {heatAnalytics.heatsWithFirstWave === 1 ? '' : 's'} with a wave logged
+                          {t(
+                            heatAnalytics.heatsWithFirstWave === 1
+                              ? 'analytics.topicSheet.heatsWithWave'
+                              : 'analytics.topicSheet.heatsWithWavePlural',
+                            { count: heatAnalytics.heatsWithFirstWave },
+                          )}
                         </small>
                       </article>
                       <article className="kpi-card">
-                        <span className="kpi-card__label">Time to 2 major scores</span>
+                        <span className="kpi-card__label">{s.timeToTwoMajor}</span>
                         <strong className="kpi-card__value">
                           {formatHeatElapsedMinutes(heatAnalytics.avgTimeToTwoMajorMin)}
                         </strong>
                         <small className="kpi-card__hint">
-                          {heatAnalytics.heatsWithTwoMajor} heat
-                          {heatAnalytics.heatsWithTwoMajor === 1 ? '' : 's'} reached pair
+                          {t(
+                            heatAnalytics.heatsWithTwoMajor === 1
+                              ? 'analytics.topicSheet.heatsReachedPair'
+                              : 'analytics.topicSheet.heatsReachedPairPlural',
+                            { count: heatAnalytics.heatsWithTwoMajor },
+                          )}
                         </small>
                       </article>
                     </div>
                   </div>
 
                   <div className="analytics-topic-sheet__section">
-                    <h3 className="analytics-topic-sheet__section-title">Closing under pressure</h3>
+                    <h3 className="analytics-topic-sheet__section-title">{s.closingUnderPressure}</h3>
                     <div className="kpi-grid analytics-topic-sheet__kpis">
                       <article className="kpi-card kpi-card--accent">
-                        <span className="kpi-card__label">Best wave · last 5 min</span>
+                        <span className="kpi-card__label">{s.bestWaveLast5}</span>
                         <strong className="kpi-card__value">
                           {heatAnalytics.avgBestWaveClosing === null
                             ? '—'
                             : heatAnalytics.avgBestWaveClosing.toFixed(2)}
                         </strong>
-                        <small className="kpi-card__hint">Avg peak closing score</small>
+                        <small className="kpi-card__hint">{s.avgPeakClosing}</small>
                       </article>
                       <article className="kpi-card">
-                        <span className="kpi-card__label">Major score · last 5 min</span>
+                        <span className="kpi-card__label">{s.majorScoreLast5}</span>
                         <strong className="kpi-card__value">
                           {heatAnalytics.closingMajorRate === null
                             ? '—'
                             : `${heatAnalytics.closingMajorRate}%`}
                         </strong>
-                        <small className="kpi-card__hint">Heats with a late major wave</small>
+                        <small className="kpi-card__hint">{s.heatsLateMajor}</small>
                       </article>
                       <article className="kpi-card">
-                        <span className="kpi-card__label">Clutch delta</span>
+                        <span className="kpi-card__label">{s.clutchDelta}</span>
                         <strong className="kpi-card__value">
                           {heatAnalytics.clutchDelta === null
                             ? '—'
                             : `${heatAnalytics.clutchDelta >= 0 ? '+' : ''}${heatAnalytics.clutchDelta.toFixed(2)}`}
                         </strong>
-                        <small className="kpi-card__hint">Closing best − opening best (avg)</small>
+                        <small className="kpi-card__hint">{s.clutchDeltaHint}</small>
                       </article>
                     </div>
                   </div>
                 </>
               ) : heatAnalytics.heatsTotal > 0 ? (
                 <p className="muted analytics-topic-sheet__note">
-                  {heatAnalytics.heatsTotal} heat{heatAnalytics.heatsTotal === 1 ? '' : 's'} found,
-                  but none have timer data for rhythm analysis. Start the heat timer when logging
-                  waves to unlock opening/closing metrics.
+                  {t(
+                    heatAnalytics.heatsTotal === 1
+                      ? 'analytics.topicSheet.noTimerRhythm'
+                      : 'analytics.topicSheet.noTimerRhythmPlural',
+                    { count: heatAnalytics.heatsTotal },
+                  )}
                 </p>
               ) : null}
 
               {heatAnalytics.rows.length > 0 ? (
                 <div className="analytics-topic-sheet__section">
-                  <h3 className="analytics-topic-sheet__section-title">Heat log</h3>
+                  <h3 className="analytics-topic-sheet__section-title">{s.heatLog}</h3>
                   <div className="table-wrap">
                     <table className="data-table data-table--compact">
                       <thead>
                         <tr>
-                          <th>Date</th>
-                          <th>Heat</th>
-                          <th>Total</th>
-                          <th>1st wave</th>
-                          <th>Total ≤10m</th>
-                          <th>{EARLY_HEAT_TOTAL_TARGET}+ ≤10m</th>
-                          <th>2 maj time</th>
-                          <th>Close 5m</th>
-                          <th>Place</th>
+                          <th>{messages.analytics.analyticsReport.date}</th>
+                          <th>{messages.analytics.analyticsReport.heat}</th>
+                          <th>{messages.analytics.analyticsReport.total}</th>
+                          <th>{messages.analytics.analyticsReport.firstWave}</th>
+                          <th>{messages.analytics.analyticsReport.totalUnder10}</th>
+                          <th>
+                            {t('analytics.analyticsReport.earlyTargetUnder10', {
+                              target: EARLY_HEAT_TOTAL_TARGET,
+                            })}
+                          </th>
+                          <th>{messages.analytics.analyticsReport.twoMajorTime}</th>
+                          <th>{messages.analytics.analyticsReport.close5m}</th>
+                          <th>{messages.analytics.analyticsReport.place}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -516,8 +552,8 @@ export function AthleteAnalyticsTopicSheet({
                               {!row.hasTimerData
                                 ? '—'
                                 : row.reachedTenPointsInEarlyWindow
-                                  ? 'Yes'
-                                  : 'No'}
+                                  ? s.yes
+                                  : s.no}
                             </td>
                             <td>{formatHeatElapsedMinutes(row.timeToTwoMajorMin)}</td>
                             <td>
@@ -527,7 +563,7 @@ export function AthleteAnalyticsTopicSheet({
                             </td>
                             <td>
                               #{row.placement}
-                              {row.won ? ' · Win' : ''}
+                              {row.won ? s.winSuffix : ''}
                             </td>
                           </tr>
                         ))}
@@ -536,7 +572,7 @@ export function AthleteAnalyticsTopicSheet({
                   </div>
                 </div>
               ) : (
-                <p className="muted">No heat or championship results in this period.</p>
+                <p className="muted">{s.noHeatResults}</p>
               )}
             </>
           ) : null}

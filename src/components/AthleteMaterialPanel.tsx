@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useI18n } from '../i18n'
 import { EquipmentRatingChart } from './EquipmentRatingChart'
 import { useApp } from '../AppContext'
 import { formatBoardSpecs, formatMaterialDate } from '../materialUtils'
@@ -9,6 +10,7 @@ type Props = {
 }
 
 export function AthleteMaterialPanel({ athleteId }: Props) {
+  const { t } = useI18n()
   const {
     athleteBoards,
     athleteFins,
@@ -93,7 +95,7 @@ export function AthleteMaterialPanel({ athleteId }: Props) {
   if (loading) {
     return (
       <div className="ss-card stats-panel analytics-empty-period">
-        <p className="muted">Loading athlete equipment…</p>
+        <p className="muted">{t('ui.material.loadingEquipment')}</p>
       </div>
     )
   }
@@ -101,7 +103,7 @@ export function AthleteMaterialPanel({ athleteId }: Props) {
   return (
     <div className="athlete-material-panel">
       <div className="ss-card stats-panel athlete-material-panel__intro">
-        <h2 className="stats-panel__title">Equipment management</h2>
+        <h2 className="stats-panel__title">{t('ui.material.equipmentManagement')}</h2>
         <p className="muted stats-panel__sub">
           View the athlete&apos;s board quiver and fins. The athlete updates their gear from their
           account — you can score speed, control and release here.
@@ -109,16 +111,16 @@ export function AthleteMaterialPanel({ athleteId }: Props) {
       </div>
 
       <div className="ss-card material-section">
-        <h2 className="page-title">Board quiver</h2>
+        <h2 className="page-title">{t('ui.material.boardQuiver')}</h2>
         {boards.length === 0 ? (
-          <p className="muted">Athlete has not added boards yet.</p>
+          <p className="muted">{t('ui.material.noBoardsAthlete')}</p>
         ) : (
           <ul className="material-list">
             {boards.map((board) => (
               <li key={board.id} className="material-list__item">
                 <div>
                   <strong>{board.name}</strong>
-                  <p className="muted">{formatBoardSpecs(board) || 'No dimensions'}</p>
+                  <p className="muted">{formatBoardSpecs(board) || t('ui.material.noDimensions')}</p>
                   {board.notes ? <p className="material-list__notes">{board.notes}</p> : null}
                 </div>
               </li>
@@ -128,9 +130,9 @@ export function AthleteMaterialPanel({ athleteId }: Props) {
       </div>
 
       <div className="ss-card material-section">
-        <h2 className="page-title">Fins</h2>
+        <h2 className="page-title">{t('ui.material.fins')}</h2>
         {fins.length === 0 ? (
-          <p className="muted">Athlete has not added fins yet.</p>
+          <p className="muted">{t('ui.material.noFinsAthlete')}</p>
         ) : (
           <ul className="material-list">
             {fins.map((fin) => (
@@ -149,8 +151,8 @@ export function AthleteMaterialPanel({ athleteId }: Props) {
       </div>
 
       <div className="ss-card material-section">
-        <h2 className="page-title">Rate equipment (0–10)</h2>
-        <p className="muted">Score speed, control and release — add optional notes.</p>
+        <h2 className="page-title">{t('ui.material.rateEquipment')}</h2>
+        <p className="muted">{t('ui.material.rateEquipmentHint')}</p>
 
         <div className="material-form-grid">
           <label className="field field--pro">
@@ -223,7 +225,7 @@ export function AthleteMaterialPanel({ athleteId }: Props) {
 
       {evaluationsForAthlete.length > 0 ? (
         <div className="ss-card material-section">
-          <h2 className="page-title">Past evaluations</h2>
+          <h2 className="page-title">{t('ui.material.pastEvaluations')}</h2>
           <ul className="evaluation-history">
             {evaluationsForAthlete.map((item) => (
               <li key={item.id} className="evaluation-history__item">

@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+
 type Props = {
   title: string
   message: string
@@ -6,6 +8,9 @@ type Props = {
 }
 
 export function ConfirmDeleteModal({ title, message, onConfirm, onCancel }: Props) {
+  const { messages, t } = useI18n()
+  const c = messages.components.confirmDelete
+
   return (
     <div className="modal-backdrop" role="presentation" onClick={onCancel}>
       <div
@@ -17,10 +22,10 @@ export function ConfirmDeleteModal({ title, message, onConfirm, onCancel }: Prop
       >
         <div className="sheet__head sheet__head--pro">
           <div>
-            <p className="sheet__eyebrow">Delete</p>
+            <p className="sheet__eyebrow">{c.eyebrow}</p>
             <h2 id="delete-confirm-title">{title}</h2>
           </div>
-          <button type="button" className="sheet__close" onClick={onCancel} aria-label="Close">
+          <button type="button" className="sheet__close" onClick={onCancel} aria-label={t('common.close')}>
             ✕
           </button>
         </div>
@@ -29,10 +34,10 @@ export function ConfirmDeleteModal({ title, message, onConfirm, onCancel }: Prop
 
         <div className="sea-confirm-actions">
           <button type="button" className="btn btn--danger btn--block btn--lg" onClick={onConfirm}>
-            Delete
+            {c.delete}
           </button>
           <button type="button" className="btn btn--ghost btn--block" onClick={onCancel}>
-            Cancel
+            {c.cancel}
           </button>
         </div>
       </div>

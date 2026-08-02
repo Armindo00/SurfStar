@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useI18n } from '../i18n'
 import {
   CUSTOM_BUTTON_COLORS,
   createCustomButton,
@@ -17,6 +18,9 @@ type Props = {
 }
 
 export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Props) {
+  const { t } = useI18n()
+  const ct = (key: string, params?: Record<string, string | number>) =>
+    t(`ui.customTemplates.${key}`, params)
   const [template, setTemplate] = useState(initial)
   const [error, setError] = useState<string | null>(null)
 
@@ -76,37 +80,37 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
   return (
     <div className="ss-flow custom-editor">
       <div className="ss-card">
-        <h2 className="page-title">Template settings</h2>
+        <h2 className="page-title">{t('ui.customTemplates.templateSettings')}</h2>
         {error ? <p className="login-error">{error}</p> : null}
 
         <div className="form-pro">
           <label className="field field--pro">
-            <span>Template name</span>
+            <span>{ct('templateName')}</span>
             <input
               type="text"
               value={template.name}
               onChange={(e) => setTemplate((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="e.g. Air training, Contest prep"
+              placeholder={ct('templateNamePlaceholder')}
             />
           </label>
 
           <label className="field field--pro">
-            <span>Description (shown during session)</span>
+            <span>{ct('descriptionDuringSession')}</span>
             <textarea
               rows={2}
               value={template.description ?? ''}
               onChange={(e) => setTemplate((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Brief goal for this training format"
+              placeholder={ct('descriptionPlaceholder')}
             />
           </label>
 
           <label className="field field--pro">
-            <span>Rules & notes (shown during session)</span>
+            <span>{ct('rulesNotesDuringSession')}</span>
             <textarea
               rows={3}
               value={template.rulesNotes ?? ''}
               onChange={(e) => setTemplate((prev) => ({ ...prev, rulesNotes: e.target.value }))}
-              placeholder="Scoring rules, focus points, coach reminders…"
+              placeholder={ct('rulesNotesPlaceholder')}
             />
           </label>
         </div>
@@ -114,7 +118,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
 
       <div className="ss-card">
         <header className="stats-panel__head">
-          <h2 className="stats-panel__title">Session timer</h2>
+          <h2 className="stats-panel__title">{t('ui.customTemplates.sessionTimer')}</h2>
         </header>
         <label className="field field--check">
           <input
@@ -127,13 +131,13 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
               }))
             }
           />
-          <span>Enable countdown timer</span>
+          <span>{ct('enableCountdownTimer')}</span>
         </label>
 
         {template.timer.enabled ? (
           <div className="form-pro custom-editor__timer-fields">
             <label className="field field--pro">
-              <span>Duration (minutes)</span>
+              <span>{ct('durationMinutes')}</span>
               <input
                 type="number"
                 min={1}
@@ -151,7 +155,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
               />
             </label>
             <label className="field field--pro">
-              <span>Timer label</span>
+              <span>{ct('timerLabel')}</span>
               <input
                 type="text"
                 value={template.timer.label ?? ''}
@@ -161,7 +165,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
                     timer: { ...prev.timer, label: e.target.value },
                   }))
                 }
-                placeholder="Session timer"
+                placeholder={ct('timerLabelPlaceholder')}
               />
             </label>
             <label className="field field--check">
@@ -175,7 +179,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
                   }))
                 }
               />
-              <span>Auto-start when session begins</span>
+              <span>{ct('autoStartSession')}</span>
             </label>
           </div>
         ) : null}
@@ -183,7 +187,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
 
       <div className="ss-card">
         <header className="stats-panel__head">
-          <h2 className="stats-panel__title">Session rules</h2>
+          <h2 className="stats-panel__title">{t('ui.customTemplates.sessionRules')}</h2>
         </header>
         <label className="field field--check">
           <input
@@ -191,7 +195,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
             checked={template.useWaves}
             onChange={(e) => setTemplate((prev) => ({ ...prev, useWaves: e.target.checked }))}
           />
-          <span>Use waves (start/close wave before logging)</span>
+          <span>{ct('useWaves')}</span>
         </label>
         <label className="field field--check">
           <input
@@ -204,7 +208,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
               }))
             }
           />
-          <span>Require open wave before logging</span>
+          <span>{ct('requireOpenWave')}</span>
         </label>
         <label className="field field--check">
           <input
@@ -217,14 +221,14 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
               }))
             }
           />
-          <span>Show rules panel during session</span>
+          <span>{ct('showRulesPanel')}</span>
         </label>
         <label className="field field--pro">
-          <span>Max attempts per wave (empty = unlimited)</span>
+          <span>{ct('maxAttemptsPerWave')}</span>
           <input
             type="number"
             min={1}
-            placeholder="Unlimited"
+            placeholder={ct('unlimited')}
             value={template.rules.maxAttemptsPerWave ?? ''}
             onChange={(e) => {
               const raw = e.target.value.trim()
@@ -242,14 +246,12 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
 
       <div className="ss-card">
         <header className="stats-panel__head">
-          <h2 className="stats-panel__title">Skill buttons ({sortedButtons.length})</h2>
+          <h2 className="stats-panel__title">{t('ui.customTemplates.skillButtons', { count: sortedButtons.length })}</h2>
           <button type="button" className="btn btn--primary btn--small" onClick={addButton}>
-            + Add button
+            {ct('addButton')}
           </button>
         </header>
-        <p className="muted stats-panel__sub">
-          Each button can have custom levels and optional success/fail tracking.
-        </p>
+        <p className="muted stats-panel__sub">{ct('skillButtonsHint')}</p>
 
         <div className="custom-editor__buttons">
           {sortedButtons.map((button, index) => (
@@ -260,14 +262,14 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
                   style={{ backgroundColor: button.color }}
                   aria-hidden="true"
                 />
-                <strong>Button {index + 1}</strong>
+                <strong>{ct('buttonIndex', { index: index + 1 })}</strong>
                 <div className="custom-editor__button-actions">
                   <button
                     type="button"
                     className="btn btn--ghost btn--small"
                     disabled={index === 0}
                     onClick={() => moveButton(button.id, -1)}
-                    aria-label="Move up"
+                    aria-label={ct('moveUp')}
                   >
                     ↑
                   </button>
@@ -276,7 +278,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
                     className="btn btn--ghost btn--small"
                     disabled={index === sortedButtons.length - 1}
                     onClick={() => moveButton(button.id, 1)}
-                    aria-label="Move down"
+                    aria-label={ct('moveDown')}
                   >
                     ↓
                   </button>
@@ -286,14 +288,14 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
                     disabled={sortedButtons.length <= 1}
                     onClick={() => removeButton(button.id)}
                   >
-                    Delete
+                    {ct('deleteButton')}
                   </button>
                 </div>
               </div>
 
               <div className="form-pro">
                 <label className="field field--pro">
-                  <span>Button name</span>
+                  <span>{ct('buttonName')}</span>
                   <input
                     type="text"
                     value={button.label}
@@ -301,7 +303,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
                   />
                 </label>
                 <label className="field field--pro">
-                  <span>Short label (on button)</span>
+                  <span>{ct('shortLabel')}</span>
                   <input
                     type="text"
                     value={button.shortLabel ?? ''}
@@ -310,7 +312,7 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
                   />
                 </label>
                 <label className="field field--pro">
-                  <span>Color</span>
+                  <span>{ct('color')}</span>
                   <div className="custom-color-row">
                     {CUSTOM_BUTTON_COLORS.map((color) => (
                       <button
@@ -334,13 +336,13 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
                     checked={button.trackSuccess}
                     onChange={(e) => updateButton(button.id, { trackSuccess: e.target.checked })}
                   />
-                  <span>Track success / fail</span>
+                  <span>{ct('trackSuccessFail')}</span>
                 </label>
               </div>
 
               <div className="custom-editor__levels">
                 <div className="custom-editor__levels-head">
-                  <span className="field-label">Levels</span>
+                  <span className="field-label">{ct('levels')}</span>
                   <button
                     type="button"
                     className="btn btn--ghost btn--small"
@@ -353,11 +355,11 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
                       })
                     }
                   >
-                    + Level
+                    {ct('addLevel')}
                   </button>
                 </div>
                 {button.levels.length === 0 ? (
-                  <p className="muted">No levels — tap logs directly (or success/fail only).</p>
+                  <p className="muted">{ct('noLevelsHint')}</p>
                 ) : (
                   button.levels.map((level) => (
                     <div key={level.id} className="custom-editor__level-row">
@@ -394,10 +396,10 @@ export function CustomTemplateEditor({ template: initial, onSave, onCancel }: Pr
 
       <div className="custom-editor__footer">
         <button type="button" className="btn btn--ghost btn--block" onClick={onCancel}>
-          Cancel
+          {t('common.cancel')}
         </button>
         <button type="button" className="btn btn--primary btn--block" onClick={submit}>
-          Save template
+          {ct('saveTemplate')}
         </button>
       </div>
     </div>

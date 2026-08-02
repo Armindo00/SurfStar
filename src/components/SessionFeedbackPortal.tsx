@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { SessionFeedbackSheet } from './SessionFeedbackSheet'
 import { useToast } from './ToastProvider'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import { UNSEEN } from '../unseenDomains'
 
 export function SessionFeedbackPortal() {
@@ -13,6 +14,7 @@ export function SessionFeedbackPortal() {
     clearPrioritySessionFeedback,
     markSeen,
   } = useApp()
+  const { t } = useI18n()
   const { showToast } = useToast()
   const [dismissedSessionIds, setDismissedSessionIds] = useState<string[]>([])
 
@@ -40,7 +42,7 @@ export function SessionFeedbackPortal() {
       onSubmitted={() => {
         dismiss()
         markSeen(UNSEEN.athleteCheckins, [session.id])
-        showToast('Check-in submitted. Thank you!', 'success')
+        showToast(t('components.sessionFeedback.checkinSubmitted'), 'success')
       }}
       onSkip={() => {
         skipSessionFeedback(session.id)

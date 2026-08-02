@@ -1,4 +1,5 @@
 import type { AdminPlanRequest, AdminRequestFilter } from '../../adminApi'
+import { useI18n } from '../../i18n'
 import { AdminFilterPills } from './AdminFilterPills'
 import { AdminManualPaymentSettings } from './AdminManualPaymentSettings'
 import { AdminPaymentRequestCard } from './AdminPaymentRequestCard'
@@ -18,14 +19,6 @@ type Props = {
   onToast: (message: string) => void
 }
 
-const FILTER_OPTIONS: { value: AdminRequestFilter; label: string }[] = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'awaiting_payment', label: 'Awaiting payment' },
-  { value: 'activated', label: 'Activated' },
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'all', label: 'All' },
-]
-
 export function AdminPaymentsTab({
   requests,
   filter,
@@ -40,23 +33,38 @@ export function AdminPaymentsTab({
   onActivateFree,
   onToast,
 }: Props) {
+  const { messages } = useI18n()
+  const a = messages.ui.admin as Record<string, string>
+
+  const filterOptions: { value: AdminRequestFilter; label: string }[] = [
+    { value: 'pending', label: a.paymentFilterPending },
+    { value: 'awaiting_payment', label: a.paymentFilterAwaiting },
+    { value: 'activated', label: a.paymentFilterActivated },
+    { value: 'rejected', label: a.paymentFilterRejected },
+    { value: 'all', label: a.paymentFilterAll },
+  ]
+
   return (
     <div className="admin-panel">
-      <p className="admin-panel__intro muted">
-        Review new sign-ups, approve requests, and confirm payments to activate coach plans.
-      </p>
+      <p className="admin-panel__intro muted">{a.paymentsIntro}</p>
 
       <AdminManualPaymentSettings onToast={onToast} />
 
       <div className="admin-toolbar admin-toolbar--filters">
-        <AdminFilterPills label="Show" value={filter} options={FILTER_OPTIONS} onChange={onFilterChange} />
+        <AdminFilterPills
+          label={a.show}
+          value={filter}
+          options={filterOptions}
+          onChange={onFilterChange}
+          filterAriaLabel={a.filter}
+        />
         <button type="button" className="btn btn--ghost btn--small admin-toolbar__refresh" onClick={onRefresh}>
-          Refresh
+          {a.refresh}
         </button>
       </div>
 
       {requests.length === 0 ? (
-        <p className="admin-empty">No payment requests match this filter.</p>
+        <p className="admin-empty">{a.noPaymentRequestsMatch}</p>
       ) : (
         <div className="admin-list">
           {requests.map((request) => (

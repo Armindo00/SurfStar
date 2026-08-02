@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { LanguagePicker } from '../components/LanguagePicker'
 import { NavBadge } from '../components/NavBadge'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import { UNSEEN } from '../unseenDomains'
 import {
   athleteLimitMessage,
@@ -9,45 +11,41 @@ import {
   getAllowedModes,
 } from '../planUtils'
 import { formatPlanPriceWithSuffix, getPlan, type PlanId } from '../plans'
-import { TRAINING_MODE_LABELS } from '../types'
+import { trainingModeLabel } from '../i18n/labels'
 
 const ONBOARDING_DISMISS_KEY = 'surfstar_onboarding_dismissed'
 
 function sessionModesSubtitle(planId: PlanId): string {
   return getAllowedModes(planId)
-    .map((mode) => TRAINING_MODE_LABELS[mode])
+    .map((mode) => trainingModeLabel(mode))
     .join(', ')
 }
 
 function CoachOnboarding() {
   const { coachAthletes, completedCoachSessions, setView, beginDraftSession } = useApp()
+  const { messages, t } = useI18n()
+  const onboarding = messages.coach.onboarding
   const [dismissed, setDismissed] = useState(
     () => typeof window !== 'undefined' && localStorage.getItem(ONBOARDING_DISMISS_KEY) === '1',
   )
 
-  const steps = [
-    {
-      done: coachAthletes.length > 0,
-      label: 'Add your first athlete',
-      hint: 'Share a pairing code so they can link to your account.',
-      action: () => setView('manage-athletes'),
-      cta: 'Manage athletes',
-    },
-    {
-      done: completedCoachSessions.length > 0,
-      label: 'Log your first session',
-      hint: 'Start a training at the beach and save it when you finish.',
-      action: beginDraftSession,
-      cta: 'New session',
-    },
-    {
-      done: completedCoachSessions.length > 0 && coachAthletes.length > 0,
-      label: 'Review team analytics',
-      hint: 'See 6-month evolution charts and session breakdowns per athlete.',
-      action: () => setView('analytics'),
-      cta: 'Open analytics',
-    },
-  ]
+  const steps = onboarding.steps.map((step, index) => ({
+    done:
+      index === 0
+        ? coachAthletes.length > 0
+        : index === 1
+          ? completedCoachSessions.length > 0
+          : completedCoachSessions.length > 0 && coachAthletes.length > 0,
+    label: step.label,
+    hint: step.hint,
+    action:
+      index === 0
+        ? () => setView('manage-athletes')
+        : index === 1
+          ? beginDraftSession
+          : () => setView('analytics'),
+    cta: step.cta,
+  }))
 
   const completedCount = steps.filter((step) => step.done).length
   const allDone = completedCount === steps.length
@@ -62,17 +60,17 @@ function CoachOnboarding() {
   const nextStep = steps.find((step) => !step.done)
 
   return (
-    <section className="ss-card onboarding-card" aria-label="Getting started">
+    <section className="ss-card onboarding-card" aria-label={onboarding.ariaLabel}>
       <div className="onboarding-card__head">
         <div>
-          <p className="onboarding-card__eyebrow">Getting started</p>
-          <h2 className="onboarding-card__title">Set up your coaching workspace</h2>
+          <p className="onboarding-card__eyebrow">{onboarding.eyebrow}</p>
+          <h2 className="onboarding-card__title">{onboarding.title}</h2>
           <p className="muted onboarding-card__sub">
-            {completedCount} of {steps.length} complete
+            {t('coach.onboarding.progress', { completed: completedCount, total: steps.length })}
           </p>
         </div>
         <button type="button" className="btn btn--ghost btn--small" onClick={dismiss}>
-          Dismiss
+          {onboarding.dismiss}
         </button>
       </div>
 
@@ -116,7 +114,8 @@ export function CoachHome() {
     organizationMembers,
     countUnseen,
   } = useApp()
-  const name = auth?.role === 'treinador' ? auth.name : 'Coach'
+  const { t } = useI18n()
+  const name = auth?.role === 'treinador' ? auth.name : t('coach.defaultName')
   const plan = subscription ? getPlan(subscription.planId) : null
   const planId = subscription?.planId ?? 'team'
   const hasCustomTraining = canUseCustomTraining(planId)
@@ -136,15 +135,19 @@ export function CoachHome() {
   return (
     <div className="dashboard">
       <header className="dashboard__hero">
-        <p className="dashboard__hello">Hello,</p>
+        <p className="dashboard__hello">{t('coach.hello')}</p>
         <h1 className="dashboard__name">{name}</h1>
         {orgName ? <p className="dashboard__org muted">{orgName}</p> : null}
         {plan ? (
           <p className="dashboard__plan muted">
-            {plan.name} plan · {formatPlanPriceWithSuffix(plan, 'monthly')} · {athleteLimitMessage(plan.id)}
+            {t('coach.planLine', {
+              planName: plan.name,
+              price: formatPlanPriceWithSuffix(plan, 'monthly'),
+              athleteLimit: athleteLimitMessage(plan.id),
+            })}
           </p>
         ) : (
-          <p className="muted">SurfStar coach dashboard</p>
+          <p className="muted">{t('coach.dashboardFallback')}</p>
         )}
       </header>
 
@@ -155,44 +158,41 @@ export function CoachHome() {
           ▶
         </span>
         <span>
-          <strong>New session</strong>
+          <strong>{t('coach.newSession')}</strong>
           <small>{sessionModesSubtitle(planId)}</small>
         </span>
       </button>
 
       {isNewCoach ? (
         <div className="ss-card dashboard-empty-hint">
-          <p className="muted">
-            Welcome to SurfStar. Add athletes from Manage athletes, then start your first session at the
-            beach — stats update live as you log waves.
-          </p>
+          <p className="muted">{t('coach.welcomeHint')}</p>
         </div>
       ) : null}
 
       <nav className="action-list">
         <button type="button" className="action-list__item" onClick={() => setView('training-sessions')}>
-          <span>Past sessions</span>
+          <span>{t('nav.pastSessions')}</span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('analytics')}>
-          <span>Team analytics</span>
+          <span>{t('nav.teamAnalytics')}</span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('manage-athletes')}>
-          <span>Manage athletes</span>
+          <span>{t('nav.manageAthletes')}</span>
           <NavBadge count={unseenAthletePairing} className="nav-badge" />
           {!unseenAthletePairing ? <span aria-hidden="true">›</span> : null}
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('organization')}>
           <span>
-            Team & coaches
-            {!canManageOrganizationCoaches(planId) ? ' · Team Academy' : ''}
+            {t('nav.teamAndCoaches')}
+            {!canManageOrganizationCoaches(planId) ? t('nav.teamAcademySuffix') : ''}
           </span>
           <NavBadge count={unseenOrgInvites} className="nav-badge" />
           {!unseenOrgInvites ? <span aria-hidden="true">›</span> : null}
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('manage-spots')}>
-          <span>Spots & conditions</span>
+          <span>{t('nav.spotsAndConditions')}</span>
           <span aria-hidden="true">›</span>
         </button>
         <button
@@ -203,27 +203,31 @@ export function CoachHome() {
           }
         >
           <span>
-            Custom training templates
-            {!hasCustomTraining ? ' · Coach Premium' : ''}
+            {t('nav.customTrainingTemplates')}
+            {!hasCustomTraining ? t('nav.coachPremiumSuffix') : ''}
           </span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('subscription')}>
-          <span>Account & subscription</span>
+          <span>{t('nav.accountAndSubscription')}</span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={() => setView('help')}>
-          <span>Help & training guide</span>
+          <span>{t('nav.helpAndTrainingGuide')}</span>
           <span aria-hidden="true">›</span>
         </button>
         <button type="button" className="action-list__item" onClick={openContact}>
-          <span>Contact SurfStar</span>
+          <span>{t('nav.contactSurfStar')}</span>
           <span aria-hidden="true">›</span>
         </button>
       </nav>
 
+      <div className="ss-card stats-panel">
+        <LanguagePicker compact />
+      </div>
+
       <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>
-        Sign out
+        {t('common.signOut')}
       </button>
     </div>
   )

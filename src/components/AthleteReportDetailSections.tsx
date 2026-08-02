@@ -17,17 +17,19 @@ import {
   type SidePairStats,
 } from '../sessionStats'
 import type { AthletePeriodAnalytics } from '../teamAnalyticsStats'
-import {
-  COMBO_LEVEL_LABELS,
-  MANEUVER_LABELS,
-  type ComboLevel,
-  type ManeuverKind,
-  type ManeuverLevel,
-  type ManeuverLog,
-  type TrainingSession,
-  type WaveSide,
+import { comboLevelLabel, levelLabelEn, maneuverLabel } from '../i18n/labels'
+import { useI18n } from '../i18n'
+import type { AnalyticsReportCopy } from '../i18n/types'
+import type {
+  ComboLevel,
+  ManeuverKind,
+  ManeuverLevel,
+  ManeuverLog,
+  TrainingSession,
+  WaveSide,
 } from '../types'
-import { levelLabelEn } from './ManeuverLevelSuccessChart'
+
+type ReportCopy = AnalyticsReportCopy
 
 const TECHNICAL_KINDS: ManeuverKind[] = ['rail', 'top-turn', 'progressive']
 const COMBO_LEVELS: ComboLevel[] = [1, 2, 3, 'estrela']
@@ -119,10 +121,18 @@ function ReportSubheading({ children }: { children: ReactNode }) {
   return <h3 className="athlete-report__subsection-title">{children}</h3>
 }
 
-function ReportSideTable({ bySide, caption }: { bySide: SidePairStats; caption?: string }) {
+function ReportSideTable({
+  bySide,
+  caption,
+  r,
+}: {
+  bySide: SidePairStats
+  caption?: string
+  r: ReportCopy
+}) {
   const rows = [
-    { label: 'Frontside', stats: bySide.frontside },
-    { label: 'Backside', stats: bySide.backside },
+    { label: r.frontside, stats: bySide.frontside },
+    { label: r.backside, stats: bySide.backside },
   ] as const
 
   if (rows.every(({ stats }) => stats.attempts === 0)) return null
@@ -133,11 +143,11 @@ function ReportSideTable({ bySide, caption }: { bySide: SidePairStats; caption?:
       <table className="data-table athlete-report__table athlete-report__detail-table">
         <thead>
           <tr>
-            <th>Side</th>
-            <th>Attempts</th>
-            <th>Made</th>
-            <th>Missed</th>
-            <th>Success</th>
+            <th>{r.side}</th>
+            <th>{r.attempts}</th>
+            <th>{r.made}</th>
+            <th>{r.missed}</th>
+            <th>{r.success}</th>
           </tr>
         </thead>
         <tbody>
@@ -159,9 +169,11 @@ function ReportSideTable({ bySide, caption }: { bySide: SidePairStats; caption?:
 function ReportLevelMakeMissTable({
   byLevel,
   labelForLevel,
+  r,
 }: {
   byLevel: Record<number | 'estrela', LevelSuccessStats>
   labelForLevel: (level: number | 'estrela') => string
+  r: ReportCopy
 }) {
   const levels = LEVELS.filter((level) => byLevel[level].attempts > 0)
   if (levels.length === 0) return null
@@ -171,11 +183,11 @@ function ReportLevelMakeMissTable({
       <table className="data-table athlete-report__table athlete-report__detail-table">
         <thead>
           <tr>
-            <th>Level</th>
-            <th>Attempts</th>
-            <th>Made</th>
-            <th>Missed</th>
-            <th>Success</th>
+            <th>{r.level}</th>
+            <th>{r.attempts}</th>
+            <th>{r.made}</th>
+            <th>{r.missed}</th>
+            <th>{r.success}</th>
           </tr>
         </thead>
         <tbody>
@@ -200,9 +212,11 @@ function ReportLevelMakeMissTable({
 function ReportLevelSideMatrix({
   byLevelSide,
   labelForLevel,
+  r,
 }: {
   byLevelSide: Record<ManeuverLevel, SidePairStats>
   labelForLevel: (level: ManeuverLevel) => string
+  r: ReportCopy
 }) {
   const levels = LEVELS.filter(
     (level) =>
@@ -215,18 +229,18 @@ function ReportLevelSideMatrix({
       <table className="data-table athlete-report__table athlete-report__detail-table athlete-report__matrix-table">
         <thead>
           <tr>
-            <th rowSpan={2}>Level</th>
-            <th colSpan={4}>Frontside</th>
-            <th colSpan={4}>Backside</th>
+            <th rowSpan={2}>{r.level}</th>
+            <th colSpan={4}>{r.frontside}</th>
+            <th colSpan={4}>{r.backside}</th>
           </tr>
           <tr>
-            <th>Att.</th>
-            <th>Made</th>
-            <th>Miss</th>
+            <th>{r.attShort}</th>
+            <th>{r.made}</th>
+            <th>{r.missShort}</th>
             <th>%</th>
-            <th>Att.</th>
-            <th>Made</th>
-            <th>Miss</th>
+            <th>{r.attShort}</th>
+            <th>{r.made}</th>
+            <th>{r.missShort}</th>
             <th>%</th>
           </tr>
         </thead>
@@ -254,16 +268,17 @@ function ReportLevelSideMatrix({
   )
 }
 
-function ReportComboLevelBlock({ combo }: { combo: ComboSessionStatsSnapshot }) {
+function ReportComboLevelBlock({ combo, r, t }: { combo: ComboSessionStatsSnapshot; r: ReportCopy; t: (key: string, params?: Record<string, string | number>) => string }) {
   const activeLevels = COMBO_LEVELS.filter((level) => combo.byLevel[level].attempts > 0)
   if (activeLevels.length === 0) return null
 
   return (
     <>
-      <ReportSubheading>By combo level · made vs missed</ReportSubheading>
+      <ReportSubheading>{r.byComboLevelMadeMiss}</ReportSubheading>
       <ReportLevelMakeMissTable
         byLevel={combo.byLevel}
-        labelForLevel={(level) => COMBO_LEVEL_LABELS[level as ComboLevel]}
+        labelForLevel={(level) => comboLevelLabel(level as ComboLevel)}
+        r={r}
       />
 
       <div className="athlete-report__subsection-stack">
@@ -271,43 +286,63 @@ function ReportComboLevelBlock({ combo }: { combo: ComboSessionStatsSnapshot }) 
           const row = combo.byLevel[level]
           return (
             <div key={String(level)} className="athlete-report__subsection">
-              <ReportSubheading>{COMBO_LEVEL_LABELS[level]} · frontside vs backside</ReportSubheading>
-              <ReportSideTable bySide={row.bySide} />
+              <ReportSubheading>
+                {t('analytics.analyticsReport.comboLevelSide', {
+                  level: comboLevelLabel(level),
+                })}
+              </ReportSubheading>
+              <ReportSideTable bySide={row.bySide} r={r} />
             </div>
           )
         })}
       </div>
 
-      <ReportSubheading>Combo levels · level × side matrix</ReportSubheading>
+      <ReportSubheading>{r.comboLevelMatrix}</ReportSubheading>
       <ReportLevelSideMatrix
         byLevelSide={Object.fromEntries(
           activeLevels.map((level) => [level, combo.byLevel[level].bySide]),
         ) as Record<ManeuverLevel, SidePairStats>}
-        labelForLevel={(level) => COMBO_LEVEL_LABELS[level as ComboLevel]}
+        labelForLevel={(level) => comboLevelLabel(level as ComboLevel)}
+        r={r}
       />
     </>
   )
 }
 
-function ReportPsychologySection({ psychology }: { psychology: AthletePsychologyAnalytics }) {
+function ReportPsychologySection({
+  psychology,
+  r,
+  t,
+}: {
+  psychology: AthletePsychologyAnalytics
+  r: ReportCopy
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
   if (psychology.checkIns === 0) return null
+
+  const summaryKey =
+    psychology.checkIns === 1
+      ? 'analytics.analyticsReport.checkInsSummary'
+      : 'analytics.analyticsReport.checkInsSummaryPlural'
 
   return (
     <section className="athlete-report__section">
-      <h2>Psychology check-ins</h2>
+      <h2>{r.psychologyCheckins}</h2>
       <p className="athlete-report__lead">
-        {psychology.checkIns} check-in{psychology.checkIns === 1 ? '' : 's'} · avg overall{' '}
-        {psychology.averageOverall?.toFixed(1) ?? '—'}/5 · feedback rate{' '}
-        {psychology.feedbackRate === null ? '—' : `${psychology.feedbackRate}%`}
+        {t(summaryKey, {
+          count: psychology.checkIns,
+          avg: psychology.averageOverall?.toFixed(1) ?? '—',
+          rate: psychology.feedbackRate === null ? '—' : `${psychology.feedbackRate}%`,
+        })}
       </p>
 
-      <ReportSubheading>Question averages (0–5)</ReportSubheading>
+      <ReportSubheading>{r.questionAverages}</ReportSubheading>
       <div className="table-wrap athlete-report__table-wrap">
         <table className="data-table athlete-report__table athlete-report__detail-table">
           <thead>
             <tr>
-              <th>Question</th>
-              <th>Average</th>
+              <th>{r.question}</th>
+              <th>{r.average}</th>
             </tr>
           </thead>
           <tbody>
@@ -323,14 +358,14 @@ function ReportPsychologySection({ psychology }: { psychology: AthletePsychology
 
       {psychology.timeline.length > 0 ? (
         <>
-          <ReportSubheading>Check-in timeline</ReportSubheading>
+          <ReportSubheading>{r.checkInTimeline}</ReportSubheading>
           <div className="table-wrap athlete-report__table-wrap">
             <table className="data-table athlete-report__table athlete-report__detail-table">
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Avg score</th>
-                  <th>Note</th>
+                  <th>{r.date}</th>
+                  <th>{r.avgScore}</th>
+                  <th>{r.note}</th>
                 </tr>
               </thead>
               <tbody>
@@ -365,28 +400,30 @@ export function AthleteReportDetailSections({
   athleteId,
   psychology,
 }: Props) {
+  const { t, messages } = useI18n()
+  const r = messages.analytics.analyticsReport
   const { technical, combo, sessions } = analytics
   const allTechnicalLogs = collectManeuverLogs(sessions, athleteId)
 
   return (
     <>
       <section className="athlete-report__section">
-        <h2>Wave quality</h2>
+        <h2>{r.waveQuality}</h2>
         <div className="table-wrap athlete-report__table-wrap">
           <table className="data-table athlete-report__table athlete-report__detail-table">
             <tbody>
               <tr>
-                <th scope="row">Total waves</th>
+                <th scope="row">{r.totalWaves}</th>
                 <td>{general.totalWaves}</td>
               </tr>
               <tr>
-                <th scope="row">With potential</th>
+                <th scope="row">{r.withPotential}</th>
                 <td>
                   {general.withPotential} ({general.withPotentialRate ?? '—'}%)
                 </td>
               </tr>
               <tr>
-                <th scope="row">Without potential</th>
+                <th scope="row">{r.withoutPotential}</th>
                 <td>
                   {general.withoutPotential} ({general.withoutPotentialRate ?? '—'}%)
                 </td>
@@ -397,36 +434,36 @@ export function AthleteReportDetailSections({
       </section>
 
       <section className="athlete-report__section">
-        <h2>Performance breakdown</h2>
+        <h2>{r.performanceBreakdown}</h2>
         <div className="table-wrap athlete-report__table-wrap">
           <table className="data-table athlete-report__table athlete-report__detail-table">
             <tbody>
               <tr>
-                <th scope="row">Combined avg level</th>
+                <th scope="row">{r.combinedAvgLevel}</th>
                 <td>{formatAverageLevelValue(general.avgOverallManeuverLevel)}</td>
               </tr>
               <tr>
-                <th scope="row">Technical avg level</th>
+                <th scope="row">{r.technicalAvgLevel}</th>
                 <td>{formatAverageLevelValue(general.avgTechnicalManeuverLevel)}</td>
               </tr>
               <tr>
-                <th scope="row">Combo avg level</th>
+                <th scope="row">{r.comboAvgLevel}</th>
                 <td>{formatAverageLevelValue(general.avgComboLevel)}</td>
               </tr>
               <tr>
-                <th scope="row">Total attempts</th>
+                <th scope="row">{r.totalAttempts}</th>
                 <td>{general.totalManeuverAttempts}</td>
               </tr>
               <tr>
-                <th scope="row">Technical attempts</th>
+                <th scope="row">{r.technicalAttempts}</th>
                 <td>{general.technicalAttemptCount}</td>
               </tr>
               <tr>
-                <th scope="row">Combo attempts</th>
+                <th scope="row">{r.comboAttempts}</th>
                 <td>{general.comboAttemptCount}</td>
               </tr>
               <tr>
-                <th scope="row">Stars (technical / combo)</th>
+                <th scope="row">{r.starsTechnicalCombo}</th>
                 <td>
                   {general.totalStars} ({general.technicalStars} / {general.comboStars})
                 </td>
@@ -438,26 +475,31 @@ export function AthleteReportDetailSections({
 
       {technical ? (
         <section className="athlete-report__section">
-          <h2>Technical training — full breakdown</h2>
+          <h2>{r.technicalFullBreakdown}</h2>
           <p className="athlete-report__lead">
-            Overall {technical.overallSuccessRate}% success · avg level{' '}
-            {formatAverageLevelValue(technical.averageLevel)} · {technical.successfulManeuvers}/
-            {technical.totalManeuvers} maneuvers made
+            {t('analytics.analyticsReport.technicalLead', {
+              rate: technical.overallSuccessRate,
+              level: formatAverageLevelValue(technical.averageLevel),
+              made: technical.successfulManeuvers,
+              total: technical.totalManeuvers,
+            })}
           </p>
 
-          <ReportSubheading>All maneuvers · frontside vs backside</ReportSubheading>
-          <ReportSideTable bySide={technical.bySide} />
+          <ReportSubheading>{r.allManeuversSide}</ReportSubheading>
+          <ReportSideTable bySide={technical.bySide} r={r} />
 
-          <ReportSubheading>All maneuvers · by level (made vs missed)</ReportSubheading>
+          <ReportSubheading>{r.allManeuversLevel}</ReportSubheading>
           <ReportLevelMakeMissTable
             byLevel={tallyLevelStats(allTechnicalLogs)}
             labelForLevel={(level) => levelLabelEn(level as ManeuverLevel)}
+            r={r}
           />
 
-          <ReportSubheading>All maneuvers · level × side matrix</ReportSubheading>
+          <ReportSubheading>{r.allManeuversMatrix}</ReportSubheading>
           <ReportLevelSideMatrix
             byLevelSide={tallyLevelSide(allTechnicalLogs)}
             labelForLevel={levelLabelEn}
+            r={r}
           />
 
           <div className="athlete-report__subsection-stack">
@@ -469,18 +511,29 @@ export function AthleteReportDetailSections({
               return (
                 <div key={kind} className="athlete-report__subsection">
                   <ReportSubheading>
-                    {MANEUVER_LABELS[kind]} · {block.successes}/{block.total} made ({block.rate}%)
+                    {t('analytics.analyticsReport.maneuverMade', {
+                      maneuver: maneuverLabel(kind),
+                      made: block.successes,
+                      total: block.total,
+                      rate: block.rate,
+                    })}
                   </ReportSubheading>
-                  <ReportSideTable bySide={block.bySide} caption="Frontside vs backside" />
-                  <ReportSubheading>{MANEUVER_LABELS[kind]} · by level</ReportSubheading>
+                  <ReportSideTable bySide={block.bySide} caption={r.frontsideVsBackside} r={r} />
+                  <ReportSubheading>
+                    {t('analytics.analyticsReport.maneuverByLevel', { maneuver: maneuverLabel(kind) })}
+                  </ReportSubheading>
                   <ReportLevelMakeMissTable
                     byLevel={block.byLevel}
                     labelForLevel={(level) => levelLabelEn(level as ManeuverLevel)}
+                    r={r}
                   />
-                  <ReportSubheading>{MANEUVER_LABELS[kind]} · level × side</ReportSubheading>
+                  <ReportSubheading>
+                    {t('analytics.analyticsReport.maneuverMatrix', { maneuver: maneuverLabel(kind) })}
+                  </ReportSubheading>
                   <ReportLevelSideMatrix
                     byLevelSide={tallyLevelSide(kindLogs)}
                     labelForLevel={levelLabelEn}
+                    r={r}
                   />
                 </div>
               )
@@ -491,89 +544,120 @@ export function AthleteReportDetailSections({
 
       {combo ? (
         <section className="athlete-report__section">
-          <h2>Combos — full breakdown</h2>
+          <h2>{r.combosFullBreakdown}</h2>
           <p className="athlete-report__lead">
-            Overall {combo.overallSuccessRate}% success · avg level{' '}
-            {formatAverageLevelValue(combo.averageLevel)} · {combo.successfulAttempts}/
-            {combo.totalAttempts} attempts made
+            {t('analytics.analyticsReport.combosLead', {
+              rate: combo.overallSuccessRate,
+              level: formatAverageLevelValue(combo.averageLevel),
+              made: combo.successfulAttempts,
+              total: combo.totalAttempts,
+            })}
           </p>
 
-          <ReportSubheading>All combos · frontside vs backside</ReportSubheading>
-          <ReportSideTable bySide={combo.bySide} />
+          <ReportSubheading>{r.allCombosSide}</ReportSubheading>
+          <ReportSideTable bySide={combo.bySide} r={r} />
 
-          <ReportComboLevelBlock combo={combo} />
+          <ReportComboLevelBlock combo={combo} r={r} t={t} />
         </section>
       ) : null}
 
-      {psychology ? <ReportPsychologySection psychology={psychology} /> : null}
+      {psychology ? <ReportPsychologySection psychology={psychology} r={r} t={t} /> : null}
 
       {heatAnalytics.heatsTotal > 0 ? (
         <section className="athlete-report__section">
-          <h2>Competition — heats & rhythm</h2>
+          <h2>{r.competitionHeatsRhythm}</h2>
           <p className="athlete-report__lead">
-            {general.heatParticipations} heats · {general.heatWins} wins · avg score{' '}
-            {heatAnalytics.avgHeatScore?.toFixed(2) ?? '—'}
+            {t('analytics.analyticsReport.competitionLead', {
+              heats: general.heatParticipations,
+              wins: general.heatWins,
+              score: heatAnalytics.avgHeatScore?.toFixed(2) ?? '—',
+            })}
             {general.championshipWins > 0
-              ? ` · ${general.championshipWins} championship title${general.championshipWins === 1 ? '' : 's'}`
+              ? ` · ${t(
+                  general.championshipWins === 1
+                    ? 'analytics.analyticsReport.championshipTitle'
+                    : 'analytics.analyticsReport.championshipTitles',
+                  { count: general.championshipWins },
+                )}`
               : ''}
           </p>
 
           {heatAnalytics.heatsWithTiming > 0 ? (
             <>
               <p className="athlete-report__note">
-                Rhythm metrics use wave timestamps vs heat timer. Major score ={' '}
-                {MAJOR_HEAT_WAVE_SCORE.toFixed(2)}+ pts · based on {heatAnalytics.heatsWithTiming}{' '}
-                heat{heatAnalytics.heatsWithTiming === 1 ? '' : 's'} with timer data.
+                {t(
+                  heatAnalytics.heatsWithTiming === 1
+                    ? 'analytics.analyticsReport.rhythmNote'
+                    : 'analytics.analyticsReport.rhythmNotePlural',
+                  {
+                    score: MAJOR_HEAT_WAVE_SCORE.toFixed(2),
+                    count: heatAnalytics.heatsWithTiming,
+                  },
+                )}
               </p>
 
-              <ReportSubheading>Opening & early rhythm</ReportSubheading>
+              <ReportSubheading>{r.openingEarlyRhythm}</ReportSubheading>
               <div className="table-wrap athlete-report__table-wrap">
                 <table className="data-table athlete-report__table athlete-report__detail-table">
                   <tbody>
                     <tr>
-                      <th scope="row">Best wave · first 5 min (avg)</th>
+                      <th scope="row">{r.bestWaveFirst5Avg}</th>
                       <td>{heatAnalytics.avgBestWaveOpening?.toFixed(2) ?? '—'}</td>
                     </tr>
                     <tr>
-                      <th scope="row">{EARLY_HEAT_TOTAL_TARGET}+ pts total · first 10 min</th>
+                      <th scope="row">
+                        {t('analytics.analyticsReport.earlyTotalTarget', {
+                          target: EARLY_HEAT_TOTAL_TARGET,
+                        })}
+                      </th>
                       <td>
-                        {heatAnalytics.earlyTenPointsRate == null
-                          ? '—'
-                          : `${heatAnalytics.earlyTenPointsRate}%`}
-                        {' · avg '}
-                        {heatAnalytics.avgEarlyTotalFirst10Min?.toFixed(2) ?? '—'} pts
+                        {t('analytics.analyticsReport.earlyTotalAvg', {
+                          rate:
+                            heatAnalytics.earlyTenPointsRate == null
+                              ? '—'
+                              : `${heatAnalytics.earlyTenPointsRate}%`,
+                          total: heatAnalytics.avgEarlyTotalFirst10Min?.toFixed(2) ?? '—',
+                        })}
                       </td>
                     </tr>
                     <tr>
-                      <th scope="row">Time to 1st wave (avg)</th>
+                      <th scope="row">{r.timeToFirstWaveAvg}</th>
                       <td>
                         {formatHeatElapsedMinutes(heatAnalytics.avgTimeToFirstWaveMin)} ·{' '}
-                        {heatAnalytics.heatsWithFirstWave} heat
-                        {heatAnalytics.heatsWithFirstWave === 1 ? '' : 's'}
+                        {t(
+                          heatAnalytics.heatsWithFirstWave === 1
+                            ? 'analytics.analyticsReport.heatCount'
+                            : 'analytics.analyticsReport.heatCountPlural',
+                          { count: heatAnalytics.heatsWithFirstWave },
+                        )}
                       </td>
                     </tr>
                     <tr>
-                      <th scope="row">Time to 2 major scores (avg)</th>
+                      <th scope="row">{r.timeToTwoMajorAvg}</th>
                       <td>
                         {formatHeatElapsedMinutes(heatAnalytics.avgTimeToTwoMajorMin)} ·{' '}
-                        {heatAnalytics.heatsWithTwoMajor} heat
-                        {heatAnalytics.heatsWithTwoMajor === 1 ? '' : 's'}
+                        {t(
+                          heatAnalytics.heatsWithTwoMajor === 1
+                            ? 'analytics.analyticsReport.heatCount'
+                            : 'analytics.analyticsReport.heatCountPlural',
+                          { count: heatAnalytics.heatsWithTwoMajor },
+                        )}
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              <ReportSubheading>Closing under pressure</ReportSubheading>
+              <ReportSubheading>{r.closingUnderPressure}</ReportSubheading>
               <div className="table-wrap athlete-report__table-wrap">
                 <table className="data-table athlete-report__table athlete-report__detail-table">
                   <tbody>
                     <tr>
-                      <th scope="row">Best wave · last 5 min (avg)</th>
+                      <th scope="row">{r.bestWaveLast5Avg}</th>
                       <td>{heatAnalytics.avgBestWaveClosing?.toFixed(2) ?? '—'}</td>
                     </tr>
                     <tr>
-                      <th scope="row">Major score · last 5 min</th>
+                      <th scope="row">{r.majorScoreLast5}</th>
                       <td>
                         {heatAnalytics.closingMajorRate == null
                           ? '—'
@@ -581,7 +665,7 @@ export function AthleteReportDetailSections({
                       </td>
                     </tr>
                     <tr>
-                      <th scope="row">Clutch delta (close − open)</th>
+                      <th scope="row">{r.clutchDelta}</th>
                       <td>
                         {heatAnalytics.clutchDelta === null
                           ? '—'
@@ -594,27 +678,35 @@ export function AthleteReportDetailSections({
             </>
           ) : (
             <p className="athlete-report__note">
-              {heatAnalytics.heatsTotal} heat{heatAnalytics.heatsTotal === 1 ? '' : 's'} logged, but
-              none have timer data for rhythm analysis.
+              {t(
+                heatAnalytics.heatsTotal === 1
+                  ? 'analytics.analyticsReport.noTimerData'
+                  : 'analytics.analyticsReport.noTimerDataPlural',
+                { count: heatAnalytics.heatsTotal },
+              )}
             </p>
           )}
 
           {heatAnalytics.rows.length > 0 ? (
             <>
-              <ReportSubheading>Heat log</ReportSubheading>
+              <ReportSubheading>{r.heatLog}</ReportSubheading>
               <div className="table-wrap athlete-report__table-wrap">
                 <table className="data-table athlete-report__table athlete-report__detail-table">
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Heat</th>
-                      <th>Total</th>
-                      <th>1st wave</th>
-                      <th>Total ≤10m</th>
-                      <th>{EARLY_HEAT_TOTAL_TARGET}+ ≤10m</th>
-                      <th>2 maj time</th>
-                      <th>Close 5m</th>
-                      <th>Place</th>
+                      <th>{r.date}</th>
+                      <th>{r.heat}</th>
+                      <th>{r.total}</th>
+                      <th>{r.firstWave}</th>
+                      <th>{r.totalUnder10}</th>
+                      <th>
+                        {t('analytics.analyticsReport.earlyTargetUnder10', {
+                          target: EARLY_HEAT_TOTAL_TARGET,
+                        })}
+                      </th>
+                      <th>{r.twoMajorTime}</th>
+                      <th>{r.close5m}</th>
+                      <th>{r.place}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -631,8 +723,8 @@ export function AthleteReportDetailSections({
                           {!row.hasTimerData
                             ? '—'
                             : row.reachedTenPointsInEarlyWindow
-                              ? 'Yes'
-                              : 'No'}
+                              ? r.yes
+                              : r.no}
                         </td>
                         <td>{formatHeatElapsedMinutes(row.timeToTwoMajorMin)}</td>
                         <td>
@@ -640,7 +732,7 @@ export function AthleteReportDetailSections({
                         </td>
                         <td>
                           #{row.placement}
-                          {row.won ? ' · Win' : ''}
+                          {row.won ? r.winSuffix : ''}
                         </td>
                       </tr>
                     ))}

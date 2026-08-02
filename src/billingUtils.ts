@@ -3,6 +3,9 @@ import {
   isKnownBillingCountryCode,
   normalizeBillingCountryCode,
 } from './billingCountries'
+import { getLocale } from './i18n'
+import { getMessages } from './i18n/messages'
+import type { SupportedLocale } from './i18n/types'
 
 /** Structured billing address for international invoicing. */
 export type BillingAddress = {
@@ -20,16 +23,18 @@ export function regionRecommendedForCountry(countryCode: string): boolean {
   return REGION_RECOMMENDED_CODES.has(countryCode.trim().toUpperCase())
 }
 
-export function getTaxIdLabel(countryCode: string): string {
-  return countryCode.trim().toUpperCase() === 'PT' ? 'NIF (Portuguese tax ID)' : 'Tax ID / VAT number'
+export function getTaxIdLabel(countryCode: string, locale: SupportedLocale = getLocale()): string {
+  const taxId = getMessages(locale).billing.taxId
+  return countryCode.trim().toUpperCase() === 'PT' ? taxId.nifLabel : taxId.defaultLabel
 }
 
-export function getTaxIdHint(countryCode: string): string {
+export function getTaxIdHint(countryCode: string, locale: SupportedLocale = getLocale()): string {
+  const taxId = getMessages(locale).billing.taxId
   const code = countryCode.trim().toUpperCase()
-  if (code === 'PT') return '9-digit Portuguese NIF used on invoices.'
-  if (code === 'GB') return 'Company or personal tax reference (e.g. VAT number).'
-  if (code === 'US') return 'EIN or other tax identifier if applicable.'
-  return 'Local tax ID or VAT number for your invoice.'
+  if (code === 'PT') return taxId.nifHint
+  if (code === 'GB') return taxId.gbHint
+  if (code === 'US') return taxId.usHint
+  return taxId.defaultHint
 }
 
 /** Normalize tax ID for storage (uppercase, no spaces). */
@@ -55,24 +60,29 @@ export function isValidPortugueseTaxId(value: string): boolean {
   return checkDigit === expected
 }
 
-export function validateTaxId(value: string, countryCode: string): string | null {
+export function validateTaxId(
+  value: string,
+  countryCode: string,
+  locale: SupportedLocale = getLocale(),
+): string | null {
+  const v = getMessages(locale).billing.validation
   const trimmed = value.trim()
   const code = countryCode.trim().toUpperCase()
 
-  if (!trimmed) return `Enter your ${code === 'PT' ? 'NIF' : 'tax ID or VAT number'}.`
-  if (!code) return 'Select your billing country first.'
+  if (!trimmed) return code === 'PT' ? v.enterNif : v.enterTaxId
+  if (!code) return v.selectCountryFirst
 
   if (code === 'PT') {
-    if (!isValidPortugueseTaxId(trimmed)) return 'Enter a valid Portuguese NIF (9 digits).'
+    if (!isValidPortugueseTaxId(trimmed)) return v.invalidPortugueseNif
     return null
   }
 
   const normalized = normalizeTaxId(trimmed, code)
   if (normalized.length < 3 || normalized.length > 20) {
-    return 'Enter a valid tax ID or VAT number (3–20 characters).'
+    return v.invalidTaxIdLength
   }
   if (!/^[A-Z0-9\-./]+$/.test(normalized)) {
-    return 'Enter a valid tax ID or VAT number.'
+    return v.invalidTaxIdFormat
   }
   return null
 }
@@ -89,46 +99,55 @@ export function normalizePostalCode(value: string, countryCode: string): string 
   return trimmed.toUpperCase()
 }
 
-export function validatePostalCode(value: string, countryCode: string): string | null {
+export function validatePostalCode(
+  value: string,
+  countryCode: string,
+  locale: SupportedLocale = getLocale(),
+): string | null {
+  const v = getMessages(locale).billing.validation
   const trimmed = value.trim()
   const code = countryCode.trim().toUpperCase()
 
-  if (!trimmed) return 'Enter your postal or ZIP code.'
-  if (!code) return 'Select your billing country first.'
+  if (!trimmed) return v.enterPostalCode
+  if (!code) return v.selectCountryFirst
 
   if (code === 'PT') {
     const normalized = normalizePostalCode(trimmed, code)
     if (!/^\d{4}-\d{3}$/.test(normalized)) {
-      return 'Enter a valid Portuguese postal code (e.g. 1200-001).'
+      return v.invalidPortuguesePostal
     }
     return null
   }
 
   if (trimmed.length < 2 || trimmed.length > 16) {
-    return 'Enter a valid postal or ZIP code.'
+    return v.invalidPostalCode
   }
   if (!/^[A-Za-z0-9\s\-]+$/.test(trimmed)) {
-    return 'Enter a valid postal or ZIP code.'
+    return v.invalidPostalCode
   }
   return null
 }
 
-export function validateBillingAddressParts(address: BillingAddress): string | null {
+export function validateBillingAddressParts(
+  address: BillingAddress,
+  locale: SupportedLocale = getLocale(),
+): string | null {
+  const v = getMessages(locale).billing.validation
   const street = address.street.trim()
   const city = address.city.trim()
   const countryCode = normalizeBillingCountryCode(address.countryCode)
 
-  if (street.length < 3) return 'Enter address line 1.'
-  if (city.length < 2) return 'Enter your city.'
+  if (street.length < 3) return v.enterAddressLine1
+  if (city.length < 2) return v.enterCity
   if (!countryCode || !isKnownBillingCountryCode(countryCode)) {
-    return 'Select your billing country.'
+    return v.selectBillingCountry
   }
 
-  const postalError = validatePostalCode(address.postalCode, countryCode)
+  const postalError = validatePostalCode(address.postalCode, countryCode, locale)
   if (postalError) return postalError
 
   if (regionRecommendedForCountry(countryCode) && !address.region?.trim()) {
-    return 'Enter your state, province, or region.'
+    return v.enterRegion
   }
 
   return null

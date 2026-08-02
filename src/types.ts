@@ -514,39 +514,17 @@ export type TrainingSession = {
   coachNotes: string | null
 }
 
-export const TRAINING_MODE_LABELS: Record<TrainingMode, string> = {
-  tecnico: 'Technical training',
-  combos: 'Combos',
-  heats: 'Heats',
-  campeonato: 'Championship',
-  'sea-analysis': 'Sea analysis',
-  custom: 'Custom training',
-}
-
-export const MANEUVER_LABELS: Record<ManeuverKind, string> = {
-  rail: 'Rail (R)',
-  'top-turn': 'Top turn (T)',
-  progressive: 'Progressive (P)',
-}
+export {
+  trainingModeLabel,
+  maneuverLabel,
+  comboLevelLabel,
+  levelLabel,
+} from './i18n/labels'
 
 export const MANEUVER_SHORT: Record<ManeuverKind, string> = {
   rail: 'R',
   'top-turn': 'T',
   progressive: 'P',
-}
-
-export const LEVEL_LABELS: Record<ManeuverLevel, string> = {
-  1: '1',
-  2: '2',
-  3: '3',
-  estrela: '★',
-}
-
-export const COMBO_LEVEL_LABELS: Record<ComboLevel, string> = {
-  1: 'Combo 1',
-  2: 'Combo 2',
-  3: 'Combo 3',
-  estrela: 'Combo star ★',
 }
 
 export const COMBO_LEVELS: ComboLevel[] = [1, 2, 3, 'estrela']

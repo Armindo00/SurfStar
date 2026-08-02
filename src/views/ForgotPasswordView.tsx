@@ -4,6 +4,7 @@ import { AuthShell } from '../components/AuthShell'
 import { OtpCodeInput } from '../components/OtpCodeInput'
 import { ResetPasswordSheet } from '../components/ResetPasswordSheet'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import type { UserRole } from '../types'
 import {
   normalizePasswordResetCode,
@@ -22,6 +23,8 @@ export function ForgotPasswordView() {
     openCoachSignIn,
     openAthleteSignIn,
   } = useApp()
+  const { t, messages } = useI18n()
+  const f = messages.auth.forgotPasswordFlow
   const [step, setStep] = useState<'email' | 'code' | 'done'>('email')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -41,7 +44,7 @@ export function ForgotPasswordView() {
     try {
       const result = await requestPasswordReset(email)
       if (!result.ok) {
-        setError(result.error ?? 'Could not send reset code.')
+        setError(result.error ?? t('errors.sendResetCodeFailed'))
         return
       }
       setStep('code')
@@ -55,7 +58,7 @@ export function ForgotPasswordView() {
     setError('')
     const normalized = normalizeCode(code)
     if (normalized.length !== PASSWORD_RESET_OTP_LENGTH) {
-      setError(`Enter the ${PASSWORD_RESET_OTP_LENGTH}-digit code from your email.`)
+      setError(t('auth.forgotPasswordFlow.enterCodeError', { codeLength: PASSWORD_RESET_OTP_LENGTH }))
       return
     }
 
@@ -63,7 +66,7 @@ export function ForgotPasswordView() {
     try {
       const result = await verifyPasswordResetCode(email, normalized)
       if (!result.ok) {
-        setError(result.error ?? 'Invalid or expired code.')
+        setError(result.error ?? t('errors.invalidOrExpiredCode'))
         return
       }
       setSheetOpen(true)
@@ -78,7 +81,7 @@ export function ForgotPasswordView() {
     try {
       const result = await requestPasswordReset(email)
       if (!result.ok) {
-        setError(result.error ?? 'Could not resend code.')
+        setError(result.error ?? t('errors.resendCodeFailed'))
         return
       }
       setCode('')
@@ -98,36 +101,40 @@ export function ForgotPasswordView() {
 
   return (
     <>
-      <AuthShell onBack={back} backLabel="Sign in">
+      <AuthShell onBack={back} backLabel={f.backLabel}>
         <div className="auth-badges">
-          <span className="auth-badge auth-badge--role">{isCoach ? 'Coach' : 'Athlete'}</span>
-          <span className="auth-badge auth-badge--mode">Password reset</span>
+          <span className="auth-badge auth-badge--role">
+            {isCoach ? messages.roles.coach : messages.roles.athlete}
+          </span>
+          <span className="auth-badge auth-badge--mode">{f.passwordReset}</span>
         </div>
 
         {step === 'email' ? (
           <>
             <header className="auth-card__head auth-card__head--compact">
-              <h2 className="auth-card__title">Forgot password</h2>
+              <h2 className="auth-card__title">{f.title}</h2>
               <p className="muted auth-card__lead">
-                Enter your account email. We&apos;ll send an {PASSWORD_RESET_OTP_LENGTH}-digit code from{' '}
-                <strong>{contactEmail}</strong> so you can set a new password.
+                {t('auth.forgotPasswordFlow.lead', {
+                  codeLength: PASSWORD_RESET_OTP_LENGTH,
+                  contactEmail,
+                })}
               </p>
             </header>
             <form className="auth-form" onSubmit={(e) => void sendCode(e)}>
               <label className="auth-field">
-                <span>Email address</span>
+                <span>{t('auth.emailAddress')}</span>
                 <input
                   type="email"
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={t('auth.emailPlaceholder')}
                   required
                 />
               </label>
               {error ? <p className="auth-alert auth-alert--error">{error}</p> : null}
               <button type="submit" className="btn btn--primary btn--block btn--lg auth-submit" disabled={busy}>
-                {busy ? 'Sending…' : 'Send reset code'}
+                {busy ? f.sending : f.sendResetCode}
               </button>
             </form>
           </>
@@ -136,22 +143,22 @@ export function ForgotPasswordView() {
         {step === 'code' ? (
           <>
             <header className="auth-card__head auth-card__head--compact">
-              <h2 className="auth-card__title">Enter reset code</h2>
+              <h2 className="auth-card__title">{f.enterResetCode}</h2>
               <p className="muted auth-card__lead">
-                Check your inbox for an email from SurfStar. Paste the {PASSWORD_RESET_OTP_LENGTH}-digit code below.
+                {t('auth.forgotPasswordFlow.enterResetCodeLead', { codeLength: PASSWORD_RESET_OTP_LENGTH })}
               </p>
             </header>
             <form className="auth-form" onSubmit={(e) => void verifyCode(e)}>
               <label className="auth-field">
-                <span>Reset code</span>
+                <span>{f.resetCode}</span>
                 <OtpCodeInput value={code} onChange={setCode} disabled={busy} />
               </label>
               <p className="muted auth-code-hint">
-                Sent to <strong>{email}</strong>
+                {f.sentTo} <strong>{email}</strong>
               </p>
               {error ? <p className="auth-alert auth-alert--error">{error}</p> : null}
               <button type="submit" className="btn btn--primary btn--block btn--lg auth-submit" disabled={busy}>
-                {busy ? 'Checking…' : 'Verify code'}
+                {busy ? f.checking : f.verifyCode}
               </button>
               <button
                 type="button"
@@ -159,7 +166,7 @@ export function ForgotPasswordView() {
                 disabled={busy}
                 onClick={() => void resendCode()}
               >
-                Resend code
+                {f.resendCode}
               </button>
               <button
                 type="button"
@@ -171,7 +178,7 @@ export function ForgotPasswordView() {
                   setError('')
                 }}
               >
-                Use a different email
+                {f.useDifferentEmail}
               </button>
             </form>
           </>
@@ -180,17 +187,15 @@ export function ForgotPasswordView() {
         {step === 'done' ? (
           <>
             <header className="auth-card__head auth-card__head--compact">
-              <h2 className="auth-card__title">Password updated</h2>
-              <p className="muted auth-card__lead">
-                Your new password is ready. Sign in to continue using SurfStar.
-              </p>
+              <h2 className="auth-card__title">{f.passwordUpdated}</h2>
+              <p className="muted auth-card__lead">{f.passwordUpdatedLead}</p>
             </header>
             <button
               type="button"
               className="btn btn--primary btn--block btn--lg auth-submit"
               onClick={doneIsCoach ? openCoachSignIn : openAthleteSignIn}
             >
-              Go to sign in
+              {f.goToSignIn}
             </button>
           </>
         ) : null}

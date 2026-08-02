@@ -3,6 +3,7 @@ import type { UserRole } from '../types'
 import { AuthShell } from '../components/AuthShell'
 import { ResetPasswordSheet } from '../components/ResetPasswordSheet'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 
 export function ResetPasswordView() {
   const {
@@ -13,38 +14,41 @@ export function ResetPasswordView() {
     openAthleteSignIn,
     openForgotPassword,
   } = useApp()
+  const { messages } = useI18n()
+  const r = messages.auth.resetPassword
+  const f = messages.auth.forgotPasswordFlow
   const [done, setDone] = useState(false)
   const [savedRole, setSavedRole] = useState<UserRole | null>(null)
 
   const role = savedRole ?? auth?.role ?? forgotPasswordRole
   const isCoach = role === 'treinador'
-  const roleLabel = isCoach ? 'Coach' : 'Athlete'
+  const roleLabel = isCoach ? messages.roles.coach : messages.roles.athlete
 
   if (!authReady) {
     return (
-      <AuthShell backLabel="Sign in" onBack={openCoachSignIn}>
-        <p className="muted auth-card__lead">Verifying reset link…</p>
+      <AuthShell backLabel={f.backLabel} onBack={openCoachSignIn}>
+        <p className="muted auth-card__lead">{r.verifyingLink}</p>
       </AuthShell>
     )
   }
 
   if (done) {
     return (
-      <AuthShell onBack={isCoach ? openCoachSignIn : openAthleteSignIn} backLabel="Sign in">
+      <AuthShell onBack={isCoach ? openCoachSignIn : openAthleteSignIn} backLabel={f.backLabel}>
         <div className="auth-badges">
           <span className="auth-badge auth-badge--role">{roleLabel}</span>
-          <span className="auth-badge auth-badge--mode">Password updated</span>
+          <span className="auth-badge auth-badge--mode">{r.passwordUpdated}</span>
         </div>
         <header className="auth-card__head auth-card__head--compact">
-          <h2 className="auth-card__title">Password saved</h2>
-          <p className="muted auth-card__lead">Your new password is ready. Sign in to continue.</p>
+          <h2 className="auth-card__title">{r.passwordSaved}</h2>
+          <p className="muted auth-card__lead">{r.passwordSavedLead}</p>
         </header>
         <button
           type="button"
           className="btn btn--primary btn--block btn--lg auth-submit"
           onClick={isCoach ? openCoachSignIn : openAthleteSignIn}
         >
-          Go to sign in
+          {f.goToSignIn}
         </button>
       </AuthShell>
     )
@@ -52,15 +56,13 @@ export function ResetPasswordView() {
 
   if (!auth) {
     return (
-      <AuthShell onBack={openCoachSignIn} backLabel="Sign in">
+      <AuthShell onBack={openCoachSignIn} backLabel={f.backLabel}>
         <div className="auth-badges">
-          <span className="auth-badge auth-badge--mode">Password reset</span>
+          <span className="auth-badge auth-badge--mode">{f.passwordReset}</span>
         </div>
         <header className="auth-card__head auth-card__head--compact">
-          <h2 className="auth-card__title">Reset expired</h2>
-          <p className="muted auth-card__lead">
-            Request a new code from the sign-in page and enter it in the app.
-          </p>
+          <h2 className="auth-card__title">{r.resetExpired}</h2>
+          <p className="muted auth-card__lead">{r.resetExpiredLead}</p>
         </header>
         <div className="auth-form">
           <button
@@ -68,14 +70,14 @@ export function ResetPasswordView() {
             className="btn btn--primary btn--block btn--lg auth-submit"
             onClick={() => openForgotPassword('treinador')}
           >
-            Reset password (Coach)
+            {r.resetPasswordCoach}
           </button>
           <button
             type="button"
             className="btn btn--secondary btn--block"
             onClick={() => openForgotPassword('atleta')}
           >
-            Reset password (Athlete)
+            {r.resetPasswordAthlete}
           </button>
         </div>
       </AuthShell>
@@ -84,8 +86,8 @@ export function ResetPasswordView() {
 
   return (
     <>
-      <AuthShell onBack={isCoach ? openCoachSignIn : openAthleteSignIn} backLabel="Sign in">
-        <p className="muted auth-card__lead">Link verified. Choose your new password below.</p>
+      <AuthShell onBack={isCoach ? openCoachSignIn : openAthleteSignIn} backLabel={f.backLabel}>
+        <p className="muted auth-card__lead">{r.linkVerified}</p>
       </AuthShell>
       <ResetPasswordSheet
         open

@@ -1,11 +1,10 @@
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 
 export function LeaveSessionConfirmSheet() {
-  const {
-    leaveSessionConfirmOpen,
-    closeLeaveSessionConfirm,
-    confirmLeaveActiveSession,
-  } = useApp()
+  const { leaveSessionConfirmOpen, closeLeaveSessionConfirm, confirmLeaveActiveSession } = useApp()
+  const { messages, t } = useI18n()
+  const s = messages.components.leaveSessionConfirm
 
   if (!leaveSessionConfirmOpen) return null
 
@@ -21,22 +20,21 @@ export function LeaveSessionConfirmSheet() {
       >
         <div className="sheet__head sheet__head--pro">
           <div>
-            <p className="sheet__eyebrow">Active session</p>
-            <h2 id="leave-session-title">Leave this session?</h2>
+            <p className="sheet__eyebrow">{s.eyebrow}</p>
+            <h2 id="leave-session-title">{s.title}</h2>
           </div>
           <button
             type="button"
             className="sheet__close"
             onClick={closeLeaveSessionConfirm}
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             ✕
           </button>
         </div>
 
         <p id="leave-session-desc" className="muted leave-session-sheet__intro">
-          Are you sure you want to go back? This session will not be saved and all logged data will
-          be lost.
+          {s.intro}
         </p>
 
         <div className="sea-confirm-actions">
@@ -45,14 +43,10 @@ export function LeaveSessionConfirmSheet() {
             className="btn btn--danger btn--block btn--lg"
             onClick={confirmLeaveActiveSession}
           >
-            Leave without saving
+            {s.leaveWithoutSaving}
           </button>
-          <button
-            type="button"
-            className="btn btn--ghost btn--block"
-            onClick={closeLeaveSessionConfirm}
-          >
-            Stay in session
+          <button type="button" className="btn btn--ghost btn--block" onClick={closeLeaveSessionConfirm}>
+            {s.stayInSession}
           </button>
         </div>
       </div>

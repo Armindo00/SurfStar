@@ -9,6 +9,9 @@ import type {
   WaveRecord,
   WaveSide,
 } from './types'
+import { getLocale } from './i18n/I18nContext'
+import { getMessages } from './i18n/messages'
+import type { SupportedLocale } from './i18n/types'
 
 export type LevelSuccessStats = {
   attempts: number
@@ -78,42 +81,64 @@ export function formatAverageLevelValue(avg: number | null): string {
   return avg.toFixed(2)
 }
 
-export function averageLevelHint(avg: number | null): string {
-  if (avg === null) return 'No technical or combo attempts logged yet'
-  return 'Technical maneuvers + combos, all attempts incl. misses · scale 1–4 (★ = 4)'
+export function averageLevelHint(avg: number | null, locale: SupportedLocale = getLocale()): string {
+  const h = getMessages(locale).ui.levelHints as {
+    noAttempts: string
+    scaleDescription: string
+  }
+  if (avg === null) return h.noAttempts
+  return h.scaleDescription
 }
 
-export function formatCombinedLevelSummary(input: {
-  avgTechnicalManeuverLevel: number | null
-  avgComboLevel: number | null
-  avgOverallManeuverLevel: number | null
-}): string {
+export function formatCombinedLevelSummary(
+  input: {
+    avgTechnicalManeuverLevel: number | null
+    avgComboLevel: number | null
+    avgOverallManeuverLevel: number | null
+  },
+  locale: SupportedLocale = getLocale(),
+): string {
+  const h = getMessages(locale).ui.levelHints as {
+    technical: string
+    combos: string
+    combined: string
+    noAttempts: string
+  }
   const hasTechnical = input.avgTechnicalManeuverLevel !== null
   const hasCombo = input.avgComboLevel !== null
 
-  if (!hasTechnical && !hasCombo) return averageLevelHint(null)
+  if (!hasTechnical && !hasCombo) return h.noAttempts
 
   const parts: string[] = []
   if (hasTechnical) {
-    parts.push(`Technical ${formatAverageLevelValue(input.avgTechnicalManeuverLevel)}`)
+    parts.push(`${h.technical} ${formatAverageLevelValue(input.avgTechnicalManeuverLevel)}`)
   }
   if (hasCombo) {
-    parts.push(`Combos ${formatAverageLevelValue(input.avgComboLevel)}`)
+    parts.push(`${h.combos} ${formatAverageLevelValue(input.avgComboLevel)}`)
   }
 
   if (hasTechnical && hasCombo && input.avgOverallManeuverLevel !== null) {
-    return `${parts.join(' · ')} → Combined ${formatAverageLevelValue(input.avgOverallManeuverLevel)}`
+    return `${parts.join(' · ')} → ${h.combined} ${formatAverageLevelValue(input.avgOverallManeuverLevel)}`
   }
 
   return parts.join(' · ')
 }
 
-export function averageLevelTrendLabel(avg: number | null): string | null {
+export function averageLevelTrendLabel(
+  avg: number | null,
+  locale: SupportedLocale = getLocale(),
+): string | null {
   if (avg === null) return null
-  if (avg >= 3.5) return 'Pushing star-level work'
-  if (avg >= 2.5) return 'Working at advanced levels'
-  if (avg >= 1.5) return 'Building intermediate skills'
-  return 'Focused on fundamentals'
+  const h = getMessages(locale).ui.levelHints as {
+    pushingStar: string
+    advanced: string
+    intermediate: string
+    fundamentals: string
+  }
+  if (avg >= 3.5) return h.pushingStar
+  if (avg >= 2.5) return h.advanced
+  if (avg >= 1.5) return h.intermediate
+  return h.fundamentals
 }
 
 function emptySideStats(): LevelSuccessStats {

@@ -1,4 +1,5 @@
 import { computeComboSessionStats, computeSessionStats, LEVELS } from '../sessionStats'
+import { useI18n } from '../i18n'
 import { computeCustomSessionStats } from '../customTrainingStats'
 import { HeatLiveStatsPanel } from '../components/HeatLiveStatsPanel'
 import { SideCompareChart } from '../components/SideCompareChart'
@@ -11,7 +12,8 @@ import {
   liveStatsTitle,
   resolveSessionMode,
 } from '../sessionModeUtils'
-import { COMBO_LEVEL_LABELS, MANEUVER_LABELS, type ManeuverKind } from '../types'
+import { comboLevelLabel, maneuverLabel } from '../i18n/labels'
+import type { ManeuverKind } from '../types'
 
 const KINDS: ManeuverKind[] = ['rail', 'top-turn', 'progressive']
 
@@ -24,20 +26,21 @@ function RateBar({ value }: { value: number }) {
 }
 
 export function SessionStatsView() {
+  const { t } = useI18n()
   const { activeSession, activeAthleteId, setView, getAthlete } = useApp()
 
   if (!activeSession) {
     return (
       <div className="ss-flow">
-        <ScreenHeader title="Statistics" onBack={() => setView('coach-home')} />
-        <p className="muted">No active session.</p>
+        <ScreenHeader title={t('nav.statistics')} onBack={() => setView('coach-home')} />
+        <p className="muted">{t('session.noActiveSession')}</p>
       </div>
     )
   }
 
   const sessionMode = resolveSessionMode(activeSession)
   const backView = liveStatsBackView(activeSession)
-  const athleteName = activeAthleteId ? getAthlete(activeAthleteId)?.name : 'All athletes'
+  const athleteName = activeAthleteId ? getAthlete(activeAthleteId)?.name : t('ui.session.allAthletes')
 
   if (isHeatLikeSession(activeSession)) {
     const title = liveStatsTitle(activeSession)
@@ -55,27 +58,27 @@ export function SessionStatsView() {
 
   if (sessionMode === 'custom') {
     const stats = computeCustomSessionStats(activeSession, activeAthleteId)
-    const templateName = activeSession.customTemplateName ?? 'Custom training'
+    const templateName = activeSession.customTemplateName ?? t('ui.session.customTrainingFallback')
 
     return (
       <div className="ss-flow stats-page">
-        <ScreenHeader title={`Live stats · ${templateName}`} onBack={() => setView(backView)} />
+        <ScreenHeader title={t('session.liveStatsTitles.custom', { templateName })} onBack={() => setView(backView)} />
 
         <p className="stats-page__meta">
-          Athlete: <strong>{athleteName}</strong>
+          {t('ui.session.athleteLabel')} <strong>{athleteName}</strong>
         </p>
 
         <div className="kpi-grid">
           <article className="kpi-card">
-            <span className="kpi-card__label">Attempts</span>
+            <span className="kpi-card__label">{t('ui.stats.attempts')}</span>
             <strong className="kpi-card__value">{stats.totalAttempts}</strong>
           </article>
           <article className="kpi-card kpi-card--accent">
-            <span className="kpi-card__label">Waves</span>
+            <span className="kpi-card__label">{t('ui.stats.waves')}</span>
             <strong className="kpi-card__value">{stats.waveStats.totalWaves}</strong>
           </article>
           <article className="kpi-card kpi-card--success">
-            <span className="kpi-card__label">Overall success</span>
+            <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
             <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>
             <RateBar value={stats.overallSuccessRate} />
           </article>
@@ -94,10 +97,10 @@ export function SessionStatsView() {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Level</th>
-                      <th>Attempts</th>
-                      <th>Successes</th>
-                      <th>Rate</th>
+                      <th>{t('ui.stats.level')}</th>
+                      <th>{t('ui.stats.attempts')}</th>
+                      <th>{t('ui.stats.successes')}</th>
+                      <th>{t('ui.stats.rate')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -116,7 +119,7 @@ export function SessionStatsView() {
                 </table>
               </div>
             ) : (
-              <p className="muted">No level breakdown yet.</p>
+              <p className="muted">{t('ui.stats.noLevelBreakdown')}</p>
             )}
           </div>
         ))}
@@ -129,39 +132,42 @@ export function SessionStatsView() {
 
     return (
       <div className="ss-flow stats-page">
-        <ScreenHeader title="Live stats · Combos" onBack={() => setView(backView)} />
+        <ScreenHeader title={t('session.liveStatsTitles.combos')} onBack={() => setView(backView)} />
 
         <p className="stats-page__meta">
-          Athlete: <strong>{athleteName}</strong>
+          {t('ui.session.athleteLabel')} <strong>{athleteName}</strong>
         </p>
 
         <div className="kpi-grid">
           <article className="kpi-card">
-            <span className="kpi-card__label">Waves</span>
+            <span className="kpi-card__label">{t('ui.stats.waves')}</span>
             <strong className="kpi-card__value">{stats.waveStats.totalWaves}</strong>
           </article>
           <article className="kpi-card kpi-card--accent">
-            <span className="kpi-card__label">With potential</span>
+            <span className="kpi-card__label">{t('ui.stats.withPotential')}</span>
             <strong className="kpi-card__value">{stats.waveStats.withPotential}</strong>
           </article>
           <article className="kpi-card">
-            <span className="kpi-card__label">No potential</span>
+            <span className="kpi-card__label">{t('ui.stats.noPotential')}</span>
             <strong className="kpi-card__value">{stats.waveStats.withoutPotential}</strong>
           </article>
           <article className="kpi-card kpi-card--success">
-            <span className="kpi-card__label">Overall success</span>
+            <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
             <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>
             <RateBar value={stats.overallSuccessRate} />
           </article>
         </div>
 
         <div className="ss-card stats-panel">
-          <h2 className="stats-panel__title">Combos — overview</h2>
+          <h2 className="stats-panel__title">{t('ui.stats.combosOverview')}</h2>
           <p className="muted stats-panel__sub">
-            {stats.successfulAttempts} successes in {stats.totalAttempts} attempts
+            {t('ui.stats.successesInAttempts', {
+              successes: stats.successfulAttempts,
+              attempts: stats.totalAttempts,
+            })}
           </p>
           <SideCompareChart
-            title="All levels"
+            title={t('analytics.allComboLevels')}
             overallRate={stats.overallSuccessRate}
             bySide={stats.bySide}
           />
@@ -169,8 +175,8 @@ export function SessionStatsView() {
 
         <div className="ss-card stats-panel">
           <header className="stats-panel__head">
-            <h2 className="stats-panel__title">By combo level</h2>
-            <span className="stats-badge">Frontside vs backside</span>
+            <h2 className="stats-panel__title">{t('ui.stats.byComboLevel')}</h2>
+            <span className="stats-badge">{t('ui.stats.frontsideVsBackside')}</span>
           </header>
           <div className="side-chart-stack">
             {LEVELS.map((lvl) => {
@@ -178,8 +184,11 @@ export function SessionStatsView() {
               return (
                 <SideCompareChart
                   key={String(lvl)}
-                  title={COMBO_LEVEL_LABELS[lvl]}
-                  subtitle={`${row.successes}/${row.attempts} successes overall`}
+                  title={comboLevelLabel(lvl)}
+                  subtitle={t('session.register.successesOverall', {
+                    successes: row.successes,
+                    total: row.attempts,
+                  })}
                   overallRate={row.rate}
                   bySide={row.bySide}
                 />
@@ -196,9 +205,9 @@ export function SessionStatsView() {
       <div className="ss-flow stats-page">
         <ScreenHeader title={liveStatsTitle(activeSession)} onBack={() => setView(backView)} />
         <div className="ss-card stats-panel">
-          <p className="muted">Live stats are not available for this session type.</p>
+          <p className="muted">{t('ui.stats.liveStatsUnavailable')}</p>
           <button type="button" className="btn btn--primary btn--block" onClick={() => setView(backView)}>
-            Back to session
+            {t('ui.session.backToSession')}
           </button>
         </div>
       </div>
@@ -209,7 +218,7 @@ export function SessionStatsView() {
 
   return (
     <div className="ss-flow stats-page">
-      <ScreenHeader title="Live stats · Technical" onBack={() => setView(backView)} />
+      <ScreenHeader title={t('session.liveStatsTitles.technical')} onBack={() => setView(backView)} />
 
       <p className="stats-page__meta">
         Athlete: <strong>{athleteName}</strong>
@@ -236,12 +245,15 @@ export function SessionStatsView() {
       </div>
 
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Maneuvers — overview</h2>
-        <p className="muted stats-panel__sub">
-          {stats.successfulManeuvers} successes in {stats.totalManeuvers} attempts
-        </p>
-        <SideCompareChart
-          title="All maneuvers (R · T · P)"
+        <h2 className="stats-panel__title">{t('ui.stats.maneuversOverview')}</h2>
+          <p className="muted stats-panel__sub">
+            {t('ui.stats.successesInAttempts', {
+              successes: stats.successfulManeuvers,
+              attempts: stats.totalManeuvers,
+            })}
+          </p>
+          <SideCompareChart
+            title={t('analytics.allManeuvers')}
           overallRate={stats.overallSuccessRate}
           bySide={stats.bySide}
         />
@@ -249,8 +261,8 @@ export function SessionStatsView() {
 
       <div className="ss-card stats-panel">
         <header className="stats-panel__head">
-          <h2 className="stats-panel__title">By maneuver type</h2>
-          <span className="stats-badge">Frontside vs backside</span>
+          <h2 className="stats-panel__title">{t('ui.stats.byManeuverType')}</h2>
+          <span className="stats-badge">{t('ui.stats.frontsideVsBackside')}</span>
         </header>
         <div className="side-chart-stack">
           {KINDS.map((kind) => {
@@ -258,8 +270,11 @@ export function SessionStatsView() {
             return (
               <SideCompareChart
                 key={kind}
-                title={MANEUVER_LABELS[kind]}
-                subtitle={`${block.successes}/${block.total} successes overall`}
+                title={maneuverLabel(kind)}
+                subtitle={t('session.register.successesOverall', {
+                  successes: block.successes,
+                  total: block.total,
+                })}
                 overallRate={block.rate}
                 bySide={block.bySide}
               />
@@ -271,7 +286,7 @@ export function SessionStatsView() {
       {KINDS.map((kind) => (
         <div key={kind} className="ss-card stats-panel">
           <header className="stats-panel__head">
-            <h2 className="stats-panel__title">{MANEUVER_LABELS[kind]}</h2>
+            <h2 className="stats-panel__title">{maneuverLabel(kind)}</h2>
             <span className="stats-badge">
               {stats.byKind[kind].successes}/{stats.byKind[kind].total} · {stats.byKind[kind].rate}%
             </span>
@@ -292,7 +307,7 @@ export function SessionStatsView() {
                   const row = stats.byKind[kind].byLevel[lvl]
                   return (
                     <tr key={String(lvl)}>
-                      <td>{lvl === 'estrela' ? 'Star ★' : `Level ${lvl}`}</td>
+                      <td>{lvl === 'estrela' ? t('ui.stats.starLevel') : t('ui.stats.levelN', { level: lvl })}</td>
                       <td>{row.attempts}</td>
                       <td className="data-table__ok">{row.successes}</td>
                       <td>

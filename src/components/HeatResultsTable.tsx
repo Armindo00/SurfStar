@@ -8,7 +8,8 @@ import {
   maxWavesInHeat,
   wavesOrderedChronological,
 } from '../heatUtils'
-import { HEAT_INTERFERENCE_LABELS, type HeatRecord } from '../types'
+import { useI18n } from '../i18n'
+import { type HeatInterferenceType, type HeatRecord } from '../types'
 
 type Props = {
   heat: HeatRecord
@@ -41,7 +42,13 @@ function mobileWaveClass(state: ReturnType<typeof heatWaveCellState>): string {
   }
 }
 
+function interferenceLabel(type: HeatInterferenceType, h: Record<string, string>): string {
+  return type === 'half-second' ? h.interferenceHalfSecond : h.interferenceDropSecond
+}
+
 export function HeatResultsTable({ heat, getAthleteName }: Props) {
+  const { t, messages } = useI18n()
+  const h = messages.session.heat as Record<string, string>
   const waveColumns = maxWavesInHeat(heat)
 
   const rows = useMemo(() => {
@@ -62,14 +69,14 @@ export function HeatResultsTable({ heat, getAthleteName }: Props) {
     <div className="heat-results-wrap">
       <div className="heat-results-legend">
         <span className="heat-results-legend__item heat-results-legend__item--counting">
-          2 best waves
+          {h.twoBestWaves}
         </span>
         <span className="heat-results-legend__item heat-results-legend__item--int">
-          Interference
+          {h.interference}
         </span>
       </div>
 
-      <div className="heat-results-mobile" aria-label="Heat results by surfer">
+      <div className="heat-results-mobile" aria-label={h.heatResultsBySurfer}>
         {rows.map((row, rank) => {
           const breakdown = heatResultBreakdown(heat, row.id)
           return (
@@ -83,28 +90,32 @@ export function HeatResultsTable({ heat, getAthleteName }: Props) {
               </header>
               {row.interference ? (
                 <p className="heat-int-badge heat-results-card__int">
-                  {HEAT_INTERFERENCE_LABELS[row.interference]}
+                  {interferenceLabel(row.interference, h)}
                 </p>
               ) : null}
               <ul className="heat-results-card__waves">
                 {row.waves.length === 0 ? (
-                  <li className="heat-results-card__wave heat-results-card__wave--empty">No waves logged</li>
+                  <li className="heat-results-card__wave heat-results-card__wave--empty">{h.noWavesLogged}</li>
                 ) : (
                   row.waves.map((wave, index) => {
                     const state = heatWaveCellState(heat, row.id, wave)
                     return (
                       <li key={wave.id} className={mobileWaveClass(state)}>
-                        <span className="heat-results-card__wave-label">Wave {index + 1}</span>
+                        <span className="heat-results-card__wave-label">
+                          {t('session.heat.waveNumber', { number: index + 1 })}
+                        </span>
                         <span className="heat-results-card__wave-score">
                           {formatWaveScoreCompact(wave.score)}
                         </span>
                         {state === 'int-half' && breakdown.rawSecondBest !== null ? (
                           <span className="heat-results-card__wave-int">
-                            INT → {formatWaveScoreCompact(breakdown.rawSecondBest / 2)}
+                            {t('session.heat.intHalved', {
+                              score: formatWaveScoreCompact(breakdown.rawSecondBest / 2),
+                            })}
                           </span>
                         ) : null}
                         {state === 'int-drop' ? (
-                          <span className="heat-results-card__wave-int">INT — dropped</span>
+                          <span className="heat-results-card__wave-int">{h.intDropped}</span>
                         ) : null}
                       </li>
                     )
@@ -120,18 +131,18 @@ export function HeatResultsTable({ heat, getAthleteName }: Props) {
         <table className="data-table heat-results-table">
           <thead>
             <tr>
-              <th>Surfer</th>
+              <th>{h.surfer}</th>
               {Array.from({ length: waveColumns }, (_, i) => (
                 <th key={i} className="heat-results-table__wave-head">
                   {i + 1}
                 </th>
               ))}
-              <th>Total</th>
+              <th>{h.totalLabel}</th>
             </tr>
             <tr className="heat-results-table__subhead">
               <th aria-hidden="true" />
               {Array.from({ length: waveColumns }, (_, i) => (
-                <th key={i}>Wave {i + 1}</th>
+                <th key={i}>{t('session.heat.waveNumber', { number: i + 1 })}</th>
               ))}
               <th aria-hidden="true" />
             </tr>
@@ -143,7 +154,7 @@ export function HeatResultsTable({ heat, getAthleteName }: Props) {
                   <strong>{row.name}</strong>
                   {row.interference ? (
                     <span className="heat-int-badge heat-int-badge--table">
-                      {HEAT_INTERFERENCE_LABELS[row.interference]}
+                      {interferenceLabel(row.interference, h)}
                     </span>
                   ) : null}
                 </td>
@@ -163,11 +174,13 @@ export function HeatResultsTable({ heat, getAthleteName }: Props) {
                       <span className="heat-cell__score">{formatWaveScoreCompact(wave.score)}</span>
                       {state === 'int-half' && breakdown.rawSecondBest !== null ? (
                         <span className="heat-cell__int">
-                          INT → {formatWaveScoreCompact(breakdown.rawSecondBest / 2)}
+                          {t('session.heat.intHalved', {
+                            score: formatWaveScoreCompact(breakdown.rawSecondBest / 2),
+                          })}
                         </span>
                       ) : null}
                       {state === 'int-drop' ? (
-                        <span className="heat-cell__int">INT — dropped</span>
+                        <span className="heat-cell__int">{h.intDropped}</span>
                       ) : null}
                     </td>
                   )

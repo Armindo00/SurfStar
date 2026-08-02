@@ -3,10 +3,12 @@ import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useToast } from '../components/ToastProvider'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 
 type Tab = 'spots' | 'conditions'
 
 export function ManageSpots() {
+  const { t } = useI18n()
   const {
     spots,
     conditions,
@@ -35,45 +37,42 @@ export function ManageSpots() {
     if (!trimmed) return
     addSpot(trimmed)
     setSpotName('')
-    showToast('Spot added.', 'success')
+    showToast(t('ui.spots.spotAdded'), 'success')
   }
 
   const submitCondition = () => {
     const trimmed = conditionName.trim()
     if (!trimmed) return
     if (conditions.includes(trimmed)) {
-      showToast('This condition already exists.', 'info')
+      showToast(t('ui.spots.conditionExists'), 'info')
       return
     }
     addCondition(trimmed)
     setConditionName('')
-    showToast('Condition added.', 'success')
+    showToast(t('ui.spots.conditionAdded'), 'success')
   }
 
   const saveSpotEdit = (spotId: string) => {
     updateSpotName(spotId, editingSpotName)
     setEditingSpotId(null)
     setEditingSpotName('')
-    showToast('Spot updated.', 'success')
+    showToast(t('ui.spots.spotUpdated'), 'success')
   }
 
   const saveConditionEdit = (current: string) => {
     updateConditionName(current, editingConditionName)
     setEditingCondition(null)
     setEditingConditionName('')
-    showToast('Condition updated.', 'success')
+    showToast(t('ui.spots.conditionUpdated'), 'success')
   }
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Spots & conditions" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.spotsAndConditions')} onBack={() => setView('coach-home')} />
 
       <div className="ss-card spots-intro">
-        <h2 className="page-title">Where you train</h2>
-        <p className="muted">
-          Manage surf spots and sea conditions used when starting a session. These appear as quick
-          picks on the start screen.
-        </p>
+        <h2 className="page-title">{t('ui.spots.whereYouTrain')}</h2>
+        <p className="muted">{t('ui.spots.whereYouTrainHint')}</p>
       </div>
 
       <div className="login-tabs spots-tabs" role="tablist">
@@ -84,7 +83,7 @@ export function ManageSpots() {
           className={tab === 'spots' ? 'login-tabs__btn login-tabs__btn--on' : 'login-tabs__btn'}
           onClick={() => setTab('spots')}
         >
-          Spots ({spots.length})
+          {t('ui.spots.spotsTab', { count: spots.length })}
         </button>
         <button
           type="button"
@@ -95,7 +94,7 @@ export function ManageSpots() {
           }
           onClick={() => setTab('conditions')}
         >
-          Conditions ({conditions.length})
+          {t('ui.spots.conditionsTab', { count: conditions.length })}
         </button>
       </div>
 
@@ -103,10 +102,10 @@ export function ManageSpots() {
         <>
           <div className="ss-card spots-add-card">
             <label className="field field--pro">
-              <span>New spot</span>
+              <span>{t('ui.spots.newSpot')}</span>
               <input
                 type="text"
-                placeholder="e.g. Supertubos, Coxos, Home break"
+                placeholder={t('ui.spots.spotPlaceholder')}
                 value={spotName}
                 onChange={(e) => setSpotName(e.target.value)}
                 onKeyDown={(e) => {
@@ -115,7 +114,7 @@ export function ManageSpots() {
               />
             </label>
             <button type="button" className="btn btn--primary btn--block" onClick={submitSpot}>
-              Add spot
+              {t('ui.spots.addSpot')}
             </button>
           </div>
 
@@ -139,14 +138,14 @@ export function ManageSpots() {
                           className="btn btn--primary btn--small"
                           onClick={() => saveSpotEdit(spot.id)}
                         >
-                          Save
+                          {t('common.save')}
                         </button>
                         <button
                           type="button"
                           className="btn btn--ghost btn--small"
                           onClick={() => setEditingSpotId(null)}
                         >
-                          Cancel
+                          {t('common.cancel')}
                         </button>
                       </div>
                     </div>
@@ -175,7 +174,7 @@ export function ManageSpots() {
                           disabled={spots.length <= 1}
                           onClick={() => setDeleteSpotId(spot.id)}
                         >
-                          Delete
+                          {t('common.delete')}
                         </button>
                       </div>
                     </>
@@ -189,10 +188,10 @@ export function ManageSpots() {
         <>
           <div className="ss-card spots-add-card">
             <label className="field field--pro">
-              <span>New condition</span>
+              <span>{t('ui.spots.newCondition')}</span>
               <input
                 type="text"
-                placeholder="e.g. Clean, Glassy, Windy"
+                placeholder={t('ui.spots.conditionPlaceholder')}
                 value={conditionName}
                 onChange={(e) => setConditionName(e.target.value)}
                 onKeyDown={(e) => {
@@ -201,7 +200,7 @@ export function ManageSpots() {
               />
             </label>
             <button type="button" className="btn btn--primary btn--block" onClick={submitCondition}>
-              Add condition
+              {t('ui.spots.addCondition')}
             </button>
           </div>
 
@@ -223,14 +222,14 @@ export function ManageSpots() {
                       className="btn btn--primary btn--small"
                       onClick={() => saveConditionEdit(condition)}
                     >
-                      Save
+                      {t('common.save')}
                     </button>
                     <button
                       type="button"
                       className="btn btn--ghost btn--small"
                       onClick={() => setEditingCondition(null)}
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </button>
                   </div>
                 )
@@ -243,7 +242,7 @@ export function ManageSpots() {
                     <button
                       type="button"
                       className="condition-chip__btn"
-                      aria-label={`Edit ${condition}`}
+                      aria-label={t('ui.spots.editSpot', { name: condition })}
                       onClick={() => {
                         setEditingCondition(condition)
                         setEditingConditionName(condition)
@@ -254,7 +253,7 @@ export function ManageSpots() {
                     <button
                       type="button"
                       className="condition-chip__btn condition-chip__btn--danger"
-                      aria-label={`Delete ${condition}`}
+                      aria-label={t('ui.spots.deleteSpotAction', { name: condition })}
                       disabled={conditions.length <= 1}
                       onClick={() => setDeleteCondition(condition)}
                     >
@@ -270,11 +269,11 @@ export function ManageSpots() {
 
       {deleteSpotId ? (
         <ConfirmDeleteModal
-          title="Delete spot?"
-          message="Past sessions keep this spot in their history. You need at least one spot."
+          title={t('ui.spots.deleteSpot')}
+          message={t('ui.spots.deleteSpotMessage')}
           onConfirm={() => {
-            if (removeSpot(deleteSpotId)) showToast('Spot removed.', 'success')
-            else showToast('Keep at least one spot.', 'info')
+            if (removeSpot(deleteSpotId)) showToast(t('ui.spots.spotRemoved'), 'success')
+            else showToast(t('ui.spots.keepOneSpot'), 'info')
             setDeleteSpotId(null)
           }}
           onCancel={() => setDeleteSpotId(null)}
@@ -283,11 +282,11 @@ export function ManageSpots() {
 
       {deleteCondition ? (
         <ConfirmDeleteModal
-          title="Delete condition?"
-          message="Past sessions keep the old label. You need at least one condition."
+          title={t('ui.spots.deleteCondition')}
+          message={t('ui.spots.deleteConditionMessage')}
           onConfirm={() => {
-            if (removeCondition(deleteCondition)) showToast('Condition removed.', 'success')
-            else showToast('Keep at least one condition.', 'info')
+            if (removeCondition(deleteCondition)) showToast(t('ui.spots.conditionRemoved'), 'success')
+            else showToast(t('ui.spots.keepOneCondition'), 'info')
             setDeleteCondition(null)
           }}
           onCancel={() => setDeleteCondition(null)}

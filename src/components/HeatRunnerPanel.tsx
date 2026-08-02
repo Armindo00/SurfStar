@@ -5,6 +5,7 @@ import { HeatScoreModal } from './HeatScoreModal'
 import { HeatTimer } from './HeatTimer'
 import { HeatWaveScoreLog } from './HeatWaveScoreLog'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import {
   formatHeatTotal,
   getHeatInterference,
@@ -31,6 +32,8 @@ export function HeatRunnerPanel({
   hideControls = false,
 }: Props) {
   const { getAthlete, startHeatTimer, endHeat, logHeatWaveScore, setHeatInterference } = useApp()
+  const { t, messages } = useI18n()
+  const h = messages.session.heat as Record<string, string>
   const [scoreAthleteId, setScoreAthleteId] = useState<string | null>(null)
   const [interferenceAthleteId, setInterferenceAthleteId] = useState<string | null>(null)
 
@@ -50,20 +53,20 @@ export function HeatRunnerPanel({
 
   const scoreAthlete = scoreAthleteId ? getAthlete(scoreAthleteId) : undefined
   const interferenceAthlete = interferenceAthleteId ? getAthlete(interferenceAthleteId) : undefined
+  const athleteFallback = messages.roles.athlete
 
   return (
     <div className={compact ? 'heat-runner heat-runner--compact' : 'heat-runner'}>
       <header className="heat-runner__head">
         <h2 className="heat-runner__title">{heat.label}</h2>
-        <span className="stats-badge">{heat.athleteIds.length} surfers</span>
+        <span className="stats-badge">{t('session.heat.surfersCount', { count: heat.athleteIds.length })}</span>
       </header>
 
       {!hideTimer ? <HeatTimer heat={heat} onTimeUp={() => endHeat(heat.id)} /> : null}
 
       {!compact ? (
         <p className="heat-rule muted">
-          Heat result = <strong>sum of the 2 best wave scores</strong> per surfer. Interference can halve or
-          remove the 2nd best from the total.
+          {h.heatRuleBefore} <strong>{h.heatRuleBold}</strong> {h.heatRuleAfter}
         </p>
       ) : null}
 
@@ -71,12 +74,12 @@ export function HeatRunnerPanel({
         <div className="heat-runner__controls">
           {!heat.timerStartedAt && canStart ? (
             <button type="button" className="btn btn--primary btn--block btn--lg" onClick={() => startHeatTimer(heat.id)}>
-              Start heat
+              {h.startHeat}
             </button>
           ) : null}
           {running ? (
             <button type="button" className="btn btn--danger btn--block" onClick={() => endHeat(heat.id)}>
-              End heat now
+              {h.endHeatNow}
             </button>
           ) : null}
         </div>
@@ -84,9 +87,9 @@ export function HeatRunnerPanel({
 
       {heatStarted || compact ? (
         <div className="heat-surfer-actions">
-          <p className="field-label">Surfers</p>
+          <p className="field-label">{h.surfers}</p>
           {heat.athleteIds.map((id) => {
-            const name = getAthlete(id)?.name ?? 'Athlete'
+            const name = getAthlete(id)?.name ?? athleteFallback
             const int = getHeatInterference(heat, id)
             return (
               <div key={id} className="heat-surfer-row">
@@ -98,7 +101,7 @@ export function HeatRunnerPanel({
                 <div className="heat-surfer-row__btns">
                   {canScore ? (
                     <button type="button" className="btn btn--primary btn--small" onClick={() => setScoreAthleteId(id)}>
-                      Score wave
+                      {h.scoreWave}
                     </button>
                   ) : null}
                   {canPenalize ? (
@@ -107,7 +110,7 @@ export function HeatRunnerPanel({
                       className="btn btn--ghost btn--small"
                       onClick={() => setInterferenceAthleteId(id)}
                     >
-                      Interference
+                      {h.interference}
                     </button>
                   ) : null}
                 </div>
@@ -119,15 +122,15 @@ export function HeatRunnerPanel({
 
       {finished && advancement.length > 0 ? (
         <div className="champ-advance-panel">
-          <p className="field-label">Advancement</p>
+          <p className="field-label">{h.advancement}</p>
           <ul className="champ-advance-list">
             {advancement.map((row) => (
               <li key={row.athleteId} className={row.advances ? 'champ-advance-list__on' : ''}>
                 <span>
-                  #{row.place} {getAthlete(row.athleteId)?.name ?? 'Athlete'}
+                  #{row.place} {getAthlete(row.athleteId)?.name ?? athleteFallback}
                 </span>
                 <span>{formatHeatTotal(totals[row.athleteId] ?? 0)}</span>
-                {row.advances ? <strong>Advances</strong> : null}
+                {row.advances ? <strong>{h.advances}</strong> : null}
               </li>
             ))}
           </ul>
@@ -139,11 +142,9 @@ export function HeatRunnerPanel({
           <HeatWaveScoreLog heat={heat} />
           {!compact ? (
             <>
-              <h3 className="heat-leaderboard__title">Heat results</h3>
-              <p className="muted heat-leaderboard__sub">
-                Waves in chronological order · green = counting (2 best) · red = interference.
-              </p>
-              <HeatResultsTable heat={heat} getAthleteName={(id) => getAthlete(id)?.name ?? 'Athlete'} />
+              <h3 className="heat-leaderboard__title">{h.heatResults}</h3>
+              <p className="muted heat-leaderboard__sub">{h.heatResultsSub}</p>
+              <HeatResultsTable heat={heat} getAthleteName={(id) => getAthlete(id)?.name ?? athleteFallback} />
             </>
           ) : null}
         </div>

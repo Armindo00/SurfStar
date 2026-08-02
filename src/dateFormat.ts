@@ -1,12 +1,23 @@
-/** SurfStar UI always formats dates in English, regardless of browser locale. */
-export const APP_LOCALE = 'en-GB'
+import { getLocale } from './i18n/I18nContext'
+import type { SupportedLocale } from './i18n/types'
+
+const INTL_LOCALES: Record<SupportedLocale, string> = {
+  en: 'en-GB',
+  pt: 'pt-PT',
+  fr: 'fr-FR',
+  es: 'es-ES',
+}
+
+export function appIntlLocale(): string {
+  return INTL_LOCALES[getLocale()]
+}
 
 export function formatAppDate(
   value: string | Date,
   options: Intl.DateTimeFormatOptions,
 ): string {
   const date = value instanceof Date ? value : new Date(value)
-  return date.toLocaleDateString(APP_LOCALE, options)
+  return date.toLocaleDateString(appIntlLocale(), options)
 }
 
 export function formatAppDateTime(
@@ -14,7 +25,7 @@ export function formatAppDateTime(
   options: Intl.DateTimeFormatOptions,
 ): string {
   const date = value instanceof Date ? value : new Date(value)
-  return date.toLocaleString(APP_LOCALE, options)
+  return date.toLocaleString(appIntlLocale(), options)
 }
 
 export function formatAppTime(
@@ -22,7 +33,7 @@ export function formatAppTime(
   options: Intl.DateTimeFormatOptions,
 ): string {
   const date = value instanceof Date ? value : new Date(value)
-  return date.toLocaleTimeString(APP_LOCALE, options)
+  return date.toLocaleTimeString(appIntlLocale(), options)
 }
 
 export function formatShortDate(value: string | Date): string {
@@ -54,3 +65,6 @@ export function formatMonthShort(value: string | Date): string {
 export function formatDayMonth(value: string | Date): string {
   return formatAppDate(value, { day: 'numeric', month: 'short' })
 }
+
+/** @deprecated Use appIntlLocale() */
+export const APP_LOCALE = 'en-GB'

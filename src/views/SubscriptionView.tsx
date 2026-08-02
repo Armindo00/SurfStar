@@ -5,8 +5,10 @@ import { athleteLimitMessage, coachSeatLimitMessage, canManageOrganizationCoache
 import { cloudOpenBillingPortal, isSubscriptionActive } from '../subscriptionApi'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { DeleteAccountPanel } from '../components/DeleteAccountPanel'
+import { LanguagePicker } from '../components/LanguagePicker'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 
 export function SubscriptionView() {
   const {
@@ -22,6 +24,7 @@ export function SubscriptionView() {
     setView,
     cloudMode,
   } = useApp()
+  const { t } = useI18n()
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [pwdError, setPwdError] = useState('')
@@ -45,7 +48,7 @@ export function SubscriptionView() {
     setPwdError('')
     setPwdSuccess('')
     if (password !== passwordConfirm) {
-      setPwdError('Passwords do not match.')
+      setPwdError(t('subscription.passwordsMismatch'))
       return
     }
     setPwdBusy(true)
@@ -57,7 +60,7 @@ export function SubscriptionView() {
       }
       setPassword('')
       setPasswordConfirm('')
-      setPwdSuccess('Password updated.')
+      setPwdSuccess(t('subscription.passwordUpdated'))
     } finally {
       setPwdBusy(false)
     }
@@ -107,17 +110,21 @@ export function SubscriptionView() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Account & subscription" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('subscription.title')} onBack={() => setView('coach-home')} />
 
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Current plan</h2>
+        <LanguagePicker />
+      </div>
+
+      <div className="ss-card stats-panel">
+        <h2 className="stats-panel__title">{t('subscription.currentPlan')}</h2>
         {plan ? (
           <>
             <p className="stats-panel__plan-name">
               <strong>{plan.name}</strong> — {formatPlanPriceWithSuffix(plan, 'monthly')}
             </p>
             <p className="muted">
-              {athleteLimitMessage(plan.id)} · {activeCount} active athletes
+              {athleteLimitMessage(plan.id)} · {activeCount} {t('subscription.activeAthletes')}
               {canManageOrganizationCoaches(plan.id)
                 ? ` · ${organizationMembers.filter((m) => m.status === 'active' || m.status === 'pending').length} coaches`
                 : ''}
@@ -161,24 +168,19 @@ export function SubscriptionView() {
             ) : null}
           </>
         ) : (
-          <p className="muted">No active subscription.</p>
+          <p className="muted">{t('ui.subscription.noActiveSubscription')}</p>
         )}
       </div>
 
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Change plan</h2>
+        <h2 className="stats-panel__title">{t('ui.subscription.changePlan')}</h2>
         <p className="muted subscription-manage__hint">
           {manualFlow
-            ? 'Manual billing is active. Contact support to change plan or renew your subscription.'
+            ? t('ui.subscription.changePlanHintManual')
             : cloudMode && !isStripeConfigured()
-              ? 'Switch anytime. Plans update instantly while Stripe is not active.'
-              : 'Switch anytime. Upgrades apply immediately; downgrades follow your billing cycle when paid via Stripe.'}
-          {!manualFlow ? (
-            <>
-              {' '}
-              Annual billing (2 months free) is available at checkout when you subscribe or upgrade via Stripe.
-            </>
-          ) : null}
+              ? t('ui.subscription.changePlanHintDemo')
+              : t('ui.subscription.changePlanHintStripe')}
+          {!manualFlow ? t('ui.subscription.annualBillingNote') : null}
         </p>
         {!manualFlow ? (
         <div className="subscription-plan-picker">
@@ -196,7 +198,7 @@ export function SubscriptionView() {
                 <div>
                   <strong>{item.name}</strong>
                   <span className="muted"> · {formatPlanPriceWithSuffix(item, 'monthly')}</span>
-                  {isCurrent ? <span className="subscription-plan-picker__badge">Current</span> : null}
+                  {isCurrent ? <span className="subscription-plan-picker__badge">{t('ui.subscription.current')}</span> : null}
                 </div>
                 <button
                   type="button"
@@ -204,7 +206,11 @@ export function SubscriptionView() {
                   disabled={isCurrent || planBusy !== null || cancelBusy}
                   onClick={() => void handleChangePlan(item.id)}
                 >
-                  {planBusy === item.id ? 'Updating…' : isCurrent ? 'Current plan' : `Switch to ${item.name}`}
+                  {planBusy === item.id
+                    ? t('ui.subscription.updating')
+                    : isCurrent
+                      ? t('ui.subscription.currentPlan')
+                      : t('ui.subscription.switchToPlan', { name: item.name })}
                 </button>
               </div>
             )
@@ -214,13 +220,13 @@ export function SubscriptionView() {
         {!canManageOrganizationCoaches(plan?.id ?? 'team') ? (
           <div className="subscription-team-academy-cta">
             <p className="muted">
-              Need up to 5 coaches on one shared roster? Team Academy (
-              {formatPlanPriceWithSuffix(getPlan('organization'), 'monthly')} or{' '}
-              {formatPlanPriceWithSuffix(getPlan('organization'), 'annual')} billed annually) is available by approval for
-              schools and federations.
+              {t('ui.subscription.teamAcademyCta', {
+                monthly: formatPlanPriceWithSuffix(getPlan('organization'), 'monthly'),
+                annual: formatPlanPriceWithSuffix(getPlan('organization'), 'annual'),
+              })}
             </p>
             <button type="button" className="btn btn--secondary btn--block" onClick={openTeamAcademyRequest}>
-              Request Team Academy
+              {t('ui.subscription.requestTeamAcademy')}
             </button>
           </div>
         ) : null}
@@ -231,19 +237,19 @@ export function SubscriptionView() {
             disabled={billingBusy || cancelBusy}
             onClick={() => void handleOpenBilling()}
           >
-            {billingBusy ? 'Opening…' : 'Manage billing on Stripe'}
+            {billingBusy ? t('ui.subscription.openingBilling') : t('ui.subscription.manageBillingStripe')}
           </button>
         ) : null}
       </div>
 
       <div className="ss-card stats-panel subscription-cancel-panel">
-        <h2 className="stats-panel__title">Cancel subscription</h2>
+        <h2 className="stats-panel__title">{t('ui.subscription.cancelSubscription')}</h2>
         <p className="muted">
           {manualFlow
-            ? 'Your subscription stays active until the end of the current billing period. To renew later, contact contact@surfstar.app.'
+            ? t('ui.subscription.cancelHintManual')
             : cloudMode
-              ? 'Your subscription stays active until the end of the current billing period. You can resubscribe anytime.'
-              : 'Canceling stops access to coach features on this device.'}
+              ? t('ui.subscription.cancelHintCloud')
+              : t('ui.subscription.cancelHintLocal')}
         </p>
         {!showCancelConfirm ? (
           <button
@@ -252,11 +258,11 @@ export function SubscriptionView() {
             disabled={!isActive || cancelBusy || planBusy !== null || canceledWithAccess}
             onClick={() => setShowCancelConfirm(true)}
           >
-            {canceledWithAccess ? 'Cancellation scheduled' : 'Cancel subscription'}
+            {canceledWithAccess ? t('ui.subscription.cancellationScheduled') : t('ui.subscription.cancelSubscription')}
           </button>
         ) : (
           <div className="subscription-cancel-confirm">
-            <p>Are you sure you want to cancel?</p>
+            <p>{t('ui.subscription.cancelConfirmQuestion')}</p>
             <div className="subscription-cancel-confirm__actions">
               <button
                 type="button"
@@ -264,7 +270,7 @@ export function SubscriptionView() {
                 disabled={cancelBusy}
                 onClick={() => void handleCancel()}
               >
-                {cancelBusy ? 'Canceling…' : 'Yes, cancel'}
+                {cancelBusy ? t('ui.subscription.canceling') : t('ui.subscription.yesCancel')}
               </button>
               <button
                 type="button"
@@ -272,7 +278,7 @@ export function SubscriptionView() {
                 disabled={cancelBusy}
                 onClick={() => setShowCancelConfirm(false)}
               >
-                Keep subscription
+                {t('ui.subscription.keepSubscription')}
               </button>
             </div>
           </div>
@@ -282,10 +288,10 @@ export function SubscriptionView() {
       {manageError ? <p className="login-error">{manageError}</p> : null}
 
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Change password</h2>
+        <h2 className="stats-panel__title">{t('subscription.changePassword')}</h2>
         <form className="form-pro" onSubmit={(e) => void submitPassword(e)}>
           <label className="field field--pro">
-            <span>New password</span>
+            <span>{t('subscription.newPassword')}</span>
             <input
               type="password"
               minLength={MIN_PASSWORD_LENGTH}
@@ -295,7 +301,7 @@ export function SubscriptionView() {
             />
           </label>
           <label className="field field--pro">
-            <span>Confirm password</span>
+            <span>{t('subscription.confirmPassword')}</span>
             <input
               type="password"
               minLength={MIN_PASSWORD_LENGTH}
@@ -307,7 +313,7 @@ export function SubscriptionView() {
           {pwdError ? <p className="login-error">{pwdError}</p> : null}
           {pwdSuccess ? <p className="login-success">{pwdSuccess}</p> : null}
           <button type="submit" className="btn btn--primary btn--block" disabled={pwdBusy}>
-            {pwdBusy ? 'Saving…' : 'Save password'}
+            {pwdBusy ? t('common.save') + '…' : t('subscription.updatePassword')}
           </button>
         </form>
       </div>

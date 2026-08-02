@@ -1,11 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useApp } from '../AppContext'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { useI18n } from '../i18n'
 import { canAddCoach, canManageOrganizationCoaches, coachSeatLimitMessage } from '../planUtils'
 import { getPlan } from '../plans'
 import { UNSEEN } from '../unseenDomains'
 
 export function OrganizationView() {
+  const { t } = useI18n()
   const {
     auth,
     subscription,
@@ -55,12 +57,12 @@ export function OrganizationView() {
     setSuccess('')
 
     if (!canManageTeam) {
-      setError('Multiple coaches are available on the Team Academy plan.')
+      setError(t('ui.organization.multipleCoachesPlan'))
       return
     }
 
     if (!canAddCoach(planId, activeCoachCount)) {
-      setError(`Coach seat limit reached (${seatLimit} coaches on your plan).`)
+      setError(t('ui.organization.seatLimitReached', { limit: seatLimit }))
       return
     }
 
@@ -68,11 +70,11 @@ export function OrganizationView() {
     try {
       const result = await inviteOrganizationCoach(inviteEmail)
       if (!result.ok) {
-        setError(result.error ?? 'Could not send invite.')
+        setError(result.error ?? t('errors.generic'))
         return
       }
       setInviteEmail('')
-      setSuccess('Coach invited. They can sign in or create an account with that email to join your team.')
+      setSuccess(t('ui.organization.inviteSuccess'))
     } finally {
       setBusy(false)
     }
@@ -86,10 +88,10 @@ export function OrganizationView() {
     try {
       const result = await updateOrganizationName(teamName)
       if (!result.ok) {
-        setError(result.error ?? 'Could not update name.')
+        setError(result.error ?? t('errors.generic'))
         return
       }
-      setSuccess('Team name updated.')
+      setSuccess(t('ui.organization.nameUpdated'))
     } finally {
       setBusy(false)
     }
@@ -102,10 +104,10 @@ export function OrganizationView() {
     try {
       const result = await removeOrganizationMember(memberId)
       if (!result.ok) {
-        setError(result.error ?? 'Could not remove member.')
+        setError(result.error ?? t('errors.generic'))
         return
       }
-      setSuccess('Coach removed from the team.')
+      setSuccess(t('ui.organization.coachRemoved'))
     } finally {
       setBusy(false)
     }
@@ -115,37 +117,35 @@ export function OrganizationView() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Team & coaches" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.teamAndCoaches')} onBack={() => setView('coach-home')} />
 
       <div className="ss-card stats-panel">
         <h2 className="stats-panel__title">{auth.organizationName}</h2>
         <p className="muted">
           {canManageTeam
-            ? `${coachSeatLimitMessage(planId)} · ${activeCoachCount}/${seatLimit} seats used`
-            : 'Upgrade to Team Academy to add up to 5 coaches with a shared roster and database.'}
+            ? `${coachSeatLimitMessage(planId)} · ${activeCoachCount}/${seatLimit}`
+            : t('ui.organization.upgradeTeamAcademyHint')}
         </p>
-        <p className="muted">
-          All coaches on this team share the same athletes, sessions, spots, templates, and analytics.
-        </p>
+        <p className="muted">{t('ui.organization.sharedRosterHint')}</p>
       </div>
 
       {isOwner ? (
         <div className="ss-card stats-panel">
-          <h2 className="stats-panel__title">Team name</h2>
+          <h2 className="stats-panel__title">{t('ui.organization.teamName')}</h2>
           <form className="form-pro" onSubmit={(e) => void submitRename(e)}>
             <label className="field field--pro">
-              <span>Organization name</span>
+              <span>{t('ui.organization.organizationName')}</span>
               <input value={teamName} onChange={(e) => setTeamName(e.target.value)} />
             </label>
             <button type="submit" className="btn btn--secondary btn--block" disabled={busy}>
-              Save name
+              {t('ui.organization.saveName')}
             </button>
           </form>
         </div>
       ) : null}
 
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Coaches</h2>
+        <h2 className="stats-panel__title">{t('ui.organization.coaches')}</h2>
         <ul className="org-members-list">
           {organizationMembers.map((member) => (
             <li key={member.id} className="org-members-list__item">
@@ -153,8 +153,8 @@ export function OrganizationView() {
                 <strong>{member.name}</strong>
                 <span className="muted"> · {member.email}</span>
                 <div className="org-members-list__meta muted">
-                  {member.role === 'owner' ? 'Owner' : 'Coach'}
-                  {member.status === 'pending' ? ' · Invite pending' : ''}
+                  {member.role === 'owner' ? t('ui.organization.owner') : t('ui.organization.coach')}
+                  {member.status === 'pending' ? ` · ${t('ui.organization.invitePending')}` : ''}
                 </div>
               </div>
               {isOwner && member.role !== 'owner' ? (
@@ -164,7 +164,7 @@ export function OrganizationView() {
                   disabled={busy}
                   onClick={() => void handleRemove(member.id)}
                 >
-                  Remove
+                  {t('ui.organization.remove')}
                 </button>
               ) : null}
             </li>
@@ -174,24 +174,21 @@ export function OrganizationView() {
 
       {isOwner && canManageTeam ? (
         <div className="ss-card stats-panel">
-          <h2 className="stats-panel__title">Invite a coach</h2>
-          <p className="muted">
-            Enter the email of an existing SurfStar coach or someone who will create a coach account.
-            They will join this team and share all data.
-          </p>
+          <h2 className="stats-panel__title">{t('ui.organization.inviteCoach')}</h2>
+          <p className="muted">{t('ui.organization.inviteHint')}</p>
           <form className="form-pro" onSubmit={(e) => void submitInvite(e)}>
             <label className="field field--pro">
-              <span>Coach email</span>
+              <span>{t('ui.organization.coachEmail')}</span>
               <input
                 type="email"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="coach@school.com"
+                placeholder={t('ui.organization.coachEmailPlaceholder')}
                 required
               />
             </label>
             <button type="submit" className="btn btn--gold btn--block" disabled={busy}>
-              {busy ? 'Sending…' : 'Send invite'}
+              {busy ? t('ui.organization.sending') : t('ui.organization.sendInvite')}
             </button>
           </form>
         </div>
@@ -199,12 +196,9 @@ export function OrganizationView() {
 
       {!canManageTeam ? (
         <div className="ss-card stats-panel">
-          <p className="muted">
-            The Team Academy plan is built for schools, federations, and surf academies — up to 5 coaches,
-            unlimited athletes, and everything in Coach Premium.
-          </p>
+          <p className="muted">{t('ui.organization.teamAcademyPitch')}</p>
           <button type="button" className="btn btn--gold btn--block" onClick={openTeamAcademyRequest}>
-            Request Team Academy access
+            {t('ui.organization.requestTeamAcademyAccess')}
           </button>
         </div>
       ) : null}

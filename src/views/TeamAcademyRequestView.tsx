@@ -11,6 +11,7 @@ import {
 import { BillingAddressFields } from '../components/BillingAddressFields'
 import { TaxIdField } from '../components/TaxIdField'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import { isValidEmail, normalizeEmail } from '../passwordUtils'
 import {
   formatPlanPriceWithSuffix,
@@ -22,6 +23,7 @@ import { submitOrganizationPlanRequest } from '../organizationPlanRequestApi'
 
 export function TeamAcademyRequestView() {
   const { openLanding, openCoachSignIn, cloudMode, selectedBillingInterval, setBillingInterval } = useApp()
+  const { t } = useI18n()
   const plan = getPlan('organization')
   const manualFlow = usesManualPaymentFlow()
 
@@ -50,15 +52,15 @@ export function TeamAcademyRequestView() {
     const normalized = normalizeEmail(email)
 
     if (!trimmedName) {
-      setError('Enter your name.')
+      setError(t('ui.teamAcademyRequest.enterName'))
       return
     }
     if (!isValidEmail(normalized)) {
-      setError('Enter a valid email.')
+      setError(t('ui.teamAcademyRequest.enterValidEmail'))
       return
     }
     if (trimmedOrg.length < 2) {
-      setError('Enter your school, club, or federation name.')
+      setError(t('ui.teamAcademyRequest.enterOrgName'))
       return
     }
 
@@ -117,16 +119,14 @@ export function TeamAcademyRequestView() {
       <div className="auth-page">
         <div className="auth-card auth-card--wide">
           <AppLogo size="xl" />
-          <h1 className="auth-title">Request received</h1>
+          <h1 className="auth-title">{t('ui.teamAcademyRequest.submittedTitle')}</h1>
           <ManualBillingNotice variant="submitted" email={email.trim() || undefined} />
-          <p className="muted auth-lead">
-            Thanks — we&apos;ll review your Team Academy request and email you within 2 business days.
-          </p>
+          <p className="muted auth-lead">{t('ui.teamAcademyRequest.submittedBody')}</p>
           <button type="button" className="btn btn--gold btn--block" onClick={openLanding}>
-            Back to home
+            {t('ui.teamAcademyRequest.backToHome')}
           </button>
           <button type="button" className="btn btn--ghost btn--block" onClick={openCoachSignIn}>
-            Already approved? Coach sign in
+            {t('ui.teamAcademyRequest.alreadyHaveAccount')} {t('ui.teamAcademyRequest.signIn')}
           </button>
         </div>
       </div>
@@ -137,32 +137,33 @@ export function TeamAcademyRequestView() {
     <div className="auth-page">
       <div className="auth-card auth-card--wide">
         <button type="button" className="checkout-back" onClick={openLanding}>
-          ← Back
+          ← {t('common.back')}
         </button>
 
         <AppLogo size="xl" />
-        <h1 className="auth-title">Request Team Academy</h1>
+        <h1 className="auth-title">{t('ui.teamAcademyRequest.title')}</h1>
         <p className="muted auth-lead">
-          For schools, federations, and surf academies worldwide. Up to 5 coaches on one shared roster —{' '}
-          {formatPlanPriceWithSuffix(plan, selectedBillingInterval)} or{' '}
-          {formatPlanTotalPrice(plan, 'annual')} billed annually after approval.
+          {t('ui.teamAcademyRequest.lead', {
+            monthlyPrice: formatPlanPriceWithSuffix(plan, selectedBillingInterval),
+            annualPrice: formatPlanTotalPrice(plan, 'annual'),
+          })}
         </p>
 
         <BillingIntervalToggle value={selectedBillingInterval} onChange={setBillingInterval} />
 
         <ul className="checkout-features team-academy-request__features">
-          <li>Manual review — payment after approval</li>
-          <li>Shared athletes, sessions & analytics for your staff</li>
-          <li>Everything included in Coach Premium</li>
+          <li>{t('ui.teamAcademyRequest.featureManualReview')}</li>
+          <li>{t('ui.teamAcademyRequest.featureShared')}</li>
+          <li>{t('ui.teamAcademyRequest.featurePremium')}</li>
         </ul>
 
         <form className="form-pro" onSubmit={(e) => void submit(e)}>
           <label className="field field--pro">
-            <span>Your name</span>
+            <span>{t('ui.teamAcademyRequest.yourName')}</span>
             <input value={contactName} onChange={(e) => setContactName(e.target.value)} required />
           </label>
           <label className="field field--pro">
-            <span>Work email</span>
+            <span>{t('ui.teamAcademyRequest.workEmail')}</span>
             <input
               type="email"
               value={email}
@@ -172,11 +173,11 @@ export function TeamAcademyRequestView() {
             />
           </label>
           <label className="field field--pro">
-            <span>School / club / federation</span>
+            <span>{t('ui.teamAcademyRequest.organizationLabel')}</span>
             <input
               value={organizationName}
               onChange={(e) => setOrganizationName(e.target.value)}
-              placeholder="e.g. Cascais Surf Academy"
+              placeholder={t('ui.teamAcademyRequest.organizationPlaceholder')}
               required
             />
           </label>
@@ -204,36 +205,34 @@ export function TeamAcademyRequestView() {
           />
 
           <label className="field field--pro">
-            <span>Coaches needed</span>
+            <span>{t('ui.teamAcademyRequest.coachesNeeded')}</span>
             <select value={coachesCount} onChange={(e) => setCoachesCount(e.target.value)}>
               {[2, 3, 4, 5].map((n) => (
                 <option key={n} value={String(n)}>
-                  {n} coaches
+                  {t('ui.teamAcademyRequest.coachesCount', { count: n })}
                 </option>
               ))}
             </select>
           </label>
           <label className="field field--pro">
-            <span>Message (optional)</span>
+            <span>{t('ui.teamAcademyRequest.messageOptional')}</span>
             <textarea
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Tell us about your program, number of athletes, etc."
+              placeholder={t('ui.teamAcademyRequest.messagePlaceholder')}
             />
           </label>
 
           {error ? <p className="login-error">{error}</p> : null}
 
           <button type="submit" className="btn btn--gold btn--block btn--lg" disabled={busy}>
-            {busy ? 'Sending…' : 'Submit request'}
+            {busy ? t('ui.teamAcademyRequest.sending') : t('ui.teamAcademyRequest.submitRequest')}
           </button>
         </form>
 
         <p className="checkout-note muted">
-          {manualFlow
-            ? 'All plans use manual billing at launch. Choose Coach or Coach Premium on the pricing page to register first.'
-            : 'Need a solo plan today? Choose Coach or Coach Premium on the pricing page — instant activation.'}
+          {manualFlow ? t('ui.teamAcademyRequest.noteManual') : t('ui.teamAcademyRequest.noteInstant')}
         </p>
       </div>
     </div>

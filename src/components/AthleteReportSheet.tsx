@@ -16,7 +16,9 @@ import {
 } from '../sessionStats'
 import type { AthletePeriodAnalytics } from '../teamAnalyticsStats'
 import { formatSessionDate, resolveSessionSpotName } from '../sessionHistoryUtils'
-import { TRAINING_MODE_LABELS, type SurfSpot } from '../types'
+import { trainingModeLabel } from '../i18n/labels'
+import { useI18n } from '../i18n'
+import type { SurfSpot } from '../types'
 import { AthleteReportDetailSections } from './AthleteReportDetailSections'
 
 type Props = {
@@ -48,6 +50,8 @@ export function AthleteReportSheet({
   psychology,
   onClose,
 }: Props) {
+  const { t, messages } = useI18n()
+  const r = messages.analytics.analyticsReport
   const [coachComment, setCoachComment] = useState('')
   const trimmedComment = coachComment.trim()
   const general = analytics.general
@@ -75,23 +79,21 @@ export function AthleteReportSheet({
       >
         <div className="athlete-report-print-actions no-print">
           <label className="field field--pro athlete-report__comment-field">
-            <span>Coach comments (optional)</span>
+            <span>{r.coachCommentsOptional}</span>
             <textarea
               rows={4}
               value={coachComment}
-              placeholder="Add a short summary for parents or the athlete — e.g. progress, focus areas, next steps…"
+              placeholder={r.coachCommentsPlaceholder}
               onChange={(event) => setCoachComment(event.target.value)}
             />
-            <small className="muted">
-              Not saved — only included in this export. Appears in the PDF when you print.
-            </small>
+            <small className="muted">{r.coachCommentsNote}</small>
           </label>
           <div className="athlete-report-print-actions__buttons">
             <button type="button" className="btn btn--ghost btn--small" onClick={onClose}>
-              Close
+              {t('common.close')}
             </button>
             <button type="button" className="btn btn--gold btn--small" onClick={printReport}>
-              Print / Save as PDF
+              {r.printSavePdf}
             </button>
           </div>
         </div>
@@ -101,58 +103,58 @@ export function AthleteReportSheet({
             <div className="athlete-report__brand">
               <AppLogo size="sm" />
               <div>
-                <p className="athlete-report__eyebrow">SurfStar performance report</p>
+                <p className="athlete-report__eyebrow">{r.sheetEyebrow}</p>
                 <h1 id="athlete-report-title">{athleteName}</h1>
                 <p className="athlete-report__subtitle">{reportTitle}</p>
               </div>
             </div>
             <dl className="athlete-report__meta">
               <div>
-                <dt>Period</dt>
+                <dt>{r.period}</dt>
                 <dd>{rangeLabel}</dd>
               </div>
               <div>
-                <dt>Coach</dt>
+                <dt>{r.coach}</dt>
                 <dd>{coachName}</dd>
               </div>
               {organizationName ? (
                 <div>
-                  <dt>Organization</dt>
+                  <dt>{r.organization}</dt>
                   <dd>{organizationName}</dd>
                 </div>
               ) : null}
               <div>
-                <dt>Generated</dt>
+                <dt>{r.generated}</dt>
                 <dd>{generatedAt}</dd>
               </div>
             </dl>
           </header>
 
           <section className="athlete-report__section">
-            <h2>Summary</h2>
+            <h2>{r.summary}</h2>
             <div className="athlete-report__kpi-grid">
               <article>
-                <span>Sessions</span>
+                <span>{r.sessions}</span>
                 <strong>{general.totalTrainings}</strong>
               </article>
               <article>
-                <span>Waves logged</span>
+                <span>{r.wavesLogged}</span>
                 <strong>{general.totalWaves}</strong>
               </article>
               <article>
-                <span>Avg level</span>
+                <span>{r.avgLevel}</span>
                 <strong>{formatAverageLevelValue(general.avgOverallManeuverLevel)}</strong>
               </article>
               <article>
-                <span>Potential rate</span>
+                <span>{r.potentialRate}</span>
                 <strong>{general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`}</strong>
               </article>
               <article>
-                <span>Stars</span>
+                <span>{r.stars}</span>
                 <strong>{general.totalStars}</strong>
               </article>
               <article>
-                <span>Heat wins</span>
+                <span>{r.heatWins}</span>
                 <strong>{general.heatWins}</strong>
               </article>
             </div>
@@ -163,24 +165,24 @@ export function AthleteReportSheet({
 
           {trimmedComment ? (
             <section className="athlete-report__section athlete-report__section--comments">
-              <h2>Coach comments</h2>
+              <h2>{r.coachComments}</h2>
               <p className="athlete-report__comment">{trimmedComment}</p>
             </section>
           ) : null}
 
           {analytics.evolution.length > 0 ? (
             <section className="athlete-report__section">
-              <h2>Evolution</h2>
+              <h2>{r.evolution}</h2>
               <div className="table-wrap athlete-report__table-wrap">
                 <table className="data-table athlete-report__table">
                   <thead>
                     <tr>
                       <th>{evolutionColumn}</th>
-                      <th>Sessions</th>
-                      <th>Waves</th>
-                      <th>Success</th>
-                      <th>Avg level</th>
-                      <th>Potential</th>
+                      <th>{r.sessions}</th>
+                      <th>{r.wavesLogged}</th>
+                      <th>{r.successCol}</th>
+                      <th>{r.avgLevel}</th>
+                      <th>{r.potentialCol}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -202,11 +204,11 @@ export function AthleteReportSheet({
 
           {Object.keys(sessionCountByMode).length > 0 ? (
             <section className="athlete-report__section">
-              <h2>Training mix</h2>
+              <h2>{r.trainingMix}</h2>
               <ul className="athlete-report__breakdown">
                 {Object.entries(sessionCountByMode).map(([mode, count]) => (
                   <li key={mode}>
-                    <span>{TRAINING_MODE_LABELS[mode as keyof typeof TRAINING_MODE_LABELS] ?? mode}</span>
+                    <span>{trainingModeLabel(mode)}</span>
                     <strong>{count}</strong>
                   </li>
                 ))}
@@ -224,22 +226,22 @@ export function AthleteReportSheet({
 
           {sessionSummaries.length > 0 ? (
             <section className="athlete-report__section">
-              <h2>Session log</h2>
+              <h2>{r.sessionLog}</h2>
               <div className="table-wrap athlete-report__table-wrap">
                 <table className="data-table athlete-report__table">
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Mode</th>
-                      <th>Spot</th>
-                      <th>Summary</th>
+                      <th>{r.date}</th>
+                      <th>{r.mode}</th>
+                      <th>{r.spot}</th>
+                      <th>{r.summaryCol}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sessionSummaries.map(({ session, headline }) => (
                       <tr key={session.id}>
                         <td>{formatSessionDate(session.endedAt ?? session.startedAt)}</td>
-                        <td>{TRAINING_MODE_LABELS[session.mode]}</td>
+                        <td>{trainingModeLabel(session.mode)}</td>
                         <td>{resolveSessionSpotName(session, getSpot)}</td>
                         <td>{headline}</td>
                       </tr>
@@ -252,7 +254,10 @@ export function AthleteReportSheet({
 
           <footer className="athlete-report__footer">
             <p>
-              Generated by SurfStar · {getAppSiteUrl()} · {formatShortDate(new Date())}
+              {t('analytics.analyticsReport.footerGenerated', {
+                url: getAppSiteUrl(),
+                date: formatShortDate(new Date()),
+              })}
             </p>
           </footer>
         </article>

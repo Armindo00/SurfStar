@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useI18n } from '../i18n'
 import { ChampionshipBracketBoard } from '../components/ChampionshipBracketBoard'
 import { ChampionshipRoundRunner } from '../components/ChampionshipRoundRunner'
 import { HeatRunnerPanel } from '../components/HeatRunnerPanel'
@@ -17,6 +18,7 @@ import {
 } from '../championshipUtils'
 
 export function ChampionshipSessionView() {
+  const { t } = useI18n()
   const { activeSession, activeHeatId, setActiveHeatId, setView, getAthlete } = useApp()
 
   const heats = activeSession?.heats ?? []
@@ -83,9 +85,9 @@ export function ChampionshipSessionView() {
   if (!activeSession || activeSession.mode !== 'campeonato') {
     return (
       <div className="ss-flow">
-        <p className="muted">No active championship session.</p>
+        <p className="muted">{t('ui.championship.noActiveSession')}</p>
         <button type="button" className="btn" onClick={() => setView('coach-home')}>
-          Back
+          {t('common.back')}
         </button>
       </div>
     )
@@ -98,10 +100,10 @@ export function ChampionshipSessionView() {
 
   return (
     <div className="ss-flow ss-flow--training ss-flow--with-sticky">
-      <ScreenHeader title="Championship" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.championship')} onBack={() => setView('coach-home')} />
 
       <div className="ss-card champ-bracket-card">
-        <h2 className="page-title">Bracket</h2>
+        <h2 className="page-title">{t('ui.championship.bracket')}</h2>
         <p className="muted stats-panel__sub">
           {athleteCount} surfers ·{' '}
           {heatSize === 2 ? 'heats of 2 · top 1 advances' : 'heats of 3 or 4 · top 2 advance'}
@@ -120,7 +122,7 @@ export function ChampionshipSessionView() {
             Champion: <strong>{champion.name}</strong>
           </p>
         ) : (
-          <p className="muted">Round {currentRound} in progress</p>
+          <p className="muted">{t('ui.championship.roundInProgress', { round: currentRound })}</p>
         )}
 
         <ChampionshipBracketBoard

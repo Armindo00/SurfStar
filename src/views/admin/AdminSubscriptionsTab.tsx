@@ -12,6 +12,7 @@ import {
   renewalStatusTone,
   subscriptionAmount,
 } from '../../adminBillingUtils'
+import { useI18n } from '../../i18n'
 import { AdminFilterPills } from './AdminFilterPills'
 import { billingIntervalLabel, formatAdminDate, planLabel } from './adminUtils'
 
@@ -29,15 +30,6 @@ type Props = {
   onToast: (message: string) => void
   onDashboardRefresh: () => Promise<void>
 }
-
-const FILTER_OPTIONS: { value: AdminSubscriptionFilter; label: string }[] = [
-  { value: 'all', label: 'All active' },
-  { value: 'due_7d', label: 'Due 7 days' },
-  { value: 'due_30d', label: 'Due 30 days' },
-  { value: 'overdue', label: 'Overdue' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'annual', label: 'Annual' },
-]
 
 export async function loadAdminSubscriptions(
   filter: AdminSubscriptionFilter,
@@ -59,6 +51,18 @@ export function AdminSubscriptionsTab({
   onToast,
   onDashboardRefresh,
 }: Props) {
+  const { t, messages } = useI18n()
+  const a = messages.ui.admin as Record<string, string>
+
+  const filterOptions: { value: AdminSubscriptionFilter; label: string }[] = [
+    { value: 'all', label: a.subscriptionFilterAll },
+    { value: 'due_7d', label: a.subscriptionFilterDue7d },
+    { value: 'due_30d', label: a.subscriptionFilterDue30d },
+    { value: 'overdue', label: a.subscriptionFilterOverdue },
+    { value: 'monthly', label: a.subscriptionFilterMonthly },
+    { value: 'annual', label: a.subscriptionFilterAnnual },
+  ]
+
   const confirmRenewal = async (sub: AdminBillingSubscription) => {
     onBusyChange(sub.coach_id)
     onError('')
@@ -69,7 +73,7 @@ export function AdminSubscriptionsTab({
         return
       }
       const nextDate = result.currentPeriodEnd ? formatAdminDate(result.currentPeriodEnd) : 'extended'
-      onToast(`Renewal confirmed. Next period ends ${nextDate}.`)
+      onToast(t('ui.admin.renewalConfirmedToast', { date: nextDate }))
       await onReload()
       await onDashboardRefresh()
     } finally {
@@ -86,7 +90,7 @@ export function AdminSubscriptionsTab({
         onError(result.error)
         return
       }
-      onToast(sub.blocked ? 'Account unblocked.' : 'Account blocked.')
+      onToast(sub.blocked ? a.accountUnblockedToast : a.accountBlockedToast)
       await onReload()
       await onDashboardRefresh()
     } finally {
@@ -96,21 +100,25 @@ export function AdminSubscriptionsTab({
 
   return (
     <div className="admin-panel">
-      <p className="admin-panel__intro muted">
-        Active subscriptions and renewals. After receiving payment, confirm renewal to extend the billing period.
-      </p>
+      <p className="admin-panel__intro muted">{a.subscriptionsIntro}</p>
 
       <div className="admin-toolbar admin-toolbar--filters">
-        <AdminFilterPills label="Show" value={filter} options={FILTER_OPTIONS} onChange={onFilterChange} />
+        <AdminFilterPills
+          label={a.show}
+          value={filter}
+          options={filterOptions}
+          onChange={onFilterChange}
+          filterAriaLabel={a.filter}
+        />
         <button type="button" className="btn btn--ghost btn--small admin-toolbar__refresh" onClick={() => void onReload()}>
-          Refresh
+          {a.refresh}
         </button>
       </div>
 
       {error ? <p className="login-error admin-page__error">{error}</p> : null}
 
       {subscriptions.length === 0 ? (
-        <p className="admin-empty">No subscriptions match this filter.</p>
+        <p className="admin-empty">{a.noSubscriptionsMatch}</p>
       ) : (
         <div className="admin-list">
           {subscriptions.map((sub) => {
@@ -120,8 +128,8 @@ export function AdminSubscriptionsTab({
             const renewalHint =
               daysLeft !== null
                 ? daysLeft < 0
-                  ? `${Math.abs(daysLeft)} days overdue`
-                  : `${daysLeft} days left`
+                  ? t('ui.admin.daysOverdue', { count: Math.abs(daysLeft) })
+                  : t('ui.admin.daysLeft', { count: daysLeft })
                 : null
 
             return (
@@ -134,7 +142,7 @@ export function AdminSubscriptionsTab({
                       {sub.organization_name ? ` · ${sub.organization_name}` : ''}
                     </p>
                     <p className="admin-card__summary">
-                      {planLabel(sub.plan_id)} · {billingIntervalLabel(sub.billing_interval)} · {amount} · Renews{' '}
+                      {planLabel(sub.plan_id)} · {billingIntervalLabel(sub.billing_interval)} · {amount} · {a.renews}{' '}
                       {formatAdminDate(sub.current_period_end)}
                       {renewalHint ? ` (${renewalHint})` : ''}
                     </p>
@@ -143,20 +151,20 @@ export function AdminSubscriptionsTab({
                     <span className={`admin-badge admin-badge--${renewalStatusTone(renewalStatus)}`}>
                       {renewalStatusLabel(renewalStatus)}
                     </span>
-                    {sub.blocked ? <span className="admin-badge admin-badge--blocked">Blocked</span> : null}
+                    {sub.blocked ? <span className="admin-badge admin-badge--blocked">{a.blocked}</span> : null}
                   </div>
                 </div>
 
                 <details className="admin-details">
-                  <summary>Subscription details</summary>
+                  <summary>{a.subscriptionDetails}</summary>
                   <dl className="admin-meta admin-meta--compact">
                     <div>
-                      <dt>Status</dt>
+                      <dt>{a.status}</dt>
                       <dd>{sub.plan_status}</dd>
                     </div>
                     {sub.tax_id ? (
                       <div>
-                        <dt>Tax ID / VAT</dt>
+                        <dt>{a.taxIdVat}</dt>
                         <dd>{sub.tax_id}</dd>
                       </div>
                     ) : null}
@@ -164,12 +172,12 @@ export function AdminSubscriptionsTab({
                 </details>
 
                 <label className="field field--pro admin-card__notes-field">
-                  <span>Payment notes (optional)</span>
+                  <span>{a.paymentNotes}</span>
                   <textarea
                     rows={2}
                     value={notesDraft[sub.coach_id] ?? ''}
                     onChange={(e) => onNotesChange(sub.coach_id, e.target.value)}
-                    placeholder="Transfer reference, invoice number, etc."
+                    placeholder={a.transferReferencePlaceholder}
                   />
                 </label>
 
@@ -180,7 +188,7 @@ export function AdminSubscriptionsTab({
                     disabled={busyId === sub.coach_id}
                     onClick={() => void confirmRenewal(sub)}
                   >
-                    Confirm renewal payment
+                    {a.confirmRenewalPayment}
                   </button>
                   <button
                     type="button"
@@ -188,7 +196,7 @@ export function AdminSubscriptionsTab({
                     disabled={busyId === sub.coach_id}
                     onClick={() => void toggleBlocked(sub)}
                   >
-                    {sub.blocked ? 'Unblock' : 'Block account'}
+                    {sub.blocked ? a.unblock : a.blockAccount}
                   </button>
                 </div>
               </article>

@@ -1,16 +1,19 @@
 import { InstallInstructions } from '../components/InstallInstructions'
 import { ScreenHeader } from '../components/ScreenHeader'
 import {
-  ATHLETE_HELP_SECTIONS,
-  COACH_QUICK_TIPS,
-  TRAINING_HELP_GUIDES,
+  getAthleteHelpSections,
+  getCoachQuickTips,
+  getTrainingHelpGuides,
   planBadgeForMode,
   trainingGuideLabel,
 } from '../helpContent'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 
 export function HelpView() {
   const { role, subscription, setView, openContact } = useApp()
+  const { t, locale, messages } = useI18n()
+  const page = messages.help.page
   const isCoach = role === 'treinador'
   const planId = subscription?.planId ?? 'team'
 
@@ -20,27 +23,25 @@ export function HelpView() {
 
   return (
     <div className="ss-flow help-page">
-      <ScreenHeader title="Help" onBack={goBack} />
+      <ScreenHeader title={t('nav.help')} onBack={goBack} />
 
       {isCoach ? (
         <>
           <div className="ss-card help-section">
-            <h2 className="page-title">Quick start</h2>
+            <h2 className="page-title">{page.quickStart}</h2>
             <ul className="help-list">
-              {COACH_QUICK_TIPS.map((tip) => (
+              {getCoachQuickTips(locale).map((tip) => (
                 <li key={tip}>{tip}</li>
               ))}
             </ul>
           </div>
 
           <div className="ss-card help-section">
-            <h2 className="page-title">Training modes</h2>
-            <p className="muted stats-panel__sub">
-              How each session type works and how to run it on the beach.
-            </p>
+            <h2 className="page-title">{page.trainingModes}</h2>
+            <p className="muted stats-panel__sub">{page.trainingModesSub}</p>
             <div className="help-faq">
-              {TRAINING_HELP_GUIDES.map((guide) => {
-                const badge = planBadgeForMode(guide.mode, planId)
+              {getTrainingHelpGuides(locale).map((guide) => {
+                const badge = planBadgeForMode(guide.mode, planId, locale)
                 return (
                   <details key={guide.mode} className="help-faq__item" open={guide.mode === 'tecnico'}>
                     <summary>
@@ -61,9 +62,9 @@ export function HelpView() {
         </>
       ) : (
         <div className="ss-card help-section">
-          <h2 className="page-title">Athlete guide</h2>
+          <h2 className="page-title">{page.athleteGuide}</h2>
           <div className="help-faq">
-            {ATHLETE_HELP_SECTIONS.map((section) => (
+            {getAthleteHelpSections(locale).map((section) => (
               <details key={section.title} className="help-faq__item">
                 <summary>
                   <span className="help-faq__title">{section.title}</span>
@@ -76,18 +77,15 @@ export function HelpView() {
       )}
 
       <div className="ss-card help-section">
-        <h2 className="page-title">{isCoach ? 'Add to home screen' : 'Install on your phone'}</h2>
+        <h2 className="page-title">{isCoach ? page.addToHomeScreen : page.installOnPhone}</h2>
         <InstallInstructions />
       </div>
 
       <div className="ss-card help-section help-section--contact">
-        <h2 className="page-title">Contact SurfStar</h2>
-        <p className="muted">
-          Send feedback, report a bug, or ask for help. We read every message and typically reply within 1–2
-          business days.
-        </p>
+        <h2 className="page-title">{page.contactTitle}</h2>
+        <p className="muted">{page.contactLead}</p>
         <button type="button" className="btn btn--outline btn--block" onClick={openContact}>
-          Send a message
+          {page.sendMessage}
         </button>
       </div>
     </div>

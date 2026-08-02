@@ -3,180 +3,18 @@ import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { LegalFooterLinks } from '../components/LegalFooterLinks'
 import { PackCard } from '../components/PackCard'
 import { AppLogo } from '../components/AppLogo'
+import { LanguagePicker } from '../components/LanguagePicker'
 import { SUBSCRIPTION_PLANS } from '../plans'
 import { scrollToPricingSection } from '../routing'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
+import type { MessageCatalog } from '../i18n/types'
 
-const WHATS_NEW = [
-  {
-    tag: 'New',
-    title: 'Athlete gear quiver',
-    text: 'Athletes add their boards and fins — coaches review and rate the quiver from the athlete profile.',
-    audience: 'Athlete',
-  },
-  {
-    tag: 'New',
-    title: 'Post-session wellbeing',
-    text: 'Athletes complete a quick check-in after training — coaches see mental state trends across sessions and the full season.',
-    audience: 'Athlete',
-  },
-  {
-    tag: 'New',
-    title: 'Combo training',
-    text: 'Log linked maneuver sequences by level — track success rates on full combos, not just single moves.',
-    audience: 'Coach',
-  },
-  {
-    tag: 'New',
-    title: 'Heats & championships',
-    text: 'Simulate contest heats, run championship brackets, and review competition stats — scores, placement, and heat timing.',
-    audience: 'Coach',
-  },
-]
+type SpotlightId = 'custom' | 'sea'
+type PremiumSpotlight = MessageCatalog['landing']['premiumSpotlights']['items'][number]
 
-const PILLARS = [
-  {
-    icon: '▣',
-    title: 'Live session stats',
-    text: 'Success rates and maneuver breakdowns update wave by wave on the beach.',
-  },
-  {
-    icon: '⚙',
-    title: 'Custom training',
-    text: 'Coach Premium — your skill buttons, levels, timer, and rules.',
-  },
-  {
-    icon: '≋',
-    title: 'Sea analysis',
-    text: 'Compare two peaks with timed observations and a data-backed pick.',
-  },
-  {
-    icon: '◆',
-    title: 'Season analytics',
-    text: 'Coaches access full stats for the last 6 months, 1 month, and 1 week — per athlete or for the whole team.',
-  },
-]
-
-const PREMIUM_SPOTLIGHTS = [
-  {
-    id: 'custom',
-    eyebrow: 'Coach Premium',
-    title: 'Custom training',
-    lead: 'SurfStar goes from fixed drills to your coaching workspace — create training with your own objectives, rules, skills, and levels, then run it live on the beach.',
-    bullets: [
-      'Define objectives and rules that match how you actually coach',
-      'Name your skill buttons, set levels, and track success / fail',
-      'Built-in timer with auto-start for timed drills',
-    ],
-    preview: {
-      pill: 'Custom training · Live register',
-      spot: 'Cutback focus · Carcavelos',
-      chips: ['Cutback', 'Re-entry', 'Tube', 'Layback'],
-      kpis: [
-        { value: '76%', label: 'Success' },
-        { value: '12:40', label: 'Timer left' },
-        { value: '18', label: 'Logs' },
-      ],
-      foot: 'Level 3 cutback · Success · Frontside',
-    },
-  },
-  {
-    id: 'sea',
-    eyebrow: 'Coach Premium',
-    title: 'Sea analysis',
-    lead: 'The sea is rarely predictable — coaches face tough, shifting conditions every session. Sea analysis scores each peak using wave count × wave type × frequency, so you can choose the right strategy for each athlete.',
-    bullets: [
-      'Compare two peaks with a calculated score — not guesswork alone',
-      'Wave count, wave type, and arrival frequency combined into one recommendation',
-      'Full timeline of every wave-type interval — review, edit, or delete anytime',
-    ],
-    preview: {
-      pill: 'Sea analysis · 18:42 left',
-      spot: 'Supertubos · Offshore',
-      recommend: { peak: 'Peak 1', note: 'Higher score from wave count × type × frequency on Peak 1' },
-      peaks: [
-        { name: 'Peak 1', score: '42 pts', obs: '18 observations' },
-        { name: 'Peak 2', score: '31 pts', obs: '14 observations' },
-      ],
-      chips: ['Set', 'Large int.', 'Small int.', 'Small'],
-    },
-  },
-] as const
-
-type SpotlightId = (typeof PREMIUM_SPOTLIGHTS)[number]['id']
-
-const VALUE_GROUPS = [
-  {
-    id: 'coach',
-    icon: '◎',
-    label: 'Coaches',
-    headline: 'Coach with data, not guesswork',
-    lead: 'One subscription covers your athletes — log on the beach and back every decision with real numbers.',
-    benefits: [
-      'Live success rates during training — adjust focus before the session ends',
-      'Heats, championships, and contest-style stats your athletes understand',
-      'Season analytics and CSV export for reports, parents, or sponsors',
-    ],
-  },
-  {
-    id: 'athlete',
-    icon: '⇄',
-    label: 'Athletes',
-    headline: 'Your progress, free forever',
-    lead: 'Join with a coach code at no cost — keep your quiver, sessions, and shared stats in one app.',
-    benefits: [
-      'Pair with several coaches and control what each one sees',
-      'Add your board and fin quiver — coaches review and rate your gear',
-      'See the stats your coach chooses to share after every session',
-    ],
-  },
-  {
-    id: 'team',
-    icon: '◆',
-    label: 'Teams & academies',
-    headline: 'One platform for the whole squad',
-    lead: 'From small squads to federations — coaches, athletes, and analytics stay in sync.',
-    benefits: [
-      'Athletes join free — only the coach subscribes',
-      'Six-month team trends and per-athlete profiles in one hub',
-      'Team Academy: up to 5 coaches, shared roster, every Premium tool',
-    ],
-  },
-]
-
-const STEPS = [
-  { step: '01', title: 'Pick your plan', text: 'Coach, Coach Premium, or Team Academy.' },
-  { step: '02', title: 'Set up your team', text: 'Create spots, invite athletes by code, and start logging.' },
-  { step: '03', title: 'Review with data', text: 'Live stats on the beach, monthly trends, and season totals.' },
-]
-
-const FAQ = [
-  {
-    q: 'Do athletes pay?',
-    a: 'No. Only the coach subscribes. Athletes join free with a pairing code.',
-  },
-  {
-    q: 'Can I see stats while training?',
-    a: 'Yes. Open Live stats during technical or combo sessions — success rate and breakdowns update in real time.',
-  },
-  {
-    q: 'What is new in SurfStar?',
-    a: 'Athletes can manage their gear quiver and complete post-session wellbeing check-ins. Coaches can rate equipment and see wellbeing trends. Everyone can contact SurfStar from the app.',
-  },
-  {
-    q: 'Does it work on mobile?',
-    a: 'Yes. SurfStar is built for the beach — add it to your home screen as an app.',
-  },
-]
-
-const NAV_LINKS = [
-  { href: '#whats-new', label: "What's new" },
-  { href: '#features', label: 'Features' },
-  { href: '#packs', label: 'Pricing' },
-  { href: '#faq', label: 'FAQ' },
-]
-
-function PremiumPreview({ spotlight }: { spotlight: (typeof PREMIUM_SPOTLIGHTS)[number] }) {
+function PremiumPreview({ spotlight }: { spotlight: PremiumSpotlight }) {
+  const { messages } = useI18n()
   const { preview } = spotlight
 
   if (spotlight.id === 'sea' && 'recommend' in preview) {
@@ -187,7 +25,9 @@ function PremiumPreview({ spotlight }: { spotlight: (typeof PREMIUM_SPOTLIGHTS)[
           <strong>{preview.spot}</strong>
         </header>
         <div className="landing-sea__recommend">
-          <span className="landing-sea__recommend-label">Recommended peak</span>
+          <span className="landing-sea__recommend-label">
+            {messages.landing.premiumSpotlights.recommendedPeak}
+          </span>
           <strong>{preview.recommend.peak}</strong>
           <p>{preview.recommend.note}</p>
         </div>
@@ -250,6 +90,21 @@ export function LandingView() {
     openTerms,
     openContact,
   } = useApp()
+  const { messages, t } = useI18n()
+  const L = messages.landing
+  const WHATS_NEW = L.whatsNew.items
+  const PILLARS = L.pillars.items
+  const PREMIUM_SPOTLIGHTS = L.premiumSpotlights.items
+  const VALUE_GROUPS = L.valueGroups.items
+  const STEPS = L.steps.items
+  const FAQ = L.faq.items
+  const NAV_LINKS = [
+    { href: '#whats-new', label: L.nav.whatsNew },
+    { href: '#features', label: L.nav.features },
+    { href: '#packs', label: L.nav.pricing },
+    { href: '#faq', label: L.nav.faq },
+  ]
+  const showcase = L.hero.showcase
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [spotlightTab, setSpotlightTab] = useState<SpotlightId>('custom')
@@ -286,9 +141,9 @@ export function LandingView() {
           aria-controls="landing-mobile-nav"
           onClick={() => setMobileNavOpen((open) => !open)}
         >
-          {mobileNavOpen ? 'Close' : 'Menu'}
+          {mobileNavOpen ? t('common.close') : t('common.menu')}
         </button>
-        <nav className="landing-nav__menu" aria-label="Sections">
+        <nav className="landing-nav__menu" aria-label={L.nav.sectionsLabel}>
           {NAV_LINKS.map((link) => (
             <a key={link.href} href={link.href}>
               {link.label}
@@ -296,31 +151,37 @@ export function LandingView() {
           ))}
         </nav>
         <div className="landing-nav__actions">
+          <div className="landing-nav__language">
+            <LanguagePicker compact />
+          </div>
           <button type="button" className="btn btn--outline btn--small landing-nav__signin" onClick={openCoachSignIn}>
-            Coach sign in
+            {L.nav.coachSignIn}
           </button>
           <button type="button" className="btn btn--outline btn--small landing-nav__signin" onClick={openAthleteSignIn}>
-            Athlete sign in
+            {L.nav.athleteSignIn}
           </button>
         </div>
       </header>
 
       {mobileNavOpen ? (
-        <nav id="landing-mobile-nav" className="landing-mobile-nav" aria-label="Mobile navigation">
+        <nav id="landing-mobile-nav" className="landing-mobile-nav" aria-label={L.nav.mobileNavLabel}>
           {NAV_LINKS.map((link) => (
             <a key={link.href} href={link.href} onClick={closeMobileNav}>
               {link.label}
             </a>
           ))}
           <div className="landing-mobile-nav__auth">
+            <div className="landing-nav__language landing-nav__language--mobile">
+              <LanguagePicker compact />
+            </div>
             <button type="button" className="btn btn--gold btn--block" onClick={openCoachPlanSelection}>
-              Create coach account
+              {L.nav.createCoachAccount}
             </button>
             <button type="button" className="btn btn--outline btn--block" onClick={openCoachSignIn}>
-              Coach sign in
+              {L.nav.coachSignIn}
             </button>
             <button type="button" className="btn btn--outline btn--block" onClick={openAthleteSignIn}>
-              Athlete sign in
+              {L.nav.athleteSignIn}
             </button>
           </div>
         </nav>
@@ -329,19 +190,13 @@ export function LandingView() {
       <main id="top">
         <section className="landing-hero">
           <div className="landing-hero__copy">
-            <p className="landing-eyebrow">Ride · Improve · Win</p>
+            <p className="landing-eyebrow">{L.hero.eyebrow}</p>
             <h1>
-              Surf statistics for{' '}
-              <span className="landing-accent">coaches who demand more</span>
+              {L.hero.titlePrefix}{' '}
+              <span className="landing-accent">{L.hero.titleAccent}</span>
             </h1>
-            <p className="landing-hero__lead landing-hero__lead--desktop">
-              Log every wave, see live stats on the beach, and track monthly evolution and season totals
-              for your whole team.
-            </p>
-            <p className="landing-hero__lead landing-hero__lead--mobile">
-              Live stats on the beach. Gear tracking, wellbeing check-ins, and season analytics for your
-              whole team.
-            </p>
+            <p className="landing-hero__lead landing-hero__lead--desktop">{L.hero.leadDesktop}</p>
+            <p className="landing-hero__lead landing-hero__lead--mobile">{L.hero.leadMobile}</p>
 
             <div className="landing-hero__chips landing-hero__chips--mobile">
               {PILLARS.slice(0, 3).map((pillar) => (
@@ -354,28 +209,27 @@ export function LandingView() {
             <div className="landing-hero__create">
               <div className="landing-hero__cta">
                 <button type="button" className="btn btn--gold btn--lg" onClick={openCoachPlanSelection}>
-                  Create coach account
+                  {L.nav.createCoachAccount}
                 </button>
                 <button type="button" className="btn btn--outline btn--lg" onClick={openAthleteSignUp}>
-                  Create athlete account
+                  {L.nav.createAthleteAccount}
                 </button>
               </div>
               <div className="landing-hero__signin-links landing-hero__signin-links--desktop">
                 <button type="button" className="landing-hero__signin-link" onClick={openCoachSignIn}>
-                  Coach sign in
+                  {L.nav.coachSignIn}
                 </button>
                 <span aria-hidden="true">·</span>
                 <button type="button" className="landing-hero__signin-link" onClick={openAthleteSignIn}>
-                  Athlete sign in
+                  {L.nav.athleteSignIn}
                 </button>
               </div>
             </div>
 
             <ul className="landing-hero__checks landing-hero__checks--desktop">
-              <li>Live stats during every session</li>
-              <li>Gear quiver & wellbeing check-ins</li>
-              <li>Athletes included free</li>
-              <li>Cancel anytime</li>
+              {L.hero.checks.map((check) => (
+                <li key={check}>{check}</li>
+              ))}
             </ul>
           </div>
 
@@ -383,34 +237,34 @@ export function LandingView() {
             <div className="landing-showcase__glow" />
             <div className="landing-showcase__card">
               <header className="landing-showcase__head">
-                <span className="landing-showcase__pill">Live stats · Active session</span>
-                <strong>Carcavelos · Technical training</strong>
+                <span className="landing-showcase__pill">{showcase.pill}</span>
+                <strong>{showcase.spot}</strong>
               </header>
               <div className="landing-showcase__kpis">
                 <div>
                   <span>87%</span>
-                  <small>Success</small>
+                  <small>{showcase.success}</small>
                 </div>
                 <div>
                   <span>24</span>
-                  <small>Waves</small>
+                  <small>{showcase.waves}</small>
                 </div>
                 <div>
                   <span>3</span>
-                  <small>Athletes</small>
+                  <small>{showcase.athletes}</small>
                 </div>
               </div>
               <div className="landing-showcase__bars">
                 <div className="landing-showcase__bar">
-                  <span>Rail</span>
+                  <span>{showcase.rail}</span>
                   <div><i style={{ width: '82%' }} /></div>
                 </div>
                 <div className="landing-showcase__bar">
-                  <span>Top turn</span>
+                  <span>{showcase.topTurn}</span>
                   <div><i style={{ width: '74%' }} /></div>
                 </div>
                 <div className="landing-showcase__bar">
-                  <span>Progressive</span>
+                  <span>{showcase.progressive}</span>
                   <div><i style={{ width: '91%' }} /></div>
                 </div>
               </div>
@@ -420,11 +274,9 @@ export function LandingView() {
 
         <section className="landing-section landing-whats-new" id="whats-new">
           <div className="landing-section__head">
-            <p className="landing-eyebrow">What's new</p>
-            <h2>Fresh tools for coaches and athletes</h2>
-            <p className="landing-section__sub landing-section__sub--desktop">
-              Latest additions to SurfStar — gear management, wellbeing insights, and direct support.
-            </p>
+            <p className="landing-eyebrow">{L.whatsNew.sectionEyebrow}</p>
+            <h2>{L.whatsNew.sectionTitle}</h2>
+            <p className="landing-section__sub landing-section__sub--desktop">{L.whatsNew.sectionSub}</p>
           </div>
           <div className="landing-whats-new__track">
             {WHATS_NEW.map((item) => (
@@ -438,7 +290,7 @@ export function LandingView() {
           </div>
         </section>
 
-        <section className="landing-pillars landing-pillars--desktop" aria-label="Core capabilities">
+        <section className="landing-pillars landing-pillars--desktop" aria-label={L.pillars.ariaLabel}>
           <div className="landing-pillars__grid">
             {PILLARS.map((pillar) => (
               <article key={pillar.title} className="landing-pillar">
@@ -454,14 +306,12 @@ export function LandingView() {
 
         <section className="landing-section landing-section--alt landing-spotlight" id="premium">
           <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">Coach Premium</p>
-            <h2>Advanced coaching tools</h2>
-            <p className="landing-section__sub">
-              From predefined sessions to a real work tool — custom training and sea analysis on Coach Premium.
-            </p>
+            <p className="landing-eyebrow">{L.premiumSpotlights.sectionEyebrow}</p>
+            <h2>{L.premiumSpotlights.sectionTitle}</h2>
+            <p className="landing-section__sub">{L.premiumSpotlights.sectionSub}</p>
           </div>
 
-          <div className="landing-spotlight__tabs" role="tablist" aria-label="Premium coaching tools">
+          <div className="landing-spotlight__tabs" role="tablist" aria-label={L.premiumSpotlights.tabsLabel}>
             {PREMIUM_SPOTLIGHTS.map((item) => (
               <button
                 key={item.id}
@@ -503,11 +353,9 @@ export function LandingView() {
 
         <section className="landing-section" id="features">
           <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">Why SurfStar</p>
-            <h2>Built for coaches, athletes, and teams</h2>
-            <p className="landing-section__sub">
-              Coaches subscribe — athletes join free. Everyone gets clearer feedback and a stronger season.
-            </p>
+            <p className="landing-eyebrow">{L.valueGroups.sectionEyebrow}</p>
+            <h2>{L.valueGroups.sectionTitle}</h2>
+            <p className="landing-section__sub">{L.valueGroups.sectionSub}</p>
           </div>
 
           <div className="landing-value-grid">
@@ -531,8 +379,8 @@ export function LandingView() {
 
         <section className="landing-section landing-section--alt" id="how">
           <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">How it works</p>
-            <h2>Get started in three steps</h2>
+            <p className="landing-eyebrow">{L.steps.sectionEyebrow}</p>
+            <h2>{L.steps.sectionTitle}</h2>
           </div>
           <ol className="landing-steps landing-steps--compact">
             {STEPS.map((step) => (
@@ -549,11 +397,9 @@ export function LandingView() {
 
         <section className="landing-section" id="packs">
           <div className="landing-section__head landing-section__head--center">
-            <p className="landing-eyebrow">Pricing</p>
-            <h2>Choose the right plan</h2>
-            <p className="landing-section__sub">
-              Monthly or annual billing. Annual plans include 2 months free.
-            </p>
+            <p className="landing-eyebrow">{L.pricing.sectionEyebrow}</p>
+            <h2>{L.pricing.sectionTitle}</h2>
+            <p className="landing-section__sub">{L.pricing.sectionSub}</p>
           </div>
           <BillingIntervalToggle
             className="billing-toggle--landing"
@@ -574,8 +420,8 @@ export function LandingView() {
 
         <section className="landing-section landing-section--alt" id="faq">
           <div className="landing-section__head">
-            <p className="landing-eyebrow">FAQ</p>
-            <h2>Common questions</h2>
+            <p className="landing-eyebrow">{L.faq.sectionEyebrow}</p>
+            <h2>{L.faq.sectionTitle}</h2>
           </div>
           <div className="landing-faq landing-faq--compact">
             {FAQ.map((item) => (
@@ -589,15 +435,15 @@ export function LandingView() {
 
         <section className="landing-cta-band">
           <div>
-            <p className="landing-eyebrow landing-eyebrow--gold">Ready to surf with data?</p>
-            <h2>Take your team to the next level</h2>
+            <p className="landing-eyebrow landing-eyebrow--gold">{L.cta.eyebrow}</p>
+            <h2>{L.cta.title}</h2>
           </div>
           <div className="landing-cta-band__actions">
             <button type="button" className="btn btn--gold btn--lg" onClick={openCoachPlanSelection}>
-              Create coach account
+              {L.cta.createCoachAccount}
             </button>
             <button type="button" className="btn btn--outline btn--lg" onClick={openContact}>
-              Contact us
+              {L.cta.contactUs}
             </button>
           </div>
         </section>
@@ -607,42 +453,42 @@ export function LandingView() {
         <div className="landing-footer__grid">
           <div className="landing-footer__brand">
             <AppLogo size="sm" />
-            <p>Surf statistics for coaches and athletes.</p>
+            <p>{L.footer.tagline}</p>
           </div>
 
           <div className="landing-footer__col">
-            <h3>Explore</h3>
-            <a href="#whats-new">What's new</a>
-            <a href="#features">Features</a>
-            <a href="#packs">Pricing</a>
-            <a href="#faq">FAQ</a>
+            <h3>{L.footer.explore}</h3>
+            <a href="#whats-new">{L.nav.whatsNew}</a>
+            <a href="#features">{L.nav.features}</a>
+            <a href="#packs">{L.nav.pricing}</a>
+            <a href="#faq">{L.nav.faq}</a>
           </div>
 
           <div className="landing-footer__col">
-            <h3>Account</h3>
+            <h3>{L.footer.account}</h3>
             <button type="button" className="landing-footer__btn" onClick={openCoachPlanSelection}>
-              Create coach account
+              {L.nav.createCoachAccount}
             </button>
             <button type="button" className="landing-footer__btn" onClick={openAthleteSignUp}>
-              Create athlete account
+              {L.nav.createAthleteAccount}
             </button>
             <button type="button" className="landing-footer__btn" onClick={openCoachSignIn}>
-              Coach sign in
+              {L.nav.coachSignIn}
             </button>
             <button type="button" className="landing-footer__btn" onClick={openAthleteSignIn}>
-              Athlete sign in
+              {L.nav.athleteSignIn}
             </button>
           </div>
 
           <div className="landing-footer__col">
-            <h3>Support</h3>
+            <h3>{L.footer.support}</h3>
             <button type="button" className="landing-footer__btn" onClick={openContact}>
-              Contact SurfStar
+              {L.footer.contactSurfStar}
             </button>
             <LegalFooterLinks onPrivacy={openPrivacy} onTerms={openTerms} layout="stack" className="landing-footer__legal" />
           </div>
         </div>
-        <p className="landing-footer__copy">© {new Date().getFullYear()} SurfStar</p>
+        <p className="landing-footer__copy">{t('landing.footer.copyright', { year: new Date().getFullYear() })}</p>
       </footer>
     </div>
   )

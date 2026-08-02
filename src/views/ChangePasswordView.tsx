@@ -3,9 +3,11 @@ import { MIN_PASSWORD_LENGTH, validatePasswordStrength } from '../passwordUtils'
 import { AppLogo } from '../components/AppLogo'
 import { InstallAppBanner } from '../components/InstallAppBanner'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 
 export function ChangePasswordView() {
   const { changePassword, logout } = useApp()
+  const { t } = useI18n()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
@@ -14,7 +16,7 @@ export function ChangePasswordView() {
   const submit = async () => {
     setError('')
     if (password !== confirm) {
-      setError('Passwords do not match.')
+      setError(t('ui.changePassword.passwordsMismatch'))
       return
     }
     const pwdError = validatePasswordStrength(password)
@@ -41,17 +43,14 @@ export function ChangePasswordView() {
         <div className="login-brand">
           <AppLogo size="lg" />
           <div>
-            <h1>Set your password</h1>
-            <p>
-              For security, choose a new password before continuing. You will use this password to sign in
-              from now on.
-            </p>
+            <h1>{t('ui.changePassword.title')}</h1>
+            <p>{t('ui.changePassword.lead')}</p>
           </div>
         </div>
 
         <div className="athlete-login-form">
           <label className="field field--pro">
-            <span>New password (min. {MIN_PASSWORD_LENGTH})</span>
+            <span>{t('ui.changePassword.newPasswordMin', { min: MIN_PASSWORD_LENGTH })}</span>
             <input
               type="password"
               autoComplete="new-password"
@@ -60,7 +59,7 @@ export function ChangePasswordView() {
             />
           </label>
           <label className="field field--pro">
-            <span>Confirm new password</span>
+            <span>{t('ui.changePassword.confirmNewPassword')}</span>
             <input
               type="password"
               autoComplete="new-password"
@@ -75,10 +74,10 @@ export function ChangePasswordView() {
             disabled={busy || !password || !confirm}
             onClick={submit}
           >
-            {busy ? 'Saving…' : 'Save password and continue'}
+            {busy ? t('ui.changePassword.saving') : t('ui.changePassword.saveAndContinue')}
           </button>
           <button type="button" className="btn btn--ghost btn--block" onClick={logout}>
-            Sign out
+            {t('ui.changePassword.signOut')}
           </button>
         </div>
       </div>

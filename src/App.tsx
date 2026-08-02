@@ -3,6 +3,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { CookieConsent } from './components/CookieConsent'
 import { ToastProvider } from './components/ToastProvider'
 import { AppProvider, useApp } from './AppContext'
+import { I18nProvider, useI18n } from './i18n'
 import { AppLogo } from './components/AppLogo'
 import { ChangePasswordView } from './views/ChangePasswordView'
 import { CheckoutView } from './views/CheckoutView'
@@ -50,6 +51,7 @@ import './plan-marketing.css'
 
 function AppHeader() {
   const { auth, logout, role, setView } = useApp()
+  const { t } = useI18n()
   const [menuOpen, setMenuOpen] = useState(false)
   if (!auth) return null
 
@@ -63,7 +65,7 @@ function AppHeader() {
       <div className="app-brandbar__brand">
         <AppLogo size="sm" />
         <div>
-          <small>{role === 'treinador' ? 'Coach' : 'Athlete'}</small>
+          <small>{role === 'treinador' ? t('roles.coach') : t('roles.athlete')}</small>
         </div>
       </div>
       <button
@@ -73,7 +75,7 @@ function AppHeader() {
         aria-controls="app-brandbar-menu"
         onClick={() => setMenuOpen((open) => !open)}
       >
-        {menuOpen ? 'Close' : 'Menu'}
+        {menuOpen ? t('common.close') : t('common.menu')}
       </button>
       <div
         id="app-brandbar-menu"
@@ -82,11 +84,11 @@ function AppHeader() {
         <span className="app-brandbar__name">{auth.name}</span>
         {auth.role === 'treinador' && auth.isPlatformAdmin ? (
           <button type="button" className="btn btn--ghost btn--small" onClick={() => go('admin')}>
-            Admin
+            {t('common.admin')}
           </button>
         ) : null}
         <button type="button" className="btn btn--ghost btn--small" onClick={() => go('help')}>
-          Help
+          {t('common.help')}
         </button>
         <button
           type="button"
@@ -96,7 +98,7 @@ function AppHeader() {
             logout()
           }}
         >
-          Sign out
+          {t('common.signOut')}
         </button>
       </div>
     </header>
@@ -114,13 +116,14 @@ function Shell() {
     hasActiveSubscription,
     passwordRecoveryPending,
   } = useApp()
+  const { t } = useI18n()
 
   if (!authReady) {
     return (
       <div className="auth-page auth-page--loading">
         <div className="auth-card">
           <AppLogo size="xl" />
-          <p className="auth-loading-text muted">Loading SurfStar…</p>
+          <p className="auth-loading-text muted">{t('common.loading')}</p>
         </div>
       </div>
     )
@@ -221,12 +224,14 @@ function Shell() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <ToastProvider>
-        <AppProvider>
-          <Shell />
-          <CookieConsent />
-        </AppProvider>
-      </ToastProvider>
+      <I18nProvider>
+        <ToastProvider>
+          <AppProvider>
+            <Shell />
+            <CookieConsent />
+          </AppProvider>
+        </ToastProvider>
+      </I18nProvider>
     </ErrorBoundary>
   )
 }

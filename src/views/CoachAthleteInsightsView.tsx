@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useI18n } from '../i18n'
 import { AthleteMaterialPanel } from '../components/AthleteMaterialPanel'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
@@ -9,9 +10,10 @@ import { PSYCHOLOGY_SURVEY_QUESTIONS } from '../psychologySurvey'
 import { mentalStateLabel } from '../mentalState'
 import { canUsePsychologyCheckins } from '../planUtils'
 import { linkHasPsychologyCheckins } from '../psychologyCheckins'
-import { TRAINING_MODE_LABELS } from '../types'
+import { trainingModeLabel } from '../i18n/labels'
 
 export function CoachAthleteInsightsView() {
+  const { t } = useI18n()
   const {
     insightsAthlete,
     sessionAthleteFeedback,
@@ -69,8 +71,8 @@ export function CoachAthleteInsightsView() {
   if (!insightsAthlete) {
     return (
       <div className="ss-flow">
-        <ScreenHeader title="Athlete insights" onBack={() => setView('manage-athletes')} />
-        <p className="muted">No athlete selected.</p>
+        <ScreenHeader title={t('nav.athleteInsights')} onBack={() => setView('manage-athletes')} />
+        <p className="muted">{t('ui.psychology.noAthleteSelected')}</p>
       </div>
     )
   }
@@ -95,7 +97,7 @@ export function CoachAthleteInsightsView() {
             }
             onClick={() => setTab('wellbeing')}
           >
-            Psychology check-ins
+            {t('ui.psychology.wellbeingTab')}
           </button>
         ) : null}
       </nav>
@@ -104,41 +106,38 @@ export function CoachAthleteInsightsView() {
         <AthleteMaterialPanel athleteId={insightsAthlete.id} />
       ) : !athletePsychologyEnabled ? (
         <div className="ss-card material-section">
-          <h2 className="page-title">Psychology check-ins</h2>
-          <p className="muted">
-            Enable <strong>Psychology check-ins</strong> in this athlete&apos;s sharing settings to
-            collect post-session questionnaires.
-          </p>
+          <h2 className="page-title">{t('ui.psychology.psychologyCheckins')}</h2>
+          <p className="muted">{t('ui.psychology.enableSharingHint')}</p>
         </div>
       ) : (
         <div className="ss-card material-section">
-          <h2 className="page-title">Session check-ins</h2>
-          <p className="muted">Post-session 0–5 psychology questionnaire from the athlete.</p>
+          <h2 className="page-title">{t('ui.psychology.sessionCheckins')}</h2>
+          <p className="muted">{t('ui.psychology.sessionCheckinsHint')}</p>
 
           {psychologyPreview && psychologyPreview.checkIns > 0 ? (
             <div className="kpi-grid athlete-psychology-panel__kpis">
               <article className="kpi-card kpi-card--accent">
-                <span className="kpi-card__label">Avg overall (6m)</span>
+                <span className="kpi-card__label">{t('ui.psychology.avgOverall6m')}</span>
                 <strong className="kpi-card__value">
                   {psychologyPreview.averageOverall?.toFixed(1) ?? '—'}
                 </strong>
               </article>
               <article className="kpi-card">
-                <span className="kpi-card__label">Check-ins</span>
+                <span className="kpi-card__label">{t('ui.psychology.checkIns')}</span>
                 <strong className="kpi-card__value">{psychologyPreview.checkIns}</strong>
               </article>
             </div>
           ) : null}
 
           {feedbackRows.length === 0 ? (
-            <p className="muted">No feedback submitted yet.</p>
+            <p className="muted">{t('ui.psychology.noFeedbackYet')}</p>
           ) : (
             <ul className="feedback-timeline">
               {feedbackRows.map(({ row, session }) => (
                 <li key={row.id} className="feedback-timeline__item">
                   <div className="feedback-timeline__head">
                     <strong>
-                      {session ? TRAINING_MODE_LABELS[session.mode] : 'Session'}
+                      {session ? trainingModeLabel(session.mode) : t('ui.psychology.sessionFallback')}
                       {feedbackHasPsychologySurvey(row)
                         ? ` · avg ${(
                             PSYCHOLOGY_SURVEY_QUESTIONS.reduce(

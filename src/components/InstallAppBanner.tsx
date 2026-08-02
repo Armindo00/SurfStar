@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useI18n } from '../i18n'
 import {
   dismissInstallPrompt,
   isIos,
@@ -7,6 +8,8 @@ import {
 } from '../pwaInstall'
 
 export function InstallAppBanner() {
+  const { messages, t } = useI18n()
+  const b = messages.components.installAppBanner
   const [visible, setVisible] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [busy, setBusy] = useState(false)
@@ -51,43 +54,32 @@ export function InstallAppBanner() {
   const ios = isIos()
 
   return (
-    <aside className="install-banner" role="region" aria-label="Install SurfStar">
+    <aside className="install-banner" role="region" aria-label={b.ariaLabel}>
       <div className="install-banner__inner">
         <div className="install-banner__copy">
-          <p className="install-banner__eyebrow">Add to home screen</p>
-          <h2 className="install-banner__title">Open SurfStar like an app</h2>
+          <p className="install-banner__eyebrow">{b.eyebrow}</p>
+          <h2 className="install-banner__title">{b.title}</h2>
           {ios ? (
             <ol className="install-banner__steps">
-              <li>
-                Tap <strong>Share</strong> in Safari (□ with arrow)
-              </li>
-              <li>
-                Choose <strong>Add to Home Screen</strong>
-              </li>
-              <li>
-                Tap <strong>Add</strong> — the SurfStar icon appears on your phone
-              </li>
+              {b.iosSteps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
             </ol>
           ) : deferredPrompt ? (
-            <p className="install-banner__text">
-              Install SurfStar on your phone for one-tap access at the beach — no App Store needed.
-            </p>
+            <p className="install-banner__text">{b.androidPrompt}</p>
           ) : (
-            <p className="install-banner__text">
-              In Chrome, open the menu (⋮) and tap <strong>Install app</strong> or{' '}
-              <strong>Add to Home screen</strong>.
-            </p>
+            <p className="install-banner__text">{b.androidManual}</p>
           )}
         </div>
 
         <div className="install-banner__actions">
           {!ios && deferredPrompt ? (
             <button type="button" className="btn btn--primary btn--block" disabled={busy} onClick={install}>
-              {busy ? 'Please wait…' : 'Install SurfStar'}
+              {busy ? t('common.pleaseWait') : b.install}
             </button>
           ) : null}
           <button type="button" className="btn btn--ghost btn--block" onClick={close}>
-            {ios || !deferredPrompt ? 'Got it' : 'Not now'}
+            {ios || !deferredPrompt ? b.gotIt : b.notNow}
           </button>
         </div>
       </div>

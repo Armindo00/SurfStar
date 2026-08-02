@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useI18n } from '../i18n'
 import { useApp } from '../AppContext'
 import { waveHasLoggedAttempts } from '../sessionStats'
 import type { ComboAttemptLog, ManeuverLog, TrainingMode } from '../types'
@@ -13,6 +14,8 @@ type Props = {
 }
 
 export function WaveRegisterSummary({ mode }: Props) {
+  const { t, messages } = useI18n()
+  const r = messages.session.register
   const {
     activeSession,
     activeWaveId,
@@ -52,17 +55,15 @@ export function WaveRegisterSummary({ mode }: Props) {
       <header className="wave-summary__head">
         <span className="wave-summary__dot" aria-hidden="true" />
         <div>
-          <p className="wave-summary__eyebrow">Current wave</p>
+          <p className="wave-summary__eyebrow">{r.currentWave}</p>
           <h3 className="wave-summary__title">
-            {hasEntries ? `${entries.length} logged` : 'Recording…'}
+            {hasEntries ? t('session.register.loggedCount', { count: entries.length }) : r.recording}
           </h3>
         </div>
       </header>
 
       {!hasEntries ? (
-        <p className="wave-summary__empty muted">
-          Nothing logged yet. Use the buttons below — your entries appear here.
-        </p>
+        <p className="wave-summary__empty muted">{r.nothingLoggedYet}</p>
       ) : (
         <ol className="wave-summary__list">
           {isCombo
@@ -107,8 +108,8 @@ export function WaveRegisterSummary({ mode }: Props) {
 
       {deleteManeuverId ? (
         <ConfirmDeleteModal
-          title="Delete maneuver?"
-          message="Remove this entry from the current wave?"
+          title={r.deleteManeuver}
+          message={r.removeFromCurrentWave}
           onConfirm={() => {
             deleteManeuverLog(waveId, deleteManeuverId)
             setDeleteManeuverId(null)
@@ -130,8 +131,8 @@ export function WaveRegisterSummary({ mode }: Props) {
 
       {deleteComboId ? (
         <ConfirmDeleteModal
-          title="Delete combo attempt?"
-          message="Remove this entry from the current wave?"
+          title={r.deleteComboAttempt}
+          message={r.removeFromCurrentWave}
           onConfirm={() => {
             deleteComboAttempt(waveId, deleteComboId)
             setDeleteComboId(null)
@@ -142,8 +143,8 @@ export function WaveRegisterSummary({ mode }: Props) {
 
       {deleteCustomId ? (
         <ConfirmDeleteModal
-          title="Delete attempt?"
-          message="Remove this entry from the current wave?"
+          title={r.deleteAttempt}
+          message={r.removeFromCurrentWave}
           onConfirm={() => {
             deleteCustomAttempt(waveId, deleteCustomId)
             setDeleteCustomId(null)

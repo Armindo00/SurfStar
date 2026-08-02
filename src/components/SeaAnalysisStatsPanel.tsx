@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import { computeSeaAnalysisStats } from '../seaAnalysisStats'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
 import { RecordRowActions } from './RecordRowActions'
@@ -22,6 +23,8 @@ type Props = {
 
 export function SeaAnalysisStatsPanel({ state, readOnly = false, frozenAt = null }: Props) {
   const { updateSeaAnalysisLog, deleteSeaAnalysisLog } = useApp()
+  const { t, messages } = useI18n()
+  const s = messages.ui.seaAnalysis as Record<string, string>
   const [editLog, setEditLog] = useState<SeaAnalysisLog | null>(null)
   const [deleteLogId, setDeleteLogId] = useState<string | null>(null)
 
@@ -40,29 +43,26 @@ export function SeaAnalysisStatsPanel({ state, readOnly = false, frozenAt = null
   return (
     <div className="sea-stats">
       <section className="sea-recommend">
-        <h3 className="sea-recommend__title">Recommended peak</h3>
+        <h3 className="sea-recommend__title">{s.recommendedPeak}</h3>
         {rec.recommended ? (
           <p className="sea-recommend__pick">{SEA_PEAK_LABELS[rec.recommended]}</p>
         ) : rec.tie && stats.totalObservations > 0 ? (
-          <p className="sea-recommend__pick sea-recommend__pick--tie">Even match</p>
+          <p className="sea-recommend__pick sea-recommend__pick--tie">{s.evenMatch}</p>
         ) : (
           <p className="muted sea-recommend__pick">—</p>
         )}
         <p className="muted sea-recommend__summary">{rec.summary}</p>
-        <p className="sea-recommend__formula muted">
-          Score = 55% weighted wave count (set ×4, large int. ×3, small int. ×2, small ×1) · 45%
-          weighted arrival rate (shorter gaps between same-type waves score higher)
-        </p>
+        <p className="sea-recommend__formula muted">{s.scoreFormula}</p>
         <div className="table-wrap">
           <table className="data-table sea-stats-table">
             <thead>
               <tr>
-                <th>Peak</th>
-                <th>Waves</th>
-                <th>Wave score</th>
-                <th>Arrival score</th>
-                <th>Avg. gap</th>
-                <th>Total</th>
+                <th>{s.peak}</th>
+                <th>{t('ui.stats.waves')}</th>
+                <th>{s.waveScore}</th>
+                <th>{s.arrivalScore}</th>
+                <th>{s.avgGap}</th>
+                <th>{s.total}</th>
               </tr>
             </thead>
             <tbody>
@@ -73,7 +73,7 @@ export function SeaAnalysisStatsPanel({ state, readOnly = false, frozenAt = null
                   <tr key={peak} className={isRec ? 'sea-recommend-row--on' : undefined}>
                     <td>
                       <strong>{SEA_PEAK_LABELS[peak]}</strong>
-                      {isRec ? <span className="sea-recommend-tag">Best</span> : null}
+                      {isRec ? <span className="sea-recommend-tag">{s.best}</span> : null}
                     </td>
                     <td>{row.observationCount}</td>
                     <td>{row.weightedWaveScore}</td>
@@ -92,15 +92,15 @@ export function SeaAnalysisStatsPanel({ state, readOnly = false, frozenAt = null
 
       <div className="kpi-grid kpi-grid--sea">
         <article className="kpi-card">
-          <span className="kpi-card__label">Observations</span>
+          <span className="kpi-card__label">{s.observations}</span>
           <strong className="kpi-card__value">{stats.totalObservations}</strong>
         </article>
         <article className="kpi-card kpi-card--accent">
-          <span className="kpi-card__label">Peak 1</span>
+          <span className="kpi-card__label">{SEA_PEAK_LABELS['peak-1']}</span>
           <strong className="kpi-card__value">{stats.peakTotals['peak-1']}</strong>
         </article>
         <article className="kpi-card kpi-card--accent">
-          <span className="kpi-card__label">Peak 2</span>
+          <span className="kpi-card__label">{SEA_PEAK_LABELS['peak-2']}</span>
           <strong className="kpi-card__value">{stats.peakTotals['peak-2']}</strong>
         </article>
       </div>
@@ -109,10 +109,10 @@ export function SeaAnalysisStatsPanel({ state, readOnly = false, frozenAt = null
         <table className="data-table sea-stats-table">
           <thead>
             <tr>
-              <th>Wave type</th>
+              <th>{s.waveType}</th>
               <th>{SEA_PEAK_LABELS['peak-1']}</th>
               <th>{SEA_PEAK_LABELS['peak-2']}</th>
-              <th>Total</th>
+              <th>{s.total}</th>
             </tr>
           </thead>
           <tbody>
@@ -130,24 +130,24 @@ export function SeaAnalysisStatsPanel({ state, readOnly = false, frozenAt = null
         </table>
       </div>
 
-      <h3 className="sea-stats__title">Time between observations</h3>
-      <p className="muted sea-stats__sub">Average wait until the same type appears again on each peak.</p>
+      <h3 className="sea-stats__title">{s.timeBetweenObservations}</h3>
+      <p className="muted sea-stats__sub">{s.timeBetweenObsSub}</p>
       <div className="table-wrap">
         <table className="data-table">
           <thead>
             <tr>
-              <th>Peak</th>
-              <th>Type</th>
-              <th>Count</th>
-              <th>Avg. interval</th>
-              <th>Gaps (mm:ss)</th>
+              <th>{s.peak}</th>
+              <th>{s.type}</th>
+              <th>{s.count}</th>
+              <th>{s.avgInterval}</th>
+              <th>{s.gapsHeader}</th>
             </tr>
           </thead>
           <tbody>
             {topIntervalRows.length === 0 ? (
               <tr>
                 <td colSpan={5} className="muted">
-                  Log at least 2 of the same type on a peak to see intervals.
+                  {s.intervalsEmpty}
                 </td>
               </tr>
             ) : (
@@ -167,9 +167,9 @@ export function SeaAnalysisStatsPanel({ state, readOnly = false, frozenAt = null
 
       {stats.timeline.length > 0 ? (
         <>
-          <h3 className="sea-stats__title">Timeline</h3>
+          <h3 className="sea-stats__title">{s.timeline}</h3>
           {!readOnly ? (
-            <p className="muted sea-stats__sub">Edit or delete entries logged by mistake.</p>
+            <p className="muted sea-stats__sub">{s.timelineEditHint}</p>
           ) : null}
           <ul className="sea-timeline">
             {stats.timeline.map((row) => (
@@ -207,8 +207,11 @@ export function SeaAnalysisStatsPanel({ state, readOnly = false, frozenAt = null
 
       {deleteLog ? (
         <ConfirmDeleteModal
-          title="Delete observation?"
-          message={`Remove ${SEA_WAVE_TYPE_LABELS[deleteLog.waveType]} at ${SEA_PEAK_LABELS[deleteLog.peak]}? This cannot be undone.`}
+          title={s.deleteObservation}
+          message={t('ui.seaAnalysis.deleteObservationMessage', {
+            waveType: SEA_WAVE_TYPE_LABELS[deleteLog.waveType],
+            peak: SEA_PEAK_LABELS[deleteLog.peak],
+          })}
           onConfirm={() => {
             deleteSeaAnalysisLog(deleteLog.id)
             setDeleteLogId(null)

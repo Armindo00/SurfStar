@@ -2,9 +2,11 @@ import { useEffect } from 'react'
 import { AthleteEquipmentReviewsList } from '../components/AthleteEquipmentReviewsList'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import { UNSEEN } from '../unseenDomains'
 
 export function AthleteEquipmentReviewsView() {
+  const { t } = useI18n()
   const {
     auth,
     athleteBoards,
@@ -32,7 +34,7 @@ export function AthleteEquipmentReviewsView() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title="Coach equipment reviews" onBack={() => setView('athlete-portal')} />
+      <ScreenHeader title={t('nav.coachEquipmentReviews')} onBack={() => setView('athlete-portal')} />
       <AthleteEquipmentReviewsList
         athleteId={athleteId}
         evaluations={equipmentEvaluations}

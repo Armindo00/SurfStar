@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useI18n } from '../i18n'
 import { ComboRegisterPanel } from '../components/ComboRegisterPanel'
 import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
@@ -7,6 +8,7 @@ import { useApp } from '../AppContext'
 import type { ComboLevel } from '../types'
 
 export function CombosSessionView() {
+  const { t } = useI18n()
   const {
     activeSession,
     activeAthleteId,
@@ -36,9 +38,9 @@ export function CombosSessionView() {
   if (!activeSession || activeSession.mode !== 'combos') {
     return (
       <div className="ss-flow">
-        <p className="muted">No active combos session.</p>
+        <p className="muted">{t('session.noActiveCombosSession')}</p>
         <button type="button" className="btn" onClick={() => setView('coach-home')}>
-          Back
+          {t('common.back')}
         </button>
       </div>
     )
@@ -58,7 +60,7 @@ export function CombosSessionView() {
   if (focusAthleteId && focusedAthlete && activeAthleteId === focusAthleteId) {
     return (
       <div className="ss-flow ss-flow--training ss-flow--with-sticky">
-        <ScreenHeader title="Combos" onBack={backToGrid} />
+        <ScreenHeader title={t('nav.combos')} onBack={backToGrid} />
         <div className="ss-card">
           <ComboRegisterPanel
             athleteName={focusedAthlete.name}
@@ -73,11 +75,11 @@ export function CombosSessionView() {
 
   return (
     <div className="ss-flow ss-flow--training ss-flow--with-sticky">
-      <ScreenHeader title="Combos" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.combos')} onBack={() => setView('coach-home')} />
 
       <div className="ss-card">
-        <h2 className="page-title">Choose an athlete</h2>
-        <p className="muted">Tap a tile to open the register sheet.</p>
+        <h2 className="page-title">{t('ui.session.chooseAthlete')}</h2>
+        <p className="muted">{t('ui.session.chooseAthleteHint')}</p>
 
         <div className="athlete-grid">
           {sessionAthletes.map((a) => (
@@ -96,9 +98,9 @@ export function CombosSessionView() {
         </div>
 
         <div className="ss-mini-stats ss-mini-stats--bar">
-          <span>Session · {waveStats.totalWaves} waves</span>
-          <span>Potential {waveStats.withPotential}</span>
-          <span>No pot. {waveStats.withoutPotential}</span>
+          <span>{t('ui.session.sessionMeta', { waves: waveStats.totalWaves })}</span>
+          <span>{t('ui.session.potentialShort', { count: waveStats.withPotential })}</span>
+          <span>{t('ui.session.noPotShort', { count: waveStats.withoutPotential })}</span>
         </div>
       </div>
 

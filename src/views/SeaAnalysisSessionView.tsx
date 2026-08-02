@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useI18n } from '../i18n'
 import { useApp } from '../AppContext'
 import { SeaAnalysisStatsPanel } from '../components/SeaAnalysisStatsPanel'
 import { SeaAnalysisTimer } from '../components/SeaAnalysisTimer'
@@ -15,6 +16,7 @@ import {
 } from '../types'
 
 export function SeaAnalysisSessionView() {
+  const { t } = useI18n()
   const {
     activeSession,
     setView,
@@ -34,9 +36,9 @@ export function SeaAnalysisSessionView() {
   if (!activeSession || activeSession.mode !== 'sea-analysis' || !state) {
     return (
       <div className="ss-flow">
-        <p className="muted">No active sea analysis session.</p>
+        <p className="muted">{t('ui.session.noActiveSeaSession')}</p>
         <button type="button" className="btn" onClick={() => setView('coach-home')}>
-          Back
+          {t('common.back')}
         </button>
       </div>
     )
@@ -58,7 +60,7 @@ export function SeaAnalysisSessionView() {
 
   return (
     <div className="ss-flow ss-flow--training">
-      <ScreenHeader title="Sea analysis" onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.seaAnalysis')} onBack={() => setView('coach-home')} />
 
       <div className="ss-card">
         <p className="muted stats-panel__sub">
@@ -104,7 +106,7 @@ export function SeaAnalysisSessionView() {
       </div>
 
       <div className="ss-card stats-panel">
-        <h2 className="stats-panel__title">Live statistics</h2>
+        <h2 className="stats-panel__title">{t('ui.stats.liveStatistics')}</h2>
         <SeaAnalysisStatsPanel state={state} />
       </div>
 

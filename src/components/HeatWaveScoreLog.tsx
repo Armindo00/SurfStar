@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useApp } from '../AppContext'
 import { formatAppTime } from '../dateFormat'
 import { formatHeatScore, formatWaveScoreCompact } from '../heatUtils'
+import { useI18n } from '../i18n'
 import type { HeatRecord } from '../types'
 import { ConfirmDeleteModal } from './ConfirmDeleteModal'
 import { HeatScoreModal } from './HeatScoreModal'
@@ -13,6 +14,11 @@ type Props = {
 
 export function HeatWaveScoreLog({ heat }: Props) {
   const { getAthlete, updateHeatWaveScore, deleteHeatWaveScore } = useApp()
+  const { t, messages } = useI18n()
+  const h = messages.session.heat as Record<string, string>
+  const r = messages.session.register as Record<string, string>
+  const athleteFallback = messages.roles.athlete
+
   const [editId, setEditId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
@@ -32,11 +38,11 @@ export function HeatWaveScoreLog({ heat }: Props) {
 
   return (
     <>
-      <h3 className="heat-leaderboard__title">Wave log</h3>
-      <p className="muted heat-leaderboard__sub">Edit or remove individual scores if logged by mistake.</p>
+      <h3 className="heat-leaderboard__title">{h.waveLog}</h3>
+      <p className="muted heat-leaderboard__sub">{h.waveLogHint}</p>
       <ul className="sea-timeline heat-score-log">
         {rows.map((row) => {
-          const name = getAthlete(row.athleteId)?.name ?? 'Athlete'
+          const name = getAthlete(row.athleteId)?.name ?? athleteFallback
           const time = formatAppTime(row.at, {
             hour: '2-digit',
             minute: '2-digit',
@@ -46,7 +52,11 @@ export function HeatWaveScoreLog({ heat }: Props) {
             <li key={row.id} className="heat-score-log__row">
               <span className="sea-timeline__time">{time}</span>
               <span className="heat-score-log__main">
-                <strong>{name}</strong> · Wave {row.waveNumber} · {formatWaveScoreCompact(row.score)}
+                {t('session.heat.waveLogEntry', {
+                  name,
+                  number: row.waveNumber,
+                  score: formatWaveScoreCompact(row.score),
+                })}
               </span>
               <RecordRowActions
                 onEdit={() => setEditId(row.id)}
@@ -59,9 +69,9 @@ export function HeatWaveScoreLog({ heat }: Props) {
 
       {editScore ? (
         <HeatScoreModal
-          athleteName={getAthlete(editScore.athleteId)?.name ?? 'Athlete'}
+          athleteName={getAthlete(editScore.athleteId)?.name ?? athleteFallback}
           initialScore={editScore.score}
-          title="Edit wave score"
+          title={r.editWaveScore}
           onClose={() => setEditId(null)}
           onSave={(score) => {
             updateHeatWaveScore(heat.id, editScore.id, score)
@@ -72,8 +82,11 @@ export function HeatWaveScoreLog({ heat }: Props) {
 
       {deleteScore ? (
         <ConfirmDeleteModal
-          title="Delete wave score?"
-          message={`Remove ${formatHeatScore(deleteScore.score)} for ${getAthlete(deleteScore.athleteId)?.name ?? 'athlete'}? This cannot be undone.`}
+          title={r.deleteWaveScore}
+          message={t('session.heat.deleteWaveScoreMessage', {
+            score: formatHeatScore(deleteScore.score),
+            name: getAthlete(deleteScore.athleteId)?.name ?? athleteFallback,
+          })}
           onConfirm={() => {
             deleteHeatWaveScore(heat.id, deleteScore.id)
             setDeleteId(null)

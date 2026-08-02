@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { useApp } from '../AppContext'
+import { useI18n } from '../i18n'
 import type { UserRole } from '../types'
 
 type Props = {
@@ -13,6 +14,8 @@ type Props = {
 
 export function ResetPasswordSheet({ open, email, role, onClose, onSuccess }: Props) {
   const { completePasswordRecovery } = useApp()
+  const { t, messages } = useI18n()
+  const r = messages.auth.resetPassword
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
@@ -24,7 +27,7 @@ export function ResetPasswordSheet({ open, email, role, onClose, onSuccess }: Pr
     e.preventDefault()
     setError('')
     if (password !== confirm) {
-      setError('Passwords do not match.')
+      setError(messages.auth.passwordsMismatch)
       return
     }
 
@@ -51,7 +54,7 @@ export function ResetPasswordSheet({ open, email, role, onClose, onSuccess }: Pr
     onClose()
   }
 
-  const roleLabel = role === 'treinador' ? 'Coach' : 'Athlete'
+  const roleLabel = role === 'treinador' ? messages.roles.coach : messages.roles.athlete
 
   return (
     <div className="modal-backdrop" role="presentation" onClick={close}>
@@ -64,21 +67,21 @@ export function ResetPasswordSheet({ open, email, role, onClose, onSuccess }: Pr
       >
         <div className="sheet__head sheet__head--pro">
           <div>
-            <p className="sheet__eyebrow">{roleLabel} · Password reset</p>
-            <h2 id="reset-password-title">Choose a new password</h2>
+            <p className="sheet__eyebrow">{t('auth.resetPassword.sheetEyebrow', { roleLabel })}</p>
+            <h2 id="reset-password-title">{r.chooseNewPassword}</h2>
           </div>
-          <button type="button" className="sheet__close" onClick={close} aria-label="Close">
+          <button type="button" className="sheet__close" onClick={close} aria-label={t('common.close')}>
             ✕
           </button>
         </div>
 
         <p className="muted reset-password-sheet__intro">
-          Code verified for <strong>{email}</strong>. Save a new password to finish.
+          {t('auth.resetPassword.codeVerifiedFor', { email })}
         </p>
 
         <form className="auth-form" onSubmit={(e) => void submit(e)}>
           <label className="auth-field">
-            <span>New password (min. {MIN_PASSWORD_LENGTH})</span>
+            <span>{t('auth.resetPassword.newPasswordMin', { minLength: MIN_PASSWORD_LENGTH })}</span>
             <input
               type="password"
               autoComplete="new-password"
@@ -89,7 +92,7 @@ export function ResetPasswordSheet({ open, email, role, onClose, onSuccess }: Pr
             />
           </label>
           <label className="auth-field">
-            <span>Confirm new password</span>
+            <span>{r.confirmNewPassword}</span>
             <input
               type="password"
               autoComplete="new-password"
@@ -101,7 +104,7 @@ export function ResetPasswordSheet({ open, email, role, onClose, onSuccess }: Pr
           </label>
           {error ? <p className="auth-alert auth-alert--error">{error}</p> : null}
           <button type="submit" className="btn btn--primary btn--block btn--lg" disabled={busy}>
-            {busy ? 'Saving…' : 'Save new password'}
+            {busy ? r.saving : r.saveNewPassword}
           </button>
         </form>
       </div>
