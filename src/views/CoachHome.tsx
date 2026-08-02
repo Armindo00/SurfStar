@@ -223,7 +223,7 @@ export function CoachHome() {
       </nav>
 
       <div className="ss-card stats-panel">
-        <LanguagePicker compact />
+        <LanguagePicker />
       </div>
 
       <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>
