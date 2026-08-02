@@ -54,9 +54,6 @@ export function PackCard({
         {approvalRequired ? (
           <span className="pack-card__badge pack-card__badge--muted">{p.byApproval}</span>
         ) : null}
-        {manualFlow ? (
-          <span className="pack-card__badge pack-card__badge--muted">{p.manualBilling}</span>
-        ) : null}
       </div>
 
       <header className="pack-card__head">

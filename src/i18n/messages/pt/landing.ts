@@ -110,7 +110,6 @@ export const landing = {
     sectionEyebrow: 'Preços',
     sectionTitle: 'Escolhe o plano certo',
     sectionSub: 'Faturação mensal ou anual. Planos anuais incluem 2 meses grátis.',
-    manualBillingHint: 'Todos os planos usam faturação manual — regista-te, submete o pagamento e ativamos após confirmação.',
   },
   faq: {
     sectionEyebrow: 'FAQ',

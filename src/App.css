@@ -5307,12 +5307,6 @@ body {
   line-height: 1.6;
 }
 
-.landing-section__sub--manual {
-  margin-top: 0.35rem;
-  font-size: 0.92rem;
-  color: #64748b;
-}
-
 .landing-features__grid {
   display: grid;
   gap: 1rem;

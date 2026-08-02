@@ -16,7 +16,6 @@ export const plans = {
   packCard: {
     mostPopular: 'Más popular',
     byApproval: 'Sujeto a aprobación',
-    manualBilling: 'Facturación manual',
     seeAllFeatures: 'Ver todas las funciones',
     approvalNote: 'Para escuelas, clubes y federaciones — revisamos cada solicitud.',
     manualFlowNote: 'Regístrate, envía una solicitud de pago y activamos tras la confirmación.',

@@ -215,7 +215,6 @@ export const landing = {
     sectionEyebrow: 'Pricing',
     sectionTitle: 'Choose the right plan',
     sectionSub: 'Monthly or annual billing. Annual plans include 2 months free.',
-    manualBillingHint: 'All plans use manual billing — register, submit payment, and we activate after confirmation.',
   },
   faq: {
     sectionEyebrow: 'FAQ',

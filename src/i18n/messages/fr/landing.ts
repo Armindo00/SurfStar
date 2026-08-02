@@ -110,7 +110,6 @@ export const landing = {
     sectionEyebrow: 'Tarifs',
     sectionTitle: 'Choisissez le bon forfait',
     sectionSub: 'Facturation mensuelle ou annuelle. Les forfaits annuels incluent 2 mois offerts.',
-    manualBillingHint: 'Tous les forfaits utilisent la facturation manuelle — inscrivez-vous, soumettez le paiement et nous activons après confirmation.',
   },
   faq: {
     sectionEyebrow: 'FAQ',

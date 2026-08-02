@@ -231,7 +231,6 @@ export type MessageCatalog = {
       sectionEyebrow: string
       sectionTitle: string
       sectionSub: string
-      manualBillingHint: string
     }
     faq: {
       sectionEyebrow: string
