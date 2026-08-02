@@ -49,11 +49,15 @@ export function PackCard({
               : 'pack-card'
       }
     >
-      {plan.highlighted ? <span className="pack-card__badge">{p.mostPopular}</span> : null}
-      {approvalRequired ? <span className="pack-card__badge pack-card__badge--muted">{p.byApproval}</span> : null}
-      {manualFlow && !approvalRequired ? (
-        <span className="pack-card__badge pack-card__badge--muted">{p.manualBilling}</span>
-      ) : null}
+      <div className="pack-card__badges">
+        {plan.highlighted ? <span className="pack-card__badge">{p.mostPopular}</span> : null}
+        {approvalRequired ? (
+          <span className="pack-card__badge pack-card__badge--muted">{p.byApproval}</span>
+        ) : null}
+        {manualFlow ? (
+          <span className="pack-card__badge pack-card__badge--muted">{p.manualBilling}</span>
+        ) : null}
+      </div>
 
       <header className="pack-card__head">
         <button
@@ -77,9 +81,8 @@ export function PackCard({
 
       {approvalRequired ? (
         <p className="pack-card__approval-note muted">{p.approvalNote}</p>
-      ) : manualFlow ? (
-        <p className="pack-card__approval-note muted">{p.manualFlowNote}</p>
       ) : null}
+      {manualFlow ? <p className="pack-card__approval-note muted">{p.manualFlowNote}</p> : null}
 
       <ul className="pack-card__features">
         {includedFeatures.map((feature) => (

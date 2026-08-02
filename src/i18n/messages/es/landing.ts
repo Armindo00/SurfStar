@@ -106,7 +106,12 @@ export const landing = {
       { step: '03', title: 'Revisa con datos', text: 'Estadísticas en directo en la playa, tendencias mensuales y totales de temporada.' },
     ] as const,
   },
-  pricing: { sectionEyebrow: 'Precios', sectionTitle: 'Elige el plan adecuado', sectionSub: 'Facturación mensual o anual. Los planes anuales incluyen 2 meses gratis.' },
+  pricing: {
+    sectionEyebrow: 'Precios',
+    sectionTitle: 'Elige el plan adecuado',
+    sectionSub: 'Facturación mensual o anual. Los planes anuales incluyen 2 meses gratis.',
+    manualBillingHint: 'Todos los planes usan facturación manual — regístrate, envía el pago y activamos tras confirmación.',
+  },
   faq: {
     sectionEyebrow: 'FAQ',
     sectionTitle: 'Preguntas frecuentes',

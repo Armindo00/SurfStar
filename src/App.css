@@ -5307,6 +5307,12 @@ body {
   line-height: 1.6;
 }
 
+.landing-section__sub--manual {
+  margin-top: 0.35rem;
+  font-size: 0.92rem;
+  color: #64748b;
+}
+
 .landing-features__grid {
   display: grid;
   gap: 1rem;
@@ -5848,11 +5854,20 @@ body {
   border: 2px solid var(--ss-primary);
 }
 
-.pack-card__badge {
+.pack-card__badges {
   position: absolute;
   top: -0.65rem;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+  max-width: calc(100% - 1rem);
+  z-index: 1;
+}
+
+.pack-card__badge {
   background: linear-gradient(135deg, #dbbf6a, #b8943f);
   color: #1a1204;
   font-size: 0.72rem;

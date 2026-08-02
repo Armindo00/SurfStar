@@ -4,7 +4,7 @@ import { LegalFooterLinks } from '../components/LegalFooterLinks'
 import { PackCard } from '../components/PackCard'
 import { AppLogo } from '../components/AppLogo'
 import { LanguagePicker } from '../components/LanguagePicker'
-import { SUBSCRIPTION_PLANS } from '../plans'
+import { SUBSCRIPTION_PLANS, usesManualPaymentFlow } from '../plans'
 import { scrollToPricingSection } from '../routing'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
@@ -92,6 +92,7 @@ export function LandingView() {
   } = useApp()
   const { messages, t } = useI18n()
   const L = messages.landing
+  const manualFlow = usesManualPaymentFlow()
   const WHATS_NEW = L.whatsNew.items
   const PILLARS = L.pillars.items
   const PREMIUM_SPOTLIGHTS = L.premiumSpotlights.items
@@ -400,6 +401,9 @@ export function LandingView() {
             <p className="landing-eyebrow">{L.pricing.sectionEyebrow}</p>
             <h2>{L.pricing.sectionTitle}</h2>
             <p className="landing-section__sub">{L.pricing.sectionSub}</p>
+            {manualFlow ? (
+              <p className="landing-section__sub landing-section__sub--manual">{L.pricing.manualBillingHint}</p>
+            ) : null}
           </div>
           <BillingIntervalToggle
             className="billing-toggle--landing"
