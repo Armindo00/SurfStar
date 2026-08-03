@@ -13,10 +13,7 @@ import {
 } from '../athleteStats'
 import { formatHeatTotal } from '../heatUtils'
 import {
-  averageLevelHint,
-  averageLevelTrendLabel,
   formatAverageLevelValue,
-  formatCombinedLevelSummary,
 } from '../sessionStats'
 import { buildAthleteEvolution } from '../teamAnalyticsStats'
 import type { AthleteShareSettings } from '../types'
@@ -567,15 +564,6 @@ export function AthletePortal() {
             <strong className="kpi-card__value">
               {formatAverageLevelValue(stats.avgOverallManeuverLevel)}
             </strong>
-            <small className="kpi-card__hint">{formatCombinedLevelSummary(stats)}</small>
-            {stats.avgOverallManeuverLevel !== null ? (
-              <small className="kpi-card__hint">
-                {averageLevelHint(stats.avgOverallManeuverLevel)} ·{' '}
-                {averageLevelTrendLabel(stats.avgOverallManeuverLevel)}
-              </small>
-            ) : (
-              <small className="kpi-card__hint">{averageLevelHint(null)}</small>
-            )}
           </article>
           <article className="kpi-card kpi-card--star">
             <span className="kpi-card__label">{A.starsLanded}</span>
