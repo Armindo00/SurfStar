@@ -3123,6 +3123,20 @@ body {
   color: var(--ss-muted);
 }
 
+.athlete-portal__nav-icon--settings {
+  background: rgba(148, 163, 184, 0.16);
+  color: #cbd5e1;
+}
+
+.athlete-portal__nav-item--settings {
+  width: 100%;
+}
+
+.athlete-portal-app-settings__body {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .athlete-portal-menu__settings {
   display: grid;
   gap: 0.75rem;

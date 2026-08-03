@@ -338,6 +338,11 @@ export type MessageCatalog = {
       dataSection: string
       settingsSection: string
       navLabel: string
+      appSettings: {
+        label: string
+        description: string
+        title: string
+      }
     }
     actions: Record<
       string,

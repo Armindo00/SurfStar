@@ -31,6 +31,11 @@ export const athlete = {
     dataSection: 'Os teus dados e histórico',
     settingsSection: 'Definições e conta',
     navLabel: 'Secções do menu de atleta',
+    appSettings: {
+      label: 'Definições da app',
+      description: 'Ajuda, contacto, idioma e conta',
+      title: 'Definições da app',
+    },
   },
   actions: {
     equipmentManagement: { label: 'Gestão de equipamento', description: 'Pranchas, quilhas e setup' },
