@@ -2899,6 +2899,41 @@ body {
 
 .athlete-portal__kpi {
   margin-top: 0.75rem;
+  align-items: stretch;
+}
+
+.athlete-portal__kpi .kpi-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  min-height: 5.75rem;
+  padding: 0.85rem 0.9rem;
+}
+
+.athlete-portal__kpi .kpi-card__label {
+  display: block;
+  min-height: 2.5rem;
+  margin-bottom: 0.35rem;
+  white-space: pre-line;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.athlete-portal__kpi .kpi-card__value {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.athlete-portal__kpi .athlete-potential-kpi .kpi-card__value {
+  font-size: 1.5rem;
+}
+
+.athlete-portal__kpi .athlete-potential-kpi .rate-bar {
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 .athlete-portal__kpi--compact {
@@ -2957,6 +2992,10 @@ body {
 
 .athlete-potential-kpi .kpi-card__value {
   font-size: 1.15rem;
+}
+
+.athlete-portal__kpi .athlete-potential-kpi .kpi-card__value {
+  font-size: 1.5rem;
 }
 
 .athlete-potential-split-bar {
