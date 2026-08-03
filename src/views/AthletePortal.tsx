@@ -23,6 +23,14 @@ import type { AthleteShareSettings } from '../types'
 import { AthletePortalSheetView } from './athlete-portal/AthletePortalSheets'
 import { AthletePortalMenu } from './athlete-portal/AthletePortalMenu'
 import type { AthleteDashboardAction } from './athlete-portal/types'
+import type { AppView } from '../types'
+
+const ATHLETE_SUB_VIEWS: AppView[] = [
+  'help',
+  'athlete-material',
+  'athlete-equipment-reviews',
+  'contact',
+]
 
 function RateBar({ value }: { value: number }) {
   return (
@@ -475,7 +483,7 @@ export function AthletePortal() {
     )
   }
 
-  if (view !== 'athlete-portal') {
+  if (view !== 'athlete-portal' && ATHLETE_SUB_VIEWS.includes(view)) {
     return null
   }
 

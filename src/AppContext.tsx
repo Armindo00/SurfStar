@@ -1288,6 +1288,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [applyResumeFromStore, auth, cloudMode])
 
   useEffect(() => {
+    if (auth?.role !== 'atleta') return
+    if (view === 'coach-home') {
+      setView('athlete-portal')
+    }
+  }, [auth, view])
+
+  useEffect(() => {
     if (!cloudMode) return
 
     let mounted = true
