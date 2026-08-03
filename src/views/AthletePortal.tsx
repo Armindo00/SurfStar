@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { NavBadge } from '../components/NavBadge'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
 import { UNSEEN } from '../unseenDomains'
@@ -23,7 +22,7 @@ import { buildAthleteEvolution } from '../teamAnalyticsStats'
 import type { AthleteShareSettings } from '../types'
 import { AthletePortalSheetView } from './athlete-portal/AthletePortalSheets'
 import { AthletePortalMenu } from './athlete-portal/AthletePortalMenu'
-import type { AthleteDashboardAction, AthletePortalSheet } from './athlete-portal/types'
+import type { AthleteDashboardAction } from './athlete-portal/types'
 
 function RateBar({ value }: { value: number }) {
   return (
@@ -53,13 +52,17 @@ export function AthletePortal() {
     refreshAthleteEquipment,
     markSeen,
     countUnseen,
+    view,
+    athleteMenuOpen,
+    setAthleteMenuOpen,
+    setAthleteMenuBadge,
+    athletePortalSheet,
+    setAthletePortalSheet,
   } = useApp()
   const { t, messages } = useI18n()
   const A = messages.athlete
   const [pairingBusy, setPairingBusy] = useState<string | null>(null)
   const [pairingError, setPairingError] = useState('')
-  const [sheet, setSheet] = useState<AthletePortalSheet | null>(null)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     void refreshPairingData()
@@ -204,6 +207,15 @@ export function AthletePortal() {
 
   const menuBadge =
     unseenEquipmentReviews + unseenPairing + unseenCheckins + unseenTrainingHistory + unseenHeats
+
+  useEffect(() => {
+    if (!isAthlete) {
+      setAthleteMenuBadge(0)
+      return
+    }
+    setAthleteMenuBadge(menuBadge)
+    return () => setAthleteMenuBadge(0)
+  }, [isAthlete, menuBadge, setAthleteMenuBadge])
 
   const sharingCoachCount = activeLinks.filter((link) =>
     Object.values(link.shareSettings).some(Boolean),
@@ -403,28 +415,24 @@ export function AthletePortal() {
       setView('athlete-equipment-reviews')
       return
     }
-    setSheet(id)
+    setAthletePortalSheet(id)
   }
 
   const handleMenuAction = (id: DashboardAction['id']) => {
-    setMenuOpen(false)
+    setAthleteMenuOpen(false)
     handleAction(id)
   }
 
   if (!isAthlete || !auth) {
-    return (
-      <div className="ss-card">
-        <p className="muted">{A.signInRequired}</p>
-      </div>
-    )
+    return null
   }
 
-  if (sheet) {
+  if (athletePortalSheet) {
     return (
       <>
         <AthletePortalSheetView
-          sheet={sheet}
-          onClose={() => setSheet(null)}
+          sheet={athletePortalSheet}
+          onClose={() => setAthletePortalSheet(null)}
           auth={{ name: auth.name, pairingCode: auth.pairingCode }}
           activeLinks={activeLinks}
           pendingLinks={pendingLinks}
@@ -449,23 +457,26 @@ export function AthletePortal() {
     )
   }
 
-  if (menuOpen) {
+  if (athleteMenuOpen) {
     return (
       <AthletePortalMenu
         actions={dashboardActions}
-        onClose={() => setMenuOpen(false)}
         onAction={handleMenuAction}
         onHelp={() => {
-          setMenuOpen(false)
+          setAthleteMenuOpen(false)
           setView('help')
         }}
         onContact={() => {
-          setMenuOpen(false)
+          setAthleteMenuOpen(false)
           openContact()
         }}
         onLogout={logout}
       />
     )
+  }
+
+  if (view !== 'athlete-portal') {
+    return null
   }
 
   const stats = general ?? {
@@ -582,30 +593,6 @@ export function AthletePortal() {
           <p className="muted">{A.shareMoreHint}</p>
         </div>
       ) : null}
-
-      <button
-        type="button"
-        className="action-list__item athlete-portal__nav-item athlete-portal__menu-open"
-        onClick={() => setMenuOpen(true)}
-        aria-label={A.menu.openLabel}
-      >
-        <span className="athlete-portal__nav-main">
-          <span className="athlete-portal__nav-icon athlete-portal__nav-icon--menu" aria-hidden="true">
-            ☰
-          </span>
-          <span>
-            <strong>{A.menu.openLabel}</strong>
-            <small>{A.menu.openDescription}</small>
-          </span>
-        </span>
-        {menuBadge > 0 ? (
-          <NavBadge count={menuBadge} className="athlete-portal__nav-badge" />
-        ) : (
-          <span className="athlete-portal__nav-chevron" aria-hidden="true">
-            ›
-          </span>
-        )}
-      </button>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { CookieConsent } from './components/CookieConsent'
 import { ToastProvider } from './components/ToastProvider'
 import { AppProvider, useApp } from './AppContext'
 import { I18nProvider, useI18n } from './i18n'
+import { NavBadge } from './components/NavBadge'
 import { AppLogo } from './components/AppLogo'
 import { ChangePasswordView } from './views/ChangePasswordView'
 import { CheckoutView } from './views/CheckoutView'
@@ -50,15 +51,25 @@ import './app-theme.css'
 import './plan-marketing.css'
 
 function AppHeader() {
-  const { auth, logout, role, setView } = useApp()
+  const {
+    auth,
+    logout,
+    role,
+    setView,
+    athleteMenuOpen,
+    setAthleteMenuOpen,
+    athleteMenuBadge,
+  } = useApp()
   const { t } = useI18n()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [coachMenuOpen, setCoachMenuOpen] = useState(false)
   if (!auth) return null
 
   const go = (next: Parameters<typeof setView>[0]) => {
-    setMenuOpen(false)
+    setCoachMenuOpen(false)
     setView(next)
   }
+
+  const isAthlete = role === 'atleta'
 
   return (
     <header className="app-brandbar">
@@ -68,39 +79,65 @@ function AppHeader() {
           <small>{role === 'treinador' ? t('roles.coach') : t('roles.athlete')}</small>
         </div>
       </div>
-      <button
-        type="button"
-        className="app-brandbar__menu-btn btn btn--ghost btn--small"
-        aria-expanded={menuOpen}
-        aria-controls="app-brandbar-menu"
-        onClick={() => setMenuOpen((open) => !open)}
-      >
-        {menuOpen ? t('common.close') : t('common.menu')}
-      </button>
-      <div
-        id="app-brandbar-menu"
-        className={menuOpen ? 'app-brandbar__user app-brandbar__user--open' : 'app-brandbar__user'}
-      >
-        <span className="app-brandbar__name">{auth.name}</span>
-        {auth.role === 'treinador' && auth.isPlatformAdmin ? (
-          <button type="button" className="btn btn--ghost btn--small" onClick={() => go('admin')}>
-            {t('common.admin')}
-          </button>
-        ) : null}
-        <button type="button" className="btn btn--ghost btn--small" onClick={() => go('help')}>
-          {t('common.help')}
-        </button>
+      {isAthlete ? (
         <button
           type="button"
-          className="btn btn--ghost btn--small"
-          onClick={() => {
-            setMenuOpen(false)
-            logout()
-          }}
+          className={
+            athleteMenuOpen
+              ? 'app-brandbar__menu-btn app-brandbar__menu-btn--athlete app-brandbar__menu-btn--open btn btn--ghost btn--small'
+              : 'app-brandbar__menu-btn app-brandbar__menu-btn--athlete btn btn--ghost btn--small'
+          }
+          aria-expanded={athleteMenuOpen}
+          aria-controls="athlete-portal-menu"
+          onClick={() => setAthleteMenuOpen(!athleteMenuOpen)}
         >
-          {t('common.signOut')}
+          <span className="app-brandbar__menu-icon" aria-hidden="true">
+            {athleteMenuOpen ? '×' : '☰'}
+          </span>
+          <span>{athleteMenuOpen ? t('common.close') : t('common.menu')}</span>
+          {!athleteMenuOpen && athleteMenuBadge > 0 ? (
+            <NavBadge count={athleteMenuBadge} className="app-brandbar__menu-badge" />
+          ) : null}
         </button>
-      </div>
+      ) : (
+        <>
+          <button
+            type="button"
+            className="app-brandbar__menu-btn btn btn--ghost btn--small"
+            aria-expanded={coachMenuOpen}
+            aria-controls="app-brandbar-menu"
+            onClick={() => setCoachMenuOpen((open) => !open)}
+          >
+            {coachMenuOpen ? t('common.close') : t('common.menu')}
+          </button>
+          <div
+            id="app-brandbar-menu"
+            className={
+              coachMenuOpen ? 'app-brandbar__user app-brandbar__user--open' : 'app-brandbar__user'
+            }
+          >
+            <span className="app-brandbar__name">{auth.name}</span>
+            {auth.role === 'treinador' && auth.isPlatformAdmin ? (
+              <button type="button" className="btn btn--ghost btn--small" onClick={() => go('admin')}>
+                {t('common.admin')}
+              </button>
+            ) : null}
+            <button type="button" className="btn btn--ghost btn--small" onClick={() => go('help')}>
+              {t('common.help')}
+            </button>
+            <button
+              type="button"
+              className="btn btn--ghost btn--small"
+              onClick={() => {
+                setCoachMenuOpen(false)
+                logout()
+              }}
+            >
+              {t('common.signOut')}
+            </button>
+          </div>
+        </>
+      )}
     </header>
   )
 }
@@ -115,6 +152,8 @@ function Shell() {
     planDetailPlanId,
     hasActiveSubscription,
     passwordRecoveryPending,
+    athleteMenuOpen,
+    athletePortalSheet,
   } = useApp()
   const { t } = useI18n()
 
@@ -174,21 +213,21 @@ function Shell() {
     )
   }
 
+  const athleteOverlayActive = athleteMenuOpen || athletePortalSheet !== null
+
   return (
     <div className="app-shell">
       <InstallAppBanner />
       <div className="app-shell__inner">
         <AppHeader />
         <main className="app-main">
-          {role === 'atleta' && view === 'help' && <HelpView />}
-          {role === 'atleta' && view === 'athlete-material' && <AthleteMaterialView />}
-          {role === 'atleta' && view === 'athlete-equipment-reviews' && <AthleteEquipmentReviewsView />}
-          {role === 'atleta' && view === 'contact' && <ContactView variant="app" />}
-          {role === 'atleta' &&
-            view !== 'help' &&
-            view !== 'athlete-material' &&
-            view !== 'athlete-equipment-reviews' &&
-            view !== 'contact' && <AthletePortal />}
+          {role === 'atleta' && !athleteOverlayActive && view === 'help' && <HelpView />}
+          {role === 'atleta' && !athleteOverlayActive && view === 'athlete-material' && <AthleteMaterialView />}
+          {role === 'atleta' && !athleteOverlayActive && view === 'athlete-equipment-reviews' && (
+            <AthleteEquipmentReviewsView />
+          )}
+          {role === 'atleta' && !athleteOverlayActive && view === 'contact' && <ContactView variant="app" />}
+          {role === 'atleta' && <AthletePortal />}
           {role === 'treinador' && view === 'coach-home' && <CoachHome />}
           {role === 'treinador' && view === 'start-session' && <StartSession />}
           {role === 'treinador' && view === 'select-athletes' && <SelectAthletes />}

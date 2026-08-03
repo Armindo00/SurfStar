@@ -98,6 +98,7 @@ import type {
   WaveSide,
 } from './types'
 import { DEFAULT_ATHLETE_SHARE_SETTINGS, normalizeAthleteShareSettings } from './types'
+import type { AthletePortalSheet } from './views/athlete-portal/types'
 import { coachIdsWithPsychologyCheckins, linkHasPsychologyCheckins } from './psychologyCheckins'
 import {
   backfillLocalLinks,
@@ -278,6 +279,12 @@ type AppContextValue = {
   role: UserRole
   view: AppView
   setView: (view: AppView) => void
+  athleteMenuOpen: boolean
+  setAthleteMenuOpen: (open: boolean) => void
+  athleteMenuBadge: number
+  setAthleteMenuBadge: (count: number) => void
+  athletePortalSheet: AthletePortalSheet | null
+  setAthletePortalSheet: (sheet: AthletePortalSheet | null) => void
   coachAthletes: Athlete[]
   coachLinks: CoachAthleteLink[]
   athleteLinks: CoachAthleteLink[]
@@ -575,6 +582,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [priorityFeedbackSessionId, setPriorityFeedbackSessionId] = useState<string | null>(null)
   const [seenRevision, setSeenRevision] = useState(0)
   const [view, setView] = useState<AppView>('coach-home')
+  const [athleteMenuOpen, setAthleteMenuOpen] = useState(false)
+  const [athleteMenuBadge, setAthleteMenuBadge] = useState(0)
+  const [athletePortalSheet, setAthletePortalSheet] = useState<AthletePortalSheet | null>(null)
   const [athletes, setAthletes] = useState<Athlete[]>(() =>
     cloudMode ? [] : migrateLegacyLocalAthletes(store.getAthletes()),
   )
@@ -1648,6 +1658,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSelectedPlanId(null)
     setPublicView('landing')
     setView('coach-home')
+    setAthleteMenuOpen(false)
+    setAthleteMenuBadge(0)
+    setAthletePortalSheet(null)
   }, [auth, cloudMode, setPublicView])
 
   const persistSessions = useCallback(
@@ -3474,6 +3487,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       role,
       view,
       setView: navigateView,
+      athleteMenuOpen,
+      setAthleteMenuOpen,
+      athleteMenuBadge,
+      setAthleteMenuBadge,
+      athletePortalSheet,
+      setAthletePortalSheet,
       coachAthletes,
       coachLinks,
       athleteLinks,
@@ -3633,6 +3652,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       role,
       view,
       navigateView,
+      athleteMenuOpen,
+      athleteMenuBadge,
+      athletePortalSheet,
       coachAthletes,
       coachLinks,
       athleteLinks,

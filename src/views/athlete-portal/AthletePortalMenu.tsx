@@ -1,33 +1,27 @@
 import { DeleteAccountPanel } from '../../components/DeleteAccountPanel'
 import { LanguagePicker } from '../../components/LanguagePicker'
 import { NavBadge } from '../../components/NavBadge'
-import { ScreenHeader } from '../../components/ScreenHeader'
 import { useI18n } from '../../i18n'
 import type { AthleteDashboardAction, AthleteDashboardActionId } from './types'
 
 type Props = {
   actions: AthleteDashboardAction[]
-  onClose: () => void
   onAction: (id: AthleteDashboardActionId) => void
   onHelp: () => void
   onContact: () => void
   onLogout: () => void
 }
 
-export function AthletePortalMenu({
-  actions,
-  onClose,
-  onAction,
-  onHelp,
-  onContact,
-  onLogout,
-}: Props) {
+export function AthletePortalMenu({ actions, onAction, onHelp, onContact, onLogout }: Props) {
   const { messages } = useI18n()
   const A = messages.athlete
 
   return (
-    <div className="ss-flow athlete-portal-menu">
-      <ScreenHeader title={A.menu.title} onBack={onClose} />
+    <div id="athlete-portal-menu" className="ss-flow athlete-portal-menu">
+      <div className="athlete-portal-menu__intro">
+        <h1 className="athlete-portal-menu__title">{A.menu.title}</h1>
+        <p className="muted athlete-portal-menu__sub">{A.menu.openDescription}</p>
+      </div>
 
       <section className="athlete-portal-menu__section" aria-labelledby="athlete-menu-data">
         <h2 id="athlete-menu-data" className="athlete-portal-menu__section-title">

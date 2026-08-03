@@ -9012,6 +9012,51 @@ a.legal-footer-links__btn {
   display: none;
 }
 
+.app-brandbar__menu-btn--athlete {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  min-height: 2.25rem;
+}
+
+.app-brandbar__menu-btn--athlete.app-brandbar__menu-btn--open {
+  border-color: rgba(201, 162, 39, 0.45);
+  background: rgba(201, 162, 39, 0.12);
+}
+
+.app-brandbar__menu-icon {
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.app-brandbar__menu-badge {
+  min-width: 1.15rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.68rem;
+}
+
+.athlete-portal-menu__intro {
+  margin-bottom: 0.35rem;
+}
+
+.athlete-portal-menu__title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--landing-gold-light, #e8d5a3);
+}
+
+.athlete-portal-menu__sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
 @media (max-width: 640px) {
   .app-brandbar {
     flex-wrap: wrap;
