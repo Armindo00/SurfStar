@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NavBadge } from '../components/NavBadge'
-import { DeleteAccountPanel } from '../components/DeleteAccountPanel'
-import { LanguagePicker } from '../components/LanguagePicker'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
 import { UNSEEN } from '../unseenDomains'
@@ -24,7 +22,8 @@ import {
 import { buildAthleteEvolution } from '../teamAnalyticsStats'
 import type { AthleteShareSettings } from '../types'
 import { AthletePortalSheetView } from './athlete-portal/AthletePortalSheets'
-import type { AthletePortalSheet } from './athlete-portal/types'
+import { AthletePortalMenu } from './athlete-portal/AthletePortalMenu'
+import type { AthleteDashboardAction, AthletePortalSheet } from './athlete-portal/types'
 
 function RateBar({ value }: { value: number }) {
   return (
@@ -34,13 +33,7 @@ function RateBar({ value }: { value: number }) {
   )
 }
 
-type DashboardAction = {
-  id: AthletePortalSheet | 'material' | 'equipment-reviews'
-  label: string
-  description: string
-  icon: string
-  badge?: number
-}
+type DashboardAction = AthleteDashboardAction
 
 export function AthletePortal() {
   const {
@@ -66,6 +59,7 @@ export function AthletePortal() {
   const [pairingBusy, setPairingBusy] = useState<string | null>(null)
   const [pairingError, setPairingError] = useState('')
   const [sheet, setSheet] = useState<AthletePortalSheet | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     void refreshPairingData()
@@ -207,6 +201,9 @@ export function AthletePortal() {
   )
   const unseenTrainingHistory = countUnseen(UNSEEN.athleteTrainingHistory, sessionHistoryItems)
   const unseenHeats = countUnseen(UNSEEN.athleteHeats, heatItems)
+
+  const menuBadge =
+    unseenEquipmentReviews + unseenPairing + unseenCheckins + unseenTrainingHistory + unseenHeats
 
   const sharingCoachCount = activeLinks.filter((link) =>
     Object.values(link.shareSettings).some(Boolean),
@@ -409,6 +406,11 @@ export function AthletePortal() {
     setSheet(id)
   }
 
+  const handleMenuAction = (id: DashboardAction['id']) => {
+    setMenuOpen(false)
+    handleAction(id)
+  }
+
   if (!isAthlete || !auth) {
     return (
       <div className="ss-card">
@@ -444,6 +446,25 @@ export function AthletePortal() {
           coachName={coachName}
         />
       </>
+    )
+  }
+
+  if (menuOpen) {
+    return (
+      <AthletePortalMenu
+        actions={dashboardActions}
+        onClose={() => setMenuOpen(false)}
+        onAction={handleMenuAction}
+        onHelp={() => {
+          setMenuOpen(false)
+          setView('help')
+        }}
+        onContact={() => {
+          setMenuOpen(false)
+          openContact()
+        }}
+        onLogout={logout}
+      />
     )
   }
 
@@ -550,34 +571,6 @@ export function AthletePortal() {
         </div>
       </div>
 
-      <nav className="action-list athlete-portal__nav" aria-label={A.dashboardNavLabel}>
-        {dashboardActions.map((action) => (
-          <button
-            key={action.id}
-            type="button"
-            className="action-list__item athlete-portal__nav-item"
-            onClick={() => handleAction(action.id)}
-          >
-            <span className="athlete-portal__nav-main">
-              <span className="athlete-portal__nav-icon" aria-hidden="true">
-                {action.icon}
-              </span>
-              <span>
-                <strong>{action.label}</strong>
-                <small>{action.description}</small>
-              </span>
-            </span>
-            {action.badge ? (
-              <NavBadge count={action.badge} className="athlete-portal__nav-badge" />
-            ) : (
-              <span className="athlete-portal__nav-chevron" aria-hidden="true">
-                ›
-              </span>
-            )}
-          </button>
-        ))}
-      </nav>
-
       {mySessions.length === 0 ? (
         <div className="ss-card athlete-portal__hint">
           <p className="muted">{A.noSessionsHint}</p>
@@ -590,22 +583,28 @@ export function AthletePortal() {
         </div>
       ) : null}
 
-      <button type="button" className="btn btn--outline btn--block" onClick={() => setView('help')}>
-        {A.helpAndInstall}
-      </button>
-
-      <button type="button" className="btn btn--outline btn--block" onClick={openContact}>
-        {A.contactSurfStar}
-      </button>
-
-      <div className="ss-card stats-panel">
-        <LanguagePicker />
-      </div>
-
-      <DeleteAccountPanel roleLabel="athlete" />
-
-      <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>
-        {A.signOut}
+      <button
+        type="button"
+        className="action-list__item athlete-portal__nav-item athlete-portal__menu-open"
+        onClick={() => setMenuOpen(true)}
+        aria-label={A.menu.openLabel}
+      >
+        <span className="athlete-portal__nav-main">
+          <span className="athlete-portal__nav-icon athlete-portal__nav-icon--menu" aria-hidden="true">
+            ☰
+          </span>
+          <span>
+            <strong>{A.menu.openLabel}</strong>
+            <small>{A.menu.openDescription}</small>
+          </span>
+        </span>
+        {menuBadge > 0 ? (
+          <NavBadge count={menuBadge} className="athlete-portal__nav-badge" />
+        ) : (
+          <span className="athlete-portal__nav-chevron" aria-hidden="true">
+            ›
+          </span>
+        )}
       </button>
     </div>
   )

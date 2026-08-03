@@ -24,6 +24,14 @@ export const athlete = {
   noSessionsHint: 'Ainda não há sessões concluídas visíveis para ti. Partilha o teu código de emparelhamento com um treinador.',
   shareMoreHint: 'Os teus treinadores podem partilhar estatísticas mais detalhadas em Atletas e emparelhamento.',
   dashboardNavLabel: 'Secções do painel de atleta',
+  menu: {
+    title: 'Menu',
+    openLabel: 'Menu',
+    openDescription: 'Equipamento, treinadores, histórico e definições',
+    dataSection: 'Os teus dados e histórico',
+    settingsSection: 'Definições e conta',
+    navLabel: 'Secções do menu de atleta',
+  },
   actions: {
     equipmentManagement: { label: 'Gestão de equipamento', description: 'Pranchas, quilhas e setup' },
     equipmentReviews: {

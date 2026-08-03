@@ -24,6 +24,14 @@ export const athlete = {
   noSessionsHint: 'Aucune session terminée visible pour vous. Partagez votre code d\'appairage avec un entraîneur.',
   shareMoreHint: 'Vos entraîneurs peuvent partager des stats plus détaillées depuis Athlètes et appairage.',
   dashboardNavLabel: 'Sections du tableau de bord athlète',
+  menu: {
+    title: 'Menu',
+    openLabel: 'Menu',
+    openDescription: 'Équipement, entraîneurs, historique et réglages',
+    dataSection: 'Vos données et historique',
+    settingsSection: 'Réglages et compte',
+    navLabel: 'Sections du menu athlète',
+  },
   actions: {
     equipmentManagement: { label: 'Gestion de l\'équipement', description: 'Planches, palmes et setup' },
     equipmentReviews: {

@@ -26,6 +26,14 @@ export const athlete = {
   shareMoreHint:
     'Your coaches can share more detailed stats from Athletes & pairing.',
   dashboardNavLabel: 'Athlete dashboard sections',
+  menu: {
+    title: 'Menu',
+    openLabel: 'Menu',
+    openDescription: 'Equipment, coaches, history and settings',
+    dataSection: 'Your data & history',
+    settingsSection: 'Settings & account',
+    navLabel: 'Athlete menu sections',
+  },
   actions: {
     equipmentManagement: {
       label: 'Equipment management',

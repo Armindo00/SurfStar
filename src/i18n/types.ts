@@ -331,6 +331,14 @@ export type MessageCatalog = {
     noSessionsHint: string
     shareMoreHint: string
     dashboardNavLabel: string
+    menu: {
+      title: string
+      openLabel: string
+      openDescription: string
+      dataSection: string
+      settingsSection: string
+      navLabel: string
+    }
     actions: Record<
       string,
       { label: string; descriptionDefault?: string; description?: string; descriptionCount?: string; descriptionCountPlural?: string; descriptionNew?: string; descriptionNewPlural?: string; descriptionSharing?: string; descriptionSharingPlural?: string; descriptionWaiting?: string; descriptionWaitingPlural?: string }

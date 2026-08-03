@@ -3099,6 +3099,35 @@ body {
   font-weight: 400;
 }
 
+.athlete-portal__menu-open {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.athlete-portal__nav-icon--menu {
+  background: rgba(201, 162, 39, 0.14);
+  color: var(--ss-gold, #c9a227);
+}
+
+.athlete-portal-menu__section {
+  margin-bottom: 1.25rem;
+}
+
+.athlete-portal-menu__section-title {
+  margin: 0 0 0.65rem;
+  padding: 0 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ss-muted);
+}
+
+.athlete-portal-menu__settings {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .athlete-portal__nav-badge,
 .nav-badge {
   flex-shrink: 0;

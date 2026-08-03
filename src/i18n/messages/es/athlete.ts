@@ -24,6 +24,14 @@ export const athlete = {
   noSessionsHint: 'Aún no hay sesiones completadas visibles para ti. Comparte tu código de emparejamiento con un entrenador.',
   shareMoreHint: 'Tus entrenadores pueden compartir estadísticas más detalladas desde Atletas y emparejamiento.',
   dashboardNavLabel: 'Secciones del panel de atleta',
+  menu: {
+    title: 'Menú',
+    openLabel: 'Menú',
+    openDescription: 'Equipamiento, entrenadores, historial y ajustes',
+    dataSection: 'Tus datos e historial',
+    settingsSection: 'Ajustes y cuenta',
+    navLabel: 'Secciones del menú de atleta',
+  },
   actions: {
     equipmentManagement: { label: 'Gestión de equipamiento', description: 'Tablas, aletas y setup' },
     equipmentReviews: {
