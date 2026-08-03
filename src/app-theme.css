@@ -2229,6 +2229,50 @@ body {
   pointer-events: auto;
 }
 
+.app-shell .language-picker__control {
+  z-index: 1;
+}
+
+.app-shell .stats-panel:has(.language-picker__menu) {
+  position: relative;
+  z-index: 40;
+}
+
+.app-shell .language-picker__menu {
+  background: #0a1628 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: var(--landing-text) !important;
+}
+
+.app-shell .language-picker__trigger {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: var(--landing-text) !important;
+}
+
+.app-shell .language-picker__current,
+.app-shell .language-picker__label {
+  color: var(--landing-text) !important;
+}
+
+.app-shell .language-picker__option {
+  color: var(--landing-text) !important;
+}
+
+.app-shell .language-picker__option:hover,
+.app-shell .language-picker__option:focus-visible {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.app-shell .language-picker__option--active {
+  background: rgba(201, 169, 98, 0.24) !important;
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .language-picker__option--active .language-picker__label {
+  color: var(--landing-gold-light) !important;
+}
+
 .auth-card {
   width: 100%;
   max-width: 440px;
