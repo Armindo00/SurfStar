@@ -2927,6 +2927,12 @@ body {
   text-align: left;
 }
 
+.athlete-portal__kpi .kpi-card__hint {
+  display: block;
+  margin-top: 0.25rem;
+  text-align: left;
+}
+
 .athlete-portal__kpi .athlete-potential-kpi .kpi-card__value {
   font-size: 1.5rem;
 }

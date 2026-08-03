@@ -530,10 +530,14 @@ export function AthletePortal() {
           <article className="kpi-card kpi-card--success">
             <span className="kpi-card__label">{A.heatWins}</span>
             <strong className="kpi-card__value">{stats.heatWins}</strong>
+            <small className="kpi-card__hint">{t('athlete.heats', { count: stats.heatParticipations })}</small>
           </article>
           <article className="kpi-card kpi-card--success">
             <span className="kpi-card__label">{A.championshipWins}</span>
             <strong className="kpi-card__value">{stats.championshipWins}</strong>
+            <small className="kpi-card__hint">
+              {stats.championshipWins === 1 ? A.titleWon : A.titlesWon}
+            </small>
           </article>
           <article className="kpi-card">
             <span className="kpi-card__label">{A.avgHeatScore}</span>
@@ -549,7 +553,10 @@ export function AthletePortal() {
                 <RateBar value={stats.withPotentialRate} />
               </>
             ) : (
-              <strong className="kpi-card__value">—</strong>
+              <>
+                <strong className="kpi-card__value">—</strong>
+                <small className="kpi-card__hint">{A.noWavesLogged}</small>
+              </>
             )}
           </article>
           <article className="kpi-card kpi-card--accent">
@@ -561,6 +568,12 @@ export function AthletePortal() {
           <article className="kpi-card kpi-card--star">
             <span className="kpi-card__label">{A.starsLanded}</span>
             <strong className="kpi-card__value">{stats.totalStars} ★</strong>
+            <small className="kpi-card__hint">
+              {t('athlete.starsBreakdown', {
+                technical: stats.technicalStars,
+                combo: stats.comboStars,
+              })}
+            </small>
           </article>
         </div>
       </div>
