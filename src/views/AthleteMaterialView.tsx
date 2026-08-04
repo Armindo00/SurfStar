@@ -3,11 +3,13 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
 import { UNSEEN } from '../unseenDomains'
+import { formatBoardSpecs } from '../materialUtils'
 import type { AthleteBoard, AthleteFin } from '../types'
 
 type BoardDraft = {
   name: string
-  lengthCm: string
+  lengthFeet: string
+  lengthInches: string
   widthInches: string
   thicknessInches: string
   volumeLiters: string
@@ -23,7 +25,8 @@ type FinDraft = {
 
 const emptyBoard = (): BoardDraft => ({
   name: '',
-  lengthCm: '',
+  lengthFeet: '',
+  lengthInches: '',
   widthInches: '',
   thicknessInches: '',
   volumeLiters: '',
@@ -42,15 +45,6 @@ function parseOptionalNumber(value: string): number | null {
   if (!trimmed) return null
   const num = Number(trimmed.replace(',', '.'))
   return Number.isFinite(num) ? num : null
-}
-
-function formatBoardSpecs(board: AthleteBoard): string {
-  const parts: string[] = []
-  if (board.lengthCm != null) parts.push(`${board.lengthCm} cm`)
-  if (board.widthInches != null) parts.push(`${board.widthInches}"`)
-  if (board.thicknessInches != null) parts.push(`${board.thicknessInches}"`)
-  if (board.volumeLiters != null) parts.push(`${board.volumeLiters} L`)
-  return parts.join(' · ')
 }
 
 export function AthleteMaterialView() {
@@ -104,7 +98,8 @@ export function AthleteMaterialView() {
     setEditingBoardId(board.id)
     setBoardDraft({
       name: board.name,
-      lengthCm: board.lengthCm?.toString() ?? '',
+      lengthFeet: board.lengthFeet?.toString() ?? '',
+      lengthInches: board.lengthInches?.toString() ?? '',
       widthInches: board.widthInches?.toString() ?? '',
       thicknessInches: board.thicknessInches?.toString() ?? '',
       volumeLiters: board.volumeLiters?.toString() ?? '',
@@ -133,7 +128,8 @@ export function AthleteMaterialView() {
       const result = await saveAthleteBoard({
         id: editingBoardId ?? undefined,
         name: boardDraft.name,
-        lengthCm: parseOptionalNumber(boardDraft.lengthCm),
+        lengthFeet: parseOptionalNumber(boardDraft.lengthFeet),
+        lengthInches: parseOptionalNumber(boardDraft.lengthInches),
         widthInches: parseOptionalNumber(boardDraft.widthInches),
         thicknessInches: parseOptionalNumber(boardDraft.thicknessInches),
         volumeLiters: parseOptionalNumber(boardDraft.volumeLiters),
@@ -219,30 +215,38 @@ export function AthleteMaterialView() {
 
       <div className="ss-card material-section">
         <h2 className="page-title">{t('ui.material.boardQuiver')}</h2>
-        <p className="muted">
-          Log length, width, thickness and volume — your coach can see this quiver.
-        </p>
+        <p className="muted">{t('ui.material.boardQuiverHint')}</p>
 
         <div className="material-form-grid">
           <label className="field field--pro">
-            <span>Name / model</span>
+            <span>{t('ui.material.boardName')}</span>
             <input
               value={boardDraft.name}
               onChange={(e) => setBoardDraft((d) => ({ ...d, name: e.target.value }))}
-              placeholder="e.g. Pyzel Phantom"
+              placeholder={t('ui.material.boardNamePlaceholder')}
             />
           </label>
           <label className="field field--pro">
-            <span>Length (cm)</span>
+            <span>{t('ui.material.boardLengthFeet')}</span>
+            <input
+              inputMode="numeric"
+              value={boardDraft.lengthFeet}
+              onChange={(e) => setBoardDraft((d) => ({ ...d, lengthFeet: e.target.value }))}
+              placeholder="5"
+            />
+          </label>
+          <label className="field field--pro">
+            <span>{t('ui.material.boardLengthInches')}</span>
             <input
               inputMode="decimal"
-              value={boardDraft.lengthCm}
-              onChange={(e) => setBoardDraft((d) => ({ ...d, lengthCm: e.target.value }))}
-              placeholder="186"
+              value={boardDraft.lengthInches}
+              onChange={(e) => setBoardDraft((d) => ({ ...d, lengthInches: e.target.value }))}
+              placeholder="8"
             />
           </label>
+          <p className="muted material-form-grid__full material-form-hint">{t('ui.material.boardLengthHint')}</p>
           <label className="field field--pro">
-            <span>Width (in)</span>
+            <span>{t('ui.material.boardWidth')}</span>
             <input
               inputMode="decimal"
               value={boardDraft.widthInches}
@@ -251,7 +255,7 @@ export function AthleteMaterialView() {
             />
           </label>
           <label className="field field--pro">
-            <span>Thickness (in)</span>
+            <span>{t('ui.material.boardThickness')}</span>
             <input
               inputMode="decimal"
               value={boardDraft.thicknessInches}
@@ -260,7 +264,7 @@ export function AthleteMaterialView() {
             />
           </label>
           <label className="field field--pro">
-            <span>Volume (L)</span>
+            <span>{t('ui.material.boardVolume')}</span>
             <input
               inputMode="decimal"
               value={boardDraft.volumeLiters}

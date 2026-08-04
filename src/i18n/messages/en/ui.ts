@@ -162,6 +162,14 @@ export const ui = {
     finsHint: 'Template, size and notes for your fins.',
     coachReviewsHint: 'Ratings and comments from your coaches on boards and fins.',
     boardQuiverHint: 'Your boards — dimensions, volume and notes.',
+    boardName: 'Name / model',
+    boardNamePlaceholder: 'e.g. Pyzel Phantom',
+    boardLengthFeet: 'Length (ft)',
+    boardLengthInches: 'Length (in)',
+    boardLengthHint: 'Example: 5\'8 = 5 feet and 8 inches.',
+    boardWidth: 'Width (in)',
+    boardThickness: 'Thickness (in)',
+    boardVolume: 'Volume (L)',
     noReviewsYet: 'No coach reviews yet. Your coaches can rate your equipment after sessions.',
   },
   customTemplates: {
@@ -449,7 +457,7 @@ export const ui = {
         title: 'Athlete gear quiver',
         lead: 'Athletes register boards and fins with dimensions, volume, and notes — free on every athlete account.',
         bullets: [
-          'Board length, width, thickness, and liters',
+          'Board length in feet and inches, width, thickness, and liters',
           'Fin setups with notes',
           'Coaches see gear from the athlete profile',
         ],

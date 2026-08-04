@@ -93,7 +93,8 @@ export type AthleteBoard = {
   id: string
   athleteId: string
   name: string
-  lengthCm: number | null
+  lengthFeet: number | null
+  lengthInches: number | null
   widthInches: number | null
   thicknessInches: number | null
   volumeLiters: number | null

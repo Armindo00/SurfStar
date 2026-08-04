@@ -4,6 +4,7 @@ import type {
   EquipmentEvaluation,
   SessionAthleteFeedback,
 } from './types'
+import { normalizeAthleteBoard } from './materialUtils'
 
 const KEY = 'surfstar-equipment-v1'
 
@@ -38,7 +39,7 @@ function save(data: EquipmentPersisted) {
 
 export const equipmentStore = {
   getBoards(athleteId: string) {
-    return load().boards.filter((b) => b.athleteId === athleteId)
+    return load().boards.filter((b) => b.athleteId === athleteId).map(normalizeAthleteBoard)
   },
   getFins(athleteId: string) {
     return load().fins.filter((f) => f.athleteId === athleteId)

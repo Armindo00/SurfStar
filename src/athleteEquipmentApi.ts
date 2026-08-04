@@ -1,4 +1,5 @@
 import { getSupabase } from './lib/supabase'
+import { normalizeAthleteBoard } from './materialUtils'
 import { isPsychologySurveyScores } from './psychologySurvey'
 import type {
   AthleteBoard,
@@ -15,6 +16,8 @@ type BoardRow = {
   athlete_id: string
   name: string
   length_cm: number | null
+  length_feet: number | null
+  length_inches: number | null
   width_inches: number | null
   thickness_inches: number | null
   volume_liters: number | null
@@ -61,10 +64,12 @@ type FeedbackRow = {
 }
 
 function mapBoard(row: BoardRow): AthleteBoard {
-  return {
+  return normalizeAthleteBoard({
     id: row.id,
     athleteId: row.athlete_id,
     name: row.name,
+    lengthFeet: row.length_feet,
+    lengthInches: row.length_inches,
     lengthCm: row.length_cm,
     widthInches: row.width_inches,
     thicknessInches: row.thickness_inches,
@@ -72,7 +77,7 @@ function mapBoard(row: BoardRow): AthleteBoard {
     notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-  }
+  })
 }
 
 function mapFin(row: FinRow): AthleteFin {
@@ -176,7 +181,9 @@ export async function cloudUpsertAthleteBoard(
     ...(board.id ? { id: board.id } : {}),
     athlete_id: athleteId,
     name: board.name.trim(),
-    length_cm: board.lengthCm,
+    length_feet: board.lengthFeet,
+    length_inches: board.lengthInches,
+    length_cm: null,
     width_inches: board.widthInches,
     thickness_inches: board.thicknessInches,
     volume_liters: board.volumeLiters,

@@ -77,7 +77,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
     title: 'Athlete gear quiver',
     lead: 'Athletes register boards and fins with dimensions, volume, and notes — free on every athlete account.',
     bullets: [
-      'Board length, width, thickness, and liters',
+      'Board length in feet and inches, width, thickness, and liters',
       'Fin setups with notes',
       'Coaches see gear from the athlete profile',
     ],

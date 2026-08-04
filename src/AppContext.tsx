@@ -412,7 +412,8 @@ type AppContextValue = {
   saveAthleteBoard: (input: {
     id?: string
     name: string
-    lengthCm: number | null
+    lengthFeet: number | null
+    lengthInches: number | null
     widthInches: number | null
     thicknessInches: number | null
     volumeLiters: number | null
@@ -3162,7 +3163,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async (input: {
       id?: string
       name: string
-      lengthCm: number | null
+      lengthFeet: number | null
+    lengthInches: number | null
       widthInches: number | null
       thicknessInches: number | null
       volumeLiters: number | null
@@ -3178,7 +3180,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const saved = await cloudUpsertAthleteBoard(auth.athleteId, {
             id,
             name: input.name,
-            lengthCm: input.lengthCm,
+            lengthFeet: input.lengthFeet,
+            lengthInches: input.lengthInches,
             widthInches: input.widthInches,
             thicknessInches: input.thicknessInches,
             volumeLiters: input.volumeLiters,
@@ -3190,7 +3193,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             id,
             athleteId: auth.athleteId,
             name: input.name,
-            lengthCm: input.lengthCm,
+            lengthFeet: input.lengthFeet,
+            lengthInches: input.lengthInches,
             widthInches: input.widthInches,
             thicknessInches: input.thicknessInches,
             volumeLiters: input.volumeLiters,
