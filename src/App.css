@@ -4003,6 +4003,10 @@ body {
   flex-shrink: 0;
 }
 
+.team-analytics-hero__avatar {
+  grid-area: avatar;
+}
+
 .team-analytics-list__body {
   flex: 1;
   min-width: 0;
@@ -4026,9 +4030,66 @@ body {
 }
 
 .team-analytics-hero {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'avatar copy'
+    'actions actions';
+  gap: 0.75rem 0.85rem;
+  align-items: start;
+}
+
+.team-analytics-hero__copy {
+  grid-area: copy;
+  min-width: 0;
+}
+
+.team-analytics-hero__copy .page-title {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.05rem, 4.2vw, 1.2rem);
+  line-height: 1.25;
+  overflow-wrap: break-word;
+}
+
+.team-analytics-hero__copy .muted {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.team-analytics-hero__actions {
+  grid-area: actions;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.team-analytics-hero__actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (min-width: 720px) {
+  .team-analytics-hero {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .team-analytics-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    flex-shrink: 0;
+    margin-left: auto;
+    width: auto;
+    grid-template-columns: unset;
+  }
+
+  .team-analytics-hero__actions .btn {
+    width: auto;
+  }
 }
 
 .kpi-card__hint {
@@ -8240,24 +8301,6 @@ a.legal-footer-links__btn {
   flex-shrink: 0;
 }
 
-.team-analytics-hero__copy {
-  flex: 1;
-  min-width: 0;
-}
-
-.team-analytics-hero__export {
-  flex-shrink: 0;
-  align-self: flex-start;
-}
-
-.team-analytics-hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  flex-shrink: 0;
-  align-self: flex-start;
-}
-
 .analytics-range-picker {
   display: grid;
   gap: 0.85rem;
@@ -8667,6 +8710,42 @@ a.legal-footer-links__btn {
   display: grid;
   gap: 0.85rem;
   margin-bottom: 0.75rem;
+}
+
+.team-analytics-page .analytics-range-picker__presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0;
+}
+
+.team-analytics-page .analytics-range-picker__presets .chip {
+  flex: unset;
+  width: 100%;
+  min-width: 0;
+  padding-inline: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.team-analytics-page .analytics-range-picker__presets .chip:nth-child(4) {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 640px) {
+  .team-analytics-page .analytics-range-picker__presets {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .team-analytics-page .analytics-range-picker__presets .chip {
+    flex: 1;
+    width: auto;
+    font-size: 0.85rem;
+  }
+
+  .team-analytics-page .analytics-range-picker__presets .chip:nth-child(4) {
+    grid-column: auto;
+  }
 }
 
 .athlete-profile-tabs {
