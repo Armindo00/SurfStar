@@ -28,6 +28,13 @@ export const components = {
     leaveWithoutSaving: 'Quitter sans enregistrer',
     stayInSession: 'Rester dans la session',
   },
+  closeWaveConfirm: {
+    eyebrow: 'Fermer la vague',
+    title: 'Fermer cette vague ?',
+    intro: 'Voulez-vous fermer la vague en cours et revenir au choix de l\'athlète ?',
+    yes: 'Oui',
+    no: 'Non',
+  },
   confirmDelete: { eyebrow: 'Supprimer', delete: 'Supprimer', cancel: 'Annuler' },
   installAppBanner: {
     ariaLabel: 'Installer SurfStar',

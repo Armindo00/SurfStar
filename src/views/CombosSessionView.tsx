@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../i18n'
 import { ComboRegisterPanel } from '../components/ComboRegisterPanel'
 import { SessionStickyBar } from '../components/SessionStickyBar'
@@ -34,6 +34,13 @@ export function CombosSessionView() {
     : { totalWaves: 0, withPotential: 0, withoutPotential: 0 }
 
   const focusedAthlete = focusAthleteId ? getAthlete(focusAthleteId) : undefined
+
+  useEffect(() => {
+    if (!activeAthleteId) {
+      setFocusAthleteId(null)
+      setComboLevel(null)
+    }
+  }, [activeAthleteId])
 
   if (!activeSession || activeSession.mode !== 'combos') {
     return (

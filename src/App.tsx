@@ -33,6 +33,7 @@ import { ManageCustomTemplates } from './views/ManageCustomTemplates'
 import { OrganizationView } from './views/OrganizationView'
 import { EndSessionSheet } from './components/EndSessionSheet'
 import { LeaveSessionConfirmSheet } from './components/LeaveSessionConfirmSheet'
+import { CloseWaveConfirmSheet } from './components/CloseWaveConfirmSheet'
 import { SessionFeedbackPortal } from './components/SessionFeedbackPortal'
 import { HelpView } from './views/HelpView'
 import { InstallAppBanner } from './components/InstallAppBanner'
@@ -254,6 +255,7 @@ function Shell() {
         </main>
         <EndSessionSheet />
         <LeaveSessionConfirmSheet />
+        <CloseWaveConfirmSheet />
         <SessionFeedbackPortal />
       </div>
     </div>

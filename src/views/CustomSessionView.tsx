@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../i18n'
 import { CustomRegisterPanel } from '../components/CustomRegisterPanel'
 import { SessionStickyBar } from '../components/SessionStickyBar'
@@ -30,6 +30,12 @@ export function CustomSessionView() {
   const stats = activeSession ? computeCustomSessionStats(activeSession, null) : null
   const focusedAthlete = focusAthleteId ? getAthlete(focusAthleteId) : undefined
   const templateName = activeSession?.customTemplateName ?? t('ui.session.customTrainingFallback')
+
+  useEffect(() => {
+    if (!activeAthleteId) {
+      setFocusAthleteId(null)
+    }
+  }, [activeAthleteId])
 
   if (!activeSession || activeSession.mode !== 'custom') {
     return (

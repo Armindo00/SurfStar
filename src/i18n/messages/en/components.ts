@@ -30,6 +30,13 @@ export const components = {
     leaveWithoutSaving: 'Leave without saving',
     stayInSession: 'Stay in session',
   },
+  closeWaveConfirm: {
+    eyebrow: 'Close wave',
+    title: 'Close this wave?',
+    intro: 'Do you want to close the current wave and return to athlete selection?',
+    yes: 'Yes',
+    no: 'No',
+  },
   confirmDelete: {
     eyebrow: 'Delete',
     delete: 'Delete',

@@ -358,6 +358,10 @@ type AppContextValue = {
     success: boolean,
   ) => void
   closeActiveWave: () => void
+  requestCloseActiveWave: () => void
+  closeWaveConfirmOpen: boolean
+  closeCloseWaveConfirm: () => void
+  confirmCloseActiveWave: () => void
   logComboAttempt: (level: ComboLevel, side: WaveSide, success: boolean) => void
   logCustomAttempt: (buttonId: string, levelId: string | null, success: boolean | null) => void
   startCustomTimer: () => void
@@ -630,6 +634,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeHeatId, setActiveHeatId] = useState<string | null>(null)
   const [endSessionSheetOpen, setEndSessionSheetOpen] = useState(false)
   const [leaveSessionConfirmOpen, setLeaveSessionConfirmOpen] = useState(false)
+  const [closeWaveConfirmOpen, setCloseWaveConfirmOpen] = useState(false)
   const [pendingLeaveView, setPendingLeaveView] = useState<AppView | null>(null)
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
 
@@ -2532,6 +2537,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveWaveId(null)
   }, [activeSessionId, activeWaveId, discardEmptyOpenWave])
 
+  const closeCloseWaveConfirm = useCallback(() => {
+    setCloseWaveConfirmOpen(false)
+  }, [])
+
+  const requestCloseActiveWave = useCallback(() => {
+    if (!activeWaveId) return
+    setCloseWaveConfirmOpen(true)
+  }, [activeWaveId])
+
+  const confirmCloseActiveWave = useCallback(() => {
+    closeActiveWave()
+    setActiveAthleteId(null)
+    setCloseWaveConfirmOpen(false)
+  }, [closeActiveWave])
+
   const selectAthlete = useCallback(
     (athleteId: string) => {
       if (!activeSessionId) return
@@ -3574,6 +3594,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       registerNoPotentialWave,
       logTechnicalManeuver,
       closeActiveWave,
+      requestCloseActiveWave,
+      closeWaveConfirmOpen,
+      closeCloseWaveConfirm,
+      confirmCloseActiveWave,
       logComboAttempt,
       logCustomAttempt,
       startCustomTimer,
@@ -3735,6 +3759,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       registerNoPotentialWave,
       logTechnicalManeuver,
       closeActiveWave,
+      requestCloseActiveWave,
+      closeWaveConfirmOpen,
+      closeCloseWaveConfirm,
+      confirmCloseActiveWave,
       logComboAttempt,
       logCustomAttempt,
       startCustomTimer,

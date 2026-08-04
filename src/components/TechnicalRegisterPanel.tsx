@@ -25,7 +25,7 @@ export function TechnicalRegisterPanel({
     startOpenWave,
     registerNoPotentialWave,
     logTechnicalManeuver,
-    closeActiveWave,
+    requestCloseActiveWave,
     setView,
   } = useApp()
   const { t, messages } = useI18n()
@@ -89,7 +89,7 @@ export function TechnicalRegisterPanel({
             </button>
           ) : null}
 
-          <button type="button" className="btn btn--primary btn--block" onClick={closeActiveWave}>
+          <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
             {r.closeWave}
           </button>
         </>

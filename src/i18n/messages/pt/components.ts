@@ -28,6 +28,13 @@ export const components = {
     leaveWithoutSaving: 'Sair sem guardar',
     stayInSession: 'Permanecer na sessão',
   },
+  closeWaveConfirm: {
+    eyebrow: 'Fechar onda',
+    title: 'Fechar esta onda?',
+    intro: 'Pretende fechar a onda atual e voltar à escolha de atleta?',
+    yes: 'Sim',
+    no: 'Não',
+  },
   confirmDelete: { eyebrow: 'Eliminar', delete: 'Eliminar', cancel: 'Cancelar' },
   installAppBanner: {
     ariaLabel: 'Instalar SurfStar',

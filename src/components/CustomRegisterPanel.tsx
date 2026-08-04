@@ -30,7 +30,7 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
     startOpenWave,
     registerNoPotentialWave,
     logCustomAttempt,
-    closeActiveWave,
+    requestCloseActiveWave,
     startCustomTimer,
     endCustomTimer,
     setView,
@@ -178,7 +178,7 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
             </button>
           ) : null}
 
-          <button type="button" className="btn btn--primary btn--block" onClick={closeActiveWave}>
+          <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
             {r.closeWave}
           </button>
         </>

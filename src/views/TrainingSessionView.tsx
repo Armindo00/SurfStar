@@ -43,6 +43,13 @@ export function TrainingSessionView() {
     setView(sessionFlowViewForMode(sessionMode))
   }, [sessionMode, setView])
 
+  useEffect(() => {
+    if (!activeAthleteId) {
+      setFocusAthleteId(null)
+      setManeuver(null)
+    }
+  }, [activeAthleteId])
+
   if (!activeSession) {
     return (
       <div className="ss-flow">
