@@ -23,7 +23,7 @@ export function ComboRegisterPanel({
     activeSession,
     activeWaveId,
     startOpenWave,
-    registerNoPotentialWave,
+    requestNoPotentialWave,
     logComboAttempt,
     requestCloseActiveWave,
     setView,
@@ -82,7 +82,7 @@ export function ComboRegisterPanel({
           </div>
 
           {canMarkNoPotential ? (
-            <button type="button" className="btn btn--block btn-np-wide" onClick={registerNoPotentialWave}>
+            <button type="button" className="btn btn--block btn-np-wide" onClick={requestNoPotentialWave}>
               {r.noPotential}
             </button>
           ) : null}

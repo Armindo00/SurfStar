@@ -2,9 +2,13 @@ import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
 
 export function CloseWaveConfirmSheet() {
-  const { closeWaveConfirmOpen, closeCloseWaveConfirm, confirmCloseActiveWave } = useApp()
+  const { closeWaveConfirmOpen, waveConfirmAction, closeCloseWaveConfirm, confirmCloseActiveWave } =
+    useApp()
   const { messages, t } = useI18n()
-  const s = messages.components.closeWaveConfirm
+  const s =
+    waveConfirmAction === 'no-potential'
+      ? messages.components.noPotentialWaveConfirm
+      : messages.components.closeWaveConfirm
 
   if (!closeWaveConfirmOpen) return null
 

@@ -37,6 +37,13 @@ export const components = {
     yes: 'Yes',
     no: 'No',
   },
+  noPotentialWaveConfirm: {
+    eyebrow: 'No potential',
+    title: 'Mark wave as no potential?',
+    intro: 'Do you want to log this wave as no potential and return to athlete selection?',
+    yes: 'Yes',
+    no: 'No',
+  },
   confirmDelete: {
     eyebrow: 'Delete',
     delete: 'Delete',

@@ -351,6 +351,7 @@ type AppContextValue = {
   selectAthlete: (athleteId: string) => void
   startOpenWave: () => void
   registerNoPotentialWave: () => void
+  requestNoPotentialWave: () => void
   logTechnicalManeuver: (
     kind: ManeuverKind,
     side: WaveSide,
@@ -359,6 +360,7 @@ type AppContextValue = {
   ) => void
   closeActiveWave: () => void
   requestCloseActiveWave: () => void
+  waveConfirmAction: 'close' | 'no-potential' | null
   closeWaveConfirmOpen: boolean
   closeCloseWaveConfirm: () => void
   confirmCloseActiveWave: () => void
@@ -635,6 +637,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [endSessionSheetOpen, setEndSessionSheetOpen] = useState(false)
   const [leaveSessionConfirmOpen, setLeaveSessionConfirmOpen] = useState(false)
   const [closeWaveConfirmOpen, setCloseWaveConfirmOpen] = useState(false)
+  const [waveConfirmAction, setWaveConfirmAction] = useState<'close' | 'no-potential' | null>(null)
   const [pendingLeaveView, setPendingLeaveView] = useState<AppView | null>(null)
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
 
@@ -2538,19 +2541,55 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [activeSessionId, activeWaveId, discardEmptyOpenWave])
 
   const closeCloseWaveConfirm = useCallback(() => {
+    setWaveConfirmAction(null)
     setCloseWaveConfirmOpen(false)
   }, [])
 
   const requestCloseActiveWave = useCallback(() => {
     if (!activeWaveId) return
+    setWaveConfirmAction('close')
     setCloseWaveConfirmOpen(true)
   }, [activeWaveId])
 
+  const canMarkNoPotentialWave = useCallback(() => {
+    if (!activeSessionId || !activeAthleteId || !activeWaveId) return false
+    const session = trainingSessions.find((s) => s.id === activeSessionId)
+    const wave = session?.waves.find((w) => w.id === activeWaveId)
+    return Boolean(wave && session && !waveHasLoggedAttempts(wave, session.mode))
+  }, [activeAthleteId, activeSessionId, activeWaveId, trainingSessions])
+
+  const requestNoPotentialWave = useCallback(() => {
+    if (!canMarkNoPotentialWave()) return
+    setWaveConfirmAction('no-potential')
+    setCloseWaveConfirmOpen(true)
+  }, [canMarkNoPotentialWave])
+
+  const applyNoPotentialWave = useCallback(() => {
+    if (!activeSessionId || !activeAthleteId || !activeWaveId) return
+
+    const session = trainingSessions.find((s) => s.id === activeSessionId)
+    const wave = session?.waves.find((w) => w.id === activeWaveId)
+    if (!wave || !session || waveHasLoggedAttempts(wave, session.mode)) return
+
+    updateSession(activeSessionId, (s) => ({
+      ...s,
+      waves: s.waves.map((w) =>
+        w.id === activeWaveId ? { ...w, hasPotential: false, multiManeuver: false } : w,
+      ),
+    }))
+    setActiveWaveId(null)
+  }, [activeAthleteId, activeSessionId, activeWaveId, trainingSessions, updateSession])
+
   const confirmCloseActiveWave = useCallback(() => {
-    closeActiveWave()
+    if (waveConfirmAction === 'no-potential') {
+      applyNoPotentialWave()
+    } else {
+      closeActiveWave()
+    }
     setActiveAthleteId(null)
+    setWaveConfirmAction(null)
     setCloseWaveConfirmOpen(false)
-  }, [closeActiveWave])
+  }, [applyNoPotentialWave, closeActiveWave, waveConfirmAction])
 
   const selectAthlete = useCallback(
     (athleteId: string) => {
@@ -2579,20 +2618,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [activeAthleteId, activeSessionId, activeWaveId, updateSession])
 
   const registerNoPotentialWave = useCallback(() => {
-    if (!activeSessionId || !activeAthleteId || !activeWaveId) return
-
-    const session = trainingSessions.find((s) => s.id === activeSessionId)
-    const wave = session?.waves.find((w) => w.id === activeWaveId)
-    if (!wave || !session || waveHasLoggedAttempts(wave, session.mode)) return
-
-    updateSession(activeSessionId, (s) => ({
-      ...s,
-      waves: s.waves.map((w) =>
-        w.id === activeWaveId ? { ...w, hasPotential: false, multiManeuver: false } : w,
-      ),
-    }))
-    setActiveWaveId(null)
-  }, [activeAthleteId, activeSessionId, activeWaveId, trainingSessions, updateSession])
+    applyNoPotentialWave()
+  }, [applyNoPotentialWave])
 
   const logTechnicalManeuver = useCallback(
     (kind: ManeuverKind, side: WaveSide, level: ManeuverLevel, success: boolean) => {
@@ -3592,9 +3619,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       selectAthlete,
       startOpenWave,
       registerNoPotentialWave,
+      requestNoPotentialWave,
       logTechnicalManeuver,
       closeActiveWave,
       requestCloseActiveWave,
+      waveConfirmAction,
       closeWaveConfirmOpen,
       closeCloseWaveConfirm,
       confirmCloseActiveWave,
@@ -3757,9 +3786,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       selectAthlete,
       startOpenWave,
       registerNoPotentialWave,
+      requestNoPotentialWave,
       logTechnicalManeuver,
       closeActiveWave,
       requestCloseActiveWave,
+      waveConfirmAction,
       closeWaveConfirmOpen,
       closeCloseWaveConfirm,
       confirmCloseActiveWave,

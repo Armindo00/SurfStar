@@ -35,6 +35,13 @@ export const components = {
     yes: 'Sí',
     no: 'No',
   },
+  noPotentialWaveConfirm: {
+    eyebrow: 'Sin potencial',
+    title: '¿Marcar ola sin potencial?',
+    intro: '¿Quieres registrar esta ola como sin potencial y volver a elegir atleta?',
+    yes: 'Sí',
+    no: 'No',
+  },
   confirmDelete: { eyebrow: 'Eliminar', delete: 'Eliminar', cancel: 'Cancelar' },
   installAppBanner: {
     ariaLabel: 'Instalar SurfStar',

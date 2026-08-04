@@ -376,6 +376,7 @@ export type MessageCatalog = {
     endSessionSheet: Record<string, string>
     leaveSessionConfirm: Record<string, string>
     closeWaveConfirm: Record<string, string>
+    noPotentialWaveConfirm: Record<string, string>
     confirmDelete: Record<string, string>
     installAppBanner: {
       ariaLabel: string

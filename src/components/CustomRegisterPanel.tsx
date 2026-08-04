@@ -28,7 +28,7 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
     activeSession,
     activeWaveId,
     startOpenWave,
-    registerNoPotentialWave,
+    requestNoPotentialWave,
     logCustomAttempt,
     requestCloseActiveWave,
     startCustomTimer,
@@ -173,7 +173,7 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
           </div>
 
           {canMarkNoPotential ? (
-            <button type="button" className="btn btn--block btn-np-wide" onClick={registerNoPotentialWave}>
+            <button type="button" className="btn btn--block btn-np-wide" onClick={requestNoPotentialWave}>
               {r.noPotential}
             </button>
           ) : null}
