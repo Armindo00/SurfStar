@@ -46,6 +46,7 @@ import {
   duplicateCustomTemplateRecord,
   snapshotCustomTemplate,
 } from './customTrainingUtils'
+import { resolveDraftSpotId, resolveDraftTemplateId } from './draftUtils'
 import {
   hashPassword,
   isValidEmail,
@@ -458,13 +459,16 @@ type AppContextValue = {
 
 const AppContext = createContext<AppContextValue | null>(null)
 
-const emptyDraft = (): DraftSession => ({
+const emptyDraft = (
+  spots: SurfSpot[] = [],
+  customTemplates: CustomTrainingTemplate[] = [],
+): DraftSession => ({
   mode: 'tecnico',
-  spotId: store.getSpots()[0]?.id ?? '',
+  spotId: spots[0]?.id ?? '',
   condition: '',
   athleteIds: [],
   heatDurationMinutes: 15,
-  customTemplateId: store.getCustomTemplates()[0]?.id ?? '',
+  customTemplateId: customTemplates[0]?.id ?? '',
   championshipHeatSize: 4,
   championshipParallelHeats: true,
 })
@@ -763,8 +767,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setTrainingSessions(sessions)
       setDraft((d) => ({
         ...d,
-        spotId: data.spots[0]?.id ?? d.spotId,
-        customTemplateId: templates[0]?.id ?? d.customTemplateId,
+        spotId: resolveDraftSpotId(d.spotId, data.spots),
+        customTemplateId: resolveDraftTemplateId(d.customTemplateId, templates),
       }))
       return sessions
     }
@@ -2263,8 +2267,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const resetDraft = useCallback(() => {
-    setDraft(emptyDraft())
-  }, [])
+    setDraft(emptyDraft(spots, customTemplates))
+  }, [customTemplates, spots])
 
   const navigateView = useCallback(
     (next: AppView) => {
@@ -2301,14 +2305,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const beginDraftSession = useCallback(() => {
     const planId = subscription?.planId ?? 'team'
-    const draftBase = emptyDraft()
-    draftBase.customTemplateId = customTemplates[0]?.id ?? ''
+    const draftBase = emptyDraft(spots, customTemplates)
     if (!canUseTrainingMode(planId, draftBase.mode)) {
       draftBase.mode = getAllowedModes(planId)[0] ?? 'tecnico'
     }
     setDraft(draftBase)
     navigateView('start-session')
-  }, [customTemplates, navigateView, subscription?.planId])
+  }, [customTemplates, navigateView, spots, subscription?.planId])
 
   const confirmAthletesAndStart = useCallback(() => {
     if (!draft.spotId || !draft.condition) return
