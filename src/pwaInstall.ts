@@ -50,8 +50,15 @@ export function shouldOfferInstall(): boolean {
 export function registerServiceWorker(): void {
   if (!('serviceWorker' in navigator)) return
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      /* optional — install UI still works with manual steps */
-    })
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((registration) => {
+        registration.update().catch(() => {
+          /* optional */
+        })
+      })
+      .catch(() => {
+        /* optional — install UI still works with manual steps */
+      })
   })
 }

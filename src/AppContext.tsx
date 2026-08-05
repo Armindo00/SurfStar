@@ -46,7 +46,7 @@ import {
   duplicateCustomTemplateRecord,
   snapshotCustomTemplate,
 } from './customTrainingUtils'
-import { resolveDraftSpotId, resolveDraftTemplateId } from './draftUtils'
+import { resolveDraftSpotId, resolveDraftTemplateId, saveLastSpotId, loadLastSpotId } from './draftUtils'
 import {
   hashPassword,
   isValidEmail,
@@ -364,6 +364,7 @@ type AppContextValue = {
   closeWaveConfirmOpen: boolean
   closeCloseWaveConfirm: () => void
   confirmCloseActiveWave: () => void
+  trainingAthleteGridEpoch: number
   logComboAttempt: (level: ComboLevel, side: WaveSide, success: boolean) => void
   logCustomAttempt: (buttonId: string, levelId: string | null, success: boolean | null) => void
   startCustomTimer: () => void
@@ -638,6 +639,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [leaveSessionConfirmOpen, setLeaveSessionConfirmOpen] = useState(false)
   const [closeWaveConfirmOpen, setCloseWaveConfirmOpen] = useState(false)
   const [waveConfirmAction, setWaveConfirmAction] = useState<'close' | 'no-potential' | null>(null)
+  const [trainingAthleteGridEpoch, setTrainingAthleteGridEpoch] = useState(0)
+  const draftRef = useRef(draft)
+  draftRef.current = draft
   const [pendingLeaveView, setPendingLeaveView] = useState<AppView | null>(null)
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
 
@@ -664,7 +668,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     historySessionId,
   }
 
-  const applyResumeFromStore = useCallback((session: AuthSession, sessions: TrainingSession[]) => {
+  const applyResumeFromStore = useCallback((
+    session: AuthSession,
+    sessions: TrainingSession[],
+    orgSpots: SurfSpot[] = spots,
+    orgTemplates: CustomTrainingTemplate[] = customTemplates,
+  ) => {
     const userKey = resumeUserKey(session)
     const saved = loadResumeState(userKey)
     if (!saved) {
@@ -679,6 +688,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return
     }
 
+    const templates =
+      orgTemplates.length > 0 ? orgTemplates : [createEmptyCustomTemplate()]
+    const fallbackSpotId =
+      session.role === 'treinador'
+        ? loadLastSpotId(session.organizationId, orgSpots)
+        : resolveDraftSpotId('', orgSpots)
+
     skipResumeSaveRef.current = true
     setView(restored.view)
     setActiveSessionId(restored.activeSessionId)
@@ -686,11 +702,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveWaveId(restored.activeWaveId)
     setActiveHeatId(restored.activeHeatId)
     setHistorySessionId(restored.historySessionId)
-    setDraft(restored.draft)
+    setDraft({
+      ...restored.draft,
+      championshipParallelHeats: restored.draft.championshipParallelHeats ?? true,
+      spotId: resolveDraftSpotId(restored.draft.spotId || fallbackSpotId, orgSpots),
+      customTemplateId: resolveDraftTemplateId(restored.draft.customTemplateId, templates),
+    })
     queueMicrotask(() => {
       skipResumeSaveRef.current = false
     })
-  }, [])
+  }, [customTemplates, spots])
 
   const organizationId = auth?.role === 'treinador' ? auth.organizationId : null
 
@@ -753,7 +774,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
-  const applyCloudSessionData = useCallback(async (session: AuthSession): Promise<TrainingSession[]> => {
+  const applyCloudSessionData = useCallback(async (
+    session: AuthSession,
+  ): Promise<{
+    sessions: TrainingSession[]
+    spots: SurfSpot[]
+    customTemplates: CustomTrainingTemplate[]
+  }> => {
     if (session.role === 'treinador') {
       const data = await cloudLoadCoachData(session.organizationId, session.coachId)
       const sessions = data.trainingSessions.map((trainingSession) => ({
@@ -776,10 +803,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setTrainingSessions(sessions)
       setDraft((d) => ({
         ...d,
-        spotId: resolveDraftSpotId(d.spotId, data.spots),
+        spotId: resolveDraftSpotId(
+          d.spotId || loadLastSpotId(session.organizationId, data.spots),
+          data.spots,
+        ),
         customTemplateId: resolveDraftTemplateId(d.customTemplateId, templates),
       }))
-      return sessions
+      return { sessions, spots: data.spots, customTemplates: templates }
     }
 
     const data = await cloudLoadAthleteData(session.athleteId)
@@ -789,7 +819,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCoachLinks([])
     setTrainingSessions(sessions)
     setSpots([])
-    return sessions
+    return { sessions, spots: [], customTemplates: [] }
   }, [])
 
   const syncCoachSubscription = useCallback(
@@ -1297,6 +1327,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (cloudMode || !auth) return
+    if (auth.role === 'treinador') {
+      const templates = store.getCustomTemplatesForOrg(auth.organizationId)
+      applyResumeFromStore(
+        auth,
+        store.getTrainingSessionsForOrg(auth.organizationId),
+        store.getSpotsForOrg(auth.organizationId),
+        templates.length > 0 ? templates : [createEmptyCustomTemplate()],
+      )
+      return
+    }
     applyResumeFromStore(auth, store.getTrainingSessions())
   }, [applyResumeFromStore, auth, cloudMode])
 
@@ -1315,10 +1355,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const applySessionData = async (session: AuthSession) => {
       if (!mounted) return
-      const sessions = await applyCloudSessionData(session)
+      const loaded = await applyCloudSessionData(session)
       await syncCoachSubscription(session)
       await refreshOrganizationMembers()
-      return sessions
+      return loaded
     }
 
     void (async () => {
@@ -1348,10 +1388,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
             }
 
             setTimeout(() => {
-              void applySessionData(next).then((sessions) => {
-                if (!mounted || !sessions) return
+              void applySessionData(next).then((loaded) => {
+                if (!mounted || !loaded) return
                 if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
-                  applyResumeFromStore(next, sessions)
+                  applyResumeFromStore(
+                    next,
+                    loaded.sessions,
+                    loaded.spots,
+                    loaded.customTemplates,
+                  )
                 }
               })
             }, 0)
@@ -1380,9 +1425,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (session && mounted) {
           setAuth(session)
           if (!passwordRecoveryPendingRef.current) {
-            void applySessionData(session).then((sessions) => {
-              if (mounted && sessions) {
-                applyResumeFromStore(session, sessions)
+            void applySessionData(session).then((loaded) => {
+              if (mounted && loaded) {
+                applyResumeFromStore(
+                  session,
+                  loaded.sessions,
+                  loaded.spots,
+                  loaded.customTemplates,
+                )
               }
             })
           }
@@ -1413,9 +1463,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const result = await cloudLogin(email, password)
         if (!result.ok) return result
         setAuth(result.session)
-        const sessions = await applyCloudSessionData(result.session)
+        const loaded = await applyCloudSessionData(result.session)
         await syncCoachSubscription(result.session)
-        applyResumeFromStore(result.session, sessions)
+        applyResumeFromStore(
+          result.session,
+          loaded.sessions,
+          loaded.spots,
+          loaded.customTemplates,
+        )
         return { ok: true as const }
       }
 
@@ -1446,7 +1501,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCustomTemplates(data.customTemplates)
     setCoachLinks(data.links)
     setAthletes(data.athletes)
-    applyResumeFromStore(session, data.trainingSessions)
+    applyResumeFromStore(
+      session,
+      data.trainingSessions,
+      data.spots,
+      data.customTemplates,
+    )
     await syncCoachSubscription(session)
     await refreshOrganizationMembers()
     return { ok: true }
@@ -1460,8 +1520,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const result = await cloudLogin(email, password)
         if (!result.ok) return result
         setAuth(result.session)
-        const sessions = await applyCloudSessionData(result.session)
-        applyResumeFromStore(result.session, sessions)
+        const loaded = await applyCloudSessionData(result.session)
+        applyResumeFromStore(
+          result.session,
+          loaded.sessions,
+          loaded.spots,
+          loaded.customTemplates,
+        )
         return { ok: true as const }
       }
 
@@ -2245,7 +2310,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setDraftSpot = useCallback((spotId: string) => {
     setDraft((d) => ({ ...d, spotId }))
-  }, [])
+    if (auth?.role === 'treinador') {
+      saveLastSpotId(auth.organizationId, spotId)
+    }
+  }, [auth])
 
   const setDraftCondition = useCallback((condition: string) => {
     setDraft((d) => ({ ...d, condition }))
@@ -2315,23 +2383,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const beginDraftSession = useCallback(() => {
     const planId = subscription?.planId ?? 'team'
     const draftBase = emptyDraft(spots, customTemplates)
+    if (auth?.role === 'treinador') {
+      draftBase.spotId = loadLastSpotId(auth.organizationId, spots)
+    }
     if (!canUseTrainingMode(planId, draftBase.mode)) {
       draftBase.mode = getAllowedModes(planId)[0] ?? 'tecnico'
     }
     setDraft(draftBase)
     navigateView('start-session')
-  }, [customTemplates, navigateView, spots, subscription?.planId])
+  }, [auth, customTemplates, navigateView, spots, subscription?.planId])
 
   const confirmAthletesAndStart = useCallback(() => {
-    if (!draft.spotId || !draft.condition) return
-    if (draft.mode !== 'sea-analysis' && draft.athleteIds.length === 0) return
-    if (draft.mode === 'campeonato' && draft.athleteIds.length < 2) {
+    const currentDraft = draftRef.current
+    if (!currentDraft.spotId || !currentDraft.condition) return
+    if (currentDraft.mode !== 'sea-analysis' && currentDraft.athleteIds.length === 0) return
+    if (currentDraft.mode === 'campeonato' && currentDraft.athleteIds.length < 2) {
       showToast('Select at least 2 athletes for a championship.', 'error')
       return
     }
     if (
-      draft.mode === 'campeonato' &&
-      !isValidChampionshipField(draft.athleteIds.length, draft.championshipHeatSize)
+      currentDraft.mode === 'campeonato' &&
+      !isValidChampionshipField(currentDraft.athleteIds.length, currentDraft.championshipHeatSize)
     ) {
       showToast(
         'Cannot build a valid bracket with this number of surfers. Each heat needs at least 2 athletes.',
@@ -2342,9 +2414,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (auth?.role !== 'treinador') return
 
     const planId = subscription?.planId ?? 'team'
-    if (!canUseTrainingMode(planId, draft.mode)) {
+    if (!canUseTrainingMode(planId, currentDraft.mode)) {
       showToast(
-        draft.mode === 'custom'
+        currentDraft.mode === 'custom'
           ? 'Custom training requires Coach Premium plan.'
           : 'This training mode is not included in your plan.',
         'error',
@@ -2352,8 +2424,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    if (draft.mode === 'custom') {
-      const template = customTemplates.find((t) => t.id === draft.customTemplateId)
+    if (currentDraft.mode === 'custom') {
+      const template = customTemplates.find((t) => t.id === currentDraft.customTemplateId)
       if (!template) {
         showToast('Select a custom training template first.', 'error')
         return
@@ -2361,47 +2433,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     const customTemplate =
-      draft.mode === 'custom'
-        ? customTemplates.find((t) => t.id === draft.customTemplateId)
+      currentDraft.mode === 'custom'
+        ? customTemplates.find((t) => t.id === currentDraft.customTemplateId)
         : null
     const customSnapshot = customTemplate ? snapshotCustomTemplate(customTemplate) : null
 
     const initialHeat =
-      draft.mode === 'heats'
-        ? buildHeatRecord(draft.athleteIds, draft.heatDurationMinutes, 'Heat')
+      currentDraft.mode === 'heats'
+        ? buildHeatRecord(currentDraft.athleteIds, currentDraft.heatDurationMinutes, 'Heat')
         : null
 
     const championshipHeats =
-      draft.mode === 'campeonato'
+      currentDraft.mode === 'campeonato'
         ? buildInitialChampionshipHeats(
-            draft.athleteIds,
-            draft.championshipHeatSize,
-            draft.heatDurationMinutes,
+            currentDraft.athleteIds,
+            currentDraft.championshipHeatSize,
+            currentDraft.heatDurationMinutes,
           )
         : []
+
+    const resolvedSpotId = resolveDraftSpotId(currentDraft.spotId, spots)
+    saveLastSpotId(auth.organizationId, resolvedSpotId)
 
     const session: TrainingSession = {
       id: crypto.randomUUID(),
       coachId: auth.coachId,
       organizationId: auth.organizationId,
-      mode: draft.mode,
-      spotId: draft.spotId,
-      spotName: spots.find((spot) => spot.id === draft.spotId)?.name?.trim() ?? '',
-      condition: draft.condition,
+      mode: currentDraft.mode,
+      spotId: resolvedSpotId,
+      spotName: spots.find((spot) => spot.id === resolvedSpotId)?.name?.trim() ?? '',
+      condition: currentDraft.condition,
       startedAt: new Date().toISOString(),
-      athleteIds: draft.athleteIds,
+      athleteIds: currentDraft.athleteIds,
       waves: [],
       comboEntries: [],
       heats: initialHeat ? [initialHeat] : championshipHeats,
       seaAnalysis:
-        draft.mode === 'sea-analysis'
+        currentDraft.mode === 'sea-analysis'
           ? { timerStartedAt: null, endedAt: null, logs: [] }
           : null,
       championship:
-        draft.mode === 'campeonato'
+        currentDraft.mode === 'campeonato'
           ? {
-              heatSize: draft.championshipHeatSize,
-              parallelHeats: draft.championshipParallelHeats,
+              heatSize: currentDraft.championshipHeatSize,
+              parallelHeats: currentDraft.championshipParallelHeats,
               status: 'active',
               championAthleteId: null,
             }
@@ -2419,11 +2494,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     persistSessions((prev) => [session, ...prev])
     setActiveSessionId(session.id)
-    setActiveAthleteId(draft.athleteIds[0] ?? null)
+    setActiveAthleteId(currentDraft.athleteIds[0] ?? null)
     setActiveWaveId(null)
     setActiveHeatId(initialHeat?.id ?? championshipHeats[0]?.id ?? null)
-    setView(viewForMode(draft.mode))
-  }, [auth, customTemplates, draft, persistSessions, showToast, spots, subscription?.planId])
+    setTrainingAthleteGridEpoch((epoch) => epoch + 1)
+    setView(viewForMode(currentDraft.mode))
+  }, [auth, customTemplates, persistSessions, showToast, spots, subscription?.planId])
 
   const openEndSessionSheet = useCallback(() => {
     const session = trainingSessions.find((s) => s.id === activeSessionId)
@@ -2587,6 +2663,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       closeActiveWave()
     }
     setActiveAthleteId(null)
+    setTrainingAthleteGridEpoch((epoch) => epoch + 1)
     setWaveConfirmAction(null)
     setCloseWaveConfirmOpen(false)
   }, [applyNoPotentialWave, closeActiveWave, waveConfirmAction])
@@ -3627,6 +3704,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       closeWaveConfirmOpen,
       closeCloseWaveConfirm,
       confirmCloseActiveWave,
+      trainingAthleteGridEpoch,
       logComboAttempt,
       logCustomAttempt,
       startCustomTimer,
@@ -3794,6 +3872,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       closeWaveConfirmOpen,
       closeCloseWaveConfirm,
       confirmCloseActiveWave,
+      trainingAthleteGridEpoch,
       logComboAttempt,
       logCustomAttempt,
       startCustomTimer,

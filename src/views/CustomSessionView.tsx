@@ -12,8 +12,10 @@ export function CustomSessionView() {
     activeSession,
     activeAthleteId,
     activeWaveId,
+    trainingAthleteGridEpoch,
     selectAthlete,
     closeActiveWave,
+    setActiveAthleteId,
     setView,
     getAthlete,
   } = useApp()
@@ -37,6 +39,10 @@ export function CustomSessionView() {
     }
   }, [activeAthleteId])
 
+  useEffect(() => {
+    setFocusAthleteId(null)
+  }, [trainingAthleteGridEpoch])
+
   if (!activeSession || activeSession.mode !== 'custom') {
     return (
       <div className="ss-flow">
@@ -56,6 +62,7 @@ export function CustomSessionView() {
 
   const backToGrid = () => {
     if (activeWaveId) closeActiveWave()
+    setActiveAthleteId(null)
     setFocusAthleteId(null)
   }
 

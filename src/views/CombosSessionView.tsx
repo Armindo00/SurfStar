@@ -13,8 +13,10 @@ export function CombosSessionView() {
     activeSession,
     activeAthleteId,
     activeWaveId,
+    trainingAthleteGridEpoch,
     selectAthlete,
     closeActiveWave,
+    setActiveAthleteId,
     setView,
     getAthlete,
   } = useApp()
@@ -42,6 +44,11 @@ export function CombosSessionView() {
     }
   }, [activeAthleteId])
 
+  useEffect(() => {
+    setFocusAthleteId(null)
+    setComboLevel(null)
+  }, [trainingAthleteGridEpoch])
+
   if (!activeSession || activeSession.mode !== 'combos') {
     return (
       <div className="ss-flow">
@@ -61,7 +68,9 @@ export function CombosSessionView() {
 
   const backToGrid = () => {
     if (activeWaveId) closeActiveWave()
+    setActiveAthleteId(null)
     setFocusAthleteId(null)
+    setComboLevel(null)
   }
 
   if (focusAthleteId && focusedAthlete && activeAthleteId === focusAthleteId) {

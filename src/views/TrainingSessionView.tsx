@@ -14,8 +14,10 @@ export function TrainingSessionView() {
     activeSession,
     activeAthleteId,
     activeWaveId,
+    trainingAthleteGridEpoch,
     selectAthlete,
     closeActiveWave,
+    setActiveAthleteId,
     setView,
     getAthlete,
   } = useApp()
@@ -50,6 +52,11 @@ export function TrainingSessionView() {
     }
   }, [activeAthleteId])
 
+  useEffect(() => {
+    setFocusAthleteId(null)
+    setManeuver(null)
+  }, [trainingAthleteGridEpoch])
+
   if (!activeSession) {
     return (
       <div className="ss-flow">
@@ -77,7 +84,9 @@ export function TrainingSessionView() {
 
   const backToGrid = () => {
     if (activeWaveId) closeActiveWave()
+    setActiveAthleteId(null)
     setFocusAthleteId(null)
+    setManeuver(null)
   }
 
   if (focusAthleteId && focusedAthlete && activeAthleteId === focusAthleteId) {
