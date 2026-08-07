@@ -48,6 +48,11 @@ import {
 } from './customTrainingUtils'
 import { resolveDraftSpotId, resolveDraftTemplateId, saveLastSpotId, loadLastSpotId } from './draftUtils'
 import {
+  loadSessionCache,
+  mergeTrainingSessions,
+  saveSessionCache,
+} from './sessionCacheStore'
+import {
   hashPassword,
   isValidEmail,
   normalizeEmail,
@@ -642,6 +647,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [trainingAthleteGridEpoch, setTrainingAthleteGridEpoch] = useState(0)
   const draftRef = useRef(draft)
   draftRef.current = draft
+  const trainingSessionsRef = useRef(trainingSessions)
+  trainingSessionsRef.current = trainingSessions
   const [pendingLeaveView, setPendingLeaveView] = useState<AppView | null>(null)
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
 
@@ -783,13 +790,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }> => {
     if (session.role === 'treinador') {
       const data = await cloudLoadCoachData(session.organizationId, session.coachId)
-      const sessions = data.trainingSessions.map((trainingSession) => ({
+      const cloudSessions = data.trainingSessions.map((trainingSession) => ({
         ...trainingSession,
         spotName:
           trainingSession.spotName?.trim() ||
           data.spots.find((spot) => spot.id === trainingSession.spotId)?.name?.trim() ||
           '',
       }))
+      const cachedSessions = loadSessionCache(session.organizationId)
+      const sessions = mergeTrainingSessions(cloudSessions, cachedSessions)
+      saveSessionCache(session.organizationId, sessions)
       setAthletes(data.athletes)
       setCoachLinks(data.links)
       setAthleteLinks([])
@@ -1297,6 +1307,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!auth || skipResumeSaveRef.current) return
     saveResumeState(resumeUserKey(auth), resumeSnapshotRef.current)
+    if (auth.role === 'treinador' && auth.organizationId) {
+      saveSessionCache(auth.organizationId, trainingSessionsRef.current)
+    }
   }, [
     auth,
     view,
@@ -1306,6 +1319,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     activeHeatId,
     draft,
     historySessionId,
+    trainingSessions,
   ])
 
   useEffect(() => {
@@ -1313,6 +1327,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const session = authRef.current
       if (!session) return
       saveResumeState(resumeUserKey(session), resumeSnapshotRef.current)
+      if (session.role === 'treinador' && session.organizationId) {
+        saveSessionCache(session.organizationId, trainingSessionsRef.current)
+      }
     }
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') flushResume()
@@ -1752,6 +1769,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (nextOrUpdater: TrainingSession[] | ((prev: TrainingSession[]) => TrainingSession[])) => {
       setTrainingSessions((prev) => {
         const next = typeof nextOrUpdater === 'function' ? nextOrUpdater(prev) : nextOrUpdater
+        if (auth?.role === 'treinador' && auth.organizationId) {
+          saveSessionCache(auth.organizationId, next)
+        }
         if (cloudMode) syncSessionsToCloud(next)
         else if (auth?.role === 'treinador') store.saveTrainingSessionsForOrg(auth.organizationId, next)
         return next
