@@ -11,11 +11,11 @@ import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
 
 export function HelpView() {
-  const { role, subscription, setView, openContact } = useApp()
+  const { role, coachPlanId, setView, openContact } = useApp()
   const { t, locale, messages } = useI18n()
   const page = messages.help.page
   const isCoach = role === 'treinador'
-  const planId = subscription?.planId ?? 'team'
+  const planId = coachPlanId
 
   const goBack = () => {
     setView(isCoach ? 'coach-home' : 'athlete-portal')

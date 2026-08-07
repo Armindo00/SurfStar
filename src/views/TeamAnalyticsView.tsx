@@ -45,7 +45,7 @@ type AthleteProfileSection = 'training' | 'psychology' | 'material'
 
 export function TeamAnalyticsView() {
   const { t } = useI18n()
-  const { coachAthletes, trainingSessions, auth, subscription, getSpot, setView, sessionAthleteFeedback } = useApp()
+  const { coachAthletes, trainingSessions, auth, coachPlanId, getSpot, setView, sessionAthleteFeedback } = useApp()
   const [search, setSearch] = useState('')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
   const [range, setRange] = useState<AnalyticsRange>(() => presetAnalyticsRange('6m'))
@@ -53,9 +53,8 @@ export function TeamAnalyticsView() {
   const [activeTopic, setActiveTopic] = useState<AnalyticsTopic | null>(null)
   const [profileSection, setProfileSection] = useState<AthleteProfileSection>('training')
 
-  const planId = subscription?.planId ?? 'team'
-  const hasAccess = canAccessTeamAnalytics(planId)
-  const psychologyAvailable = canUsePsychologyCheckins(planId)
+  const hasAccess = canAccessTeamAnalytics(coachPlanId)
+  const psychologyAvailable = canUsePsychologyCheckins(coachPlanId)
   const coachId = auth?.role === 'treinador' ? auth.coachId : null
 
   const filteredAthletes = useMemo(() => {
@@ -211,7 +210,7 @@ export function TeamAnalyticsView() {
         <ScreenHeader title={t('nav.teamAnalytics')} onBack={() => setView('coach-home')} />
         <div className="ss-card stats-panel">
           <h2 className="stats-panel__title">{t('analytics.featureLocked')}</h2>
-          <p className="muted">{planUpgradeHint(planId, 'analytics')}</p>
+          <p className="muted">{planUpgradeHint(coachPlanId, 'analytics')}</p>
           <button type="button" className="btn btn--primary btn--block" onClick={() => setView('subscription')}>
             {t('analytics.viewSubscription')}
           </button>
@@ -353,7 +352,7 @@ export function TeamAnalyticsView() {
           ) : (
             <div className="ss-card stats-panel analytics-empty-period">
               <h2 className="stats-panel__title">{t('analytics.psychologyCheckins')}</h2>
-              <p className="muted">{planUpgradeHint(planId, 'psychology')}</p>
+              <p className="muted">{planUpgradeHint(coachPlanId, 'psychology')}</p>
             </div>
           )
         ) : analytics.sessions.length === 0 ? (

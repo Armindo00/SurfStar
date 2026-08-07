@@ -104,6 +104,7 @@ export function CoachHome() {
   const {
     auth,
     subscription,
+    coachPlanId,
     setView,
     beginDraftSession,
     logout,
@@ -117,8 +118,7 @@ export function CoachHome() {
   const { t } = useI18n()
   const name = auth?.role === 'treinador' ? auth.name : t('coach.defaultName')
   const plan = subscription ? getPlan(subscription.planId) : null
-  const planId = subscription?.planId ?? 'team'
-  const hasCustomTraining = canUseCustomTraining(planId)
+  const hasCustomTraining = canUseCustomTraining(coachPlanId)
   const orgName = auth?.role === 'treinador' ? auth.organizationName : null
   const isNewCoach = coachAthletes.length === 0 && completedCoachSessions.length === 0
 
@@ -159,7 +159,7 @@ export function CoachHome() {
         </span>
         <span>
           <strong>{t('coach.newSession')}</strong>
-          <small>{sessionModesSubtitle(planId)}</small>
+          <small>{sessionModesSubtitle(coachPlanId)}</small>
         </span>
       </button>
 
@@ -186,7 +186,7 @@ export function CoachHome() {
         <button type="button" className="action-list__item" onClick={() => setView('organization')}>
           <span>
             {t('nav.teamAndCoaches')}
-            {!canManageOrganizationCoaches(planId) ? t('nav.teamAcademySuffix') : ''}
+            {!canManageOrganizationCoaches(coachPlanId) ? t('nav.teamAcademySuffix') : ''}
           </span>
           <NavBadge count={unseenOrgInvites} className="nav-badge" />
           {!unseenOrgInvites ? <span aria-hidden="true">›</span> : null}

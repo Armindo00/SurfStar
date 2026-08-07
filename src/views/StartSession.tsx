@@ -14,7 +14,7 @@ export function StartSession() {
     spots,
     conditions,
     customTemplates,
-    subscription,
+    coachPlanId,
     setDraftMode,
     setDraftCustomTemplate,
     setDraftSpot,
@@ -27,7 +27,7 @@ export function StartSession() {
   const { t } = useI18n()
   const s = (key: string, params?: Record<string, string | number>) => t(`session.setup.${key}`, params)
 
-  const planId = subscription?.planId ?? 'team'
+  const planId = coachPlanId
   const modes = ALL_MODES.filter((mode) => canUseTrainingMode(planId, mode))
   const lockedModes = ALL_MODES.filter((mode) => !canUseTrainingMode(planId, mode))
 

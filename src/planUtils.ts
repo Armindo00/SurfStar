@@ -8,6 +8,14 @@ import type { TrainingMode } from './types'
 const TEAM_MODES: TrainingMode[] = ['tecnico', 'combos', 'heats', 'campeonato']
 const PREMIUM_MODES: TrainingMode[] = ['tecnico', 'combos', 'custom', 'heats', 'campeonato', 'sea-analysis']
 
+/** Full product access for platform administrators regardless of billing plan. */
+export const PLATFORM_ADMIN_PLAN_ID: PlanId = 'organization'
+
+export function resolveCoachPlanId(planId: PlanId, isPlatformAdmin?: boolean): PlanId {
+  if (isPlatformAdmin) return PLATFORM_ADMIN_PLAN_ID
+  return planId
+}
+
 function interpolate(template: string, params: Record<string, string | number>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, name: string) =>
     params[name] == null ? '' : String(params[name]),

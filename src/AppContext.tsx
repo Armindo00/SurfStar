@@ -139,6 +139,7 @@ import {
   canUseTrainingMode,
   getAllowedModes,
   planUpgradeHint,
+  resolveCoachPlanId,
 } from './planUtils'
 import {
   activateCoachSubscription,
@@ -238,6 +239,7 @@ type AppContextValue = {
   selectedBillingInterval: BillingInterval
   setBillingInterval: (interval: BillingInterval) => void
   subscription: CoachSubscription | null
+  coachPlanId: PlanId
   hasActiveSubscription: boolean
   selectPlan: (planId: PlanId, options?: { goToLogin?: boolean }) => void
   openLanding: () => void
@@ -574,6 +576,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [selectedPlanId, setSelectedPlanId] = useState<PlanId | null>(null)
   const [selectedBillingInterval, setSelectedBillingInterval] = useState<BillingInterval>('monthly')
   const [subscription, setSubscription] = useState<CoachSubscription | null>(null)
+  const coachPlanId = useMemo((): PlanId => {
+    const base = subscription?.planId ?? selectedPlanId ?? 'team'
+    return resolveCoachPlanId(base, auth?.role === 'treinador' && Boolean(auth.isPlatformAdmin))
+  }, [auth, selectedPlanId, subscription?.planId])
   const [organizationMembers, setOrganizationMembers] = useState<OrganizationMember[]>([])
   const [forgotPasswordRole, setForgotPasswordRole] = useState<UserRole>('treinador')
   const [passwordRecoveryPending, setPasswordRecoveryPending] = useState(
@@ -1873,13 +1879,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: false, error: 'Sign in as coach first.' }
       }
 
-      const planId = subscription?.planId ?? selectedPlanId ?? 'team'
       const activeCount = coachAthletes.filter((a) => !a.blocked).length
       const pendingCount = coachLinks.filter((l) => l.status === 'pending').length
-      if (!canAddAthlete(planId, activeCount + pendingCount)) {
+      if (!canAddAthlete(coachPlanId, activeCount + pendingCount)) {
         return {
           ok: false,
-          error: `Athlete limit reached on ${getPlan(planId).name}. Upgrade to add more.`,
+          error: `Athlete limit reached on ${getPlan(coachPlanId).name}. Upgrade to add more.`,
         }
       }
 
@@ -1924,7 +1929,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCoachLinks(nextPairings.filter((l) => l.organizationId === auth.organizationId))
       return { ok: true, athleteName: athlete.name }
     },
-    [auth, cloudMode, coachAthletes, coachLinks, refreshPairingData, selectedPlanId, subscription?.planId],
+    [auth, cloudMode, coachAthletes, coachLinks, coachPlanId, refreshPairingData],
   )
 
   const respondToPairing = useCallback(
@@ -2004,13 +2009,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateAthleteShareSettings = useCallback(
     (linkId: string, shareSettings: AthleteShareSettings) => {
       if (auth?.role !== 'treinador') return
-      const planId = subscription?.planId ?? 'team'
       const normalized = normalizeAthleteShareSettings(shareSettings)
-      if (normalized.psychologyCheckins && !canUsePsychologyCheckins(planId)) {
-        showToast(planUpgradeHint(planId, 'psychology'), 'error')
+      if (normalized.psychologyCheckins && !canUsePsychologyCheckins(coachPlanId)) {
+        showToast(planUpgradeHint(coachPlanId, 'psychology'), 'error')
         return
       }
-      if (!canUsePsychologyCheckins(planId)) {
+      if (!canUsePsychologyCheckins(coachPlanId)) {
         normalized.psychologyCheckins = false
       }
 
@@ -2033,7 +2037,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCoachLinks(nextPairings.filter((l) => l.organizationId === auth.organizationId))
       setAthletes(buildCoachAthletesFromLinks(nextPairings, store.getAthletes()))
     },
-    [auth, cloudMode, refreshPairingData, showToast, subscription?.planId],
+    [auth, cloudMode, coachPlanId, refreshPairingData, showToast],
   )
 
   const setAthleteBlocked = useCallback(
@@ -2068,10 +2072,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ok: false, error: 'Only the organization owner can invite coaches.' }
       }
 
-      const planId = subscription?.planId ?? 'team'
       const seatCount = organizationMembers.filter((m) => m.status === 'active' || m.status === 'pending').length
-      if (!canAddCoach(planId, seatCount)) {
-        return { ok: false, error: `Coach seat limit reached (${getPlan(planId).maxCoaches} coaches).` }
+      if (!canAddCoach(coachPlanId, seatCount)) {
+        return { ok: false, error: `Coach seat limit reached (${getPlan(coachPlanId).maxCoaches} coaches).` }
       }
 
       if (cloudMode) {
@@ -2086,7 +2089,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await refreshOrganizationMembers()
       return { ok: true }
     },
-    [auth, cloudMode, refreshOrganizationMembers],
+    [auth, cloudMode, coachPlanId, organizationMembers, refreshOrganizationMembers],
   )
 
   const removeOrganizationMember = useCallback(
@@ -2369,19 +2372,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const navigateView = useCallback(
     (next: AppView) => {
-      if (
-        next === 'analytics' &&
-        subscription &&
-        !canAccessTeamAnalytics(subscription.planId)
-      ) {
+      if (next === 'analytics' && !canAccessTeamAnalytics(coachPlanId)) {
         showToast('Team analytics requires Coach or Coach Premium plan.', 'error')
         return
       }
-      if (
-        next === 'manage-custom-templates' &&
-        subscription &&
-        !canUseCustomTraining(subscription.planId)
-      ) {
+      if (next === 'manage-custom-templates' && !canUseCustomTraining(coachPlanId)) {
         showToast('Custom training requires Coach Premium plan.', 'error')
         setView('subscription')
         return
@@ -2397,21 +2392,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       setView(next)
     },
-    [activeSessionId, showToast, subscription, view],
+    [activeSessionId, coachPlanId, showToast, view],
   )
 
   const beginDraftSession = useCallback(() => {
-    const planId = subscription?.planId ?? 'team'
     const draftBase = emptyDraft(spots, customTemplates)
     if (auth?.role === 'treinador') {
       draftBase.spotId = loadLastSpotId(auth.organizationId, spots)
     }
-    if (!canUseTrainingMode(planId, draftBase.mode)) {
-      draftBase.mode = getAllowedModes(planId)[0] ?? 'tecnico'
+    if (!canUseTrainingMode(coachPlanId, draftBase.mode)) {
+      draftBase.mode = getAllowedModes(coachPlanId)[0] ?? 'tecnico'
     }
     setDraft(draftBase)
     navigateView('start-session')
-  }, [auth, customTemplates, navigateView, spots, subscription?.planId])
+  }, [auth, coachPlanId, customTemplates, navigateView, spots])
 
   const confirmAthletesAndStart = useCallback(() => {
     const currentDraft = draftRef.current
@@ -2433,8 +2427,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     if (auth?.role !== 'treinador') return
 
-    const planId = subscription?.planId ?? 'team'
-    if (!canUseTrainingMode(planId, currentDraft.mode)) {
+    if (!canUseTrainingMode(coachPlanId, currentDraft.mode)) {
       showToast(
         currentDraft.mode === 'custom'
           ? 'Custom training requires Coach Premium plan.'
@@ -2519,7 +2512,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveHeatId(initialHeat?.id ?? championshipHeats[0]?.id ?? null)
     setTrainingAthleteGridEpoch((epoch) => epoch + 1)
     setView(viewForMode(currentDraft.mode))
-  }, [auth, customTemplates, persistSessions, showToast, spots, subscription?.planId])
+  }, [auth, coachPlanId, customTemplates, persistSessions, showToast, spots, subscription?.planId])
 
   const openEndSessionSheet = useCallback(() => {
     const session = trainingSessions.find((s) => s.id === activeSessionId)
@@ -3612,6 +3605,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       selectedBillingInterval,
       setBillingInterval,
       subscription,
+      coachPlanId,
       hasActiveSubscription,
       selectPlan,
       openLanding,
@@ -3784,6 +3778,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       selectedBillingInterval,
       setBillingInterval,
       subscription,
+      coachPlanId,
       hasActiveSubscription,
       selectPlan,
       openLanding,

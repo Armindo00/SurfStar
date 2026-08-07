@@ -16,13 +16,12 @@ export function ManageCustomTemplates() {
     saveCustomTemplate,
     deleteCustomTemplate,
     duplicateCustomTemplate,
-    subscription,
+    coachPlanId,
     setView,
   } = useApp()
   const { showToast } = useToast()
 
-  const planId = subscription?.planId ?? 'team'
-  const hasAccess = canUseCustomTraining(planId)
+  const hasAccess = canUseCustomTraining(coachPlanId)
 
   const [editing, setEditing] = useState<CustomTrainingTemplate | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -45,7 +44,7 @@ export function ManageCustomTemplates() {
             Build your own training templates — skill buttons, levels, success tracking, timer, and
             rules — exclusive to Coach Premium.
           </p>
-          <p className="muted">{planUpgradeHint(planId, 'custom')}</p>
+          <p className="muted">{planUpgradeHint(coachPlanId, 'custom')}</p>
           <button
             type="button"
             className="btn btn--primary btn--block"

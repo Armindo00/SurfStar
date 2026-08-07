@@ -25,7 +25,7 @@ export function ManageAthletes() {
   const {
     coachAthletes,
     coachLinks,
-    subscription,
+    coachPlanId,
     requestPairingByCode,
     revokePairing,
     updateAthleteShareSettings,
@@ -49,8 +49,7 @@ export function ManageAthletes() {
     if (ids.length === 0) return
     markSeen(UNSEEN.coachPairing, ids)
   }, [coachLinks, markSeen])
-  const planId = subscription?.planId ?? 'team'
-  const psychologyCheckinsAvailable = canUsePsychologyCheckins(planId)
+  const psychologyCheckinsAvailable = canUsePsychologyCheckins(coachPlanId)
   const activeCount = coachAthletes.filter((a) => !a.blocked).length
 
   const submitCode = async () => {
@@ -114,7 +113,7 @@ export function ManageAthletes() {
       <ScreenHeader title={t('nav.athletesAndPairing')} onBack={() => setView('coach-home')} />
       <p className="plan-limit-banner muted">
         {t('ui.manageAthletes.limitBanner', {
-          limit: athleteLimitMessage(planId),
+          limit: athleteLimitMessage(coachPlanId),
           activeCount,
           pendingCount: pendingLinks.length,
         })}
@@ -260,7 +259,7 @@ export function ManageAthletes() {
                         </label>
                       ) : (
                         <p className="muted athlete-share-panel__upgrade">
-                          {planUpgradeHint(planId, 'psychology')}
+                          {planUpgradeHint(coachPlanId, 'psychology')}
                         </p>
                       )}
                     </div>

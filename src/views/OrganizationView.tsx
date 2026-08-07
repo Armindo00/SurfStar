@@ -10,7 +10,7 @@ export function OrganizationView() {
   const { t } = useI18n()
   const {
     auth,
-    subscription,
+    coachPlanId,
     organizationMembers,
     refreshOrganizationMembers,
     inviteOrganizationCoach,
@@ -27,11 +27,10 @@ export function OrganizationView() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  const planId = subscription?.planId ?? 'team'
-  const canManageTeam = canManageOrganizationCoaches(planId)
+  const canManageTeam = canManageOrganizationCoaches(coachPlanId)
   const isOwner = auth?.role === 'treinador' && auth.organizationRole === 'owner'
   const activeCoachCount = organizationMembers.filter((m) => m.status === 'active' || m.status === 'pending').length
-  const seatLimit = getPlan(planId).maxCoaches
+  const seatLimit = getPlan(coachPlanId).maxCoaches
 
   useEffect(() => {
     void refreshOrganizationMembers()
@@ -61,7 +60,7 @@ export function OrganizationView() {
       return
     }
 
-    if (!canAddCoach(planId, activeCoachCount)) {
+    if (!canAddCoach(coachPlanId, activeCoachCount)) {
       setError(t('ui.organization.seatLimitReached', { limit: seatLimit }))
       return
     }
@@ -123,7 +122,7 @@ export function OrganizationView() {
         <h2 className="stats-panel__title">{auth.organizationName}</h2>
         <p className="muted">
           {canManageTeam
-            ? `${coachSeatLimitMessage(planId)} · ${activeCoachCount}/${seatLimit}`
+            ? `${coachSeatLimitMessage(coachPlanId)} · ${activeCoachCount}/${seatLimit}`
             : t('ui.organization.upgradeTeamAcademyHint')}
         </p>
         <p className="muted">{t('ui.organization.sharedRosterHint')}</p>

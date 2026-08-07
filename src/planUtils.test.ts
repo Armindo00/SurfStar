@@ -4,10 +4,12 @@ import {
   canAddAthlete,
   canAddCoach,
   canManageOrganizationCoaches,
+  canUseCustomTraining,
   canUsePsychologyCheckins,
   canUseTrainingMode,
   getAllowedModes,
   getMaxCoaches,
+  resolveCoachPlanId,
 } from './planUtils'
 
 describe('planUtils', () => {
@@ -54,5 +56,14 @@ describe('planUtils', () => {
     expect(canUsePsychologyCheckins('team')).toBe(false)
     expect(canUsePsychologyCheckins('club')).toBe(true)
     expect(canUsePsychologyCheckins('organization')).toBe(true)
+  })
+
+  it('grants full access to platform administrators', () => {
+    const adminPlanId = resolveCoachPlanId('team', true)
+    expect(adminPlanId).toBe('organization')
+    expect(canUseCustomTraining(adminPlanId)).toBe(true)
+    expect(canUseTrainingMode(adminPlanId, 'sea-analysis')).toBe(true)
+    expect(canUsePsychologyCheckins(adminPlanId)).toBe(true)
+    expect(canManageOrganizationCoaches(adminPlanId)).toBe(true)
   })
 })

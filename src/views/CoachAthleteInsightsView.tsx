@@ -19,15 +19,14 @@ export function CoachAthleteInsightsView() {
     sessionAthleteFeedback,
     trainingSessions,
     auth,
-    subscription,
+    coachPlanId,
     coachLinks,
     setView,
   } = useApp()
 
   const [tab, setTab] = useState<'material' | 'wellbeing'>('material')
 
-  const planId = subscription?.planId ?? 'team'
-  const psychologyAvailable = canUsePsychologyCheckins(planId)
+  const psychologyAvailable = canUsePsychologyCheckins(coachPlanId)
   const athleteLink = useMemo(() => {
     if (!insightsAthlete || auth?.role !== 'treinador') return null
     return (
