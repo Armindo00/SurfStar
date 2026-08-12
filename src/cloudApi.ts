@@ -218,8 +218,11 @@ export async function cloudOnAuthChange(
         }
         const built = await buildAuthSessionFromUser(session.user)
         if ('error' in built) {
-          await supabase.auth.signOut()
-          cb(null, event)
+          // SIGNED_IN is handled by the login form; avoid signing out a session that already succeeded there.
+          if (event !== 'SIGNED_IN') {
+            await supabase.auth.signOut()
+            cb(null, event)
+          }
           return
         }
         cb(built, event)

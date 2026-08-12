@@ -107,19 +107,24 @@ export function LoginView() {
     copy.otherRoleAction()
   }
 
-  const submit = async (e: FormEvent) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setBusy(true)
     try {
-      const trimmedEmail = email.trim()
+      const form = e.currentTarget
+      const fd = new FormData(form)
+      const trimmedEmail = String(fd.get('email') ?? email).trim()
+      const formPassword = String(fd.get('password') ?? password)
+      const formName = String(fd.get('name') ?? name).trim()
+      const formPasswordConfirm = String(fd.get('passwordConfirm') ?? passwordConfirm)
 
       if (isRegister) {
         if (!acceptedTerms) {
           setError(t('auth.acceptTermsError'))
           return
         }
-        if (password !== passwordConfirm) {
+        if (formPassword !== formPasswordConfirm) {
           setError(t('auth.passwordsMismatch'))
           return
         }
@@ -156,21 +161,21 @@ export function LoginView() {
             : undefined
         const result = isCoach
           ? await registerCoach(
-              name,
+              formName,
               trimmedEmail,
-              password,
+              formPassword,
               billing
                 ? { taxId: normalizeTaxId(taxId, billing.countryCode), billingAddress: billing }
                 : undefined,
             )
-          : await registerAthlete(name, trimmedEmail, password)
+          : await registerAthlete(formName, trimmedEmail, formPassword)
         if (!result.ok) setError(result.error ?? t('errors.createAccountFailed'))
         return
       }
 
       const result = isCoach
-        ? await loginAsCoach(trimmedEmail, password)
-        : await loginAsStudent(trimmedEmail, password)
+        ? await loginAsCoach(trimmedEmail, formPassword)
+        : await loginAsStudent(trimmedEmail, formPassword)
       if (!result.ok) setError(result.error ?? t('errors.signInFailed'))
     } catch (err) {
       console.error('Login submit failed', err)
@@ -206,6 +211,7 @@ export function LoginView() {
             <span>{t('auth.fullName')}</span>
             <input
               type="text"
+              name="name"
               autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -247,6 +253,7 @@ export function LoginView() {
           <span>{t('auth.emailAddress')}</span>
           <input
             type="email"
+            name="email"
             autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -259,6 +266,7 @@ export function LoginView() {
           <span>{t('auth.password')}</span>
           <input
             type="password"
+            name="password"
             autoComplete={isRegister ? 'new-password' : 'current-password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -277,6 +285,7 @@ export function LoginView() {
             <span>{t('auth.confirmPassword')}</span>
             <input
               type="password"
+              name="passwordConfirm"
               autoComplete="new-password"
               value={passwordConfirm}
               onChange={(e) => setPasswordConfirm(e.target.value)}

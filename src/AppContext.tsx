@@ -659,6 +659,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
 
   const skipResumeSaveRef = useRef(false)
+  const manualSignInActiveRef = useRef(false)
   const authRef = useRef(auth)
   authRef.current = auth
 
@@ -848,6 +849,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSubscription(sub)
     },
     [cloudMode],
+  )
+
+  const loadCloudSessionAfterAuth = useCallback(
+    async (session: AuthSession) => {
+      try {
+        const loaded = await applyCloudSessionData(session)
+        if (session.role === 'treinador') {
+          await syncCoachSubscription(session)
+        }
+        applyResumeFromStore(
+          session,
+          loaded.sessions,
+          loaded.spots,
+          loaded.customTemplates,
+        )
+      } catch (err) {
+        console.error('Failed to load session data after sign in', err)
+      }
+    },
+    [applyCloudSessionData, applyResumeFromStore, syncCoachSubscription],
   )
 
   const refreshOrganizationMembers = useCallback(async () => {
@@ -1410,6 +1431,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
               return
             }
 
+            if (event === 'SIGNED_IN' && manualSignInActiveRef.current) {
+              return
+            }
+
             setTimeout(() => {
               void applySessionData(next).then((loaded) => {
                 if (!mounted || !loaded) return
@@ -1483,18 +1508,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const loginAsCoach = useCallback(
     async (email: string, password: string) => {
       if (cloudMode) {
-        const result = await cloudLogin(email, password)
-        if (!result.ok) return result
-        setAuth(result.session)
-        const loaded = await applyCloudSessionData(result.session)
-        await syncCoachSubscription(result.session)
-        applyResumeFromStore(
-          result.session,
-          loaded.sessions,
-          loaded.spots,
-          loaded.customTemplates,
-        )
-        return { ok: true as const }
+        manualSignInActiveRef.current = true
+        try {
+          const result = await cloudLogin(email, password)
+          if (!result.ok) return result
+          setAuth(result.session)
+          setView(viewForAuth(result.session))
+          void loadCloudSessionAfterAuth(result.session)
+          return { ok: true as const }
+        } finally {
+          queueMicrotask(() => {
+            manualSignInActiveRef.current = false
+          })
+        }
       }
 
       const normalized = normalizeEmail(email)
@@ -1534,23 +1560,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await refreshOrganizationMembers()
     return { ok: true }
   },
-    [applyCloudSessionData, applyResumeFromStore, cloudMode, refreshOrganizationMembers, syncCoachSubscription],
+    [loadCloudSessionAfterAuth, applyResumeFromStore, cloudMode, refreshOrganizationMembers, syncCoachSubscription],
   )
 
   const loginAsStudent = useCallback(
     async (email: string, password: string) => {
       if (cloudMode) {
-        const result = await cloudLogin(email, password)
-        if (!result.ok) return result
-        setAuth(result.session)
-        const loaded = await applyCloudSessionData(result.session)
-        applyResumeFromStore(
-          result.session,
-          loaded.sessions,
-          loaded.spots,
-          loaded.customTemplates,
-        )
-        return { ok: true as const }
+        manualSignInActiveRef.current = true
+        try {
+          const result = await cloudLogin(email, password)
+          if (!result.ok) return result
+          setAuth(result.session)
+          setView(viewForAuth(result.session))
+          void loadCloudSessionAfterAuth(result.session)
+          return { ok: true as const }
+        } finally {
+          queueMicrotask(() => {
+            manualSignInActiveRef.current = false
+          })
+        }
       }
 
       const normalized = normalizeEmail(email)
@@ -1601,7 +1629,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     applyResumeFromStore(session, athleteSessions)
     return { ok: true }
   },
-    [applyCloudSessionData, applyResumeFromStore, cloudMode],
+    [loadCloudSessionAfterAuth, applyResumeFromStore, cloudMode],
   )
 
   const registerCoach = useCallback(

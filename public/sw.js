@@ -1,5 +1,5 @@
 /* Service worker — PWA install + network-first updates for app shell */
-const CACHE = 'surfstar-shell-v2'
+const CACHE = 'surfstar-shell-v3'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
