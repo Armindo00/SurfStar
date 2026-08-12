@@ -1449,7 +1449,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
               })
             }, 0)
           } else {
-            if (previous) clearResumeState(resumeUserKey(previous))
+            if (!previous) return
+
+            clearResumeState(resumeUserKey(previous))
             setAthletes([])
             setStudents([])
             setCoachLinks([])
