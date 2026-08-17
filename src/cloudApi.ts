@@ -188,6 +188,12 @@ export async function cloudGetSession(): Promise<AuthSession | null> {
   return built
 }
 
+/** Re-sync platform admin bootstrap and rebuild the auth session from the profile. */
+export async function cloudRefreshAuthSession(): Promise<AuthSession | null> {
+  await getSupabase().rpc('sync_platform_admin_bootstrap')
+  return cloudGetSession()
+}
+
 export async function cloudOnAuthChange(
   cb: (session: AuthSession | null, event: AuthChangeEvent) => void,
 ): Promise<() => void> {
@@ -200,6 +206,7 @@ export async function cloudOnAuthChange(
           return
         }
         if (event === 'TOKEN_REFRESHED') {
+          await getSupabase().rpc('sync_platform_admin_bootstrap')
           const profile = await fetchProfileRow(session.user.id)
           if (profile?.role === 'atleta' && profile.athlete_id) {
             const { data: athleteRow } = await supabase
@@ -211,6 +218,10 @@ export async function cloudOnAuthChange(
               buildAthleteSession(profile, athleteRow?.pairing_code ?? ''),
               event,
             )
+            return
+          }
+          if (profile?.role === 'treinador') {
+            cb(await enrichCoachSession(session.user, profile), event)
             return
           }
           cb(buildCoachSession(session.user), event)

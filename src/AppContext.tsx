@@ -20,6 +20,7 @@ import {
   cloudLogin,
   cloudLogout,
   cloudOnAuthChange,
+  cloudRefreshAuthSession,
   cloudRegisterAthlete,
   cloudRegisterCoach,
   cloudResetPassword,
@@ -492,6 +493,21 @@ function viewForAuth(session: AuthSession): AppView {
   return session.role === 'atleta' ? 'athlete-portal' : 'coach-home'
 }
 
+function mergePlatformAdminFlag(
+  previous: AuthSession | null,
+  next: AuthSession,
+): AuthSession {
+  if (
+    previous?.role === 'treinador' &&
+    previous.isPlatformAdmin &&
+    next.role === 'treinador' &&
+    !next.isPlatformAdmin
+  ) {
+    return { ...next, isPlatformAdmin: true }
+  }
+  return next
+}
+
 function viewForMode(mode: TrainingMode): AppView {
   switch (mode) {
     case 'combos':
@@ -864,6 +880,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           loaded.spots,
           loaded.customTemplates,
         )
+        const refreshed = await cloudRefreshAuthSession()
+        if (refreshed) {
+          setAuth((prev) => mergePlatformAdminFlag(prev, refreshed))
+        }
       } catch (err) {
         console.error('Failed to load session data after sign in', err)
       }
@@ -1423,7 +1443,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             activatePasswordRecovery()
           }
 
-          setAuth(next)
+          setAuth((prev) => (next ? mergePlatformAdminFlag(prev, next) : null))
           if (next) {
             if (event === 'TOKEN_REFRESHED') return
 
@@ -1436,7 +1456,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             }
 
             setTimeout(() => {
-              void applySessionData(next).then((loaded) => {
+              void applySessionData(next).then(async (loaded) => {
                 if (!mounted || !loaded) return
                 if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
                   applyResumeFromStore(
@@ -1445,6 +1465,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
                     loaded.spots,
                     loaded.customTemplates,
                   )
+                }
+                const refreshed = await cloudRefreshAuthSession()
+                if (mounted && refreshed) {
+                  setAuth((prev) => mergePlatformAdminFlag(prev, refreshed))
                 }
               })
             }, 0)
@@ -1475,7 +1499,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (session && mounted) {
           setAuth(session)
           if (!passwordRecoveryPendingRef.current) {
-            void applySessionData(session).then((loaded) => {
+            void applySessionData(session).then(async (loaded) => {
               if (mounted && loaded) {
                 applyResumeFromStore(
                   session,
@@ -1483,6 +1507,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
                   loaded.spots,
                   loaded.customTemplates,
                 )
+              }
+              const refreshed = await cloudRefreshAuthSession()
+              if (mounted && refreshed) {
+                setAuth((prev) => mergePlatformAdminFlag(prev, refreshed))
               }
             })
           }
