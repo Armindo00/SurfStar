@@ -13,6 +13,7 @@ import {
   resolveSessionSpotName,
 } from '../sessionHistoryUtils'
 import { computeComboSessionStats, computeSessionStats, LEVELS } from '../sessionStats'
+import { CustomButtonStatsList } from '../components/CustomButtonStatsList'
 import { computeCustomSessionStats } from '../customTrainingStats'
 import { isHeatLikeSession } from '../sessionModeUtils'
 import { comboLevelLabel, maneuverLabel, trainingModeLabel } from '../i18n/labels'
@@ -163,16 +164,7 @@ function CustomStatsBlock({
         </article>
       </div>
 
-      {stats.byButton.map((button) => (
-        <div key={button.buttonId} className="ss-card stats-panel">
-          <header className="stats-panel__head">
-            <h2 className="stats-panel__title">{button.label}</h2>
-            <span className="stats-badge">
-              {button.successes}/{button.attempts} · {button.rate}%
-            </span>
-          </header>
-        </div>
-      ))}
+      <CustomButtonStatsList buttons={stats.byButton} />
     </>
   )
 }

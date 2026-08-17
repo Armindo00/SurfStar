@@ -1054,6 +1054,23 @@ body {
   color: #fde68a !important;
 }
 
+.app-shell .custom-button-stats-list__item {
+  background: rgba(0, 0, 0, 0.22) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .custom-button-stats-list__row:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.app-shell .custom-button-stats-list__detail {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.app-shell .custom-button-stats-list__avg {
+  color: rgba(255, 255, 255, 0.62) !important;
+}
+
 .app-shell .evaluation-history__item {
   background: rgba(0, 0, 0, 0.22) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;

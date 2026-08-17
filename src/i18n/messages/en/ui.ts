@@ -38,6 +38,7 @@ export const ui = {
     level: 'Level',
     successes: 'Successes',
     rate: 'Rate',
+    avgLevelShort: 'Avg lvl',
     successesInAttempts: '{{successes}} successes in {{attempts}} attempts',
     starLevel: 'Star ★',
     levelN: 'Level {{level}}',

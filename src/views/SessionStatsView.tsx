@@ -1,6 +1,7 @@
 import { computeComboSessionStats, computeSessionStats, LEVELS } from '../sessionStats'
 import { useI18n } from '../i18n'
 import { computeCustomSessionStats } from '../customTrainingStats'
+import { CustomButtonStatsList } from '../components/CustomButtonStatsList'
 import { HeatLiveStatsPanel } from '../components/HeatLiveStatsPanel'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessChart'
@@ -84,45 +85,7 @@ export function SessionStatsView() {
           </article>
         </div>
 
-        {stats.byButton.map((button) => (
-          <div key={button.buttonId} className="ss-card stats-panel">
-            <header className="stats-panel__head">
-              <h2 className="stats-panel__title">{button.label}</h2>
-              <span className="stats-badge">
-                {button.successes}/{button.attempts} · {button.rate}%
-              </span>
-            </header>
-            {Object.values(button.byLevel).some((level) => level.attempts > 0) ? (
-              <div className="table-wrap stats-panel__table">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>{t('ui.stats.level')}</th>
-                      <th>{t('ui.stats.attempts')}</th>
-                      <th>{t('ui.stats.successes')}</th>
-                      <th>{t('ui.stats.rate')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.values(button.byLevel).map((level) => (
-                      <tr key={level.levelId}>
-                        <td>{level.label}</td>
-                        <td>{level.attempts}</td>
-                        <td className="data-table__ok">{level.successes}</td>
-                        <td>
-                          <span className="data-table__rate">{level.rate}%</span>
-                          <RateBar value={level.rate} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="muted">{t('ui.stats.noLevelBreakdown')}</p>
-            )}
-          </div>
-        ))}
+        <CustomButtonStatsList buttons={stats.byButton} />
       </div>
     )
   }

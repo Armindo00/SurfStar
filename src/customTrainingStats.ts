@@ -1,7 +1,13 @@
-import { getCustomButton, sortCustomButtons } from './customTrainingUtils'
+import {
+  getCustomButton,
+  getCustomLevel,
+  sortCustomButtons,
+  sortCustomLevels,
+} from './customTrainingUtils'
 import { computeWaveStats, rate, type WaveStats } from './sessionStats'
 import type {
   CustomAttemptLog,
+  CustomButton,
   CustomTrainingTemplate,
   TrainingSession,
   WaveRecord,
@@ -13,6 +19,7 @@ export type CustomButtonStats = {
   attempts: number
   successes: number
   rate: number
+  averageLevel: number | null
   byLevel: Record<
     string,
     {
@@ -37,6 +44,30 @@ function waveAttempts(w: WaveRecord): CustomAttemptLog[] {
   return w.customAttempts ?? []
 }
 
+export function averageCustomButtonLevel(
+  logs: CustomAttemptLog[],
+  button: CustomButton | undefined,
+): number | null {
+  if (!button || button.levels.length === 0) return null
+
+  const sorted = sortCustomLevels(button.levels)
+  const withLevel = logs.filter((log) => log.levelId)
+  if (withLevel.length === 0) return null
+
+  let sum = 0
+  let count = 0
+  for (const log of withLevel) {
+    const level = getCustomLevel(button, log.levelId!)
+    if (!level) continue
+    const index = sorted.findIndex((row) => row.id === level.id)
+    sum += index >= 0 ? index + 1 : level.sortOrder + 1
+    count += 1
+  }
+
+  if (count === 0) return null
+  return Math.round((sum / count) * 100) / 100
+}
+
 function tallyAttempts(
   logs: CustomAttemptLog[],
   template: CustomTrainingTemplate | null | undefined,
@@ -51,6 +82,7 @@ function tallyAttempts(
       attempts: 0,
       successes: 0,
       rate: 0,
+      averageLevel: null,
       byLevel: Object.fromEntries(
         button.levels.map((level) => [
           level.id,
@@ -69,6 +101,7 @@ function tallyAttempts(
         attempts: 0,
         successes: 0,
         rate: 0,
+        averageLevel: null,
         byLevel: {},
       } as CustomButtonStats)
 
@@ -88,6 +121,10 @@ function tallyAttempts(
     for (const level of Object.values(entry.byLevel)) {
       level.rate = rate(level.successes, level.attempts)
     }
+    entry.averageLevel = averageCustomButtonLevel(
+      logs.filter((log) => log.buttonId === entry.buttonId),
+      getCustomButton(template, entry.buttonId),
+    )
     return entry
   })
 }

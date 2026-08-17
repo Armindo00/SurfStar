@@ -38,6 +38,7 @@ export const ui = {
     level: 'Niveau',
     successes: 'Succès',
     rate: 'Taux',
+    avgLevelShort: 'Niv. moy.',
     successesInAttempts: '{{successes}} succès sur {{attempts}} tentatives',
     starLevel: 'Étoile ★',
     levelN: 'Niveau {{level}}',
