@@ -674,6 +674,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   trainingSessionsRef.current = trainingSessions
   const [pendingLeaveView, setPendingLeaveView] = useState<AppView | null>(null)
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
+  const [historySessionSnapshot, setHistorySessionSnapshot] = useState<TrainingSession | null>(null)
 
   const skipResumeSaveRef = useRef(false)
   const manualSignInActiveRef = useRef(false)
@@ -1923,13 +1924,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [organizationId, trainingSessions],
   )
 
-  const historySession = useMemo(
-    () =>
-      historySessionId
-        ? trainingSessions.find((s) => s.id === historySessionId)
-        : undefined,
-    [historySessionId, trainingSessions],
-  )
+  const historySession = useMemo(() => {
+    if (!historySessionId) return undefined
+    const live = trainingSessions.find((s) => s.id === historySessionId)
+    if (live?.endedAt) return live
+    if (
+      historySessionSnapshot?.id === historySessionId &&
+      historySessionSnapshot.endedAt
+    ) {
+      return historySessionSnapshot
+    }
+    return live
+  }, [historySessionId, historySessionSnapshot, trainingSessions])
 
   const updateSession = useCallback(
     (sessionId: string, updater: (session: TrainingSession) => TrainingSession) => {
@@ -2603,25 +2609,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!activeSessionId) return
       const sessionId = activeSessionId
       const trimmedNotes = coachNotes.trim()
+      const endedAt = new Date().toISOString()
+      let endedSession: TrainingSession | null = null
 
-      updateSession(sessionId, (s) => {
-        const endedAt = new Date().toISOString()
-        const seaAnalysis =
-          s.mode === 'sea-analysis' && s.seaAnalysis && !s.seaAnalysis.endedAt
-            ? { ...s.seaAnalysis, endedAt }
-            : s.seaAnalysis
+      persistSessions((prev) =>
+        prev.map((s) => {
+          if (s.id !== sessionId) return s
 
-        return {
-          ...s,
-          endedAt,
-          coachNotes: trimmedNotes || null,
-          spotName:
-            s.spotName?.trim() ||
-            spots.find((spot) => spot.id === s.spotId)?.name?.trim() ||
-            '',
-          seaAnalysis,
-        }
-      })
+          const seaAnalysis =
+            s.mode === 'sea-analysis' && s.seaAnalysis && !s.seaAnalysis.endedAt
+              ? { ...s.seaAnalysis, endedAt }
+              : s.seaAnalysis
+
+          endedSession = {
+            ...s,
+            endedAt,
+            coachNotes: trimmedNotes || null,
+            spotName:
+              s.spotName?.trim() ||
+              spots.find((spot) => spot.id === s.spotId)?.name?.trim() ||
+              '',
+            seaAnalysis,
+          }
+          return endedSession
+        }),
+      )
+
+      if (!endedSession) {
+        showToast('Could not finish this session. Try again.', 'error')
+        return
+      }
 
       setEndSessionSheetOpen(false)
       setActiveWaveId(null)
@@ -2629,19 +2646,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setActiveSessionId(null)
       setActiveAthleteId(null)
       resetDraft()
+      setHistorySessionSnapshot(endedSession)
       setHistorySessionId(sessionId)
       setView('session-history-detail')
     },
-    [activeSessionId, resetDraft, spots, updateSession],
+    [activeSessionId, persistSessions, resetDraft, showToast, spots],
   )
 
   const openHistorySession = useCallback((sessionId: string) => {
+    setHistorySessionSnapshot(null)
     setHistorySessionId(sessionId)
     setView('session-history-detail')
   }, [])
 
   const closeHistorySession = useCallback(() => {
     setHistorySessionId(null)
+    setHistorySessionSnapshot(null)
     setView('training-sessions')
   }, [])
 

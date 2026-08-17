@@ -44,8 +44,12 @@ export function sessionActivityScore(session: TrainingSession): number {
 }
 
 export function pickPreferredSession(a: TrainingSession, b: TrainingSession): TrainingSession {
-  if (!a.endedAt && b.endedAt) return a
-  if (a.endedAt && !b.endedAt) return b
+  if (!a.endedAt && b.endedAt) {
+    return sessionActivityScore(b) >= sessionActivityScore(a) ? b : a
+  }
+  if (a.endedAt && !b.endedAt) {
+    return sessionActivityScore(a) >= sessionActivityScore(b) ? a : b
+  }
 
   const scoreA = sessionActivityScore(a)
   const scoreB = sessionActivityScore(b)

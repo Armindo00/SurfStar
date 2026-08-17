@@ -72,10 +72,36 @@ describe('sessionActivityScore', () => {
 })
 
 describe('pickPreferredSession', () => {
-  it('prefers an active session over a completed one', () => {
-    const active = makeSession('s1', { endedAt: null })
+  it('prefers an active session over a completed one when it has more activity', () => {
+    const active = makeSession('s1', {
+      waves: [
+        {
+          id: 'w1',
+          athleteId: 'athlete-1',
+          hasPotential: true,
+          multiManeuver: false,
+          startedAt: '2026-08-07T10:01:00.000Z',
+          maneuvers: [],
+          comboAttempts: [
+            {
+              id: 'c1',
+              level: 1,
+              side: 'frontside',
+              success: true,
+              at: '2026-08-07T10:01:00.000Z',
+            },
+          ],
+        },
+      ],
+    })
     const completed = makeSession('s1', { endedAt: '2026-08-07T11:00:00.000Z' })
     expect(pickPreferredSession(active, completed)).toBe(active)
+  })
+
+  it('prefers a completed session when activity matches a stale active copy', () => {
+    const active = makeSession('s1')
+    const completed = makeSession('s1', { endedAt: '2026-08-07T11:00:00.000Z' })
+    expect(pickPreferredSession(active, completed)).toBe(completed)
   })
 
   it('prefers the session with more logged activity', () => {
@@ -125,6 +151,37 @@ describe('mergeTrainingSessions', () => {
 
     const merged = mergeTrainingSessions([cloud], [local])
     expect(merged[0]?.waves).toHaveLength(1)
+  })
+
+  it('keeps a freshly completed local session over a stale active cloud copy', () => {
+    const cloud = makeSession('s1', {
+      waves: [
+        {
+          id: 'w1',
+          athleteId: 'athlete-1',
+          hasPotential: true,
+          multiManeuver: false,
+          startedAt: '2026-08-07T10:01:00.000Z',
+          maneuvers: [],
+          comboAttempts: [
+            {
+              id: 'c1',
+              level: 1,
+              side: 'frontside',
+              success: true,
+              at: '2026-08-07T10:01:00.000Z',
+            },
+          ],
+        },
+      ],
+    })
+    const local = makeSession('s1', {
+      endedAt: '2026-08-07T11:00:00.000Z',
+      waves: cloud.waves,
+    })
+
+    const merged = mergeTrainingSessions([cloud], [local])
+    expect(merged[0]?.endedAt).toBe('2026-08-07T11:00:00.000Z')
   })
 })
 
