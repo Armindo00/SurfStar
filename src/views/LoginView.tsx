@@ -11,6 +11,7 @@ import {
 } from '../billingUtils'
 import { BillingAddressFields } from '../components/BillingAddressFields'
 import { TaxIdField } from '../components/TaxIdField'
+import { resolveAuthErrorMessage } from '../authErrors'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import { formatPlanPriceWithSuffix, getPlan } from '../plans'
 import { useApp } from '../AppContext'
@@ -176,7 +177,7 @@ export function LoginView() {
       const result = isCoach
         ? await loginAsCoach(trimmedEmail, formPassword)
         : await loginAsStudent(trimmedEmail, formPassword)
-      if (!result.ok) setError(result.error ?? t('errors.signInFailed'))
+      if (!result.ok) setError(resolveAuthErrorMessage(result.error, t))
     } catch (err) {
       console.error('Login submit failed', err)
       setError(err instanceof Error ? err.message : t('errors.signInConnection'))

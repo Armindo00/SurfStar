@@ -1,6 +1,8 @@
 export const errors = {
   generic: 'Algo salió mal. Inténtalo de nuevo.',
   signInFailed: 'Error al iniciar sesión.',
+  invalidCredentials:
+    'Email o contraseña incorrectos. Comprueba los datos o usa «¿Olvidaste tu contraseña?» para restablecerla.',
   signInConnection: 'Error al iniciar sesión. Comprueba tu conexión e inténtalo de nuevo.',
   createAccountFailed: 'No se pudo crear la cuenta.',
   updateRequestFailed: 'No se pudo actualizar la solicitud.',

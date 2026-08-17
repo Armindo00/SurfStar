@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { AUTH_ERROR_CODES } from './authErrors'
 import { authStore, store } from './store'
 import { formatShortDate } from './dateFormat'
 import { isCloudEnabled } from './config'
@@ -1556,10 +1557,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const normalized = normalizeEmail(email)
     const coaches = store.getCoaches()
     const index = coaches.findIndex((c) => c.email === normalized)
-    if (index < 0) return { ok: false, error: 'Incorrect email or password.' }
+    if (index < 0) return { ok: false, error: AUTH_ERROR_CODES.INVALID_CREDENTIALS }
     const coach = coaches[index]!
     if (!(await coachPasswordMatches(coach, password))) {
-      return { ok: false, error: 'Incorrect email or password.' }
+      return { ok: false, error: AUTH_ERROR_CODES.INVALID_CREDENTIALS }
     }
 
     let nextCoaches = coaches
@@ -1614,10 +1615,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const normalized = normalizeEmail(email)
     const all = store.getStudents()
     const index = all.findIndex((s) => s.email === normalized)
-    if (index < 0) return { ok: false, error: 'Incorrect email or password.' }
+    if (index < 0) return { ok: false, error: AUTH_ERROR_CODES.INVALID_CREDENTIALS }
     const student = all[index]!
     if (!(await studentPasswordMatches(student, password))) {
-      return { ok: false, error: 'Incorrect email or password.' }
+      return { ok: false, error: AUTH_ERROR_CODES.INVALID_CREDENTIALS }
     }
 
     const athlete = store.getAthletes().find((a) => a.id === student.athleteId)

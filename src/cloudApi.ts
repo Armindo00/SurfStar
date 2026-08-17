@@ -1,4 +1,5 @@
 import type { AuthChangeEvent } from '@supabase/supabase-js'
+import { AUTH_ERROR_CODES } from './authErrors'
 import { getSupabase } from './lib/supabase'
 import {
   cloudFetchCoachAthletes,
@@ -509,14 +510,13 @@ export async function cloudLogin(
     if (msg.includes('invalid login') || msg.includes('invalid credentials')) {
       return {
         ok: false,
-        error:
-          'Wrong email or password. If you registered before the fix, try Create account with a new email, or reset the password in Supabase → Authentication → Users.',
+        error: AUTH_ERROR_CODES.INVALID_CREDENTIALS,
       }
     }
-    return { ok: false, error: error.message }
+    return { ok: false, error: AUTH_ERROR_CODES.SIGN_IN_FAILED }
   }
 
-  if (!data.user) return { ok: false, error: 'Sign in failed. Try again.' }
+  if (!data.user) return { ok: false, error: AUTH_ERROR_CODES.SIGN_IN_FAILED }
 
   const session = await buildAuthSessionFromUser(data.user)
   if ('error' in session) return { ok: false, error: session.error }

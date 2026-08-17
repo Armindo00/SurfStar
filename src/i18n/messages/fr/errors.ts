@@ -1,6 +1,8 @@
 export const errors = {
   generic: 'Une erreur s\'est produite. Veuillez réessayer.',
   signInFailed: 'Échec de la connexion.',
+  invalidCredentials:
+    'E-mail ou mot de passe incorrect. Vérifiez vos identifiants ou utilisez « Mot de passe oublié ? ».',
   signInConnection: 'Échec de la connexion. Vérifiez votre connexion et réessayez.',
   createAccountFailed: 'Impossible de créer le compte.',
   updateRequestFailed: 'Impossible de mettre à jour la demande.',
