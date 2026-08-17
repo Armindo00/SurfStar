@@ -203,38 +203,41 @@ export async function cloudOnAuthChange(
     setTimeout(() => {
       void (async () => {
         if (!session?.user) {
-          cb(null, event)
+          if (event === 'SIGNED_OUT') {
+            cb(null, event)
+          }
           return
         }
         if (event === 'TOKEN_REFRESHED') {
-          await getSupabase().rpc('sync_platform_admin_bootstrap')
-          const profile = await fetchProfileRow(session.user.id)
-          if (profile?.role === 'atleta' && profile.athlete_id) {
-            const { data: athleteRow } = await supabase
-              .from('athletes')
-              .select('pairing_code')
-              .eq('id', profile.athlete_id)
-              .maybeSingle()
-            cb(
-              buildAthleteSession(profile, athleteRow?.pairing_code ?? ''),
-              event,
-            )
-            return
+          try {
+            await getSupabase().rpc('sync_platform_admin_bootstrap')
+            const profile = await fetchProfileRow(session.user.id)
+            if (profile?.role === 'atleta' && profile.athlete_id) {
+              const { data: athleteRow } = await supabase
+                .from('athletes')
+                .select('pairing_code')
+                .eq('id', profile.athlete_id)
+                .maybeSingle()
+              cb(
+                buildAthleteSession(profile, athleteRow?.pairing_code ?? ''),
+                event,
+              )
+              return
+            }
+            if (profile?.role === 'treinador') {
+              cb(await enrichCoachSession(session.user, profile), event)
+              return
+            }
+            cb(buildCoachSession(session.user), event)
+          } catch (err) {
+            console.error('SurfStar token refresh session rebuild failed', err)
           }
-          if (profile?.role === 'treinador') {
-            cb(await enrichCoachSession(session.user, profile), event)
-            return
-          }
-          cb(buildCoachSession(session.user), event)
           return
         }
         const built = await buildAuthSessionFromUser(session.user)
         if ('error' in built) {
-          // SIGNED_IN is handled by the login form; avoid signing out a session that already succeeded there.
-          if (event !== 'SIGNED_IN') {
-            await supabase.auth.signOut()
-            cb(null, event)
-          }
+          if (event === 'SIGNED_IN') return
+          console.error('SurfStar auth session rebuild failed', event, built.error)
           return
         }
         cb(built, event)

@@ -1444,7 +1444,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
             activatePasswordRecovery()
           }
 
-          setAuth((prev) => (next ? mergePlatformAdminFlag(prev, next) : null))
+          setAuth((prev) => {
+            if (!next) {
+              if (event !== 'SIGNED_OUT') return prev
+              return null
+            }
+            return mergePlatformAdminFlag(prev, next)
+          })
           if (next) {
             if (event === 'TOKEN_REFRESHED') return
 
@@ -1474,7 +1480,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               })
             }, 0)
           } else {
-            if (!previous) return
+            if (event !== 'SIGNED_OUT' || !previous) return
 
             clearResumeState(resumeUserKey(previous))
             setAthletes([])
