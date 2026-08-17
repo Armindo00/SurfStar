@@ -195,6 +195,7 @@ export type CustomAttemptLog = {
 export type AthleteShareSettings = {
   technicalStats: boolean
   comboStats: boolean
+  customStats: boolean
   sessionHistory: boolean
   heatDetails: boolean
   /** Coach enables post-session 0–5 psychology questionnaire for this athlete. */
@@ -204,6 +205,7 @@ export type AthleteShareSettings = {
 export const DEFAULT_ATHLETE_SHARE_SETTINGS: AthleteShareSettings = {
   technicalStats: true,
   comboStats: true,
+  customStats: true,
   sessionHistory: true,
   heatDetails: true,
   psychologyCheckins: false,
@@ -216,6 +218,7 @@ export function normalizeAthleteShareSettings(
     raw &&
     ('technicalStats' in raw ||
       'comboStats' in raw ||
+      'customStats' in raw ||
       'sessionHistory' in raw ||
       'heatDetails' in raw ||
       'psychologyCheckins' in raw)
@@ -227,6 +230,7 @@ export function normalizeAthleteShareSettings(
   return {
     technicalStats: raw?.technicalStats ?? DEFAULT_ATHLETE_SHARE_SETTINGS.technicalStats,
     comboStats: raw?.comboStats ?? DEFAULT_ATHLETE_SHARE_SETTINGS.comboStats,
+    customStats: raw?.customStats ?? DEFAULT_ATHLETE_SHARE_SETTINGS.customStats,
     sessionHistory: raw?.sessionHistory ?? DEFAULT_ATHLETE_SHARE_SETTINGS.sessionHistory,
     heatDetails: raw?.heatDetails ?? DEFAULT_ATHLETE_SHARE_SETTINGS.heatDetails,
     psychologyCheckins: raw?.psychologyCheckins ?? DEFAULT_ATHLETE_SHARE_SETTINGS.psychologyCheckins,

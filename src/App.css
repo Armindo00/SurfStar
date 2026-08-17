@@ -3533,6 +3533,42 @@ body {
   color: #2563eb;
 }
 
+.athlete-history-list__item--expandable {
+  padding: 0;
+  overflow: hidden;
+}
+
+.athlete-history-list__row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.athlete-history-list__row:hover {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.athlete-history-list__detail {
+  padding: 0 1rem 1rem;
+  border-top: 1px solid var(--ss-border);
+}
+
+.athlete-custom-session-stats {
+  padding-top: 0.85rem;
+}
+
+.athlete-custom-sessions-list {
+  margin-top: 0.75rem;
+}
+
 /* —— Coach athlete sharing —— */
 .athlete-manage-list {
   margin-top: 1.25rem;

@@ -15,6 +15,7 @@ export function ManageAthletes() {
   const SHARE_OPTIONS: { key: keyof AthleteShareSettings; label: string; hint: string }[] = [
     { key: 'technicalStats', ...shareOptions.technicalStats },
     { key: 'comboStats', ...shareOptions.comboStats },
+    { key: 'customStats', ...shareOptions.customStats },
     { key: 'sessionHistory', ...shareOptions.sessionHistory },
     { key: 'heatDetails', ...shareOptions.heatDetails },
   ]

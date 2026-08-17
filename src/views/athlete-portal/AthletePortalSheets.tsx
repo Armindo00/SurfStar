@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { useI18n } from '../../i18n'
 import { useApp } from '../../AppContext'
 import { EvolutionLineChart } from '../../components/EvolutionLineChart'
+import { AthleteCustomSessionsList } from '../../components/AthleteCustomSessionsList'
+import { AthleteCustomSessionStatsDetail } from '../../components/AthleteCustomSessionStatsDetail'
 import { ScreenHeader } from '../../components/ScreenHeader'
 import { SideCompareChart } from '../../components/SideCompareChart'
 import type { AthleteHeatDetail } from '../../athleteStats'
@@ -26,7 +28,6 @@ import {
 } from '../../teamAnalyticsStats'
 import { comboLevelLabel, maneuverLabel, trainingModeLabel } from '../../i18n/labels'
 import type {
-  AthleteShareSettings,
   CoachAthleteLink,
   ManeuverKind,
   SessionAthleteFeedback,
@@ -37,12 +38,15 @@ import type { AthletePortalSheet } from './types'
 
 const KINDS: ManeuverKind[] = ['rail', 'top-turn', 'progressive']
 
-const SHARE_LABELS: { key: keyof AthleteShareSettings; label: string }[] = [
-  { key: 'technicalStats', label: 'Technical' },
-  { key: 'comboStats', label: 'Combos' },
-  { key: 'sessionHistory', label: 'History' },
-  { key: 'heatDetails', label: 'Heats' },
-]
+function useShareLabels(t: ReturnType<typeof useI18n>['t']) {
+  return [
+    { key: 'technicalStats' as const, label: t('ui.athleteSheets.shareTechnical') },
+    { key: 'comboStats' as const, label: t('ui.athleteSheets.shareCombos') },
+    { key: 'customStats' as const, label: t('ui.athleteSheets.shareCustom') },
+    { key: 'sessionHistory' as const, label: t('ui.athleteSheets.shareHistory') },
+    { key: 'heatDetails' as const, label: t('ui.athleteSheets.shareHeats') },
+  ]
+}
 
 function RateBar({ value }: { value: number }) {
   return (
@@ -68,6 +72,7 @@ export type AthletePortalSheetProps = {
   technicalStats: SessionStatsSnapshot | null
   comboStats: ComboSessionStatsSnapshot | null
   sessionSummaries: { session: TrainingSession; headline: string }[]
+  customSessions: TrainingSession[]
   heatDetails: AthleteHeatDetail[]
   sessionAthleteFeedback: SessionAthleteFeedback[]
   pendingCheckins: number
@@ -192,10 +197,15 @@ function SharedStatsSheet({
   activeLinks,
   technicalStats,
   comboStats,
+  customSessions,
+  athleteId,
+  getSpot,
+  coachName,
 }: AthletePortalSheetProps) {
   const { t } = useI18n()
+  const shareLabels = useShareLabels(t)
   const sharingCoaches = activeLinks.filter((link) =>
-    SHARE_LABELS.some(({ key }) => link.shareSettings[key]),
+    shareLabels.some(({ key }) => link.shareSettings[key]),
   )
 
   return (
@@ -214,7 +224,7 @@ function SharedStatsSheet({
                 <li key={link.id} className="athlete-share-coaches__item">
                   <strong>{link.coachName ?? 'Coach'}</strong>
                   <div className="athlete-share-coaches__tags">
-                    {SHARE_LABELS.filter(({ key }) => link.shareSettings[key]).map(({ key, label }) => (
+                    {shareLabels.filter(({ key }) => link.shareSettings[key]).map(({ key, label }) => (
                       <span key={key} className="athlete-share-coaches__tag">
                         {label}
                       </span>
@@ -309,7 +319,22 @@ function SharedStatsSheet({
           </div>
         ) : null}
 
-        {!technicalStats && !comboStats ? (
+        {customSessions.length > 0 ? (
+          <div className="ss-card stats-panel athlete-sheet__block">
+            <h2 className="stats-panel__title">{t('ui.athleteSheets.customTraining')}</h2>
+            <p className="muted stats-panel__sub">
+              {t('ui.manageAthletes.customStats.hint')}
+            </p>
+            <AthleteCustomSessionsList
+              sessions={customSessions}
+              athleteId={athleteId}
+              getSpot={getSpot}
+              coachName={coachName}
+            />
+          </div>
+        ) : null}
+
+        {!technicalStats && !comboStats && customSessions.length === 0 ? (
           <div className="ss-card athlete-sheet__block">
             <p className="muted">
               Ask your coaches to enable sharing from <strong>Athletes & pairing</strong> in their
@@ -515,31 +540,85 @@ function HeatsSheet({ onClose, heatDetails, mySessions, coachName }: AthletePort
 function TrainingHistorySheet({
   onClose,
   sessionSummaries,
+  activeLinks,
+  athleteId,
   getSpot,
   coachName,
 }: AthletePortalSheetProps) {
   const { t } = useI18n()
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null)
+  const customStatsCoachIds = useMemo(
+    () =>
+      new Set(
+        activeLinks.filter((link) => link.shareSettings.customStats).map((link) => link.coachId),
+      ),
+    [activeLinks],
+  )
+
+  const toggleSession = (sessionId: string) => {
+    setExpandedSessionId((current) => (current === sessionId ? null : sessionId))
+  }
+
   return (
     <div className="athlete-sheet">
       <ScreenHeader title={t('nav.trainingHistory')} onBack={onClose} />
       <div className="athlete-sheet__body">
         {sessionSummaries.length > 0 ? (
           <ul className="athlete-history-list athlete-history-list--cards">
-            {sessionSummaries.map(({ session, headline }) => (
-              <li key={session.id}>
-                <div>
-                  <strong>{trainingModeLabel(session.mode)}</strong>
-                  <p className="muted">
-                    {resolveSessionSpotName(session, getSpot)} · {session.condition} ·{' '}
-                    {formatSessionDate(session.endedAt ?? session.startedAt)}
-                  </p>
-                  <p className="athlete-history-list__coach">{coachName(session.coachId)}</p>
-                </div>
-                <div className="athlete-history-list__meta">
-                  <span>{headline}</span>
-                </div>
-              </li>
-            ))}
+            {sessionSummaries.map(({ session, headline }) => {
+              const canExpand =
+                session.mode === 'custom' && customStatsCoachIds.has(session.coachId)
+              const expanded = expandedSessionId === session.id
+
+              if (canExpand) {
+                return (
+                  <li
+                    key={session.id}
+                    className="athlete-history-list__item athlete-history-list__item--expandable"
+                  >
+                    <button
+                      type="button"
+                      className="athlete-history-list__row"
+                      aria-expanded={expanded}
+                      onClick={() => toggleSession(session.id)}
+                    >
+                      <div>
+                        <strong>{trainingModeLabel(session.mode)}</strong>
+                        <p className="muted">
+                          {resolveSessionSpotName(session, getSpot)} · {session.condition} ·{' '}
+                          {formatSessionDate(session.endedAt ?? session.startedAt)}
+                        </p>
+                        <p className="athlete-history-list__coach">{coachName(session.coachId)}</p>
+                      </div>
+                      <div className="athlete-history-list__meta">
+                        <span>{headline}</span>
+                      </div>
+                    </button>
+                    {expanded ? (
+                      <div className="athlete-history-list__detail">
+                        <AthleteCustomSessionStatsDetail session={session} athleteId={athleteId} />
+                      </div>
+                    ) : null}
+                  </li>
+                )
+              }
+
+              return (
+                <li key={session.id}>
+                  <div>
+                    <strong>{trainingModeLabel(session.mode)}</strong>
+                    <p className="muted">
+                      {resolveSessionSpotName(session, getSpot)} · {session.condition} ·{' '}
+                      {formatSessionDate(session.endedAt ?? session.startedAt)}
+                    </p>
+                    <p className="athlete-history-list__coach">{coachName(session.coachId)}</p>
+                  </div>
+                  <div className="athlete-history-list__meta">
+                    <span>{headline}</span>
+                  </div>
+                </li>
+              )
+            })}
           </ul>
         ) : (
           <div className="ss-card athlete-sheet__block">

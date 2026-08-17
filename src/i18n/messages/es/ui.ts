@@ -138,11 +138,13 @@ export const ui = {
     noCoachSharedStats: 'Ningún entrenador ha compartido estadísticas detalladas aún.',
     technicalTraining: 'Entrenamiento técnico',
     combos: 'Combos',
+    customTraining: 'Entrenamiento personalizado',
     trainingSessions: 'Sesiones de entrenamiento',
     noHeatResults: 'Aún sin resultados de heats compartidos por tus entrenadores.',
     noTrainingHistory: 'Aún sin historial de entrenamiento compartido por tus entrenadores.',
     shareTechnical: 'Técnico',
     shareCombos: 'Combos',
+    shareCustom: 'Personalizado',
     shareHistory: 'Historial',
     shareHeats: 'Heats',
   },
@@ -624,6 +626,10 @@ export const ui = {
     comboStats: {
       label: 'Estadísticas de combos',
       hint: 'Éxito de combos por nivel y lado.',
+    },
+    customStats: {
+      label: 'Estadísticas de entrenamiento personalizado',
+      hint: 'Detalle por botón, nivel medio, éxito e intentos en entrenamiento personalizado.',
     },
     sessionHistory: {
       label: 'Historial de entrenamientos',

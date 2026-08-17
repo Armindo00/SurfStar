@@ -152,6 +152,16 @@ export function AthletePortal() {
     [isAthlete, trainingSessions, athleteId, activeLinks],
   )
 
+  const customSessions = useMemo(
+    () =>
+      isAthlete
+        ? filterAthleteSessionsForShare(trainingSessions, athleteId, coachesWithShare('customStats')).filter(
+            (session) => session.mode === 'custom',
+          )
+        : [],
+    [isAthlete, trainingSessions, athleteId, activeLinks],
+  )
+
   const technicalStats = useMemo(
     () => (technicalSessions.length ? computeAthleteTechnicalStats(technicalSessions, athleteId) : null),
     [technicalSessions, athleteId],
@@ -450,6 +460,7 @@ export function AthletePortal() {
           athleteId={athleteId}
           technicalStats={technicalStats}
           comboStats={comboStats}
+          customSessions={customSessions}
           sessionSummaries={sessionSummaries}
           heatDetails={heatDetails}
           sessionAthleteFeedback={sessionAthleteFeedback}
