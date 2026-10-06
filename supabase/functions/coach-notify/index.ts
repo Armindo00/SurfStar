@@ -20,6 +20,7 @@ type EventType =
   | 'plan_request_approved'
   | 'plan_request_rejected'
   | 'plan_account_activated'
+  | 'subscription_renewal_confirmed'
 
 type NotificationRow = {
   id: string
@@ -64,6 +65,18 @@ function planAmount(planId: string, interval: string): string {
 
 function planLabel(planId: string): string {
   return PLAN_PRICES[planId]?.label ?? planId
+}
+
+function formatPeriodEnd(value: unknown): string {
+  const raw = asString(value).trim()
+  if (!raw) return '—'
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) return raw
+  return date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
 }
 
 function paymentDetailsBlock(details: PaymentDetails, contactEmail: string): { html: string; text: string } {
@@ -218,6 +231,44 @@ function buildCoachEmail(notification: NotificationRow): { subject: string; html
         <p>Your payment has been confirmed and your SurfStar coach account is <strong>now active</strong>.</p>
         <p><strong>Plan:</strong> ${escapeHtml(plan)} (${escapeHtml(amount)})</p>
         <p><a href="https://www.surfstar.app" style="display:inline-block;background:#c9a227;color:#111;padding:0.6rem 1.2rem;border-radius:6px;text-decoration:none;font-weight:600;">Sign in to SurfStar</a></p>
+        <p>— SurfStar</p>
+      </div>`
+      return { subject, html, text }
+    }
+
+    case 'subscription_renewal_confirmed': {
+      const periodEnd = formatPeriodEnd(p.current_period_end)
+      const wasUnblocked = p.was_unblocked === true
+      const subject = 'SurfStar — subscription renewed'
+      const accessLine = wasUnblocked
+        ? 'Your coach account has been unblocked and you can sign in again.'
+        : 'Your subscription remains active — no action needed.'
+      const text = [
+        `Hi ${name},`,
+        '',
+        'We confirmed your renewal payment. Thank you.',
+        '',
+        `Plan: ${plan} (${amount})`,
+        `Paid through: ${periodEnd}`,
+        '',
+        accessLine,
+        '',
+        'Sign in at https://www.surfstar.app',
+        '',
+        `Questions? ${contactEmail}`,
+        '',
+        '— SurfStar',
+      ].join('\n')
+      const html = `<div style="font-family:system-ui,sans-serif;line-height:1.5;color:#111;max-width:640px;">
+        <p>Hi ${escapeHtml(name)},</p>
+        <p>We confirmed your <strong>renewal payment</strong>. Thank you.</p>
+        <ul style="line-height:1.8;">
+          <li><strong>Plan:</strong> ${escapeHtml(plan)} (${escapeHtml(amount)})</li>
+          <li><strong>Paid through:</strong> ${escapeHtml(periodEnd)}</li>
+        </ul>
+        <p>${escapeHtml(accessLine)}</p>
+        <p><a href="https://www.surfstar.app" style="display:inline-block;background:#c9a227;color:#111;padding:0.6rem 1.2rem;border-radius:6px;text-decoration:none;font-weight:600;">Sign in to SurfStar</a></p>
+        <p>Questions? <a href="mailto:${escapeHtml(contactEmail)}">${escapeHtml(contactEmail)}</a></p>
         <p>— SurfStar</p>
       </div>`
       return { subject, html, text }

@@ -8,7 +8,7 @@ Automated emails for manual billing:
 | **1 day before** renewal | Urgent reminder | — |
 | **Subscription expired** | Account blocked notice | **Block coach account** |
 
-When you confirm renewal payment in **Admin → Subscriptions**, the account is **automatically unblocked**.
+When you confirm renewal payment in **Admin → Subscriptions**, the account is **automatically unblocked** and the coach receives a **renewal confirmed** email (requires `patch-coach-renewal-confirmed-email.sql` + `coach-notify` deployed).
 
 ---
 

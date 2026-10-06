@@ -8,8 +8,9 @@ Automatic emails to coaches during the manual payment lifecycle:
 | **Admin approves request** | Payment instructions (IBAN / MB Way) |
 | **Admin rejects request** | Request not approved |
 | **Admin confirms payment & activates** | Account is active — sign in |
+| **Admin confirms renewal payment** | Subscription renewed — paid-through date (+ unblock if overdue) |
 
-Emails are sent **from** `contact@surfstar.app` **to** the coach email on the payment request.
+Emails are sent **from** `contact@surfstar.app` **to** the coach email on the payment request (or profile email for renewals).
 
 ---
 
@@ -18,6 +19,10 @@ Emails are sent **from** `contact@surfstar.app` **to** the coach email on the pa
 In Supabase → **SQL Editor**, run:
 
 `supabase/add-coach-notification-emails.sql`
+
+For **renewal confirmed** emails (Admin → Subscriptions → confirm renewal), also run:
+
+`supabase/patch-coach-renewal-confirmed-email.sql`
 
 ---
 

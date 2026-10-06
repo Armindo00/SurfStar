@@ -323,9 +323,19 @@ insert into _surfstar_migration_check values
   )
   then 'OK' else 'FALTA' end,
   'Admin: editar IBAN / MB Way nos emails ao coach'
+),
+(
+  27,
+  'patch-coach-renewal-confirmed-email.sql',
+  case when exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'queue_coach_renewal_confirmed_notification'
+  )
+  then 'OK' else 'FALTA' end,
+  'Email ao coach quando admin confirma renovacao'
 );
 
--- Passo 27 (opcional): demo mode para checkout sem Stripe
+-- Passo 28 (opcional): demo mode para checkout sem Stripe
 do $$
 begin
   if not exists (
@@ -333,7 +343,7 @@ begin
     where table_schema = 'public' and table_name = 'app_settings'
   ) then
     insert into _surfstar_migration_check values (
-      27, 'enable-demo-mode.sql', 'FALTA',
+      28, 'enable-demo-mode.sql', 'FALTA',
       'Primeiro corre fix-subscription-security.sql (passo 9)'
     );
   elsif exists (
@@ -342,11 +352,11 @@ begin
       and coalesce(value #>> '{}', 'false') = 'true'
   ) then
     insert into _surfstar_migration_check values (
-      27, 'enable-demo-mode.sql', 'OK', 'Demo activo (checkout sem Stripe)'
+      28, 'enable-demo-mode.sql', 'OK', 'Demo activo (checkout sem Stripe)'
     );
   else
     insert into _surfstar_migration_check values (
-      27, 'enable-demo-mode.sql', 'OPCIONAL', 'So para dev — enable-demo-mode.sql'
+      28, 'enable-demo-mode.sql', 'OPCIONAL', 'So para dev — enable-demo-mode.sql'
     );
   end if;
 end $$;
@@ -355,5 +365,5 @@ select ordem, ficheiro, estado, o_que_verifica
 from _surfstar_migration_check
 order by ordem;
 
--- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 26)
+-- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 27)
 -- Passo 145 (psychology) corre depois do 14 e antes do 16 se ainda faltar
