@@ -1306,6 +1306,16 @@ body {
   color: #047857 !important;
 }
 
+.landing-page .pack-card__feature--yes.pack-card__feature--premium-extra,
+.landing-page .pack-card__feature--yes.pack-card__feature--premium-extra .pack-card__mark {
+  color: #92702a !important;
+  font-weight: 700 !important;
+}
+
+.landing-page .pack-card__feature--yes.pack-card__feature--premium-extra .pack-card__mark {
+  color: #b8943f !important;
+}
+
 .landing-page .pack-card__feature--no,
 .landing-page .pack-card__feature--no .pack-card__mark {
   color: #b91c1c !important;

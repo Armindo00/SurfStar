@@ -6259,12 +6259,12 @@ body {
   color: #92702a;
 }
 
-.pack-card__feature--premium-extra {
+.pack-card__feature--yes.pack-card__feature--premium-extra {
   color: #92702a;
   font-weight: 700;
 }
 
-.pack-card__feature--premium-extra .pack-card__mark {
+.pack-card__feature--yes.pack-card__feature--premium-extra .pack-card__mark {
   color: #b8943f;
 }
 
