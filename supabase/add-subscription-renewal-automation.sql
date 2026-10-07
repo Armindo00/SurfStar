@@ -187,14 +187,12 @@ as $$
 declare
   v_interval text;
   v_org_id uuid;
-  v_current timestamptz;
   v_next timestamptz;
-  v_base timestamptz;
 begin
   perform public.admin_require_platform_admin();
 
-  select cs.billing_interval, cs.current_period_end
-  into v_interval, v_current
+  select cs.billing_interval
+  into v_interval
   from public.coach_subscriptions cs
   where cs.coach_id = p_coach_id;
 
@@ -207,10 +205,9 @@ begin
   where om.profile_id = p_coach_id and om.status = 'active' and om.role = 'owner'
   limit 1;
 
-  v_base := greatest(coalesce(v_current, now()), now());
   v_next := case
-    when v_interval = 'annual' then v_base + interval '1 year'
-    else v_base + interval '1 month'
+    when v_interval = 'annual' then now() + interval '1 year'
+    else now() + interval '1 month'
   end;
 
   update public.coach_subscriptions

@@ -95,15 +95,13 @@ declare
   v_interval text;
   v_plan_id text;
   v_org_id uuid;
-  v_current timestamptz;
   v_next timestamptz;
-  v_base timestamptz;
   v_was_blocked boolean := false;
 begin
   perform public.admin_require_platform_admin();
 
-  select cs.billing_interval, cs.current_period_end, cs.plan_id
-  into v_interval, v_current, v_plan_id
+  select cs.billing_interval, cs.plan_id
+  into v_interval, v_plan_id
   from public.coach_subscriptions cs
   where cs.coach_id = p_coach_id;
 
@@ -116,10 +114,10 @@ begin
   where om.profile_id = p_coach_id and om.status = 'active' and om.role = 'owner'
   limit 1;
 
-  v_base := greatest(coalesce(v_current, now()), now());
+  -- New paid period starts when payment is confirmed (not stacked on unused time).
   v_next := case
-    when v_interval = 'annual' then v_base + interval '1 year'
-    else v_base + interval '1 month'
+    when v_interval = 'annual' then now() + interval '1 year'
+    else now() + interval '1 month'
   end;
 
   update public.coach_subscriptions
