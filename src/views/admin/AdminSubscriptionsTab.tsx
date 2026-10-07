@@ -123,7 +123,7 @@ export function AdminSubscriptionsTab({
       ) : (
         <div className="admin-list">
           {subscriptions.map((sub) => {
-            const renewalStatus = getRenewalStatus(sub.current_period_end)
+            const renewalStatus = getRenewalStatus(sub.current_period_end, sub.plan_status)
             const daysLeft = daysUntilRenewal(sub.current_period_end)
             const amount = subscriptionAmount(sub.plan_id, sub.billing_interval)
             const renewalHint =

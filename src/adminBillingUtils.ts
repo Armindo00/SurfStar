@@ -13,7 +13,11 @@ export function canAdminConfirmRenewalPayment(periodEnd: string | null | undefin
   return daysLeft <= RENEWAL_ADMIN_CONFIRM_DAYS
 }
 
-export function getRenewalStatus(periodEnd: string | null | undefined): RenewalStatus {
+export function getRenewalStatus(
+  periodEnd: string | null | undefined,
+  planStatus?: string | null,
+): RenewalStatus {
+  if (planStatus === 'past_due') return 'overdue'
   if (!periodEnd) return 'unknown'
   const end = new Date(periodEnd).getTime()
   const now = Date.now()

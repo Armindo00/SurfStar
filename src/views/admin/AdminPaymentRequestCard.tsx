@@ -55,7 +55,7 @@ export function AdminPaymentRequestCard({
         </div>
       </div>
 
-      {request.message ? <p className="admin-card__message">{request.message}</p> : null}
+      {isOpen && request.message ? <p className="admin-card__message">{request.message}</p> : null}
       {request.notes ? (
         <p className="muted admin-card__notes">
           {a.notesPrefix} {request.notes}

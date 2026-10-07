@@ -33,6 +33,7 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 26 | `add-admin-manual-payment-settings.sql` | Admin UI: edit IBAN / MB Way for coach approval emails |
 | 27 | `patch-coach-renewal-confirmed-email.sql` | Coach email when admin confirms renewal payment |
 | 28 | `patch-fix-renewal-period-from-payment.sql` | Fix renewal date: +1 month/year from payment, not stacked |
+| 29 | `patch-admin-subscriptions-past-due.sql` | Subscriptions tab: list past_due / expired coaches for renewal |
 
 See **`supabase/RENEWAL_EMAILS.md`** for deploying the daily cron edge function.
 

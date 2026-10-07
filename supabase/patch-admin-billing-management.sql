@@ -241,7 +241,8 @@ begin
         left join public.coach_subscriptions cs on cs.coach_id = p.id
         where p.role = 'treinador'
           and not p.is_platform_admin
-          and coalesce(os.status, cs.status) in ('active', 'trialing')
+          and coalesce(os.status, cs.status) in ('active', 'trialing', 'past_due')
+          and coalesce(os.plan_id, cs.plan_id) is not null
           and (
             p_filter = 'all'
             or (p_filter = 'monthly' and coalesce(os.billing_interval, cs.billing_interval) = 'monthly')
