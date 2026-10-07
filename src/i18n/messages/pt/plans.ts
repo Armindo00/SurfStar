@@ -23,6 +23,7 @@ export const plans = {
     getPlan: 'Obter {{planName}}',
     choosePlan: 'Escolher {{planName}}',
     compareFullList: 'Comparar lista completa de funcionalidades',
+    premiumExtraLegend: 'A dourado: extra face ao plano Coach',
   },
   limits: {
     unlimitedAthletes: 'Atletas ilimitados',

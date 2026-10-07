@@ -6252,6 +6252,22 @@ body {
   color: #059669;
 }
 
+.pack-card__premium-legend {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #92702a;
+}
+
+.pack-card__feature--premium-extra {
+  color: #92702a;
+  font-weight: 700;
+}
+
+.pack-card__feature--premium-extra .pack-card__mark {
+  color: #b8943f;
+}
+
 .pack-card__feature--no .pack-card__mark {
   color: #dc2626;
 }

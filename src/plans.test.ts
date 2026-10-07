@@ -6,6 +6,8 @@ import {
   getPlan,
   getPlanDisplayPrice,
   getPlanPrice,
+  isCoachPremiumExclusiveFeature,
+  PLAN_COMPARISON_FEATURES,
 } from './plans'
 
 describe('plans pricing', () => {
@@ -32,5 +34,14 @@ describe('plans pricing', () => {
   it('shows effective monthly rate for annual billing', () => {
     expect(formatEffectiveMonthlyFromAnnual(getPlan('club'))).toBe('€74')
     expect(formatAnnualBillingNote(getPlan('team'))).toBe('Billed €490/year · 2 months free')
+  })
+
+  it('marks Coach Premium exclusives over Coach', () => {
+    const unlimited = PLAN_COMPARISON_FEATURES.find((f) => f.label === 'Unlimited athletes')!
+    const sea = PLAN_COMPARISON_FEATURES.find((f) => f.label === 'Sea analysis')!
+    const heats = PLAN_COMPARISON_FEATURES.find((f) => f.label === 'Heats & championship')!
+    expect(isCoachPremiumExclusiveFeature(unlimited)).toBe(true)
+    expect(isCoachPremiumExclusiveFeature(sea)).toBe(true)
+    expect(isCoachPremiumExclusiveFeature(heats)).toBe(false)
   })
 })

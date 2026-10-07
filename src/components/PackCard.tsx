@@ -5,6 +5,7 @@ import {
   getPlan,
   getVisibleComparisonFeatures,
   isApprovalRequiredPlan,
+  isCoachPremiumExclusiveFeature,
   planHasComparisonFeature,
   usesManualPaymentFlow,
   type BillingInterval,
@@ -81,15 +82,29 @@ export function PackCard({
       ) : null}
       {manualFlow ? <p className="pack-card__approval-note muted">{p.manualFlowNote}</p> : null}
 
+      {planId === 'club' ? (
+        <p className="pack-card__premium-legend">{p.premiumExtraLegend}</p>
+      ) : null}
+
       <ul className="pack-card__features">
-        {includedFeatures.map((feature) => (
-          <li key={feature.label} className="pack-card__feature pack-card__feature--yes">
-            <span className="pack-card__mark" aria-hidden="true">
-              ✓
-            </span>
-            {feature.label}
-          </li>
-        ))}
+        {includedFeatures.map((feature) => {
+          const premiumExtra = planId === 'club' && isCoachPremiumExclusiveFeature(feature)
+          return (
+            <li
+              key={feature.label}
+              className={
+                premiumExtra
+                  ? 'pack-card__feature pack-card__feature--yes pack-card__feature--premium-extra'
+                  : 'pack-card__feature pack-card__feature--yes'
+              }
+            >
+              <span className="pack-card__mark" aria-hidden="true">
+                ✓
+              </span>
+              {feature.label}
+            </li>
+          )
+        })}
       </ul>
 
       <button

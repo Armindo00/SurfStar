@@ -84,6 +84,11 @@ export function planHasComparisonFeature(planId: PlanId, feature: PlanComparison
   return feature.includedIn.includes(planId)
 }
 
+/** Features on Coach Premium that are not included on Coach (team). */
+export function isCoachPremiumExclusiveFeature(feature: PlanComparisonFeature): boolean {
+  return planHasComparisonFeature('club', feature) && !planHasComparisonFeature('team', feature)
+}
+
 export function getVisibleComparisonFeatures(planId: PlanId): PlanComparisonFeature[] {
   return PLAN_COMPARISON_FEATURES.filter((feature) => !feature.hiddenOn?.includes(planId))
 }
