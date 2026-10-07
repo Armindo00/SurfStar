@@ -48,6 +48,8 @@ supabase secrets set SMTP_FROM_NAME=SurfStar
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically.
 
+Renewal reminder emails to coaches are **BCC'd** to `contact@surfstar.app` (or `COACH_NOTIFY_BCC` if set) — same as `coach-notify`.
+
 ---
 
 ## 4. Schedule daily cron

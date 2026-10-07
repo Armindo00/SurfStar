@@ -14,6 +14,14 @@ const smtpUser = Deno.env.get('SMTP_USER')
 const smtpPass = Deno.env.get('SMTP_PASSWORD')
 const smtpFrom = Deno.env.get('SMTP_FROM') ?? 'contact@surfstar.app'
 const smtpFromName = Deno.env.get('SMTP_FROM_NAME') ?? 'SurfStar'
+/** Inbox copy of every coach email (default: SMTP_FROM / contact@surfstar.app). Set COACH_NOTIFY_BCC to override. */
+const coachNotifyBcc = (Deno.env.get('COACH_NOTIFY_BCC') ?? smtpFrom).trim()
+
+function bccForCoachRecipient(recipient: string): string | undefined {
+  if (!coachNotifyBcc) return undefined
+  if (coachNotifyBcc.toLowerCase() === recipient.trim().toLowerCase()) return undefined
+  return coachNotifyBcc
+}
 
 type EventType =
   | 'plan_request_received'
@@ -366,9 +374,11 @@ Deno.serve(async (req) => {
   for (const row of rows) {
     const { subject, html, text } = buildCoachEmail(row)
     try {
+      const bcc = bccForCoachRecipient(row.coach_email)
       await client.send({
         from: `${smtpFromName} <${smtpFrom}>`,
         to: row.coach_email,
+        ...(bcc ? { bcc } : {}),
         subject,
         content: text,
         html,

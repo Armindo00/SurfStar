@@ -17,6 +17,13 @@ const smtpPass = Deno.env.get('SMTP_PASSWORD')
 const smtpFrom = Deno.env.get('SMTP_FROM') ?? 'contact@surfstar.app'
 const smtpFromName = Deno.env.get('SMTP_FROM_NAME') ?? 'SurfStar'
 const contactEmail = smtpFrom
+const coachNotifyBcc = (Deno.env.get('COACH_NOTIFY_BCC') ?? smtpFrom).trim()
+
+function bccForCoachRecipient(recipient: string): string | undefined {
+  if (!coachNotifyBcc) return undefined
+  if (coachNotifyBcc.toLowerCase() === recipient.trim().toLowerCase()) return undefined
+  return coachNotifyBcc
+}
 
 type ReminderType = 'due_5d' | 'due_1d' | 'expired'
 
@@ -245,9 +252,11 @@ Deno.serve(async (req) => {
   for (const row of pending) {
     const { subject, html, text } = buildEmail(row)
     try {
+      const bcc = bccForCoachRecipient(row.email)
       await client.send({
         from: `${smtpFromName} <${smtpFrom}>`,
         to: row.email,
+        ...(bcc ? { bcc } : {}),
         subject,
         content: text,
         html,

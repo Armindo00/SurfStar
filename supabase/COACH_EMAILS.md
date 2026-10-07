@@ -47,10 +47,13 @@ This is included in the **approval email**. If IBAN is empty, the email tells th
 
 ## 3. Deploy Edge Function
 
-Uses the **same SMTP secrets** as `admin-notify`:
+Uses the **same SMTP secrets** as `admin-notify`.
+
+Every coach email is **BCC'd** to `contact@surfstar.app` by default (`SMTP_FROM`), so a copy lands in your business inbox. Override with secret `COACH_NOTIFY_BCC` (same on `subscription-renewal-cron`).
 
 ```bash
 supabase functions deploy coach-notify --no-verify-jwt
+supabase functions deploy subscription-renewal-cron --no-verify-jwt
 ```
 
 ---
