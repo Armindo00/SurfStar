@@ -8,7 +8,7 @@ Instant email alerts to platform admins when:
 | **Team Academy request** | Organization plan request form |
 | **Contact message** | Contact / feedback form |
 
-All alerts go **only** to **`contact@surfstar.app`** (`app_settings.admin_notification_emails`).
+Alerts go to every address in **`app_settings.admin_notification_emails`** (default after `patch-business-email-recipients.sql`: `contact@surfstar.app`, `armindoapp@outlook.com`).
 
 This is separate from **`platform_admin_emails`**, which only controls who can open the Admin panel in the app (your personal login). You manage the business inbox at contact@surfstar.app; you log into Admin with your personal account.
 

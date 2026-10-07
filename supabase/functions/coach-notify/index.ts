@@ -4,6 +4,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1'
 import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
+import { bccHeaderForRecipient, coachNotifyBccList } from '../_shared/emailRecipients.ts'
 
 const cronSecret = Deno.env.get('CRON_SECRET')
 const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -14,14 +15,6 @@ const smtpUser = Deno.env.get('SMTP_USER')
 const smtpPass = Deno.env.get('SMTP_PASSWORD')
 const smtpFrom = Deno.env.get('SMTP_FROM') ?? 'contact@surfstar.app'
 const smtpFromName = Deno.env.get('SMTP_FROM_NAME') ?? 'SurfStar'
-/** Inbox copy of every coach email (default: SMTP_FROM / contact@surfstar.app). Set COACH_NOTIFY_BCC to override. */
-const coachNotifyBcc = (Deno.env.get('COACH_NOTIFY_BCC') ?? smtpFrom).trim()
-
-function bccForCoachRecipient(recipient: string): string | undefined {
-  if (!coachNotifyBcc) return undefined
-  if (coachNotifyBcc.toLowerCase() === recipient.trim().toLowerCase()) return undefined
-  return coachNotifyBcc
-}
 
 type EventType =
   | 'plan_request_received'
@@ -374,7 +367,7 @@ Deno.serve(async (req) => {
   for (const row of rows) {
     const { subject, html, text } = buildCoachEmail(row)
     try {
-      const bcc = bccForCoachRecipient(row.coach_email)
+      const bcc = bccHeaderForRecipient(row.coach_email, coachNotifyBccList())
       await client.send({
         from: `${smtpFromName} <${smtpFrom}>`,
         to: row.coach_email,

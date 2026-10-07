@@ -34,6 +34,7 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 27 | `patch-coach-renewal-confirmed-email.sql` | Coach email when admin confirms renewal payment |
 | 28 | `patch-fix-renewal-period-from-payment.sql` | Fix renewal date: +1 month/year from payment, not stacked |
 | 29 | `patch-admin-subscriptions-past-due.sql` | Subscriptions tab: list past_due / expired coaches for renewal |
+| 30 | `patch-business-email-recipients.sql` | Admin alerts + BCC list: contact@surfstar.app + armindoapp@outlook.com |
 
 See **`supabase/RENEWAL_EMAILS.md`** for deploying the daily cron edge function.
 

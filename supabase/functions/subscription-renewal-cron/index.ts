@@ -6,6 +6,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1'
 import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
+import { bccHeaderForRecipient, coachNotifyBccList } from '../_shared/emailRecipients.ts'
 
 const cronSecret = Deno.env.get('CRON_SECRET')
 const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -17,13 +18,6 @@ const smtpPass = Deno.env.get('SMTP_PASSWORD')
 const smtpFrom = Deno.env.get('SMTP_FROM') ?? 'contact@surfstar.app'
 const smtpFromName = Deno.env.get('SMTP_FROM_NAME') ?? 'SurfStar'
 const contactEmail = smtpFrom
-const coachNotifyBcc = (Deno.env.get('COACH_NOTIFY_BCC') ?? smtpFrom).trim()
-
-function bccForCoachRecipient(recipient: string): string | undefined {
-  if (!coachNotifyBcc) return undefined
-  if (coachNotifyBcc.toLowerCase() === recipient.trim().toLowerCase()) return undefined
-  return coachNotifyBcc
-}
 
 type ReminderType = 'due_5d' | 'due_1d' | 'expired'
 
@@ -252,7 +246,7 @@ Deno.serve(async (req) => {
   for (const row of pending) {
     const { subject, html, text } = buildEmail(row)
     try {
-      const bcc = bccForCoachRecipient(row.email)
+      const bcc = bccHeaderForRecipient(row.email, coachNotifyBccList())
       await client.send({
         from: `${smtpFromName} <${smtpFrom}>`,
         to: row.email,

@@ -49,7 +49,13 @@ This is included in the **approval email**. If IBAN is empty, the email tells th
 
 Uses the **same SMTP secrets** as `admin-notify`.
 
-Every coach email is **BCC'd** to `contact@surfstar.app` by default (`SMTP_FROM`), so a copy lands in your business inbox. Override with secret `COACH_NOTIFY_BCC` (same on `subscription-renewal-cron`).
+Every coach email is **BCC'd** to **`contact@surfstar.app`** and **`armindoapp@outlook.com`** by default. Override with secret (comma-separated):
+
+```bash
+supabase secrets set COACH_NOTIFY_BCC=contact@surfstar.app,armindoapp@outlook.com
+```
+
+Run **`patch-business-email-recipients.sql`** so **admin alerts** (new payment requests, contact form) go to the same two inboxes.
 
 ```bash
 supabase functions deploy coach-notify --no-verify-jwt
