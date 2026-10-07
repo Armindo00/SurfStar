@@ -6,6 +6,7 @@ import {
   type AdminSubscriptionFilter,
 } from '../../adminApi'
 import {
+  canAdminConfirmRenewalPayment,
   daysUntilRenewal,
   getRenewalStatus,
   renewalStatusLabel,
@@ -131,6 +132,7 @@ export function AdminSubscriptionsTab({
                   ? t('ui.admin.daysOverdue', { count: Math.abs(daysLeft) })
                   : t('ui.admin.daysLeft', { count: daysLeft })
                 : null
+            const showRenewalConfirm = canAdminConfirmRenewalPayment(sub.current_period_end)
 
             return (
               <article key={sub.coach_id} className="admin-card admin-card--compact">
@@ -182,14 +184,18 @@ export function AdminSubscriptionsTab({
                 </label>
 
                 <div className="admin-card__actions admin-card__actions--primary">
-                  <button
-                    type="button"
-                    className="btn btn--gold btn--small"
-                    disabled={busyId === sub.coach_id}
-                    onClick={() => void confirmRenewal(sub)}
-                  >
-                    {a.confirmRenewalPayment}
-                  </button>
+                  {showRenewalConfirm ? (
+                    <button
+                      type="button"
+                      className="btn btn--gold btn--small"
+                      disabled={busyId === sub.coach_id}
+                      onClick={() => void confirmRenewal(sub)}
+                    >
+                      {a.confirmRenewalPayment}
+                    </button>
+                  ) : (
+                    <p className="muted admin-card__renewal-hint">{a.renewalConfirmLaterHint}</p>
+                  )}
                   <button
                     type="button"
                     className={sub.blocked ? 'btn btn--gold btn--small' : 'btn btn--secondary btn--small'}

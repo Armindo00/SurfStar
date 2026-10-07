@@ -1,7 +1,17 @@
 import type { BillingInterval, PlanId } from './plans'
 import { formatPlanTotalPrice, getPlan } from './plans'
 
+/** Matches subscription-renewal-cron: first coach reminder email (due_5d). */
+export const RENEWAL_ADMIN_CONFIRM_DAYS = 5
+
 export type RenewalStatus = 'ok' | 'due_soon' | 'overdue' | 'unknown'
+
+/** Admin may confirm manual renewal payment (same window as coach reminder emails). */
+export function canAdminConfirmRenewalPayment(periodEnd: string | null | undefined): boolean {
+  const daysLeft = daysUntilRenewal(periodEnd)
+  if (daysLeft === null) return false
+  return daysLeft <= RENEWAL_ADMIN_CONFIRM_DAYS
+}
 
 export function getRenewalStatus(periodEnd: string | null | undefined): RenewalStatus {
   if (!periodEnd) return 'unknown'

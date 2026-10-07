@@ -770,6 +770,8 @@ export const ui = {
     status: 'Status',
     paymentNotes: 'Payment notes (optional)',
     confirmRenewalPayment: 'Confirm renewal payment',
+    renewalConfirmLaterHint:
+      'Confirm payment unlocks 5 days before renewal (when the coach gets the reminder email).',
     renews: 'Renews',
     daysOverdue: '{{count}} days overdue',
     daysLeft: '{{count}} days left',

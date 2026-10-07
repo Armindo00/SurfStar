@@ -770,6 +770,8 @@ export const ui = {
     status: 'Estado',
     paymentNotes: 'Notas de pago (opcional)',
     confirmRenewalPayment: 'Confirmar pago de renovación',
+    renewalConfirmLaterHint:
+      'Confirmar pago estará disponible 5 días antes de la renovación (cuando el entrenador recibe el email de aviso).',
     renews: 'Renueva',
     daysOverdue: '{{count}} días de retraso',
     daysLeft: '{{count}} días restantes',

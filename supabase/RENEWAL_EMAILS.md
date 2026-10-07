@@ -10,6 +10,8 @@ Automated emails for manual billing:
 
 When you confirm renewal payment in **Admin → Subscriptions**, the account is **automatically unblocked** and the coach receives a **renewal confirmed** email (requires `patch-coach-renewal-confirmed-email.sql` + `coach-notify` deployed).
 
+In the app, **Confirm renewal payment** is shown only from **5 days before** `current_period_end` (same as the first reminder email), or when overdue.
+
 ---
 
 ## 1. Run SQL migration
