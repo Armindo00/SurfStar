@@ -1,17 +1,16 @@
-import { useState } from 'react'
-import { LanguagePicker } from '../components/LanguagePicker'
+import { useMemo, useState, type ReactNode } from 'react'
 import { NavBadge } from '../components/NavBadge'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
 import { UNSEEN } from '../unseenDomains'
 import {
-  athleteLimitMessage,
   canManageOrganizationCoaches,
   canUseCustomTraining,
   getAllowedModes,
 } from '../planUtils'
-import { formatPlanPriceWithSuffix, getPlan, type PlanId } from '../plans'
+import { getPlan, type PlanId } from '../plans'
 import { trainingModeLabel } from '../i18n/labels'
+import { formatShortDate } from '../dateFormat'
 
 const ONBOARDING_DISMISS_KEY = 'surfstar_onboarding_dismissed'
 
@@ -19,6 +18,42 @@ function sessionModesSubtitle(planId: PlanId): string {
   return getAllowedModes(planId)
     .map((mode) => trainingModeLabel(mode))
     .join(', ')
+}
+
+function ActionRow({
+  icon,
+  label,
+  badge,
+  onClick,
+}: {
+  icon: string
+  label: string
+  badge?: number
+  onClick: () => void
+}) {
+  return (
+    <button type="button" className="action-list__item" onClick={onClick}>
+      <span className="action-list__label">
+        <span className="action-list__icon" aria-hidden="true">
+          {icon}
+        </span>
+        <span>{label}</span>
+      </span>
+      <span className="action-list__trail">
+        <NavBadge count={badge ?? 0} className="nav-badge" />
+        {!badge ? <span aria-hidden="true">›</span> : null}
+      </span>
+    </button>
+  )
+}
+
+function DashboardSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="dashboard-section" aria-labelledby={undefined}>
+      <h2 className="dashboard-section__title">{title}</h2>
+      <div className="action-list">{children}</div>
+    </section>
+  )
 }
 
 function CoachOnboarding() {
@@ -107,10 +142,8 @@ export function CoachHome() {
     coachPlanId,
     setView,
     beginDraftSession,
-    logout,
     coachAthletes,
     completedCoachSessions,
-    openContact,
     coachLinks,
     organizationMembers,
     countUnseen,
@@ -120,7 +153,6 @@ export function CoachHome() {
   const plan = subscription ? getPlan(subscription.planId) : null
   const hasCustomTraining = canUseCustomTraining(coachPlanId)
   const orgName = auth?.role === 'treinador' ? auth.organizationName : null
-  const isNewCoach = coachAthletes.length === 0 && completedCoachSessions.length === 0
 
   const unseenAthletePairing = countUnseen(
     UNSEEN.coachPairing,
@@ -132,6 +164,20 @@ export function CoachHome() {
     organizationMembers.filter((member) => member.status === 'pending').map((member) => ({ id: member.id })),
   )
 
+  const lastSessionLabel = useMemo(() => {
+    if (completedCoachSessions.length === 0) return t('coach.dashboard.summaryNoSessions')
+    const sorted = [...completedCoachSessions].sort((a, b) => {
+      const ta = a.endedAt ?? a.startedAt
+      const tb = b.endedAt ?? b.startedAt
+      return tb.localeCompare(ta)
+    })
+    const latest = sorted[0]
+    return formatShortDate(latest.endedAt ?? latest.startedAt)
+  }, [completedCoachSessions, t])
+
+  const teamAcademySuffix = !canManageOrganizationCoaches(coachPlanId) ? t('nav.teamAcademySuffix') : ''
+  const premiumSuffix = !hasCustomTraining ? t('nav.coachPremiumSuffix') : ''
+
   return (
     <div className="dashboard">
       <header className="dashboard__hero">
@@ -139,17 +185,28 @@ export function CoachHome() {
         <h1 className="dashboard__name">{name}</h1>
         {orgName ? <p className="dashboard__org muted">{orgName}</p> : null}
         {plan ? (
-          <p className="dashboard__plan muted">
-            {t('coach.planLine', {
-              planName: plan.name,
-              price: formatPlanPriceWithSuffix(plan, 'monthly'),
-              athleteLimit: athleteLimitMessage(plan.id),
-            })}
-          </p>
+          <button type="button" className="dashboard__plan-link" onClick={() => setView('subscription')}>
+            {t('coach.dashboard.planLink', { planName: plan.name })}
+          </button>
         ) : (
           <p className="muted">{t('coach.dashboardFallback')}</p>
         )}
       </header>
+
+      <div className="dashboard-summary">
+          <div className="dashboard-summary__tile">
+            <strong>{coachAthletes.length}</strong>
+            <span className="muted">{t('coach.dashboard.summaryAthletes')}</span>
+          </div>
+          <div className="dashboard-summary__tile">
+            <strong>{completedCoachSessions.length}</strong>
+            <span className="muted">{t('coach.dashboard.summarySessions')}</span>
+          </div>
+          <div className="dashboard-summary__tile dashboard-summary__tile--wide">
+            <strong>{lastSessionLabel}</strong>
+            <span className="muted">{t('coach.dashboard.summaryLastSession')}</span>
+          </div>
+      </div>
 
       <CoachOnboarding />
 
@@ -163,72 +220,35 @@ export function CoachHome() {
         </span>
       </button>
 
-      {isNewCoach ? (
-        <div className="ss-card dashboard-empty-hint">
-          <p className="muted">{t('coach.welcomeHint')}</p>
-        </div>
-      ) : null}
+      <nav className="dashboard-nav" aria-label={t('coach.dashboard.navLabel')}>
+        <DashboardSection title={t('coach.dashboard.sectionTraining')}>
+          <ActionRow icon="📋" label={t('nav.pastSessions')} onClick={() => setView('training-sessions')} />
+          <ActionRow icon="📍" label={t('nav.spotsAndConditions')} onClick={() => setView('manage-spots')} />
+          <ActionRow
+            icon="✦"
+            label={`${t('nav.customTrainingTemplates')}${premiumSuffix}`}
+            onClick={() =>
+              hasCustomTraining ? setView('manage-custom-templates') : setView('subscription')
+            }
+          />
+        </DashboardSection>
 
-      <nav className="action-list">
-        <button type="button" className="action-list__item" onClick={() => setView('training-sessions')}>
-          <span>{t('nav.pastSessions')}</span>
-          <span aria-hidden="true">›</span>
-        </button>
-        <button type="button" className="action-list__item" onClick={() => setView('analytics')}>
-          <span>{t('nav.teamAnalytics')}</span>
-          <span aria-hidden="true">›</span>
-        </button>
-        <button type="button" className="action-list__item" onClick={() => setView('manage-athletes')}>
-          <span>{t('nav.manageAthletes')}</span>
-          <NavBadge count={unseenAthletePairing} className="nav-badge" />
-          {!unseenAthletePairing ? <span aria-hidden="true">›</span> : null}
-        </button>
-        <button type="button" className="action-list__item" onClick={() => setView('organization')}>
-          <span>
-            {t('nav.teamAndCoaches')}
-            {!canManageOrganizationCoaches(coachPlanId) ? t('nav.teamAcademySuffix') : ''}
-          </span>
-          <NavBadge count={unseenOrgInvites} className="nav-badge" />
-          {!unseenOrgInvites ? <span aria-hidden="true">›</span> : null}
-        </button>
-        <button type="button" className="action-list__item" onClick={() => setView('manage-spots')}>
-          <span>{t('nav.spotsAndConditions')}</span>
-          <span aria-hidden="true">›</span>
-        </button>
-        <button
-          type="button"
-          className="action-list__item"
-          onClick={() =>
-            hasCustomTraining ? setView('manage-custom-templates') : setView('subscription')
-          }
-        >
-          <span>
-            {t('nav.customTrainingTemplates')}
-            {!hasCustomTraining ? t('nav.coachPremiumSuffix') : ''}
-          </span>
-          <span aria-hidden="true">›</span>
-        </button>
-        <button type="button" className="action-list__item" onClick={() => setView('subscription')}>
-          <span>{t('nav.accountAndSubscription')}</span>
-          <span aria-hidden="true">›</span>
-        </button>
-        <button type="button" className="action-list__item" onClick={() => setView('help')}>
-          <span>{t('nav.helpAndTrainingGuide')}</span>
-          <span aria-hidden="true">›</span>
-        </button>
-        <button type="button" className="action-list__item" onClick={openContact}>
-          <span>{t('nav.contactSurfStar')}</span>
-          <span aria-hidden="true">›</span>
-        </button>
+        <DashboardSection title={t('coach.dashboard.sectionTeam')}>
+          <ActionRow
+            icon="👤"
+            label={t('nav.manageAthletes')}
+            badge={unseenAthletePairing || undefined}
+            onClick={() => setView('manage-athletes')}
+          />
+          <ActionRow icon="📈" label={t('nav.teamAnalytics')} onClick={() => setView('analytics')} />
+          <ActionRow
+            icon="👥"
+            label={`${t('nav.teamAndCoaches')}${teamAcademySuffix}`}
+            badge={unseenOrgInvites || undefined}
+            onClick={() => setView('organization')}
+          />
+        </DashboardSection>
       </nav>
-
-      <div className="ss-card stats-panel">
-        <LanguagePicker />
-      </div>
-
-      <button type="button" className="btn btn--ghost btn--block logout-btn" onClick={logout}>
-        {t('common.signOut')}
-      </button>
     </div>
   )
 }

@@ -4,6 +4,17 @@ export const coach = {
   dashboardFallback: 'Tableau de bord entraîneur SurfStar',
   planLine: 'Forfait {{planName}} · {{price}} · {{athleteLimit}}',
   newSession: 'Nouvelle session',
+  dashboard: {
+    navLabel: 'Tableau de bord entraîneur',
+    sectionTraining: 'Entraînement',
+    sectionTeam: 'Équipe',
+    sectionAccount: 'Compte',
+    summaryAthletes: 'Athlètes actifs',
+    summarySessions: 'Sessions enregistrées',
+    summaryLastSession: 'Dernière session',
+    summaryNoSessions: 'Aucune pour l\'instant',
+    planLink: 'Forfait {{planName}}',
+  },
   welcomeHint:
     'Bienvenue sur SurfStar. Ajoutez des athlètes depuis Gérer les athlètes, puis démarrez votre première session sur la plage — les stats se mettent à jour en direct au fil des vagues enregistrées.',
   onboarding: {

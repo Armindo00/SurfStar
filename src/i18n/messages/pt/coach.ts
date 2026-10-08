@@ -4,6 +4,17 @@ export const coach = {
   dashboardFallback: 'Painel de treinador SurfStar',
   planLine: 'Plano {{planName}} · {{price}} · {{athleteLimit}}',
   newSession: 'Nova sessão',
+  dashboard: {
+    navLabel: 'Painel do treinador',
+    sectionTraining: 'Treino',
+    sectionTeam: 'Equipa',
+    sectionAccount: 'Conta',
+    summaryAthletes: 'Atletas activos',
+    summarySessions: 'Sessões guardadas',
+    summaryLastSession: 'Última sessão',
+    summaryNoSessions: 'Ainda nenhuma',
+    planLink: 'Plano {{planName}}',
+  },
   welcomeHint:
     'Bem-vindo ao SurfStar. Adiciona atletas em Gerir atletas e começa a tua primeira sessão na praia — as estatísticas atualizam em tempo real à medida que registas ondas.',
   onboarding: {

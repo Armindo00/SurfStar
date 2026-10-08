@@ -295,6 +295,17 @@ export type MessageCatalog = {
     planLine: string
     newSession: string
     welcomeHint: string
+    dashboard: {
+      navLabel: string
+      sectionTraining: string
+      sectionTeam: string
+      sectionAccount: string
+      summaryAthletes: string
+      summarySessions: string
+      summaryLastSession: string
+      summaryNoSessions: string
+      planLink: string
+    }
     onboarding: {
       ariaLabel: string
       eyebrow: string

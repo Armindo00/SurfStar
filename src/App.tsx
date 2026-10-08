@@ -4,6 +4,7 @@ import { CookieConsent } from './components/CookieConsent'
 import { ToastProvider } from './components/ToastProvider'
 import { AppProvider, useApp } from './AppContext'
 import { I18nProvider, useI18n } from './i18n'
+import { LanguagePicker } from './components/LanguagePicker'
 import { NavBadge } from './components/NavBadge'
 import { AppLogo } from './components/AppLogo'
 import { ChangePasswordView } from './views/ChangePasswordView'
@@ -57,6 +58,7 @@ function AppHeader() {
     logout,
     role,
     setView,
+    openContact,
     athleteMenuOpen,
     setAthleteMenuOpen,
     athleteMenuBadge,
@@ -73,7 +75,7 @@ function AppHeader() {
   const isAthlete = role === 'atleta'
 
   return (
-    <header className="app-brandbar">
+    <header className={isAthlete ? 'app-brandbar' : 'app-brandbar app-brandbar--coach'}>
       <div className="app-brandbar__brand">
         <AppLogo size="sm" />
         <div>
@@ -104,38 +106,65 @@ function AppHeader() {
         <>
           <button
             type="button"
-            className="app-brandbar__menu-btn btn btn--ghost btn--small"
+            className={
+              coachMenuOpen
+                ? 'app-brandbar__menu-btn app-brandbar__menu-btn--coach app-brandbar__menu-btn--open btn btn--ghost btn--small'
+                : 'app-brandbar__menu-btn app-brandbar__menu-btn--coach btn btn--ghost btn--small'
+            }
             aria-expanded={coachMenuOpen}
             aria-controls="app-brandbar-menu"
             onClick={() => setCoachMenuOpen((open) => !open)}
           >
-            {coachMenuOpen ? t('common.close') : t('common.menu')}
+            <span className="app-brandbar__menu-icon" aria-hidden="true">
+              {coachMenuOpen ? '×' : '☰'}
+            </span>
+            <span>{coachMenuOpen ? t('common.close') : t('common.menu')}</span>
           </button>
           <div
             id="app-brandbar-menu"
             className={
-              coachMenuOpen ? 'app-brandbar__user app-brandbar__user--open' : 'app-brandbar__user'
+              coachMenuOpen
+                ? 'app-brandbar__user app-brandbar__user--coach app-brandbar__user--open'
+                : 'app-brandbar__user app-brandbar__user--coach'
             }
           >
             <span className="app-brandbar__name">{auth.name}</span>
-            {auth.role === 'treinador' && auth.isPlatformAdmin ? (
-              <button type="button" className="btn btn--ghost btn--small" onClick={() => go('admin')}>
-                {t('common.admin')}
+            <div className="app-brandbar__coach-actions">
+              {auth.role === 'treinador' && auth.isPlatformAdmin ? (
+                <button type="button" className="btn btn--ghost btn--small" onClick={() => go('admin')}>
+                  {t('common.admin')}
+                </button>
+              ) : null}
+              <button type="button" className="btn btn--ghost btn--small" onClick={() => go('subscription')}>
+                {t('nav.accountAndSubscription')}
               </button>
-            ) : null}
-            <button type="button" className="btn btn--ghost btn--small" onClick={() => go('help')}>
-              {t('common.help')}
-            </button>
-            <button
-              type="button"
-              className="btn btn--ghost btn--small"
-              onClick={() => {
-                setCoachMenuOpen(false)
-                logout()
-              }}
-            >
-              {t('common.signOut')}
-            </button>
+              <button type="button" className="btn btn--ghost btn--small" onClick={() => go('help')}>
+                {t('common.help')}
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost btn--small"
+                onClick={() => {
+                  setCoachMenuOpen(false)
+                  openContact()
+                }}
+              >
+                {t('nav.contactSurfStar')}
+              </button>
+              <div className="app-brandbar__locale">
+                <LanguagePicker compact />
+              </div>
+              <button
+                type="button"
+                className="btn btn--ghost btn--small"
+                onClick={() => {
+                  setCoachMenuOpen(false)
+                  logout()
+                }}
+              >
+                {t('common.signOut')}
+              </button>
+            </div>
           </div>
         </>
       )}

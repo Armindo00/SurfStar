@@ -1282,7 +1282,6 @@ body {
 .action-list {
   display: grid;
   gap: 0.5rem;
-  margin-bottom: 1rem;
 }
 
 .action-list__item {
@@ -1290,13 +1289,130 @@ body {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 1rem 1.1rem;
+  padding: 0.9rem 1rem;
   border: 1px solid var(--ss-border);
   border-radius: var(--radius);
   background: white;
   font-weight: 600;
   cursor: pointer;
   box-shadow: var(--ss-shadow);
+}
+
+.action-list__label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-align: left;
+}
+
+.action-list__icon {
+  width: 1.75rem;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1;
+  opacity: 0.88;
+}
+
+.action-list__trail {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  color: var(--ss-muted);
+}
+
+.dashboard-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-section__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ss-muted);
+}
+
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-summary__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--ss-border);
+  border-radius: var(--radius);
+  background: white;
+  box-shadow: var(--ss-shadow);
+}
+
+.dashboard-summary__tile strong {
+  font-size: 1.25rem;
+  color: var(--ss-text);
+  line-height: 1.2;
+}
+
+.dashboard-summary__tile .muted {
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.dashboard-summary__tile--wide {
+  grid-column: 1 / -1;
+}
+
+.dashboard__plan-link {
+  margin: 0.35rem 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ss-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.dashboard__plan-link:hover {
+  color: var(--ss-text);
+}
+
+.app-brandbar__coach-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.app-brandbar__locale {
+  display: flex;
+  align-items: center;
+}
+
+.app-brandbar__locale .language-picker {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.app-brandbar__locale .language-picker--compact {
+  margin: 0;
+}
+
+.app-brandbar__locale .language-picker__trigger {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .register-panel__head {
@@ -9298,9 +9414,103 @@ a.legal-footer-links__btn {
   min-height: 2.25rem;
 }
 
-.app-brandbar__menu-btn--athlete.app-brandbar__menu-btn--open {
+.app-brandbar__menu-btn--athlete.app-brandbar__menu-btn--open,
+.app-brandbar__menu-btn--coach.app-brandbar__menu-btn--open {
   border-color: rgba(201, 162, 39, 0.45);
   background: rgba(201, 162, 39, 0.12);
+}
+
+.app-brandbar__menu-btn--coach {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  min-height: 2.25rem;
+}
+
+/* Coach header: inline actions on tablet/desktop; hamburger panel on phone */
+@media (min-width: 768px) {
+  .app-brandbar--coach .app-brandbar__user--coach {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .app-brandbar--coach .app-brandbar__name {
+    margin-right: auto;
+  }
+
+  .app-brandbar--coach .app-brandbar__coach-actions {
+    width: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 767px) {
+  .app-brandbar--coach {
+    flex-wrap: wrap;
+  }
+
+  .app-brandbar--coach .app-brandbar__menu-btn--coach {
+    display: inline-flex;
+  }
+
+  .app-brandbar--coach .app-brandbar__user--coach {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0.65rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .app-brandbar--coach .app-brandbar__user--coach.app-brandbar__user--open {
+    display: flex;
+  }
+
+  .app-brandbar--coach .app-brandbar__name {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+  }
+
+  .app-brandbar--coach .app-brandbar__coach-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+
+  .app-brandbar--coach .app-brandbar__coach-actions .btn--ghost {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 0.65rem;
+    padding: 0.55rem 0.75rem;
+  }
+
+  .app-brandbar--coach .app-brandbar__locale {
+    width: 100%;
+    padding: 0.15rem 0;
+  }
+
+  .app-brandbar--coach .app-brandbar__locale .language-picker__control {
+    width: 100%;
+  }
+
+  .app-brandbar--coach .app-brandbar__locale .language-picker__trigger {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 0.65rem;
+    padding: 0.55rem 0.75rem;
+  }
 }
 
 .app-brandbar__menu-icon {
@@ -9333,30 +9543,8 @@ a.legal-footer-links__btn {
 }
 
 @media (max-width: 640px) {
-  .app-brandbar {
-    flex-wrap: wrap;
-  }
-
-  .app-brandbar__menu-btn {
-    display: inline-flex;
+  .app-brandbar__menu-btn--athlete {
     margin-left: auto;
-  }
-
-  .app-brandbar__user {
-    display: none;
-    width: 100%;
-    flex-wrap: wrap;
-    padding-top: 0.35rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .app-brandbar__user--open {
-    display: flex;
-  }
-
-  .app-brandbar__name {
-    width: 100%;
-    margin-bottom: 0.15rem;
   }
 }
 
