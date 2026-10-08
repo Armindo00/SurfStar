@@ -3,7 +3,6 @@ import { useToast } from './ToastProvider'
 import { AthleteReportPreview } from './AthleteReportPreview'
 import {
   buildAthleteReportPdfInput,
-  buildManeuverSummaries,
   buildPerformanceLines,
   buildSessionRows,
   buildTrainingMixRows,
@@ -118,7 +117,6 @@ export function AthleteReportSheet({
   )
 
   const trainingMix = useMemo(() => buildTrainingMixRows(analytics), [analytics])
-  const maneuverSummaries = useMemo(() => buildManeuverSummaries(analytics), [analytics])
   const sessionRows = useMemo(
     () => buildSessionRows(sessionSummaries, getSpot),
     [sessionSummaries, getSpot],
@@ -214,10 +212,11 @@ export function AthleteReportSheet({
             footerLine={footerLine}
             coachComment={trimmedComment || undefined}
             general={general}
-            evolution={analytics.evolution}
-            evolutionColumnLabel={evolutionColumn}
+            evolutionCharts={pdfPayload.evolutionCharts}
+            maneuverLabels={pdfPayload.maneuverLabels}
+            technicalSideCharts={pdfPayload.technicalSideCharts}
+            comboSideCharts={pdfPayload.comboSideCharts}
             trainingMix={trainingMix}
-            maneuverSummaries={maneuverSummaries}
             performanceLines={performanceLines}
             sessionRows={sessionRows}
             r={r}

@@ -1,7 +1,11 @@
 import { AppLogo } from './AppLogo'
+import {
+  EvolutionChartStack,
+  SideCompareFigure,
+} from './AthleteReportChartFigures'
 import type { AthleteGeneralStats } from '../athleteStats'
-import type { EvolutionPoint } from '../teamAnalyticsStats'
-import type { ManeuverSummaryRow, TrainingMixRow } from '../buildAthleteReportPdf'
+import type { PdfEvolutionCharts, SideCompareChart } from '../athleteReportPdfEvolution'
+import type { TrainingMixRow } from '../buildAthleteReportPdf'
 import type { AnalyticsReportCopy } from '../i18n/types'
 
 type Props = {
@@ -14,81 +18,15 @@ type Props = {
   footerLine: string
   coachComment?: string
   general: AthleteGeneralStats
-  evolution: EvolutionPoint[]
-  evolutionColumnLabel: string
+  evolutionCharts: PdfEvolutionCharts
+  maneuverLabels: Record<string, string>
+  technicalSideCharts: SideCompareChart[]
+  comboSideCharts: SideCompareChart[]
   trainingMix: TrainingMixRow[]
-  maneuverSummaries: ManeuverSummaryRow[]
   performanceLines: string[]
   sessionRows: { date: string; mode: string; spot: string; summary: string }[]
   r: AnalyticsReportCopy
   formatAvgLevel: (value: number | null) => string
-}
-
-function EvolutionBars({
-  points,
-  legendSuccess,
-  legendPotential,
-}: {
-  points: EvolutionPoint[]
-  legendSuccess: string
-  legendPotential: string
-}) {
-  if (points.length === 0) return null
-  const width = 320
-  const height = 140
-  const pad = { l: 8, r: 8, t: 8, b: 28 }
-  const plotW = width - pad.l - pad.r
-  const plotH = height - pad.t - pad.b
-  const groupW = plotW / points.length
-
-  return (
-    <figure className="athlete-report__chart">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-hidden="true">
-        {points.map((point, index) => {
-          const gx = pad.l + index * groupW + groupW / 2
-          const successH = ((point.successRate ?? 0) / 100) * plotH
-          const potentialH = ((point.potentialRate ?? 0) / 100) * plotH
-          const baseY = pad.t + plotH
-          return (
-            <g key={point.periodKey}>
-              <rect
-                x={gx - 7}
-                y={baseY - successH}
-                width={6}
-                height={successH}
-                fill="#059669"
-                rx={1}
-              />
-              <rect
-                x={gx + 1}
-                y={baseY - potentialH}
-                width={6}
-                height={potentialH}
-                fill="#0ea5e9"
-                rx={1}
-              />
-              <text
-                x={gx - groupW / 2 + 2}
-                y={height - 6}
-                fontSize={8}
-                fill="#64748b"
-              >
-                {point.label.length > 10 ? `${point.label.slice(0, 9)}…` : point.label}
-              </text>
-            </g>
-          )
-        })}
-      </svg>
-      <figcaption className="athlete-report__chart-legend">
-        <span>
-          <i className="athlete-report__swatch athlete-report__swatch--success" /> {legendSuccess}
-        </span>
-        <span>
-          <i className="athlete-report__swatch athlete-report__swatch--potential" /> {legendPotential}
-        </span>
-      </figcaption>
-    </figure>
-  )
 }
 
 function MixBars({ rows }: { rows: TrainingMixRow[] }) {
@@ -119,15 +57,23 @@ export function AthleteReportPreview({
   footerLine,
   coachComment,
   general,
-  evolution,
-  evolutionColumnLabel,
+  evolutionCharts,
+  maneuverLabels,
+  technicalSideCharts,
+  comboSideCharts,
   trainingMix,
-  maneuverSummaries,
   performanceLines,
   sessionRows,
   r,
   formatAvgLevel,
 }: Props) {
+  const sideLabels = {
+    success: r.successCol,
+    avgLevel: r.avgLevel,
+    frontside: r.frontside,
+    backside: r.backside,
+  }
+
   return (
     <article className="athlete-report">
       <header className="athlete-report__header">
@@ -198,39 +144,41 @@ export function AthleteReportPreview({
         </section>
       ) : null}
 
-      {evolution.length > 0 ? (
+      {evolutionCharts.periodLabels.length > 0 ? (
         <section className="athlete-report__section">
           <h2>{r.evolution}</h2>
-          <EvolutionBars
-            points={evolution}
-            legendSuccess={r.chartLegendSuccess}
-            legendPotential={r.chartLegendPotential}
+          <EvolutionChartStack
+            charts={evolutionCharts}
+            maneuverLabels={maneuverLabels}
+            labels={{
+              potential: r.pdfChartPotentialEvolution,
+              maneuverSuccess: r.pdfChartManeuverSuccessEvolution,
+              maneuverLevel: r.pdfChartManeuverLevelEvolution,
+              comboSuccess: r.pdfChartComboSuccessEvolution,
+              comboLevel: r.pdfChartComboLevelEvolution,
+            }}
           />
-          <div className="table-wrap athlete-report__table-wrap">
-            <table className="data-table athlete-report__table">
-              <thead>
-                <tr>
-                  <th>{evolutionColumnLabel}</th>
-                  <th>{r.sessions}</th>
-                  <th>{r.wavesLogged}</th>
-                  <th>{r.successCol}</th>
-                  <th>{r.avgLevel}</th>
-                  <th>{r.potentialCol}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {evolution.map((point) => (
-                  <tr key={point.periodKey}>
-                    <td>{point.label}</td>
-                    <td>{point.sessions}</td>
-                    <td>{point.waves}</td>
-                    <td>{point.successRate === null ? '—' : `${point.successRate}%`}</td>
-                    <td>{point.avgManeuverLevel === null ? '—' : point.avgManeuverLevel.toFixed(2)}</td>
-                    <td>{point.potentialRate === null ? '—' : `${point.potentialRate}%`}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        </section>
+      ) : null}
+
+      {technicalSideCharts.length > 0 ? (
+        <section className="athlete-report__section">
+          <h2>{r.pdfTechnicalSideCharts}</h2>
+          <div className="athlete-report__side-chart-grid">
+            {technicalSideCharts.map((chart) => (
+              <SideCompareFigure key={chart.title} chart={chart} labels={sideLabels} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {comboSideCharts.length > 0 ? (
+        <section className="athlete-report__section">
+          <h2>{r.pdfComboSideCharts}</h2>
+          <div className="athlete-report__side-chart-grid">
+            {comboSideCharts.map((chart) => (
+              <SideCompareFigure key={chart.title} chart={chart} labels={sideLabels} />
+            ))}
           </div>
         </section>
       ) : null}
@@ -250,32 +198,6 @@ export function AthleteReportPreview({
               <li key={line}>{line}</li>
             ))}
           </ul>
-        </section>
-      ) : null}
-
-      {maneuverSummaries.length > 0 ? (
-        <section className="athlete-report__section">
-          <h2>{r.maneuvers}</h2>
-          <div className="table-wrap athlete-report__table-wrap">
-            <table className="data-table athlete-report__table">
-              <thead>
-                <tr>
-                  <th>{r.maneuvers}</th>
-                  <th>{r.attempts}</th>
-                  <th>{r.successCol}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {maneuverSummaries.map((row) => (
-                  <tr key={row.label}>
-                    <td>{row.label}</td>
-                    <td>{row.attempts}</td>
-                    <td>{row.rate === null ? '—' : `${row.rate}%`}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </section>
       ) : null}
 
