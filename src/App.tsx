@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { CookieConsent } from './components/CookieConsent'
 import { ToastProvider } from './components/ToastProvider'
@@ -23,6 +22,8 @@ import { AthleteMaterialView } from './views/AthleteMaterialView'
 import { AthleteEquipmentReviewsView } from './views/AthleteEquipmentReviewsView'
 import { CoachAthleteInsightsView } from './views/CoachAthleteInsightsView'
 import { CoachHome } from './views/CoachHome'
+import { CoachPortalMenu } from './views/CoachPortalMenu'
+import { useMediaQuery } from './hooks/useMediaQuery'
 import { ChampionshipSessionView } from './views/ChampionshipSessionView'
 import { CombosSessionView } from './views/CombosSessionView'
 import { CustomSessionView } from './views/CustomSessionView'
@@ -62,9 +63,10 @@ function AppHeader() {
     athleteMenuOpen,
     setAthleteMenuOpen,
     athleteMenuBadge,
+    coachMenuOpen,
+    setCoachMenuOpen,
   } = useApp()
   const { t } = useI18n()
-  const [coachMenuOpen, setCoachMenuOpen] = useState(false)
   if (!auth) return null
 
   const go = (next: Parameters<typeof setView>[0]) => {
@@ -112,8 +114,8 @@ function AppHeader() {
                 : 'app-brandbar__menu-btn app-brandbar__menu-btn--coach btn btn--ghost btn--small'
             }
             aria-expanded={coachMenuOpen}
-            aria-controls="app-brandbar-menu"
-            onClick={() => setCoachMenuOpen((open) => !open)}
+            aria-controls="coach-portal-menu"
+            onClick={() => setCoachMenuOpen(!coachMenuOpen)}
           >
             <span className="app-brandbar__menu-icon" aria-hidden="true">
               {coachMenuOpen ? '×' : '☰'}
@@ -124,8 +126,8 @@ function AppHeader() {
             id="app-brandbar-menu"
             className={
               coachMenuOpen
-                ? 'app-brandbar__user app-brandbar__user--coach app-brandbar__user--open'
-                : 'app-brandbar__user app-brandbar__user--coach'
+                ? 'app-brandbar__user app-brandbar__user--coach app-brandbar__user--coach-desktop app-brandbar__user--open'
+                : 'app-brandbar__user app-brandbar__user--coach app-brandbar__user--coach-desktop'
             }
           >
             <span className="app-brandbar__name">{auth.name}</span>
@@ -184,8 +186,15 @@ function Shell() {
     passwordRecoveryPending,
     athleteMenuOpen,
     athletePortalSheet,
+    coachMenuOpen,
+    setCoachMenuOpen,
+    logout,
+    openContact,
+    setView,
   } = useApp()
   const { t } = useI18n()
+  const coachMobileMenu = useMediaQuery('(max-width: 767px)')
+  const coachMenuFullScreen = role === 'treinador' && coachMenuOpen && coachMobileMenu
 
   if (!authReady) {
     return (
@@ -251,6 +260,32 @@ function Shell() {
       <div className="app-shell__inner">
         <AppHeader />
         <main className="app-main">
+          {coachMenuFullScreen && auth?.role === 'treinador' ? (
+            <CoachPortalMenu
+              coachName={auth.name}
+              isPlatformAdmin={Boolean(auth.isPlatformAdmin)}
+              onAdmin={() => {
+                setCoachMenuOpen(false)
+                setView('admin')
+              }}
+              onSubscription={() => {
+                setCoachMenuOpen(false)
+                setView('subscription')
+              }}
+              onHelp={() => {
+                setCoachMenuOpen(false)
+                setView('help')
+              }}
+              onContact={() => {
+                setCoachMenuOpen(false)
+                openContact()
+              }}
+              onLogout={() => {
+                setCoachMenuOpen(false)
+                logout()
+              }}
+            />
+          ) : null}
           {role === 'atleta' && !athleteOverlayActive && view === 'help' && <HelpView />}
           {role === 'atleta' && !athleteOverlayActive && view === 'athlete-material' && <AthleteMaterialView />}
           {role === 'atleta' && !athleteOverlayActive && view === 'athlete-equipment-reviews' && (
@@ -258,29 +293,35 @@ function Shell() {
           )}
           {role === 'atleta' && !athleteOverlayActive && view === 'contact' && <ContactView variant="app" />}
           {role === 'atleta' && <AthletePortal />}
-          {role === 'treinador' && view === 'coach-home' && <CoachHome />}
-          {role === 'treinador' && view === 'start-session' && <StartSession />}
-          {role === 'treinador' && view === 'select-athletes' && <SelectAthletes />}
-          {role === 'treinador' && view === 'training' && <TrainingSessionView />}
-          {role === 'treinador' && view === 'combos' && <CombosSessionView />}
-          {role === 'treinador' && view === 'heats' && <HeatsSessionView />}
-          {role === 'treinador' && view === 'campeonato' && <ChampionshipSessionView />}
-          {role === 'treinador' && view === 'sea-analysis' && <SeaAnalysisSessionView />}
-          {role === 'treinador' && view === 'custom' && <CustomSessionView />}
-          {role === 'treinador' && view === 'session-stats' && <SessionStatsView />}
-          {role === 'treinador' && view === 'saved-waves' && <SavedWavesView />}
-          {role === 'treinador' && view === 'manage-athletes' && <ManageAthletes />}
-          {role === 'treinador' && view === 'coach-athlete-insights' && <CoachAthleteInsightsView />}
-          {role === 'treinador' && view === 'manage-spots' && <ManageSpots />}
-          {role === 'treinador' && view === 'manage-custom-templates' && <ManageCustomTemplates />}
-          {role === 'treinador' && view === 'training-sessions' && <TrainingSessionsView />}
-          {role === 'treinador' && view === 'session-history-detail' && <SessionHistoryDetailView />}
-          {role === 'treinador' && view === 'analytics' && <TeamAnalyticsView />}
-          {role === 'treinador' && view === 'organization' && <OrganizationView />}
-          {role === 'treinador' && view === 'admin' && <AdminView />}
-          {role === 'treinador' && view === 'subscription' && <SubscriptionView />}
-          {role === 'treinador' && view === 'help' && <HelpView />}
-          {role === 'treinador' && view === 'contact' && <ContactView variant="app" />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'coach-home' && <CoachHome />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'start-session' && <StartSession />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'select-athletes' && <SelectAthletes />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'training' && <TrainingSessionView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'combos' && <CombosSessionView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'heats' && <HeatsSessionView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'campeonato' && <ChampionshipSessionView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'sea-analysis' && <SeaAnalysisSessionView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'custom' && <CustomSessionView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'session-stats' && <SessionStatsView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'saved-waves' && <SavedWavesView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'manage-athletes' && <ManageAthletes />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'coach-athlete-insights' && (
+            <CoachAthleteInsightsView />
+          )}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'manage-spots' && <ManageSpots />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'manage-custom-templates' && (
+            <ManageCustomTemplates />
+          )}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'training-sessions' && <TrainingSessionsView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'session-history-detail' && (
+            <SessionHistoryDetailView />
+          )}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'analytics' && <TeamAnalyticsView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'organization' && <OrganizationView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'admin' && <AdminView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'subscription' && <SubscriptionView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'help' && <HelpView />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'contact' && <ContactView variant="app" />}
         </main>
         <EndSessionSheet />
         <LeaveSessionConfirmSheet />

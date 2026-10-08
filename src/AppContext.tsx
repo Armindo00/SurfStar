@@ -291,6 +291,8 @@ type AppContextValue = {
   setView: (view: AppView) => void
   athleteMenuOpen: boolean
   setAthleteMenuOpen: (open: boolean) => void
+  coachMenuOpen: boolean
+  setCoachMenuOpen: (open: boolean) => void
   athleteMenuBadge: number
   setAthleteMenuBadge: (count: number) => void
   athletePortalSheet: AthletePortalSheet | null
@@ -626,6 +628,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [seenRevision, setSeenRevision] = useState(0)
   const [view, setView] = useState<AppView>('coach-home')
   const [athleteMenuOpen, setAthleteMenuOpen] = useState(false)
+  const [coachMenuOpen, setCoachMenuOpen] = useState(false)
   const [athleteMenuBadge, setAthleteMenuBadge] = useState(0)
   const [athletePortalSheet, setAthletePortalSheet] = useState<AthletePortalSheet | null>(null)
   const [athletes, setAthletes] = useState<Athlete[]>(() =>
@@ -1836,6 +1839,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPublicView('landing')
     setView('coach-home')
     setAthleteMenuOpen(false)
+    setCoachMenuOpen(false)
     setAthleteMenuBadge(0)
     setAthletePortalSheet(null)
   }, [auth, cloudMode, setPublicView])
@@ -2467,6 +2471,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setLeaveSessionConfirmOpen(true)
         return
       }
+      setCoachMenuOpen(false)
       setView(next)
     },
     [activeSessionId, coachPlanId, showToast, view],
@@ -3732,6 +3737,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setView: navigateView,
       athleteMenuOpen,
       setAthleteMenuOpen,
+      coachMenuOpen,
+      setCoachMenuOpen,
       athleteMenuBadge,
       setAthleteMenuBadge,
       athletePortalSheet,
@@ -3904,6 +3911,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       view,
       navigateView,
       athleteMenuOpen,
+      coachMenuOpen,
       athleteMenuBadge,
       athletePortalSheet,
       coachAthletes,
