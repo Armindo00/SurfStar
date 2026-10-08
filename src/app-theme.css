@@ -398,6 +398,63 @@ body {
   color: var(--landing-gold-light) !important;
 }
 
+/* Coach home — readable on navy shell (summary tiles must not stay white + light muted text) */
+.app-shell .dashboard-summary__tile {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22) !important;
+}
+
+.app-shell .dashboard-summary__tile strong {
+  color: var(--landing-gold-light) !important;
+  font-weight: 700;
+}
+
+.app-shell .dashboard-summary__tile .muted {
+  color: var(--ss-muted) !important;
+}
+
+.app-shell .dashboard__org.muted {
+  color: var(--ss-muted) !important;
+}
+
+.app-shell .dashboard__plan-link {
+  color: var(--landing-gold) !important;
+  text-decoration-color: rgba(201, 169, 98, 0.45);
+}
+
+.app-shell .dashboard__plan-link:hover {
+  color: var(--landing-gold-light) !important;
+}
+
+.app-shell .dashboard-section__title {
+  color: var(--ss-muted) !important;
+}
+
+.app-shell .action-card--primary {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 28px rgba(14, 165, 233, 0.28) !important;
+}
+
+.app-shell .action-card--primary small {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.app-shell .action-card--primary .action-card__icon {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #fff !important;
+}
+
+.app-shell .action-list__item .action-list__icon {
+  opacity: 1;
+}
+
+.app-shell .action-list__item .action-list__trail {
+  color: var(--landing-gold);
+}
+
 .action-list__item {
   background: rgba(255, 255, 255, 0.04) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;

@@ -1352,13 +1352,13 @@ body {
   padding: 0.75rem 0.85rem;
   border: 1px solid var(--ss-border);
   border-radius: var(--radius);
-  background: white;
+  background: var(--ss-card, #fff);
   box-shadow: var(--ss-shadow);
 }
 
 .dashboard-summary__tile strong {
   font-size: 1.25rem;
-  color: var(--ss-text);
+  color: var(--ss-hero, var(--ss-text));
   line-height: 1.2;
 }
 
