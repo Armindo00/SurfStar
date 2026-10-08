@@ -2970,3 +2970,52 @@ body {
 .app-shell .athlete-report .athlete-report__detail-table thead {
   background: #e2e8f0 !important;
 }
+
+/* Report sheet chrome (light panel) — override dark-shell button colors */
+.app-shell .athlete-report-sheet .btn--ghost {
+  background: transparent !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+.app-shell .athlete-report-sheet .btn--ghost:hover:not(:disabled) {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.app-shell .athlete-report-sheet .btn--gold {
+  background: linear-gradient(135deg, #dbbf6a 0%, #b8943f 100%) !important;
+  border-color: #b8943f !important;
+  color: #1a1204 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(184, 148, 63, 0.35) !important;
+}
+
+.app-shell .athlete-report-sheet .btn--gold:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.app-shell .athlete-report-sheet .btn--secondary {
+  background: #ffffff !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+.app-shell .athlete-report-sheet .btn--secondary:hover:not(:disabled) {
+  background: #f8fafc !important;
+  border-color: #64748b !important;
+}
+
+.app-shell .athlete-report-sheet .btn:disabled {
+  opacity: 0.55;
+}
+
+.app-shell .athlete-report-sheet__header h2,
+.app-shell .athlete-report-sheet__heading {
+  color: #0f172a !important;
+}
+
+.app-shell .athlete-report-sheet .muted {
+  color: #64748b !important;
+}
