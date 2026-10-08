@@ -4,6 +4,8 @@ import type { AthleteGeneralStats } from './athleteStats'
 import type { AthletePsychologyAnalytics } from './athletePsychologyStats'
 import type { ComboSessionStatsSnapshot, SessionStatsSnapshot } from './sessionStats'
 import type { EvolutionPoint } from './teamAnalyticsStats'
+import type { PdfEvolutionCharts, SideCompareChart } from './athleteReportPdfEvolution'
+import { drawEvolutionSection, drawSideCompareChart, type ChartLayout } from './athleteReportPdfDraw'
 
 const PAGE_W = 210
 const PAGE_H = 297
@@ -13,8 +15,6 @@ const CONTENT_W = PAGE_W - MARGIN * 2
 const COLOR_TEXT = [15, 23, 42] as const
 const COLOR_MUTED = [100, 116, 139] as const
 const COLOR_PRIMARY = [2, 132, 199] as const
-const COLOR_SUCCESS = [5, 150, 105] as const
-const COLOR_POTENTIAL = [14, 165, 233] as const
 const COLOR_BAR_BG = [226, 232, 240] as const
 
 export type AthleteReportPdfLabels = {
@@ -47,6 +47,15 @@ export type AthleteReportPdfLabels = {
   psychology: string
   chartLegendSuccess: string
   chartLegendPotential: string
+  pdfChartPotentialEvolution: string
+  pdfChartManeuverSuccessEvolution: string
+  pdfChartManeuverLevelEvolution: string
+  pdfChartComboSuccessEvolution: string
+  pdfChartComboLevelEvolution: string
+  pdfTechnicalSideCharts: string
+  pdfComboSideCharts: string
+  frontside: string
+  backside: string
   maneuvers: string
   attempts: string
   page: string
@@ -67,6 +76,10 @@ export type AthleteReportPdfInput = {
   general: AthleteGeneralStats
   evolution: EvolutionPoint[]
   evolutionColumnLabel: string
+  evolutionCharts: PdfEvolutionCharts
+  maneuverLabels: Record<string, string>
+  technicalSideCharts: SideCompareChart[]
+  comboSideCharts: SideCompareChart[]
   trainingMix: TrainingMixRow[]
   technical: SessionStatsSnapshot | null
   combo: ComboSessionStatsSnapshot | null
@@ -193,55 +206,6 @@ class PdfDoc {
     this.y += rows * (cellH + gap) + 4
   }
 
-  drawEvolutionChart(points: EvolutionPoint[], legendSuccess: string, legendPotential: string) {
-    if (points.length === 0) return
-    const chartH = 42
-    const chartW = CONTENT_W
-    this.ensureSpace(chartH + 16)
-
-    const top = this.y + 4
-    const left = MARGIN + 8
-    const plotW = chartW - 16
-    const plotH = chartH - 12
-
-    this.doc.setDrawColor(...COLOR_BAR_BG)
-    this.doc.rect(MARGIN, top, chartW, chartH)
-
-    const n = points.length
-    const groupW = plotW / n
-    const barW = Math.min(4, groupW / 3)
-
-    points.forEach((point, index) => {
-      const gx = left + index * groupW + groupW / 2
-      const success = point.successRate ?? 0
-      const potential = point.potentialRate ?? 0
-      const successH = (success / 100) * plotH
-      const potentialH = (potential / 100) * plotH
-      const baseY = top + chartH - 4
-
-      this.doc.setFillColor(...COLOR_SUCCESS)
-      this.doc.rect(gx - barW - 0.5, baseY - successH, barW, successH, 'F')
-      this.doc.setFillColor(...COLOR_POTENTIAL)
-      this.doc.rect(gx + 0.5, baseY - potentialH, barW, potentialH, 'F')
-
-      this.doc.setFontSize(6)
-      this.doc.setTextColor(...COLOR_MUTED)
-      const label = this.doc.splitTextToSize(point.label, groupW - 1)
-      this.doc.text(label, gx - groupW / 2 + 1, baseY + 3)
-    })
-
-    this.y = top + chartH + 4
-    this.doc.setFontSize(7)
-    this.doc.setFillColor(...COLOR_SUCCESS)
-    this.doc.rect(MARGIN, this.y, 3, 3, 'F')
-    this.doc.setTextColor(...COLOR_TEXT)
-    this.doc.text(legendSuccess, MARGIN + 5, this.y + 2.5)
-    this.doc.setFillColor(...COLOR_POTENTIAL)
-    this.doc.rect(MARGIN + 45, this.y, 3, 3, 'F')
-    this.doc.text(legendPotential, MARGIN + 50, this.y + 2.5)
-    this.y += 8
-  }
-
   drawHorizontalBars(rows: TrainingMixRow[]) {
     if (rows.length === 0) return
     const max = Math.max(...rows.map((r) => r.count), 1)
@@ -265,6 +229,20 @@ class PdfDoc {
       this.y += rowH + 2
     }
     this.y += 2
+  }
+
+  chartLayout(): ChartLayout {
+    return {
+      doc: this.doc,
+      margin: MARGIN,
+      contentW: CONTENT_W,
+      pageH: PAGE_H,
+      getY: () => this.y,
+      setY: (y: number) => {
+        this.y = y
+      },
+      ensureSpace: (h: number) => this.ensureSpace(h),
+    }
   }
 
   finish() {
@@ -333,36 +311,39 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
     pdf.bodyText(input.coachComment.trim())
   }
 
-  if (input.evolution.length > 0) {
+  if (input.evolutionCharts.periodLabels.length > 0) {
     pdf.sectionTitle(L.evolution)
-    pdf.drawEvolutionChart(input.evolution, L.chartLegendSuccess, L.chartLegendPotential)
-
-    autoTable(doc, {
-      startY: pdf.y,
-      margin: { left: MARGIN, right: MARGIN },
-      head: [[
-        input.evolutionColumnLabel,
-        L.sessions,
-        L.wavesLogged,
-        L.successCol,
-        L.avgLevel,
-        L.potentialCol,
-      ]],
-      body: input.evolution.map((point) => [
-        point.label,
-        String(point.sessions),
-        String(point.waves),
-        formatRate(point.successRate),
-        formatLevel(point.avgManeuverLevel),
-        formatRate(point.potentialRate),
-      ]),
-      styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
-      headStyles: { fillColor: [226, 232, 240], textColor: [51, 65, 85], fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [248, 250, 252] },
-      tableWidth: CONTENT_W,
-      didDrawPage: () => pdf.drawFooter(),
+    drawEvolutionSection(pdf.chartLayout(), input.evolutionCharts, input.maneuverLabels, {
+      potential: L.pdfChartPotentialEvolution,
+      maneuverSuccess: L.pdfChartManeuverSuccessEvolution,
+      maneuverLevel: L.pdfChartManeuverLevelEvolution,
+      comboSuccess: L.pdfChartComboSuccessEvolution,
+      comboLevel: L.pdfChartComboLevelEvolution,
     })
-    pdf.y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8
+  }
+
+  if (input.technicalSideCharts.length > 0) {
+    pdf.sectionTitle(L.pdfTechnicalSideCharts)
+    for (const chart of input.technicalSideCharts) {
+      drawSideCompareChart(pdf.chartLayout(), chart, {
+        success: L.successCol,
+        level: L.avgLevel,
+        frontside: L.frontside,
+        backside: L.backside,
+      })
+    }
+  }
+
+  if (input.comboSideCharts.length > 0) {
+    pdf.sectionTitle(L.pdfComboSideCharts)
+    for (const chart of input.comboSideCharts) {
+      drawSideCompareChart(pdf.chartLayout(), chart, {
+        success: L.successCol,
+        level: L.avgLevel,
+        frontside: L.frontside,
+        backside: L.backside,
+      })
+    }
   }
 
   if (input.trainingMix.length > 0) {
@@ -391,26 +372,6 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
     pdf.bodyText(
       `${L.psychology}: ${input.psychology.checkIns} check-ins · ${L.avgLevel} ${input.psychology.averageOverall?.toFixed(1) ?? '—'}/5`,
     )
-  }
-
-  if (input.maneuverSummaries.length > 0) {
-    pdf.ensureSpace(20)
-    pdf.sectionTitle(L.maneuvers)
-    autoTable(doc, {
-      startY: pdf.y,
-      margin: { left: MARGIN, right: MARGIN },
-      head: [[L.maneuvers, L.attempts, L.successCol]],
-      body: input.maneuverSummaries.map((row) => [
-        row.label,
-        String(row.attempts),
-        row.rate === null ? '—' : `${row.rate}%`,
-      ]),
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [226, 232, 240], textColor: [51, 65, 85], fontStyle: 'bold' },
-      tableWidth: CONTENT_W,
-      didDrawPage: () => pdf.drawFooter(),
-    })
-    pdf.y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8
   }
 
   if (input.sessionRows.length > 0) {

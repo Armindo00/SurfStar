@@ -1,8 +1,13 @@
 import type { AthletePsychologyAnalytics } from './athletePsychologyStats'
 import type { AthleteGeneralStats, AthleteSessionSummary } from './athleteStats'
 import type { AthleteReportPdfInput, AthleteReportPdfLabels, ManeuverSummaryRow, TrainingMixRow } from './buildAthleteReportPdf'
+import {
+  buildComboSideCharts,
+  buildPdfEvolutionCharts,
+  buildTechnicalSideCharts,
+} from './athleteReportPdfEvolution'
 import { formatSessionDate, resolveSessionSpotName } from './sessionHistoryUtils'
-import { trainingModeLabel, maneuverLabel } from './i18n/labels'
+import { comboLevelLabel, trainingModeLabel, maneuverLabel } from './i18n/labels'
 import type { AthletePeriodAnalytics } from './teamAnalyticsStats'
 import type { SurfSpot } from './types'
 import type { ManeuverKind } from './types'
@@ -100,6 +105,7 @@ export function buildAthleteReportPdfInput(args: {
   footerLine: string
   coachComment?: string
   analytics: AthletePeriodAnalytics
+  athleteId: string
   psychology?: AthletePsychologyAnalytics | null
   sessionSummaries: AthleteSessionSummary[]
   getSpot: (id: string) => SurfSpot | undefined
@@ -108,6 +114,21 @@ export function buildAthleteReportPdfInput(args: {
 }): AthleteReportPdfInput {
   const trainingMix = buildTrainingMixRows(args.analytics)
   const maneuverSummaries = buildManeuverSummaries(args.analytics)
+  const evolutionCharts = buildPdfEvolutionCharts(args.analytics, args.athleteId)
+  const technicalSideCharts = buildTechnicalSideCharts(args.analytics, args.athleteId).map((chart) => ({
+    ...chart,
+    title: maneuverLabel(chart.title as 'rail' | 'top-turn' | 'progressive'),
+  }))
+  const comboSideCharts = buildComboSideCharts(args.analytics, args.athleteId).map((chart) => ({
+    ...chart,
+    title: comboLevelLabel(chart.title === 'estrela' ? 'estrela' : (Number(chart.title) as 1 | 2 | 3)),
+  }))
+
+  const maneuverLabels: Record<string, string> = {
+    rail: maneuverLabel('rail'),
+    'top-turn': maneuverLabel('top-turn'),
+    progressive: maneuverLabel('progressive'),
+  }
 
   return {
     athleteName: args.athleteName,
@@ -121,6 +142,10 @@ export function buildAthleteReportPdfInput(args: {
     general: args.analytics.general,
     evolution: args.analytics.evolution,
     evolutionColumnLabel: args.evolutionColumnLabel,
+    evolutionCharts,
+    maneuverLabels,
+    technicalSideCharts,
+    comboSideCharts,
     trainingMix,
     technical: args.analytics.technical,
     combo: args.analytics.combo,

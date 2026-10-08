@@ -50,6 +50,7 @@ export function AthleteReportSheet({
   analytics,
   sessionSummaries,
   getSpot,
+  athleteId,
   psychology,
   onClose,
 }: Props) {
@@ -90,6 +91,7 @@ export function AthleteReportSheet({
         footerLine,
         coachComment: trimmedComment || undefined,
         analytics,
+        athleteId,
         psychology,
         sessionSummaries,
         getSpot,
@@ -106,6 +108,7 @@ export function AthleteReportSheet({
       footerLine,
       trimmedComment,
       analytics,
+      athleteId,
       psychology,
       sessionSummaries,
       getSpot,
