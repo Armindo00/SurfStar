@@ -218,6 +218,7 @@ export const analytics = {
       'Añade un breve resumen para padres o atleta — ej. progreso, áreas de enfoque, próximos pasos…',
     coachCommentsNote:
       'No guardado — incluido solo en esta exportación en PDF.',
+    previewLabel: 'Vista previa del informe',
     downloadPdf: 'Descargar PDF',
     sharePdf: 'Compartir PDF',
     pdfGenerating: 'Generando PDF…',

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useToast } from './ToastProvider'
 import { AthleteReportPreview } from './AthleteReportPreview'
 import {
@@ -69,6 +69,14 @@ export function AthleteReportSheet({
     url: getAppSiteUrl(),
     date: formatShortDate(new Date()),
   })
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [])
 
   const pdfPayload = useMemo(
     () =>
@@ -156,67 +164,84 @@ export function AthleteReportSheet({
   return (
     <div className="athlete-report-backdrop" role="presentation" onClick={onClose}>
       <div
-        className="athlete-report-print-root"
+        className="athlete-report-print-root athlete-report-sheet"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="athlete-report-title"
+        aria-labelledby="athlete-report-sheet-title"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="athlete-report-print-actions no-print">
-          <label className="field field--pro athlete-report__comment-field">
-            <span>{r.coachCommentsOptional}</span>
-            <textarea
-              rows={4}
-              value={coachComment}
-              placeholder={r.coachCommentsPlaceholder}
-              onChange={(event) => setCoachComment(event.target.value)}
-            />
-            <small className="muted">{r.coachCommentsNote}</small>
-          </label>
-          <div className="athlete-report-print-actions__buttons">
-            <button type="button" className="btn btn--ghost btn--small" onClick={onClose} disabled={pdfBusy}>
-              {t('common.close')}
-            </button>
-            <button
-              type="button"
-              className="btn btn--gold btn--small"
-              onClick={() => void handleDownloadPdf()}
-              disabled={pdfBusy}
-            >
-              {pdfBusy ? r.pdfGenerating : r.downloadPdf}
-            </button>
-            {shareAvailable ? (
-              <button
-                type="button"
-                className="btn btn--secondary btn--small"
-                onClick={() => void handleSharePdf()}
-                disabled={pdfBusy}
-              >
-                {r.sharePdf}
-              </button>
-            ) : null}
+        <header className="athlete-report-sheet__header">
+          <button
+            type="button"
+            className="btn btn--ghost btn--small athlete-report-sheet__close"
+            onClick={onClose}
+            disabled={pdfBusy}
+          >
+            {t('common.close')}
+          </button>
+          <div className="athlete-report-sheet__heading">
+            <p className="athlete-report-sheet__eyebrow">{t('analytics.pdfReport')}</p>
+            <h2 id="athlete-report-sheet-title">{athleteName}</h2>
+            <p className="athlete-report-sheet__subtitle muted">{reportTitle}</p>
           </div>
+        </header>
+
+        <div className="athlete-report-sheet__body">
+          <details className="athlete-report-sheet__comments">
+            <summary>{r.coachCommentsOptional}</summary>
+            <label className="field field--pro athlete-report__comment-field">
+              <textarea
+                rows={3}
+                value={coachComment}
+                placeholder={r.coachCommentsPlaceholder}
+                onChange={(event) => setCoachComment(event.target.value)}
+              />
+              <small className="muted">{r.coachCommentsNote}</small>
+            </label>
+          </details>
+
+          <p className="athlete-report-sheet__preview-label">{r.previewLabel}</p>
+          <AthleteReportPreview
+            athleteName={athleteName}
+            coachName={coachName}
+            organizationName={organizationName}
+            rangeLabel={rangeLabel}
+            reportTitle={reportTitle}
+            generatedAt={generatedAt}
+            footerLine={footerLine}
+            coachComment={trimmedComment || undefined}
+            general={general}
+            evolution={analytics.evolution}
+            evolutionColumnLabel={evolutionColumn}
+            trainingMix={trainingMix}
+            maneuverSummaries={maneuverSummaries}
+            performanceLines={performanceLines}
+            sessionRows={sessionRows}
+            r={r}
+            formatAvgLevel={formatAverageLevelValue}
+          />
         </div>
 
-        <AthleteReportPreview
-          athleteName={athleteName}
-          coachName={coachName}
-          organizationName={organizationName}
-          rangeLabel={rangeLabel}
-          reportTitle={reportTitle}
-          generatedAt={generatedAt}
-          footerLine={footerLine}
-          coachComment={trimmedComment || undefined}
-          general={general}
-          evolution={analytics.evolution}
-          evolutionColumnLabel={evolutionColumn}
-          trainingMix={trainingMix}
-          maneuverSummaries={maneuverSummaries}
-          performanceLines={performanceLines}
-          sessionRows={sessionRows}
-          r={r}
-          formatAvgLevel={formatAverageLevelValue}
-        />
+        <footer className="athlete-report-sheet__footer">
+          <button
+            type="button"
+            className="btn btn--gold btn--block"
+            onClick={() => void handleDownloadPdf()}
+            disabled={pdfBusy}
+          >
+            {pdfBusy ? r.pdfGenerating : r.downloadPdf}
+          </button>
+          {shareAvailable ? (
+            <button
+              type="button"
+              className="btn btn--secondary btn--block"
+              onClick={() => void handleSharePdf()}
+              disabled={pdfBusy}
+            >
+              {r.sharePdf}
+            </button>
+          ) : null}
+        </footer>
       </div>
     </div>
   )

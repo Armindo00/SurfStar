@@ -234,6 +234,7 @@ export const analytics = {
       'Add a short summary for parents or the athlete — e.g. progress, focus areas, next steps…',
     coachCommentsNote:
       'Not saved — only included in this PDF export.',
+    previewLabel: 'Report preview',
     downloadPdf: 'Download PDF',
     sharePdf: 'Share PDF',
     pdfGenerating: 'Generating PDF…',
