@@ -307,7 +307,10 @@ type AppContextValue = {
   requestPairingByCode: (code: string) => Promise<{ ok: boolean; error?: string; athleteName?: string }>
   respondToPairing: (linkId: string, accept: boolean) => Promise<{ ok: boolean; error?: string }>
   revokePairing: (linkId: string) => Promise<{ ok: boolean; error?: string }>
-  updateAthleteShareSettings: (linkId: string, shareSettings: AthleteShareSettings) => void
+  updateAthleteShareSettings: (
+    linkId: string,
+    shareSettings: AthleteShareSettings,
+  ) => Promise<{ ok: boolean; error?: string }>
   setAthleteBlocked: (linkId: string, blocked: boolean) => Promise<{ ok: boolean; error?: string }>
   activeCoachAthletes: Athlete[]
   changePassword: (newPassword: string) => Promise<{ ok: true } | { ok: false; error: string }>
@@ -2078,26 +2081,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const updateAthleteShareSettings = useCallback(
-    (linkId: string, shareSettings: AthleteShareSettings) => {
-      if (auth?.role !== 'treinador') return
+    async (linkId: string, shareSettings: AthleteShareSettings) => {
+      if (auth?.role !== 'treinador') {
+        return { ok: false, error: 'Sign in as coach first.' }
+      }
       const normalized = normalizeAthleteShareSettings(shareSettings)
       if (normalized.psychologyCheckins && !canUsePsychologyCheckins(coachPlanId)) {
-        showToast(planUpgradeHint(coachPlanId, 'psychology'), 'error')
-        return
+        const message = planUpgradeHint(coachPlanId, 'psychology')
+        showToast(message, 'error')
+        return { ok: false, error: message }
       }
       if (!canUsePsychologyCheckins(coachPlanId)) {
         normalized.psychologyCheckins = false
       }
 
       if (cloudMode) {
-        void cloudUpdateLinkShareSettings(linkId, normalized).then((result) => {
-          if (!result.ok) {
-            showToast(result.error, 'error')
-            return
-          }
-          void refreshPairingData()
-        })
-        return
+        const result = await cloudUpdateLinkShareSettings(linkId, normalized)
+        if (!result.ok) {
+          showToast(result.error, 'error')
+          return { ok: false, error: result.error }
+        }
+        await refreshPairingData()
+        return { ok: true }
       }
 
       const pairings = store.getPairings()
@@ -2107,6 +2112,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       store.savePairings(nextPairings)
       setCoachLinks(nextPairings.filter((l) => l.organizationId === auth.organizationId))
       setAthletes(buildCoachAthletesFromLinks(nextPairings, store.getAthletes()))
+      return { ok: true }
     },
     [auth, cloudMode, coachPlanId, refreshPairingData, showToast],
   )
