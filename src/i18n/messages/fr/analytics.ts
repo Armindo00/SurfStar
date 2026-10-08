@@ -217,8 +217,12 @@ export const analytics = {
     coachCommentsPlaceholder:
       'Ajoutez un bref résumé pour les parents ou l\'athlète — ex. progrès, axes de travail, prochaines étapes…',
     coachCommentsNote:
-      'Non enregistré — inclus uniquement dans cet export. Apparaît dans le PDF à l\'impression.',
-    printSavePdf: 'Imprimer / Enregistrer en PDF',
+      'Non enregistré — inclus uniquement dans cet export PDF.',
+    downloadPdf: 'Télécharger le PDF',
+    sharePdf: 'Partager le PDF',
+    pdfGenerating: 'Génération du PDF…',
+    pdfShareUnavailable: 'Le partage n’est pas disponible sur cet appareil. Utilisez Télécharger le PDF.',
+    pdfExportFailed: 'Impossible de créer le PDF. Réessayez.',
     period: 'Période',
     coach: 'Coach',
     organization: 'Organisation',

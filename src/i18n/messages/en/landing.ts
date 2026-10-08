@@ -165,7 +165,7 @@ export const landing = {
         benefits: [
           'Live success rates during training — adjust focus before the session ends',
           'Heats, championships, and contest-style stats your athletes understand',
-          'Season analytics and CSV export for reports, parents, or sponsors',
+          'Season analytics and PDF reports to download or share with parents or sponsors',
         ],
       },
       {

@@ -435,7 +435,7 @@ export const ui = {
         bullets: [
           'Entraînement technique avec R / T / P et frontside / backside',
           'Tentatives de combo par niveau avec suivi de réussite',
-          'Export CSV pour rapports et analyse externe',
+          'Rapports PDF à télécharger ou partager',
         ],
       },
       'heats-championship': {

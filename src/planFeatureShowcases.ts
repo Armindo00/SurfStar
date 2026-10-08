@@ -43,7 +43,7 @@ export const FEATURE_SHOWCASES: FeatureShowcase[] = [
     bullets: [
       'Technical training with R / T / P and frontside / backside',
       'Combo attempts by level with success tracking',
-      'CSV export for reports and external analysis',
+      'PDF reports to download or share with parents and athletes',
     ],
     plans: ['team', 'club', 'organization'],
     category: 'Training',

@@ -1,6 +1,5 @@
 import { useApp } from '../AppContext'
 import { ScreenHeader } from '../components/ScreenHeader'
-import { exportSessionsCsv } from '../exportCsv'
 import { useI18n } from '../i18n'
 import {
   athleteNamesForSession,
@@ -32,15 +31,6 @@ export function TrainingSessionsView() {
                 : t('session.history.completedSessions', { count })}
             </p>
           </div>
-          {count > 0 ? (
-            <button
-              type="button"
-              className="btn btn--secondary btn--small history-intro__export"
-              onClick={() => exportSessionsCsv(completedCoachSessions, getAthlete, getSpot)}
-            >
-              {t('session.history.exportCsv')}
-            </button>
-          ) : null}
         </div>
       </div>
 

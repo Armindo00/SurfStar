@@ -233,8 +233,12 @@ export const analytics = {
     coachCommentsPlaceholder:
       'Add a short summary for parents or the athlete — e.g. progress, focus areas, next steps…',
     coachCommentsNote:
-      'Not saved — only included in this export. Appears in the PDF when you print.',
-    printSavePdf: 'Print / Save as PDF',
+      'Not saved — only included in this PDF export.',
+    downloadPdf: 'Download PDF',
+    sharePdf: 'Share PDF',
+    pdfGenerating: 'Generating PDF…',
+    pdfShareUnavailable: 'Sharing is not supported on this device. Use Download PDF.',
+    pdfExportFailed: 'Could not create the PDF. Try again in a moment.',
     period: 'Period',
     coach: 'Coach',
     organization: 'Organization',

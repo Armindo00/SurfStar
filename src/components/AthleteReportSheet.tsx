@@ -1,5 +1,13 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { AppLogo } from './AppLogo'
+import { useToast } from './ToastProvider'
+import {
+  athleteReportPdfFilename,
+  downloadPdfBlob,
+  generateAthleteReportPdfBlob,
+  canSharePdfFiles,
+  sharePdfBlob,
+} from '../exportAthleteReportPdf'
 import {
   describeAnalyticsRange,
   describeAnalyticsRangeLong,
@@ -34,10 +42,6 @@ type Props = {
   onClose: () => void
 }
 
-function printReport() {
-  window.print()
-}
-
 export function AthleteReportSheet({
   athleteName,
   coachName,
@@ -51,8 +55,12 @@ export function AthleteReportSheet({
   onClose,
 }: Props) {
   const { t, messages } = useI18n()
+  const { showToast } = useToast()
   const r = messages.analytics.analyticsReport
+  const reportRef = useRef<HTMLElement>(null)
   const [coachComment, setCoachComment] = useState('')
+  const [pdfBusy, setPdfBusy] = useState(false)
+  const shareAvailable = canSharePdfFiles()
   const trimmedComment = coachComment.trim()
   const general = analytics.general
   const generatedAt = formatShortDateTime(new Date())
@@ -67,6 +75,44 @@ export function AthleteReportSheet({
     },
     {} as Record<string, number>,
   )
+
+  const pdfFilename = athleteReportPdfFilename(athleteName)
+  const pdfShareTitle = `${athleteName} — ${reportTitle}`
+
+  async function buildPdfBlob(): Promise<Blob | null> {
+    const element = reportRef.current
+    if (!element) return null
+    setPdfBusy(true)
+    try {
+      return await generateAthleteReportPdfBlob(element)
+    } catch {
+      showToast(r.pdfExportFailed, 'error')
+      return null
+    } finally {
+      setPdfBusy(false)
+    }
+  }
+
+  async function handleDownloadPdf() {
+    const blob = await buildPdfBlob()
+    if (blob) downloadPdfBlob(blob, pdfFilename)
+  }
+
+  async function handleSharePdf() {
+    if (!shareAvailable) {
+      showToast(r.pdfShareUnavailable, 'info')
+      return
+    }
+    const blob = await buildPdfBlob()
+    if (!blob) return
+    try {
+      const result = await sharePdfBlob(blob, pdfFilename, pdfShareTitle)
+      if (result === 'unavailable') showToast(r.pdfShareUnavailable, 'info')
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      showToast(r.pdfExportFailed, 'error')
+    }
+  }
 
   return (
     <div className="athlete-report-backdrop" role="presentation" onClick={onClose}>
@@ -89,16 +135,31 @@ export function AthleteReportSheet({
             <small className="muted">{r.coachCommentsNote}</small>
           </label>
           <div className="athlete-report-print-actions__buttons">
-            <button type="button" className="btn btn--ghost btn--small" onClick={onClose}>
+            <button type="button" className="btn btn--ghost btn--small" onClick={onClose} disabled={pdfBusy}>
               {t('common.close')}
             </button>
-            <button type="button" className="btn btn--gold btn--small" onClick={printReport}>
-              {r.printSavePdf}
+            <button
+              type="button"
+              className="btn btn--gold btn--small"
+              onClick={() => void handleDownloadPdf()}
+              disabled={pdfBusy}
+            >
+              {pdfBusy ? r.pdfGenerating : r.downloadPdf}
             </button>
+            {shareAvailable ? (
+              <button
+                type="button"
+                className="btn btn--secondary btn--small"
+                onClick={() => void handleSharePdf()}
+                disabled={pdfBusy}
+              >
+                {r.sharePdf}
+              </button>
+            ) : null}
           </div>
         </div>
 
-        <article className="athlete-report">
+        <article className="athlete-report" ref={reportRef}>
           <header className="athlete-report__header">
             <div className="athlete-report__brand">
               <AppLogo size="sm" />

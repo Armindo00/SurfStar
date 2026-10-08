@@ -11,7 +11,6 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import { useApp } from '../AppContext'
 import { AthleteMaterialPanel } from '../components/AthleteMaterialPanel'
 import { presetAnalyticsRange, describeAnalyticsRange, type AnalyticsRange } from '../analyticsRange'
-import { exportAthleteAnalyticsCsv } from '../exportCsv'
 import { formatAverageLevelValue, formatCombinedLevelSummary } from '../sessionStats'
 import { canAccessTeamAnalytics, canUsePsychologyCheckins, planUpgradeHint } from '../planUtils'
 import { buildAthleteSessionSummaries } from '../athleteStats'
@@ -255,13 +254,6 @@ export function TeamAnalyticsView() {
             </p>
           </div>
           <div className="team-analytics-hero__actions">
-            <button
-              type="button"
-              className="btn btn--secondary btn--small"
-              onClick={() => exportAthleteAnalyticsCsv(selectedAthlete.name, analytics, selectedAthlete.id)}
-            >
-              {t('analytics.exportCsv')}
-            </button>
             <button
               type="button"
               className="btn btn--gold btn--small"
