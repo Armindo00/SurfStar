@@ -32,9 +32,10 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 25 | `add-account-deletion.sql` | GDPR account deletion requests + admin purge (requires #22 admin notify) |
 | 26 | `add-admin-manual-payment-settings.sql` | Admin UI: edit IBAN / MB Way for coach approval emails |
 | 27 | `patch-coach-renewal-confirmed-email.sql` | Coach email when admin confirms renewal payment |
-| 28 | `patch-fix-renewal-period-from-payment.sql` | Fix renewal date: +1 month/year from payment, not stacked |
+| 28 | `patch-fix-renewal-period-from-payment.sql` | **Deprecated** — do not run; use step 31 instead |
 | 29 | `patch-admin-subscriptions-past-due.sql` | Subscriptions tab: list past_due / expired coaches for renewal |
 | 30 | `patch-business-email-recipients.sql` | Admin alerts + BCC list: contact@surfstar.app + armindoapp@outlook.com |
+| 31 | `patch-renewal-period-stack-on-period-end.sql` | Renewal: +1 month/year from `current_period_end` (early pay keeps unused days) |
 
 See **`supabase/RENEWAL_EMAILS.md`** for deploying the daily cron edge function.
 

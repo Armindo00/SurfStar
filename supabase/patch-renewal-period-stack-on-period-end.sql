@@ -1,6 +1,7 @@
--- DEPRECATED: superseded by patch-renewal-period-stack-on-period-end.sql (step 31).
--- This version counted from payment date and penalized coaches who paid before period end.
--- Do not run on new projects; if already applied, run step 31 to restore period-end stacking.
+-- Renewal period: extend +1 month/year from current_period_end (fixed billing cadence).
+-- Early payment before period end keeps unused days; overdue renewals start from now().
+-- Supersedes patch-fix-renewal-period-from-payment.sql (step 28) if that was applied.
+-- Run once in Supabase SQL Editor.
 
 create or replace function public.admin_confirm_subscription_renewal(
   p_coach_id uuid,
@@ -15,13 +16,15 @@ declare
   v_interval text;
   v_plan_id text;
   v_org_id uuid;
+  v_current timestamptz;
+  v_base timestamptz;
   v_next timestamptz;
   v_was_blocked boolean := false;
 begin
   perform public.admin_require_platform_admin();
 
-  select cs.billing_interval, cs.plan_id
-  into v_interval, v_plan_id
+  select cs.billing_interval, cs.plan_id, cs.current_period_end
+  into v_interval, v_plan_id, v_current
   from public.coach_subscriptions cs
   where cs.coach_id = p_coach_id;
 
@@ -34,9 +37,10 @@ begin
   where om.profile_id = p_coach_id and om.status = 'active' and om.role = 'owner'
   limit 1;
 
+  v_base := greatest(coalesce(v_current, now()), now());
   v_next := case
-    when v_interval = 'annual' then now() + interval '1 year'
-    else now() + interval '1 month'
+    when v_interval = 'annual' then v_base + interval '1 year'
+    else v_base + interval '1 month'
   end;
 
   update public.coach_subscriptions

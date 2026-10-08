@@ -93,6 +93,10 @@ Send emails via Amen SMTP (contact@surfstar.app)
 Admin confirms payment → account unblocked + period extended
 ```
 
+When admin confirms renewal, the new `current_period_end` is **`current_period_end` + 1 month** (or +1 year), not the confirmation date. If the coach still has days left in the current period (e.g. paid early within the 5-day window), those days are kept. If the subscription is already overdue, the extension starts from **today** (`greatest(period_end, now())`).
+
+Apply **`patch-renewal-period-stack-on-period-end.sql`** (migration step 31) in Supabase if you previously ran step 28.
+
 ---
 
 ## Notes
