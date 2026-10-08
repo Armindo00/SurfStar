@@ -616,6 +616,8 @@ export const ui = {
     removeFromTeam: 'Remove from my team',
     sharePanelIntro:
       'Choose what this athlete can see from your sessions beyond the general dashboard.',
+    closeSharePanel: 'Close',
+    saveShareSettings: 'Save visibility',
     removeTitle: 'Remove {{name}}?',
     removeMessage:
       'This removes the athlete from your team. Their account and stats are kept — they can pair with you again later using their code.',

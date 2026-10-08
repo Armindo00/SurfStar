@@ -3852,7 +3852,34 @@ body {
 .athlete-share-panel {
   padding: 0 1rem 1rem;
   border-top: 1px solid var(--ss-border);
-  background: #f8fafc;
+  background: var(--ss-card, #f8fafc);
+}
+
+.athlete-share-panel__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0 0.35rem;
+}
+
+.athlete-share-panel__title {
+  font-size: 0.95rem;
+  color: var(--ss-text);
+}
+
+.athlete-share-panel__close {
+  flex-shrink: 0;
+}
+
+.athlete-share-panel__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--ss-border);
 }
 
 .athlete-share-panel__intro {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../i18n'
 import { useApp } from '../AppContext'
 import { UNSEEN } from '../unseenDomains'
@@ -7,6 +7,10 @@ import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { ScreenHeader } from '../components/ScreenHeader'
 import type { AthleteShareSettings } from '../types'
 import { DEFAULT_ATHLETE_SHARE_SETTINGS, normalizeAthleteShareSettings } from '../types'
+
+function shareSettingsEqual(a: AthleteShareSettings, b: AthleteShareSettings): boolean {
+  return (Object.keys(a) as (keyof AthleteShareSettings)[]).every((key) => a[key] === b[key])
+}
 
 export function ManageAthletes() {
   const { t, messages } = useI18n()
@@ -39,6 +43,8 @@ export function ManageAthletes() {
   const [success, setSuccess] = useState('')
   const [busy, setBusy] = useState(false)
   const [expandedAthleteId, setExpandedAthleteId] = useState<string | null>(null)
+  const [shareDraft, setShareDraft] = useState<AthleteShareSettings | null>(null)
+  const [shareDraftLinkId, setShareDraftLinkId] = useState<string | null>(null)
   const [actionError, setActionError] = useState('')
   const [actionBusyId, setActionBusyId] = useState<string | null>(null)
   const [revokeTarget, setRevokeTarget] = useState<{ linkId: string; name: string } | null>(null)
@@ -50,8 +56,44 @@ export function ManageAthletes() {
     if (ids.length === 0) return
     markSeen(UNSEEN.coachPairing, ids)
   }, [coachLinks, markSeen])
+
+  const expandedAthlete = useMemo(
+    () => coachAthletes.find((a) => a.id === expandedAthleteId) ?? null,
+    [coachAthletes, expandedAthleteId],
+  )
+
+  const savedShareSettings = useMemo(() => {
+    if (!expandedAthlete) return null
+    return normalizeAthleteShareSettings(expandedAthlete.shareSettings ?? DEFAULT_ATHLETE_SHARE_SETTINGS)
+  }, [expandedAthlete])
+
+  const shareDraftDirty =
+    shareDraft && savedShareSettings ? !shareSettingsEqual(shareDraft, savedShareSettings) : false
+
+  useEffect(() => {
+    if (!expandedAthleteId || !expandedAthlete?.linkId) {
+      setShareDraft(null)
+      setShareDraftLinkId(null)
+      return
+    }
+    setShareDraft(
+      normalizeAthleteShareSettings(expandedAthlete.shareSettings ?? DEFAULT_ATHLETE_SHARE_SETTINGS),
+    )
+    setShareDraftLinkId(expandedAthlete.linkId)
+  }, [expandedAthleteId, expandedAthlete])
+
   const psychologyCheckinsAvailable = canUsePsychologyCheckins(coachPlanId)
   const activeCount = coachAthletes.filter((a) => !a.blocked).length
+
+  const closeSharePanel = () => {
+    setExpandedAthleteId(null)
+    setShareDraft(null)
+    setShareDraftLinkId(null)
+  }
+
+  const openSharePanel = (athleteId: string) => {
+    setExpandedAthleteId(athleteId)
+  }
 
   const submitCode = async () => {
     setError('')
@@ -74,11 +116,14 @@ export function ManageAthletes() {
     }
   }
 
-  const toggleShare = (linkId: string, key: keyof AthleteShareSettings, enabled: boolean) => {
-    const athlete = coachAthletes.find((a) => a.linkId === linkId)
-    if (!athlete?.linkId) return
-    const current = normalizeAthleteShareSettings(athlete.shareSettings)
-    updateAthleteShareSettings(linkId, { ...current, [key]: enabled })
+  const toggleShareDraft = (key: keyof AthleteShareSettings, enabled: boolean) => {
+    setShareDraft((prev) => (prev ? { ...prev, [key]: enabled } : prev))
+  }
+
+  const saveShareDraft = () => {
+    if (!shareDraftLinkId || !shareDraft) return
+    updateAthleteShareSettings(shareDraftLinkId, shareDraft)
+    closeSharePanel()
   }
 
   const toggleBlocked = async (linkId: string, blocked: boolean) => {
@@ -102,7 +147,7 @@ export function ManageAthletes() {
         setActionError(result.error ?? t('ui.manageAthletes.couldNotRemoveAthlete'))
         return
       }
-      if (expandedAthleteId === revokeTarget.linkId) setExpandedAthleteId(null)
+      if (expandedAthleteId && revokeTarget.linkId === shareDraftLinkId) closeSharePanel()
       setRevokeTarget(null)
     } finally {
       setActionBusyId(null)
@@ -175,19 +220,17 @@ export function ManageAthletes() {
             <li className="muted">{t('ui.manageAthletes.noAthletesLinked')}</li>
           ) : (
             coachAthletes.map((a) => {
-              const shareSettings = normalizeAthleteShareSettings(
-                a.shareSettings ?? DEFAULT_ATHLETE_SHARE_SETTINGS,
-              )
               const expanded = expandedAthleteId === a.id
               const linkId = a.linkId ?? a.id
               const busyRow = actionBusyId === linkId
+              const draft = expanded && shareDraft ? shareDraft : null
 
               return (
                 <li key={a.id} className="athlete-manage-list__item">
                   <button
                     type="button"
                     className="athlete-manage-list__head"
-                    onClick={() => setExpandedAthleteId(expanded ? null : a.id)}
+                    onClick={() => (expanded ? closeSharePanel() : openSharePanel(a.id))}
                   >
                     <span>
                       <strong>{a.name}</strong>
@@ -203,8 +246,19 @@ export function ManageAthletes() {
                     <span className="athlete-manage-list__toggle">{expanded ? '−' : '+'}</span>
                   </button>
 
-                  {expanded && a.linkId ? (
+                  {expanded && a.linkId && draft ? (
                     <div className="athlete-share-panel">
+                      <div className="athlete-share-panel__toolbar">
+                        <strong className="athlete-share-panel__title">{a.name}</strong>
+                        <button
+                          type="button"
+                          className="btn btn--ghost btn--small athlete-share-panel__close"
+                          onClick={closeSharePanel}
+                        >
+                          {t('ui.manageAthletes.closeSharePanel')}
+                        </button>
+                      </div>
+
                       <div className="athlete-manage-actions">
                         <button
                           type="button"
@@ -235,8 +289,8 @@ export function ManageAthletes() {
                         <label key={option.key} className="athlete-share-option">
                           <input
                             type="checkbox"
-                            checked={shareSettings[option.key]}
-                            onChange={(e) => toggleShare(a.linkId!, option.key, e.target.checked)}
+                            checked={draft[option.key]}
+                            onChange={(e) => toggleShareDraft(option.key, e.target.checked)}
                           />
                           <span>
                             <strong>{option.label}</strong>
@@ -248,10 +302,8 @@ export function ManageAthletes() {
                         <label className="athlete-share-option athlete-share-option--highlight">
                           <input
                             type="checkbox"
-                            checked={shareSettings.psychologyCheckins}
-                            onChange={(e) =>
-                              toggleShare(a.linkId!, 'psychologyCheckins', e.target.checked)
-                            }
+                            checked={draft.psychologyCheckins}
+                            onChange={(e) => toggleShareDraft('psychologyCheckins', e.target.checked)}
                           />
                           <span>
                             <strong>{PSYCHOLOGY_SHARE_OPTION.label}</strong>
@@ -263,6 +315,24 @@ export function ManageAthletes() {
                           {planUpgradeHint(coachPlanId, 'psychology')}
                         </p>
                       )}
+
+                      <div className="athlete-share-panel__footer">
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--small"
+                          onClick={closeSharePanel}
+                        >
+                          {t('ui.manageAthletes.closeSharePanel')}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn--primary btn--small"
+                          disabled={!shareDraftDirty}
+                          onClick={saveShareDraft}
+                        >
+                          {t('ui.manageAthletes.saveShareSettings')}
+                        </button>
+                      </div>
                     </div>
                   ) : null}
                 </li>

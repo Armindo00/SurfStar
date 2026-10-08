@@ -616,6 +616,8 @@ export const ui = {
     removeFromTeam: 'Retirer de mon équipe',
     sharePanelIntro:
       'Choisissez ce que cet athlète peut voir de vos sessions au-delà du tableau de bord général.',
+    closeSharePanel: 'Fermer',
+    saveShareSettings: 'Enregistrer le partage',
     removeTitle: 'Retirer {{name}} ?',
     removeMessage:
       'Cela retire l\'athlète de votre équipe. Son compte et ses stats sont conservés — il pourra s\'appairer à nouveau plus tard avec son code.',
