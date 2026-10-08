@@ -1,13 +1,13 @@
-import { useRef, useState } from 'react'
-import { AppLogo } from './AppLogo'
+import { useMemo, useState } from 'react'
 import { useToast } from './ToastProvider'
+import { AthleteReportPreview } from './AthleteReportPreview'
 import {
-  athleteReportPdfFilename,
-  downloadPdfBlob,
-  generateAthleteReportPdfBlob,
-  canSharePdfFiles,
-  sharePdfBlob,
-} from '../exportAthleteReportPdf'
+  buildAthleteReportPdfInput,
+  buildManeuverSummaries,
+  buildPerformanceLines,
+  buildSessionRows,
+  buildTrainingMixRows,
+} from '../athleteReportPdfModel'
 import {
   describeAnalyticsRange,
   describeAnalyticsRangeLong,
@@ -18,16 +18,17 @@ import type { AthleteSessionSummary } from '../athleteStats'
 import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
 import { formatShortDate, formatShortDateTime } from '../dateFormat'
 import { getAppSiteUrl } from '../config'
-import {
-  formatAverageLevelValue,
-  formatCombinedLevelSummary,
-} from '../sessionStats'
+import { formatAverageLevelValue } from '../sessionStats'
 import type { AthletePeriodAnalytics } from '../teamAnalyticsStats'
-import { formatSessionDate, resolveSessionSpotName } from '../sessionHistoryUtils'
-import { trainingModeLabel } from '../i18n/labels'
 import { useI18n } from '../i18n'
 import type { SurfSpot } from '../types'
-import { AthleteReportDetailSections } from './AthleteReportDetailSections'
+import {
+  athleteReportPdfFilename,
+  downloadPdfBlob,
+  generateAthleteReportPdfBlob,
+  canSharePdfFiles,
+  sharePdfBlob,
+} from '../exportAthleteReportPdf'
 
 type Props = {
   athleteName: string
@@ -47,17 +48,14 @@ export function AthleteReportSheet({
   coachName,
   organizationName,
   analytics,
-  heatAnalytics,
   sessionSummaries,
   getSpot,
-  athleteId,
   psychology,
   onClose,
 }: Props) {
   const { t, messages } = useI18n()
   const { showToast } = useToast()
   const r = messages.analytics.analyticsReport
-  const reportRef = useRef<HTMLElement>(null)
   const [coachComment, setCoachComment] = useState('')
   const [pdfBusy, setPdfBusy] = useState(false)
   const shareAvailable = canSharePdfFiles()
@@ -67,24 +65,65 @@ export function AthleteReportSheet({
   const rangeLabel = describeAnalyticsRange(analytics.range)
   const reportTitle = describeAnalyticsRangeLong(analytics.range)
   const evolutionColumn = evolutionColumnLabel(analytics.range)
+  const footerLine = t('analytics.analyticsReport.footerGenerated', {
+    url: getAppSiteUrl(),
+    date: formatShortDate(new Date()),
+  })
 
-  const sessionCountByMode = analytics.sessions.reduce(
-    (acc, session) => {
-      acc[session.mode] = (acc[session.mode] ?? 0) + 1
-      return acc
-    },
-    {} as Record<string, number>,
+  const pdfPayload = useMemo(
+    () =>
+      buildAthleteReportPdfInput({
+        athleteName,
+        coachName,
+        organizationName,
+        rangeLabel,
+        reportTitle,
+        generatedAt,
+        footerLine,
+        coachComment: trimmedComment || undefined,
+        analytics,
+        psychology,
+        sessionSummaries,
+        getSpot,
+        evolutionColumnLabel: evolutionColumn,
+        labels: r,
+      }),
+    [
+      athleteName,
+      coachName,
+      organizationName,
+      rangeLabel,
+      reportTitle,
+      generatedAt,
+      footerLine,
+      trimmedComment,
+      analytics,
+      psychology,
+      sessionSummaries,
+      getSpot,
+      evolutionColumn,
+      r,
+    ],
+  )
+
+  const trainingMix = useMemo(() => buildTrainingMixRows(analytics), [analytics])
+  const maneuverSummaries = useMemo(() => buildManeuverSummaries(analytics), [analytics])
+  const sessionRows = useMemo(
+    () => buildSessionRows(sessionSummaries, getSpot),
+    [sessionSummaries, getSpot],
+  )
+  const performanceLines = useMemo(
+    () => buildPerformanceLines(general, analytics, psychology, r),
+    [general, analytics, psychology, r],
   )
 
   const pdfFilename = athleteReportPdfFilename(athleteName)
   const pdfShareTitle = `${athleteName} — ${reportTitle}`
 
-  async function buildPdfBlob(): Promise<Blob | null> {
-    const element = reportRef.current
-    if (!element) return null
+  async function buildPdfBlob() {
     setPdfBusy(true)
     try {
-      return await generateAthleteReportPdfBlob(element)
+      return await generateAthleteReportPdfBlob(pdfPayload)
     } catch {
       showToast(r.pdfExportFailed, 'error')
       return null
@@ -159,169 +198,25 @@ export function AthleteReportSheet({
           </div>
         </div>
 
-        <article className="athlete-report" ref={reportRef}>
-          <header className="athlete-report__header">
-            <div className="athlete-report__brand">
-              <AppLogo size="sm" />
-              <div>
-                <p className="athlete-report__eyebrow">{r.sheetEyebrow}</p>
-                <h1 id="athlete-report-title">{athleteName}</h1>
-                <p className="athlete-report__subtitle">{reportTitle}</p>
-              </div>
-            </div>
-            <dl className="athlete-report__meta">
-              <div>
-                <dt>{r.period}</dt>
-                <dd>{rangeLabel}</dd>
-              </div>
-              <div>
-                <dt>{r.coach}</dt>
-                <dd>{coachName}</dd>
-              </div>
-              {organizationName ? (
-                <div>
-                  <dt>{r.organization}</dt>
-                  <dd>{organizationName}</dd>
-                </div>
-              ) : null}
-              <div>
-                <dt>{r.generated}</dt>
-                <dd>{generatedAt}</dd>
-              </div>
-            </dl>
-          </header>
-
-          <section className="athlete-report__section">
-            <h2>{r.summary}</h2>
-            <div className="athlete-report__kpi-grid">
-              <article>
-                <span>{r.sessions}</span>
-                <strong>{general.totalTrainings}</strong>
-              </article>
-              <article>
-                <span>{r.wavesLogged}</span>
-                <strong>{general.totalWaves}</strong>
-              </article>
-              <article>
-                <span>{r.avgLevel}</span>
-                <strong>{formatAverageLevelValue(general.avgOverallManeuverLevel)}</strong>
-              </article>
-              <article>
-                <span>{r.potentialRate}</span>
-                <strong>{general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`}</strong>
-              </article>
-              <article>
-                <span>{r.stars}</span>
-                <strong>{general.totalStars}</strong>
-              </article>
-              <article>
-                <span>{r.heatWins}</span>
-                <strong>{general.heatWins}</strong>
-              </article>
-            </div>
-            {general.avgOverallManeuverLevel !== null ? (
-              <p className="athlete-report__note">{formatCombinedLevelSummary(general)}</p>
-            ) : null}
-          </section>
-
-          {trimmedComment ? (
-            <section className="athlete-report__section athlete-report__section--comments">
-              <h2>{r.coachComments}</h2>
-              <p className="athlete-report__comment">{trimmedComment}</p>
-            </section>
-          ) : null}
-
-          {analytics.evolution.length > 0 ? (
-            <section className="athlete-report__section">
-              <h2>{r.evolution}</h2>
-              <div className="table-wrap athlete-report__table-wrap">
-                <table className="data-table athlete-report__table">
-                  <thead>
-                    <tr>
-                      <th>{evolutionColumn}</th>
-                      <th>{r.sessions}</th>
-                      <th>{r.wavesLogged}</th>
-                      <th>{r.successCol}</th>
-                      <th>{r.avgLevel}</th>
-                      <th>{r.potentialCol}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {analytics.evolution.map((point) => (
-                      <tr key={point.periodKey}>
-                        <td>{point.label}</td>
-                        <td>{point.sessions}</td>
-                        <td>{point.waves}</td>
-                        <td>{point.successRate === null ? '—' : `${point.successRate}%`}</td>
-                        <td>{point.avgManeuverLevel === null ? '—' : point.avgManeuverLevel.toFixed(2)}</td>
-                        <td>{point.potentialRate === null ? '—' : `${point.potentialRate}%`}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          ) : null}
-
-          {Object.keys(sessionCountByMode).length > 0 ? (
-            <section className="athlete-report__section">
-              <h2>{r.trainingMix}</h2>
-              <ul className="athlete-report__breakdown">
-                {Object.entries(sessionCountByMode).map(([mode, count]) => (
-                  <li key={mode}>
-                    <span>{trainingModeLabel(mode)}</span>
-                    <strong>{count}</strong>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-
-          <AthleteReportDetailSections
-            analytics={analytics}
-            general={general}
-            heatAnalytics={heatAnalytics}
-            athleteId={athleteId}
-            psychology={psychology}
-          />
-
-          {sessionSummaries.length > 0 ? (
-            <section className="athlete-report__section">
-              <h2>{r.sessionLog}</h2>
-              <div className="table-wrap athlete-report__table-wrap">
-                <table className="data-table athlete-report__table">
-                  <thead>
-                    <tr>
-                      <th>{r.date}</th>
-                      <th>{r.mode}</th>
-                      <th>{r.spot}</th>
-                      <th>{r.summaryCol}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sessionSummaries.map(({ session, headline }) => (
-                      <tr key={session.id}>
-                        <td>{formatSessionDate(session.endedAt ?? session.startedAt)}</td>
-                        <td>{trainingModeLabel(session.mode)}</td>
-                        <td>{resolveSessionSpotName(session, getSpot)}</td>
-                        <td>{headline}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          ) : null}
-
-          <footer className="athlete-report__footer">
-            <p>
-              {t('analytics.analyticsReport.footerGenerated', {
-                url: getAppSiteUrl(),
-                date: formatShortDate(new Date()),
-              })}
-            </p>
-          </footer>
-        </article>
+        <AthleteReportPreview
+          athleteName={athleteName}
+          coachName={coachName}
+          organizationName={organizationName}
+          rangeLabel={rangeLabel}
+          reportTitle={reportTitle}
+          generatedAt={generatedAt}
+          footerLine={footerLine}
+          coachComment={trimmedComment || undefined}
+          general={general}
+          evolution={analytics.evolution}
+          evolutionColumnLabel={evolutionColumn}
+          trainingMix={trainingMix}
+          maneuverSummaries={maneuverSummaries}
+          performanceLines={performanceLines}
+          sessionRows={sessionRows}
+          r={r}
+          formatAvgLevel={formatAverageLevelValue}
+        />
       </div>
     </div>
   )

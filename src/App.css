@@ -8998,6 +8998,88 @@ a.legal-footer-links__btn {
   margin-top: 0.35rem;
 }
 
+.athlete-report__chart {
+  margin: 0 0 0.85rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.athlete-report__chart svg {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  height: auto;
+}
+
+.athlete-report__chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.athlete-report__swatch {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 2px;
+  margin-right: 0.25rem;
+  vertical-align: middle;
+}
+
+.athlete-report__swatch--success {
+  background: #059669;
+}
+
+.athlete-report__swatch--potential {
+  background: #0ea5e9;
+}
+
+.athlete-report__bar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.athlete-report__bar-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 5.5rem) 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.athlete-report__bar-track {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.athlete-report__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0284c7, #0ea5e9);
+}
+
+.athlete-report__highlights {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #334155;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.athlete-report__highlights li + li {
+  margin-top: 0.35rem;
+}
+
 .athlete-report__table {
   font-size: 0.82rem;
 }
