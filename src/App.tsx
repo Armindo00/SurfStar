@@ -152,7 +152,7 @@ function AppHeader() {
                 {t('nav.contactSurfStar')}
               </button>
               <div className="app-brandbar__locale">
-                <LanguagePicker compact />
+                <LanguagePicker compact stackedMenu key={coachMenuOpen ? 'menu-open' : 'menu-closed'} />
               </div>
               <button
                 type="button"

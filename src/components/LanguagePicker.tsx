@@ -6,9 +6,11 @@ import { SUPPORTED_LOCALES, useI18n, type SupportedLocale } from '../i18n'
 type Props = {
   /** Nav/header: flag trigger only. Settings: title + wider trigger with language name. */
   compact?: boolean
+  /** Expand locale list in document flow (mobile menus — avoids absolute dropdown glitches). */
+  stackedMenu?: boolean
 }
 
-export function LanguagePicker({ compact = false }: Props) {
+export function LanguagePicker({ compact = false, stackedMenu = false }: Props) {
   const { locale, setLocale, t } = useI18n()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -39,7 +41,7 @@ export function LanguagePicker({ compact = false }: Props) {
   return (
     <div
       ref={rootRef}
-      className={`language-picker ${compact ? 'language-picker--compact' : 'language-picker--settings'}`}
+      className={`language-picker ${compact ? 'language-picker--compact' : 'language-picker--settings'}${stackedMenu ? ' language-picker--stacked' : ''}`}
     >
       {!compact ? (
         <>
