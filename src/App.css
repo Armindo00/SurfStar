@@ -3688,6 +3688,17 @@ body {
 /* —— Coach athlete sharing —— */
 .athlete-manage-list {
   margin-top: 1.25rem;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.ss-athlete-list.athlete-manage-list .athlete-manage-list__item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  gap: 0;
 }
 
 .athlete-manage-list__item {
@@ -3695,6 +3706,9 @@ body {
   border-radius: var(--radius);
   overflow: hidden;
   background: white;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .athlete-manage-list__item + .athlete-manage-list__item {
@@ -3706,11 +3720,19 @@ body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  min-width: 0;
   padding: 0.85rem 1rem;
   border: 0;
   background: transparent;
   text-align: left;
   cursor: pointer;
+  box-sizing: border-box;
+}
+
+.athlete-manage-list__head > span:first-child {
+  min-width: 0;
+  flex: 1;
+  padding-right: 0.5rem;
 }
 
 .athlete-manage-list__head strong {
@@ -3850,9 +3872,82 @@ body {
 }
 
 .athlete-share-panel {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 0 1rem 1rem;
   border-top: 1px solid var(--ss-border);
   background: var(--ss-card, #f8fafc);
+}
+
+.athlete-share-option span {
+  min-width: 0;
+  flex: 1;
+}
+
+.athlete-share-option strong,
+.athlete-share-option small {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 767px) {
+  .athlete-manage-actions .btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 767px) {
+  .athlete-manage-list__item--expanded .athlete-share-panel {
+    position: fixed;
+    z-index: 160;
+    inset: 0;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: calc(0.75rem + env(safe-area-inset-top, 0px)) 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+    border-top: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  .athlete-manage-list__item--expanded::before {
+    content: '';
+    position: fixed;
+    z-index: 159;
+    inset: 0;
+    background: rgba(5, 11, 24, 0.72);
+    pointer-events: none;
+  }
+
+  .athlete-share-panel__toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding-bottom: 0.65rem;
+    margin-bottom: 0.25rem;
+    background: inherit;
+    border-bottom: 1px solid var(--ss-border);
+  }
+
+  .athlete-share-panel__title {
+    font-size: 1.05rem;
+    line-height: 1.25;
+    padding-right: 0.35rem;
+  }
+
+  .athlete-share-panel__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .athlete-share-panel__footer .btn {
+    width: 100%;
+  }
 }
 
 .athlete-share-panel__toolbar {

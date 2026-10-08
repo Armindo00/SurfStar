@@ -863,10 +863,28 @@ body {
   color: var(--landing-gold-light) !important;
 }
 
-.app-shell .athlete-share-panel,
-.app-shell .athlete-share-option {
-  background: rgba(0, 0, 0, 0.22) !important;
+.app-shell .athlete-manage-list__item {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.app-shell .athlete-share-panel {
+  background: linear-gradient(180deg, #0a1628 0%, #050b18 100%) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--landing-text) !important;
+}
+
+.app-shell .athlete-share-option {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.app-shell .athlete-share-panel__intro {
+  color: var(--ss-muted) !important;
+}
+
+.app-shell .athlete-share-panel__toolbar {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .app-shell .athlete-share-option strong {

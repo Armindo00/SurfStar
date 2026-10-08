@@ -228,7 +228,14 @@ export function ManageAthletes() {
               const draft = expanded && shareDraft ? shareDraft : null
 
               return (
-                <li key={a.id} className="athlete-manage-list__item">
+                <li
+                  key={a.id}
+                  className={
+                    expanded
+                      ? 'athlete-manage-list__item athlete-manage-list__item--expanded'
+                      : 'athlete-manage-list__item'
+                  }
+                >
                   <button
                     type="button"
                     className="athlete-manage-list__head"
@@ -249,9 +256,11 @@ export function ManageAthletes() {
                   </button>
 
                   {expanded && a.linkId && draft ? (
-                    <div className="athlete-share-panel">
+                    <div className="athlete-share-panel" role="dialog" aria-modal="true" aria-labelledby={`athlete-share-${a.id}`}>
                       <div className="athlete-share-panel__toolbar">
-                        <strong className="athlete-share-panel__title">{a.name}</strong>
+                        <strong className="athlete-share-panel__title" id={`athlete-share-${a.id}`}>
+                          {a.name}
+                        </strong>
                         <button
                           type="button"
                           className="btn btn--ghost btn--small athlete-share-panel__close"
