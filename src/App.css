@@ -9021,6 +9021,84 @@ a.legal-footer-links__btn {
   }
 }
 
+@media (max-width: 639px) {
+  .athlete-report-backdrop {
+    padding: 0.5rem;
+  }
+
+  .athlete-report {
+    padding: 1rem 1.1rem;
+    border-radius: 12px;
+  }
+
+  .athlete-report__header h1 {
+    font-size: 1.35rem;
+  }
+
+  .athlete-report__kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .athlete-report-print-actions__buttons {
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .athlete-report-print-actions__buttons .btn {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+  }
+
+  .athlete-report-print-actions__buttons .btn--ghost {
+    flex-basis: 100%;
+  }
+
+  .athlete-report .table-wrap {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Fixed document width while generating PDF (especially on narrow phones) */
+.athlete-report-print-root.athlete-report--pdf-layout {
+  max-width: none;
+  width: min(100%, 794px);
+  margin: 0 auto;
+}
+
+.athlete-report.athlete-report--pdf-layout {
+  width: 794px;
+  max-width: none;
+  box-sizing: border-box;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.athlete-report--pdf-layout .athlete-report__meta {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.athlete-report--pdf-layout .athlete-report__kpi-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.athlete-report--pdf-layout .athlete-report .table-wrap,
+.athlete-report--pdf-layout .athlete-report__table-wrap {
+  overflow: visible;
+}
+
+.athlete-report--pdf-layout .athlete-report__matrix-table {
+  font-size: 0.68rem;
+}
+
+.athlete-report--pdf-layout .athlete-report .data-table th,
+.athlete-report--pdf-layout .athlete-report .data-table td {
+  padding: 0.45rem 0.55rem;
+}
+
+.athlete-report-backdrop--pdf-capture {
+  overflow-x: clip;
+}
+
 @media print {
   body * {
     visibility: hidden;
