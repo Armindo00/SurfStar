@@ -217,32 +217,44 @@ export function drawSideCompareChart(
     y += 3
 
     const barMaxH = 14
-    const barW = 10
-    const gap = 8
+    const barW = 12
+    const gap = 10
     const baseY = y + barMaxH
-    const centerX = margin + contentW / 2 - barW - gap / 2
+    const pairWidth = barW * 2 + gap
+    const startX = margin + (contentW - pairWidth) / 2
 
     const drawBar = (x: number, value: number | null, color: [number, number, number], label: string) => {
-      doc.setFontSize(6)
-      doc.setTextColor(...COLOR_MUTED)
-      doc.text(label, x - 1, baseY + 3)
+      const barCenterX = x + barW / 2
       doc.setFillColor(...COLOR_BAR_BG)
       doc.rect(x, baseY - barMaxH, barW, barMaxH, 'F')
-      if (value !== null) {
+
+      const display =
+        value === null ? '—' : scale === 'percent' ? `${value}%` : value.toFixed(2)
+
+      if (value !== null && value > 0) {
         const h = valueToPlotHeight(value, scale, barMaxH)
         doc.setFillColor(...color)
         doc.rect(x, baseY - h, barW, h, 'F')
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(6.5)
         doc.setTextColor(...COLOR_TEXT)
-        const text = scale === 'percent' ? `${value}%` : value.toFixed(2)
-        doc.text(text, x + barW / 2, baseY - h - 1, { align: 'center' })
+        doc.text(display, barCenterX, baseY - h - 1, { align: 'center' })
+      } else {
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(6.5)
+        doc.setTextColor(...COLOR_TEXT)
+        doc.text(display, barCenterX, baseY - barMaxH + 4, { align: 'center' })
       }
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(6)
+      doc.setTextColor(...COLOR_MUTED)
+      doc.text(label, barCenterX, baseY + 4, { align: 'center', maxWidth: barW + 6 })
     }
 
-    drawBar(centerX, fs, [...COLOR_FS] as [number, number, number], labels.frontside)
-    drawBar(centerX + barW + gap, bs, [...COLOR_BS] as [number, number, number], labels.backside)
-    y = baseY + 6
+    drawBar(startX, fs, [...COLOR_FS] as [number, number, number], labels.frontside)
+    drawBar(startX + barW + gap, bs, [...COLOR_BS] as [number, number, number], labels.backside)
+    y = baseY + 8
   }
 
   drawPair(labels.success, chart.frontsideSuccess, chart.backsideSuccess, 'percent')

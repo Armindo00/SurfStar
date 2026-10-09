@@ -9214,6 +9214,9 @@ a.legal-footer-links__btn {
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
+  width: 100%;
+  max-width: 5.5rem;
+  margin-inline: auto;
 }
 
 .athlete-report__side-bar-value {
@@ -9250,9 +9253,12 @@ a.legal-footer-links__btn {
 }
 
 .athlete-report__side-bar-name {
+  width: 100%;
+  max-width: 4.5rem;
   font-size: 0.68rem;
   color: #64748b;
   text-align: center;
+  line-height: 1.2;
 }
 
 .athlete-report__swatch {
