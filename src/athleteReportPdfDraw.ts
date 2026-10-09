@@ -48,7 +48,9 @@ export function drawLineChart(
   const hasData = series.some((s) => s.values.some((v) => v !== null))
   if (!hasData) return
 
-  layout.ensureSpace(chartH + 14)
+  const legendRows = Math.max(1, Math.ceil(series.length / 2))
+  const legendBlockH = legendRows * 5.5 + 6
+  layout.ensureSpace(chartH + legendBlockH + 10)
   const { doc, margin, contentW } = layout
   let y = layout.getY()
 
@@ -99,24 +101,44 @@ export function drawLineChart(
   xLabels.forEach((label, index) => {
     const x = xAt(index)
     const short = label.length > 8 ? `${label.slice(0, 7)}…` : label
-    doc.text(short, x - 3, top + chartH + 1, { maxWidth: plotW / n })
+    doc.text(short, x, top + chartH - 1, { align: 'center', maxWidth: Math.max(plotW / n, 12) })
   })
 
-  y = top + chartH + 5
+  const legendLineH = 5.5
+  let legendY = top + chartH + 7
+  doc.setFont('helvetica', 'normal')
   doc.setFontSize(6)
-  let legendX = margin
-  for (const s of series) {
-    doc.setFillColor(...s.color)
-    doc.rect(legendX, y, 2.5, 2.5, 'F')
-    doc.setTextColor(...COLOR_TEXT)
-    doc.text(s.label, legendX + 3.5, y + 2)
-    legendX += doc.getTextWidth(s.label) + 10
-    if (legendX > margin + contentW - 20) {
-      legendX = margin
-      y += 4
+
+  const legendItems = series.map((s) => ({
+    label: s.label,
+    color: s.color,
+    width: doc.getTextWidth(s.label) + 8,
+  }))
+  const maxRowWidth = contentW - 4
+  let rowStart = 0
+  while (rowStart < legendItems.length) {
+    let rowEnd = rowStart + 1
+    let rowWidth = legendItems[rowStart].width
+    while (rowEnd < legendItems.length && rowWidth + legendItems[rowEnd].width + 6 <= maxRowWidth) {
+      rowWidth += legendItems[rowEnd].width + 6
+      rowEnd += 1
     }
+    const rowItems = legendItems.slice(rowStart, rowEnd)
+    const totalRowWidth =
+      rowItems.reduce((sum, item) => sum + item.width, 0) + Math.max(0, rowItems.length - 1) * 6
+    let legendX = margin + (contentW - totalRowWidth) / 2
+    for (const item of rowItems) {
+      doc.setFillColor(...item.color)
+      doc.rect(legendX, legendY + 0.5, 2.5, 2.5, 'F')
+      doc.setTextColor(...COLOR_TEXT)
+      doc.text(item.label, legendX + 4, legendY + 2.6)
+      legendX += item.width + 6
+    }
+    legendY += legendLineH
+    rowStart = rowEnd
   }
-  layout.setY(y + 5)
+
+  layout.setY(legendY + 6)
 }
 
 export function drawEvolutionSection(
@@ -191,6 +213,8 @@ export function drawEvolutionSection(
       },
     ])
   }
+
+  layout.setY(layout.getY() + 4)
 }
 
 export function drawSideCompareChart(
