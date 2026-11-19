@@ -17,23 +17,27 @@ function cleanEnvValue(raw: string | undefined): string | undefined {
 const url = cleanEnvValue(import.meta.env.VITE_SUPABASE_URL as string | undefined)
 const anonKey = cleanEnvValue(import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)
 
+/** Project URL only — strips accidental /rest/v1/ (or any path/query) from pasted API URLs. */
+function normalizeSupabaseUrl(raw: string): string {
+  const parsed = new URL(raw)
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('Invalid protocol')
+  }
+  return parsed.origin
+}
+
 function assertSupabaseConfig(): { url: string; anonKey: string } {
   if (!url || !anonKey) {
     throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY')
   }
 
   try {
-    const parsed = new URL(url)
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      throw new Error('Invalid protocol')
-    }
+    return { url: normalizeSupabaseUrl(url), anonKey }
   } catch {
     throw new Error(
       'Invalid Supabase URL in Vercel settings. Use exactly: https://msozgsmqytnejijyzoot.supabase.co',
     )
   }
-
-  return { url, anonKey }
 }
 
 let mainClient: SupabaseClient | null = null

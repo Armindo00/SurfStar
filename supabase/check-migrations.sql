@@ -333,6 +333,39 @@ insert into _surfstar_migration_check values
   )
   then 'OK' else 'FALTA' end,
   'Email ao coach quando admin confirma renovacao'
+),
+(
+  29,
+  'patch-admin-subscriptions-past-due.sql',
+  case when exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'admin_list_billing_subscriptions'
+  )
+  then 'OK' else 'FALTA' end,
+  'Admin subscriptions: past_due / renewals list'
+),
+(
+  30,
+  'patch-business-email-recipients.sql',
+  case when exists (
+    select 1 from public.app_settings where key = 'admin_notification_emails'
+  )
+  then 'OK' else 'FALTA' end,
+  'Business inbox recipients in admin_notification_emails'
+),
+(
+  31,
+  'patch-renewal-period-stack-on-period-end.sql',
+  case when exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'admin_confirm_subscription_renewal'
+  ) and pg_get_functiondef(
+    (select p.oid from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.proname = 'admin_confirm_subscription_renewal'
+     limit 1)
+  ) ilike '%greatest%'
+  then 'OK' else 'FALTA' end,
+  'Renovacao empilha em current_period_end (nao now())'
 );
 
 -- Passo 28 (opcional): demo mode para checkout sem Stripe
@@ -365,5 +398,5 @@ select ordem, ficheiro, estado, o_que_verifica
 from _surfstar_migration_check
 order by ordem;
 
--- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 27)
+-- Corre APENAS os ficheiros com estado FALTA, por ordem (1 → 31)
 -- Passo 145 (psychology) corre depois do 14 e antes do 16 se ainda faltar
