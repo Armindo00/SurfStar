@@ -342,7 +342,7 @@ body {
   font-weight: 600;
 }
 
-.field input,
+.field input:not([type='checkbox']):not([type='radio']),
 .field select {
   width: 100%;
   border: 1px solid #cbd5e1;
@@ -350,6 +350,63 @@ body {
   padding: 0.75rem;
   min-height: 44px;
   font-size: 16px;
+}
+
+/* Professional checkboxes — used across auth, share settings, templates, admin */
+input[type='checkbox'] {
+  --ss-check-size: 1.25rem;
+  appearance: none;
+  -webkit-appearance: none;
+  width: var(--ss-check-size);
+  height: var(--ss-check-size);
+  margin: 0;
+  flex-shrink: 0;
+  border: 1.5px solid #94a3b8;
+  border-radius: 6px;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 70% 70%;
+  cursor: pointer;
+  vertical-align: middle;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+input[type='checkbox']:hover:not(:disabled) {
+  border-color: var(--ss-primary);
+}
+
+input[type='checkbox']:checked {
+  border-color: var(--ss-primary);
+  background-color: var(--ss-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.25 8.25L6.5 11.5L12.75 4.5' stroke='%23ffffff' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+}
+
+input[type='checkbox']:focus-visible {
+  outline: none;
+  border-color: var(--ss-primary);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.22);
+}
+
+input[type='checkbox']:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+input[type='checkbox']:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+input[type='checkbox']:indeterminate {
+  border-color: var(--ss-primary);
+  background-color: var(--ss-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8H12.5' stroke='%23ffffff' stroke-width='2.1' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 .field--dark span {
@@ -1212,9 +1269,18 @@ body {
 .athlete-tile__check {
   position: absolute;
   top: 8px;
-  right: 10px;
-  color: var(--ss-primary);
+  right: 8px;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--ss-primary);
+  color: #fff;
+  font-size: 0.72rem;
   font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
 }
 
 .page-title {
@@ -1647,7 +1713,7 @@ body {
   color: var(--ss-muted);
 }
 
-.field--pro input,
+.field--pro input:not([type='checkbox']):not([type='radio']),
 .field--pro select {
   border: 1px solid var(--ss-border);
   border-radius: 10px;
@@ -1655,7 +1721,7 @@ body {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.field--pro input:focus,
+.field--pro input:not([type='checkbox']):not([type='radio']):focus,
 .field--pro select:focus {
   outline: none;
   border-color: var(--ss-primary);
@@ -3996,7 +4062,11 @@ body {
 }
 
 .athlete-share-option input {
-  margin-top: 0.2rem;
+  margin-top: 0.18rem;
+}
+
+.athlete-share-option:hover input:not(:disabled) {
+  border-color: var(--ss-primary);
 }
 
 .athlete-share-option strong {
@@ -7444,14 +7514,24 @@ body {
 
 .field--check {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0.55rem 0;
+  margin-bottom: 0.55rem;
   font-size: 0.92rem;
+  line-height: 1.4;
+  cursor: pointer;
+  user-select: none;
+}
+
+.field--check span {
+  padding-top: 0.05rem;
 }
 
 .field--check input {
-  width: auto;
+  width: var(--ss-check-size, 1.15rem);
+  margin-top: 0.12rem;
 }
 
 @media (max-width: 480px) {
@@ -7633,10 +7713,25 @@ body {
 
 .admin-toolbar__check {
   display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
+  align-items: flex-start;
+  gap: 0.55rem;
   margin-bottom: 0.85rem;
   font-size: 0.88rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-toolbar__check span {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: inherit;
+  padding-top: 0.05rem;
+}
+
+.admin-toolbar__check input {
+  margin-top: 0.12rem;
 }
 
 .admin-list {
@@ -8464,15 +8559,17 @@ a.legal-footer-links__btn {
 .auth-terms {
   display: flex;
   align-items: flex-start;
-  gap: 0.55rem;
+  gap: 0.65rem;
   margin: 0.75rem 0 0;
   font-size: 0.86rem;
   line-height: 1.45;
   color: var(--ss-muted);
+  cursor: pointer;
+  user-select: none;
 }
 
 .auth-terms input {
-  margin-top: 0.2rem;
+  margin-top: 0.18rem;
   flex-shrink: 0;
 }
 

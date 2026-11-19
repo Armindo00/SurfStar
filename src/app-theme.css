@@ -158,7 +158,7 @@ body {
   color: #cbd5e1;
 }
 
-.field input,
+.field input:not([type='checkbox']):not([type='radio']),
 .field select,
 .field textarea {
   background: rgba(0, 0, 0, 0.25);
@@ -1431,16 +1431,16 @@ body {
   color: #cbd5e1 !important;
 }
 
-.app-shell .field--pro input,
+.app-shell .field--pro input:not([type='checkbox']):not([type='radio']),
 .app-shell .field--pro select,
 .app-shell .field--pro textarea,
-.auth-page .field--pro input,
+.auth-page .field--pro input:not([type='checkbox']):not([type='radio']),
 .auth-page .field--pro select,
 .auth-page .field--pro textarea,
-.login-page .field--pro input,
+.login-page .field--pro input:not([type='checkbox']):not([type='radio']),
 .login-page .field--pro select,
 .login-page .field--pro textarea,
-.checkout-page .field--pro input,
+.checkout-page .field--pro input:not([type='checkbox']):not([type='radio']),
 .checkout-page .field--pro select,
 .checkout-page .field--pro textarea,
 .app-shell .catalog-list__edit input,
@@ -1479,16 +1479,16 @@ body {
   background: #fff;
 }
 
-.app-shell .field--pro input:focus,
+.app-shell .field--pro input:not([type='checkbox']):not([type='radio']):focus,
 .app-shell .field--pro select:focus,
 .app-shell .field--pro textarea:focus,
-.auth-page .field--pro input:focus,
+.auth-page .field--pro input:not([type='checkbox']):not([type='radio']):focus,
 .auth-page .field--pro select:focus,
 .auth-page .field--pro textarea:focus,
-.login-page .field--pro input:focus,
+.login-page .field--pro input:not([type='checkbox']):not([type='radio']):focus,
 .login-page .field--pro select:focus,
 .login-page .field--pro textarea:focus,
-.checkout-page .field--pro input:focus,
+.checkout-page .field--pro input:not([type='checkbox']):not([type='radio']):focus,
 .checkout-page .field--pro select:focus,
 .checkout-page .field--pro textarea:focus,
 .app-shell .catalog-list__edit input:focus,
@@ -1786,8 +1786,48 @@ body {
   color: #dbe4ef !important;
 }
 
-.app-shell .field--check input {
-  accent-color: var(--landing-gold);
+/* Dark-surface checkboxes (app shell, auth, checkout, admin) */
+.app-shell input[type='checkbox'],
+.auth-page input[type='checkbox'],
+.login-page input[type='checkbox'],
+.checkout-page input[type='checkbox'] {
+  border-color: rgba(232, 213, 163, 0.45);
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.app-shell input[type='checkbox']:hover:not(:disabled),
+.auth-page input[type='checkbox']:hover:not(:disabled),
+.login-page input[type='checkbox']:hover:not(:disabled),
+.checkout-page input[type='checkbox']:hover:not(:disabled) {
+  border-color: var(--landing-gold-light);
+}
+
+.app-shell input[type='checkbox']:checked,
+.auth-page input[type='checkbox']:checked,
+.login-page input[type='checkbox']:checked,
+.checkout-page input[type='checkbox']:checked,
+.app-shell input[type='checkbox']:indeterminate,
+.auth-page input[type='checkbox']:indeterminate,
+.login-page input[type='checkbox']:indeterminate,
+.checkout-page input[type='checkbox']:indeterminate {
+  border-color: var(--landing-gold);
+  background-color: var(--landing-gold);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.app-shell input[type='checkbox']:focus-visible,
+.auth-page input[type='checkbox']:focus-visible,
+.login-page input[type='checkbox']:focus-visible,
+.checkout-page input[type='checkbox']:focus-visible {
+  border-color: var(--landing-gold);
+  box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.28);
+}
+
+.app-shell .athlete-tile__check {
+  background: var(--landing-gold) !important;
+  color: #0a1628 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 /* —— Help page —— */

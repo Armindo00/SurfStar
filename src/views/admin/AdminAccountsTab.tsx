@@ -116,7 +116,7 @@ export function AdminAccountsTab({
           onChange={onRoleChange}
           filterAriaLabel={a.filter}
         />
-        <label className="field field--pro admin-toolbar__check">
+        <label className="field field--check admin-toolbar__check">
           <input type="checkbox" checked={blockedOnly} onChange={(e) => onBlockedOnlyChange(e.target.checked)} />
           <span>{a.blockedOnly}</span>
         </label>
