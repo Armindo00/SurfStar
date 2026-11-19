@@ -14,7 +14,6 @@ import {
 } from '../analyticsRange'
 import type { AthletePsychologyAnalytics } from '../athletePsychologyStats'
 import type { AthleteSessionSummary } from '../athleteStats'
-import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
 import { formatShortDate, formatShortDateTime } from '../dateFormat'
 import { getAppSiteUrl } from '../config'
 import { formatAverageLevelValue } from '../sessionStats'
@@ -34,7 +33,6 @@ type Props = {
   coachName: string
   organizationName?: string | null
   analytics: AthletePeriodAnalytics
-  heatAnalytics: AthleteHeatAnalyticsSummary
   sessionSummaries: AthleteSessionSummary[]
   getSpot: (id: string) => SurfSpot | undefined
   athleteId: string
@@ -58,16 +56,17 @@ export function AthleteReportSheet({
   const r = messages.analytics.analyticsReport
   const [coachComment, setCoachComment] = useState('')
   const [pdfBusy, setPdfBusy] = useState(false)
+  const [generatedAt] = useState(() => formatShortDateTime(new Date()))
+  const [generatedDateLabel] = useState(() => formatShortDate(new Date()))
   const shareAvailable = canSharePdfFiles()
   const trimmedComment = coachComment.trim()
   const general = analytics.general
-  const generatedAt = formatShortDateTime(new Date())
   const rangeLabel = describeAnalyticsRange(analytics.range)
   const reportTitle = describeAnalyticsRangeLong(analytics.range)
   const evolutionColumn = evolutionColumnLabel(analytics.range)
   const footerLine = t('analytics.analyticsReport.footerGenerated', {
     url: getAppSiteUrl(),
-    date: formatShortDate(new Date()),
+    date: generatedDateLabel,
   })
 
   useEffect(() => {

@@ -222,7 +222,7 @@ export function drawSideCompareChart(
   chart: SideCompareChart,
   labels: { success: string; level: string; frontside: string; backside: string },
 ) {
-  layout.ensureSpace(32)
+  layout.ensureSpace(58)
   const { doc, margin, contentW } = layout
   let y = layout.getY()
 
@@ -234,6 +234,10 @@ export function drawSideCompareChart(
 
   const drawPair = (subtitle: string, fs: number | null, bs: number | null, scale: 'percent' | 'level') => {
     if (fs === null && bs === null) return
+    layout.setY(y)
+    layout.ensureSpace(28)
+    y = layout.getY()
+
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
     doc.setTextColor(...COLOR_MUTED)
@@ -279,6 +283,7 @@ export function drawSideCompareChart(
     drawBar(startX, fs, [...COLOR_FS] as [number, number, number], labels.frontside)
     drawBar(startX + barW + gap, bs, [...COLOR_BS] as [number, number, number], labels.backside)
     y = baseY + 8
+    layout.setY(y)
   }
 
   drawPair(labels.success, chart.frontsideSuccess, chart.backsideSuccess, 'percent')
