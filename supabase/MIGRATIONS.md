@@ -45,7 +45,7 @@ See **`supabase/COACH_EMAILS.md`** for deploying coach transactional emails.
 
 ## Verify migrations
 
-Run **`supabase/check-migrations.sql`** in SQL Editor — it lists OK / FALTA for steps 1–25 (plus optional demo mode). Fix anything marked **FALTA** before launch.
+Run **`supabase/check-migrations.sql`** in SQL Editor — it lists OK / FALTA for steps 1–31 (plus optional demo mode). Fix anything marked **FALTA** before launch.
 
 ## Production reset
 
