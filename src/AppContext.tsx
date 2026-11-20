@@ -3051,10 +3051,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (heatIds: string[]) => {
       if (!activeSessionId || heatIds.length === 0) return
 
-      let toast:
-        | { kind: 'champion'; name: string }
-        | { kind: 'ready'; label: string; heatId: string }
-        | null = null
+      const toastBox: {
+        value:
+          | { kind: 'champion'; name: string }
+          | { kind: 'ready'; label: string; heatId: string }
+          | null
+      } = { value: null }
 
       updateSession(activeSessionId, (session) => {
         const idsToEnd = heatIds.filter((id) => {
@@ -3083,13 +3085,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
             const name =
               coachAthletes.find((a) => a.id === result.championship.championAthleteId)?.name ??
               t('ui.championship.championNameFallback')
-            toast = { kind: 'champion', name }
+            toastBox.value = { kind: 'champion', name }
           } else if (result.advancedToNextRound) {
             const nextHeat = heats.find(
               (h) => !h.endedAt && !h.bracketLocked && h.round === (endedHeat.round ?? 1) + 1,
             )
             if (nextHeat) {
-              toast = { kind: 'ready', label: nextHeat.label, heatId: nextHeat.id }
+              toastBox.value = { kind: 'ready', label: nextHeat.label, heatId: nextHeat.id }
             }
           }
         }
@@ -3097,6 +3099,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { ...session, heats, championship }
       })
 
+      const toast = toastBox.value
       if (toast?.kind === 'champion') {
         showToast(t('errors.championshipWinner', { name: toast.name }), 'success')
       } else if (toast?.kind === 'ready') {
