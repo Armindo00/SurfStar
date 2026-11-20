@@ -18,6 +18,7 @@ export function ManageCustomTemplates() {
     duplicateCustomTemplate,
     coachPlanId,
     setView,
+    leaveSideScreen,
   } = useApp()
   const { showToast } = useToast()
 
@@ -37,7 +38,7 @@ export function ManageCustomTemplates() {
   if (!hasAccess) {
     return (
       <div className="ss-flow">
-        <ScreenHeader title={t('nav.customTraining')} onBack={() => setView('coach-home')} />
+        <ScreenHeader title={t('nav.customTraining')} onBack={leaveSideScreen} />
         <div className="ss-card stats-panel">
           <h2 className="stats-panel__title">{t('ui.customTemplates.coachPremiumFeature')}</h2>
           <p className="muted">
@@ -79,7 +80,7 @@ export function ManageCustomTemplates() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title={t('nav.customTraining')} onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.customTraining')} onBack={leaveSideScreen} />
 
       <div className="ss-card spots-intro">
         <h2 className="page-title">{t('ui.customTemplates.yourTrainingFormats')}</h2>

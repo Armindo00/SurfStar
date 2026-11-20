@@ -18,7 +18,7 @@ export function ManageSpots() {
     addCondition,
     updateConditionName,
     removeCondition,
-    setView,
+    leaveSideScreen,
   } = useApp()
   const { showToast } = useToast()
 
@@ -68,7 +68,7 @@ export function ManageSpots() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title={t('nav.spotsAndConditions')} onBack={() => setView('coach-home')} />
+      <ScreenHeader title={t('nav.spotsAndConditions')} onBack={leaveSideScreen} />
 
       <div className="ss-card spots-intro">
         <h2 className="page-title">{t('ui.spots.whereYouTrain')}</h2>

@@ -31,11 +31,10 @@ export function StartSession() {
     <div className="ss-flow">
       <ScreenHeader title={t('nav.newSession')} onBack={() => setView('coach-home')} />
       <div className="ss-card stats-panel">
-        <SessionSetupSteps current={1} />
+        <SessionSetupSteps current={1} totalSteps={draft.mode === 'sea-analysis' ? 2 : 3} />
         <h2 className="stats-panel__title">{s('step1Title')}</h2>
         <p className="muted stats-panel__sub">{s('step1Subtitle')}</p>
 
-        <p className="field-label">{s('trainingType')}</p>
         <div className="chip-row chip-row--pro chip-row--modes">
           {modes.map((mode) => (
             <button

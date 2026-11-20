@@ -907,6 +907,13 @@ input[type='checkbox']:indeterminate {
   color: var(--ss-success, #22c55e);
 }
 
+.session-setup-blocker {
+  margin: 0.35rem 0 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--ss-warning, #f59e0b) 85%, var(--ss-text, #f8fafc));
+}
+
 .level-row {
   display: flex;
   align-items: center;

@@ -1,5 +1,4 @@
 import { useApp } from '../AppContext'
-import { formatAppDateTime } from '../dateFormat'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { SessionSetupSteps } from '../components/SessionSetupSteps'
 import { useI18n } from '../i18n'
@@ -19,6 +18,8 @@ export function ConfigureSession() {
     setDraftChampionshipHeatSize,
     setDraftChampionshipParallelHeats,
     setView,
+    openFromSessionSetup,
+    confirmAthletesAndStart,
   } = useApp()
   const { t } = useI18n()
   const s = (key: string, params?: Record<string, string | number>) => t(`session.setup.${key}`, params)
@@ -28,26 +29,36 @@ export function ConfigureSession() {
   const isSeaAnalysis = draft.mode === 'sea-analysis'
   const isCustom = draft.mode === 'custom'
   const selectedTemplate = customTemplates.find((tmpl) => tmpl.id === draft.customTemplateId)
+  const totalSteps = isSeaAnalysis ? 2 : 3
 
-  const startedLabel = formatAppDateTime(new Date(), {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const missingSpots = spots.length === 0 || !draft.spotId
+  const missingCondition = !draft.condition
+  const missingTemplate = isCustom && (!draft.customTemplateId || customTemplates.length === 0)
+  const canContinue = !missingSpots && !missingCondition && !missingTemplate
 
-  const canContinue =
-    Boolean(draft.condition) &&
-    spots.length > 0 &&
-    Boolean(draft.spotId) &&
-    (!isCustom || (Boolean(draft.customTemplateId) && customTemplates.length > 0))
+  const blockerHint = (() => {
+    if (missingSpots) return s('needSpot')
+    if (missingCondition) return s('needCondition')
+    if (missingTemplate) return s('needTemplate')
+    return ''
+  })()
+
+  const continueLabel = isSeaAnalysis ? s('startSeaAnalysis') : s('continueToAthletes')
+
+  const onContinue = () => {
+    if (!canContinue) return
+    if (isSeaAnalysis) {
+      confirmAthletesAndStart()
+      return
+    }
+    setView('select-athletes')
+  }
 
   return (
     <div className="ss-flow">
       <ScreenHeader title={t('nav.sessionSettings')} onBack={() => setView('start-session')} />
       <div className="ss-card stats-panel">
-        <SessionSetupSteps current={2} />
+        <SessionSetupSteps current={2} totalSteps={totalSteps} />
         <h2 className="stats-panel__title">{s('step2Title')}</h2>
         <p className="muted stats-panel__sub">
           {s('step2Subtitle', { mode: trainingModeLabel(draft.mode) })}
@@ -62,7 +73,7 @@ export function ConfigureSession() {
                 <button
                   type="button"
                   className="btn btn--primary btn--block"
-                  onClick={() => setView('manage-custom-templates')}
+                  onClick={() => openFromSessionSetup('manage-custom-templates')}
                 >
                   {s('manageCustomTemplates')}
                 </button>
@@ -97,7 +108,7 @@ export function ConfigureSession() {
                 <button
                   type="button"
                   className="btn btn--ghost btn--block"
-                  onClick={() => setView('manage-custom-templates')}
+                  onClick={() => openFromSessionSetup('manage-custom-templates')}
                 >
                   {s('editTemplates')}
                 </button>
@@ -178,22 +189,31 @@ export function ConfigureSession() {
               <button
                 type="button"
                 className="btn btn--primary btn--block"
-                onClick={() => setView('manage-spots')}
+                onClick={() => openFromSessionSetup('manage-spots')}
               >
                 {s('addSpots')}
               </button>
             </div>
           ) : (
-            <label className="field field--pro">
-              <span>{s('spot')}</span>
-              <select value={draft.spotId} onChange={(e) => setDraftSpot(e.target.value)}>
-                {spots.map((spot) => (
-                  <option key={spot.id} value={spot.id}>
-                    {spot.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <>
+              <label className="field field--pro">
+                <span>{s('spot')}</span>
+                <select value={draft.spotId} onChange={(e) => setDraftSpot(e.target.value)}>
+                  {spots.map((spot) => (
+                    <option key={spot.id} value={spot.id}>
+                      {spot.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className="btn btn--ghost btn--block"
+                onClick={() => openFromSessionSetup('manage-spots')}
+              >
+                {s('manageSpots')}
+              </button>
+            </>
           )}
 
           <label className="field field--pro">
@@ -207,20 +227,17 @@ export function ConfigureSession() {
               ))}
             </select>
           </label>
-
-          <label className="field field--pro">
-            <span>{s('sessionTime')}</span>
-            <input type="text" readOnly value={startedLabel} className="input-readonly" />
-          </label>
         </div>
+
+        {blockerHint ? <p className="session-setup-blocker muted">{blockerHint}</p> : null}
 
         <button
           type="button"
           className="btn btn--primary btn--block btn--lg"
           disabled={!canContinue}
-          onClick={() => setView('select-athletes')}
+          onClick={onContinue}
         >
-          {isSeaAnalysis ? s('continueToStart') : s('continueToAthletes')}
+          {continueLabel}
         </button>
       </div>
     </div>
