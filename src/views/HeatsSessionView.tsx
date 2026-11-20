@@ -15,9 +15,9 @@ export function HeatsSessionView() {
   if (!activeSession || sessionMode !== 'heats') {
     return (
       <div className="ss-flow">
-        <p className="muted">No active heats session.</p>
+        <p className="muted">{t('ui.heats.noActiveSession')}</p>
         <button type="button" className="btn" onClick={() => setView('coach-home')}>
-          Back
+          {t('common.back')}
         </button>
       </div>
     )
@@ -26,9 +26,9 @@ export function HeatsSessionView() {
   if (!heat) {
     return (
       <div className="ss-flow">
-        <p className="muted">Heat setup missing.</p>
+        <p className="muted">{t('ui.heats.setupMissing')}</p>
         <button type="button" className="btn" onClick={() => setView('coach-home')}>
-          Back
+          {t('common.back')}
         </button>
       </div>
     )

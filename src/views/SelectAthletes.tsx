@@ -127,6 +127,18 @@ export function SelectAthletes() {
           })}
         </div>
 
+        {(() => {
+          const blocker =
+            selectedCount === 0
+              ? t('session.setup.needAthletes')
+              : isCampeonato && selectedCount < 2
+                ? t('session.setup.needChampionshipAthletes')
+                : isCampeonato && !bracketReady
+                  ? t('session.setup.needValidBracket')
+                  : ''
+          return blocker ? <p className="session-setup-blocker muted">{blocker}</p> : null
+        })()}
+
         <button
           type="button"
           className="btn btn--primary btn--block btn--lg"

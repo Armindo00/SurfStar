@@ -71,7 +71,7 @@ export function ManageCustomTemplates() {
           onSave={(template) => {
             saveCustomTemplate(template)
             setEditing(null)
-            showToast('Template saved.', 'success')
+            showToast(t('ui.customTemplates.templateSaved'), 'success')
           }}
         />
       </div>
@@ -126,7 +126,7 @@ export function ManageCustomTemplates() {
                   className="btn btn--ghost btn--small"
                   onClick={() => {
                     duplicateCustomTemplate(template.id)
-                    showToast('Template duplicated.', 'success')
+                    showToast(t('ui.customTemplates.templateDuplicated'), 'success')
                   }}
                 >
                   Duplicate
@@ -151,7 +151,7 @@ export function ManageCustomTemplates() {
           onConfirm={() => {
             deleteCustomTemplate(deleteId)
             setDeleteId(null)
-            showToast('Template removed.', 'success')
+            showToast(t('ui.customTemplates.templateRemoved'), 'success')
           }}
           onCancel={() => setDeleteId(null)}
         />

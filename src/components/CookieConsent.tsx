@@ -17,6 +17,13 @@ export function CookieConsent() {
     }
   }, [])
 
+  useEffect(() => {
+    document.body.classList.toggle('has-cookie-consent', visible)
+    return () => {
+      document.body.classList.remove('has-cookie-consent')
+    }
+  }, [visible])
+
   const accept = () => {
     try {
       localStorage.setItem(STORAGE_KEY, 'accepted')

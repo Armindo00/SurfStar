@@ -15,4 +15,16 @@ export const errors = {
   saveFailed: 'Failed to save changes.',
   deleteFailed: 'Failed to delete.',
   networkError: 'Network error. Check your connection.',
+  allChangesSaved: 'All changes saved',
+  analyticsRequiresPlan: 'Team analytics requires Coach or Coach Premium plan.',
+  customRequiresPremium: 'Custom training requires Coach Premium plan.',
+  modeNotInPlan: 'This training mode is not included in your plan.',
+  needConditionToStart: 'Choose sea conditions before starting.',
+  needSpotToStart: 'Add a spot before starting.',
+  needAthletesToStart: 'Select at least one athlete to start.',
+  championshipNeedTwoAthletes: 'Select at least 2 athletes for a championship.',
+  championshipInvalidBracket:
+    'Cannot build a valid bracket with this number of surfers. Each heat needs at least 2 athletes.',
+  needCustomTemplate: 'Select a custom training template first.',
+  psychologyLoadFailed: 'Could not load psychology check-ins. Check your connection and try again.',
 } as const

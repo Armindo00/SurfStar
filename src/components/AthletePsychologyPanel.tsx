@@ -22,12 +22,16 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
   const { sessionAthleteFeedback, refreshAthleteEquipment } = useApp()
   const { t } = useI18n()
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    void refreshAthleteEquipment(athleteId).finally(() => {
-      if (!cancelled) setLoading(false)
+    setLoadError(false)
+    void refreshAthleteEquipment(athleteId).then((ok) => {
+      if (cancelled) return
+      setLoadError(!ok)
+      setLoading(false)
     })
     return () => {
       cancelled = true
@@ -59,23 +63,49 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
     )
   }
 
+  if (loadError && psychology.checkIns === 0) {
+    return (
+      <div className="athlete-psychology-panel">
+        <div className="ss-card stats-panel athlete-psychology-panel__intro">
+          <h2 className="stats-panel__title">{t('ui.psychology.psychologicalProfile')}</h2>
+          <p className="muted stats-panel__sub">{t('errors.psychologyLoadFailed')}</p>
+          <button
+            type="button"
+            className="btn btn--primary btn--block"
+            onClick={() => {
+              setLoading(true)
+              setLoadError(false)
+              void refreshAthleteEquipment(athleteId).then((ok) => {
+                setLoadError(!ok)
+                setLoading(false)
+              })
+            }}
+          >
+            {t('common.tryAgain')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="athlete-psychology-panel">
       <div className="ss-card stats-panel athlete-psychology-panel__intro">
         <h2 className="stats-panel__title">{t('ui.psychology.psychologicalProfile')}</h2>
-        <p className="muted stats-panel__sub">
-          Quick 0–5 check-ins after each session — mood, confidence, focus, satisfaction and mental
-          fatigue.
-        </p>
+        <p className="muted stats-panel__sub">{t('ui.psychology.intro')}</p>
       </div>
 
       {psychology.checkIns === 0 ? (
         <div className="ss-card stats-panel analytics-empty-period">
           <h2 className="stats-panel__title">{t('ui.psychology.noCheckinsInPeriod')}</h2>
           <p className="muted">
-            The athlete has not submitted the post-session questionnaire in {periodLabel}.
+            {t('ui.psychology.noCheckinsInPeriodBody', { period: periodLabel })}
             {psychology.legacyCheckIns > 0
-              ? ` ${psychology.legacyCheckIns} older check-in${psychology.legacyCheckIns === 1 ? '' : 's'} used the previous format.`
+              ? ` ${
+                  psychology.legacyCheckIns === 1
+                    ? t('ui.psychology.legacyCheckinsNote', { count: psychology.legacyCheckIns })
+                    : t('ui.psychology.legacyCheckinsNotePlural', { count: psychology.legacyCheckIns })
+                }`
               : ''}
           </p>
         </div>
@@ -83,26 +113,26 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
         <>
           <div className="analytics-overview-strip athlete-psychology-panel__overview">
             <article className="analytics-overview-strip__item analytics-overview-strip__item--accent">
-              <span>Check-ins</span>
+              <span>{t('ui.psychology.checkIns')}</span>
               <strong>{psychology.checkIns}</strong>
             </article>
             <article className="analytics-overview-strip__item">
-              <span>Avg overall</span>
+              <span>{t('ui.psychology.avgOverall')}</span>
               <strong>{psychology.averageOverall?.toFixed(1) ?? '—'}</strong>
             </article>
             <article className="analytics-overview-strip__item">
-              <span>Feedback rate</span>
+              <span>{t('ui.psychology.feedbackRate')}</span>
               <strong>{psychology.feedbackRate === null ? '—' : `${psychology.feedbackRate}%`}</strong>
             </article>
             <article className="analytics-overview-strip__item">
-              <span>With notes</span>
+              <span>{t('ui.psychology.withNotes')}</span>
               <strong>{psychology.notesCount}</strong>
             </article>
           </div>
 
           <div className="ss-card stats-panel">
             <h2 className="stats-panel__title">{t('ui.psychology.questionAverages')}</h2>
-            <p className="muted stats-panel__sub">Average score per question in this period.</p>
+            <p className="muted stats-panel__sub">{t('ui.psychology.questionAveragesHint')}</p>
             <ul className="psych-state-distribution">
               {psychology.byQuestion.map((entry) => (
                 <li key={entry.key} className="psych-state-distribution__row">
@@ -123,14 +153,16 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
 
           <div className="ss-card stats-panel">
             <h2 className="stats-panel__title">{t('ui.psychology.sessionTimeline')}</h2>
-            <p className="muted stats-panel__sub">Latest check-ins in chronological order.</p>
+            <p className="muted stats-panel__sub">{t('ui.psychology.sessionTimelineHint')}</p>
             <ul className="feedback-timeline athlete-psychology-panel__timeline">
               {psychology.timeline.map(({ feedback, session, averageScore }) => (
                 <li key={feedback.id} className="feedback-timeline__item">
                   <div className="feedback-timeline__head">
                     <strong>
-                      {session ? trainingModeLabel(session.mode) : 'Session'}
-                      {averageScore !== null ? ` · avg ${averageScore.toFixed(1)}/5` : ''}
+                      {session ? trainingModeLabel(session.mode) : t('ui.psychology.sessionFallback')}
+                      {averageScore !== null
+                        ? ` · ${t('ui.psychology.avgScore', { score: averageScore.toFixed(1) })}`
+                        : ''}
                     </strong>
                     <span className="muted">{formatShortDate(feedback.submittedAt)}</span>
                   </div>
