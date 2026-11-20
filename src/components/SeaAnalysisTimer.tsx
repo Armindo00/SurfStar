@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '../i18n'
 import { formatElapsedMs, seaRemainingMs } from '../seaAnalysisStats'
 import { SEA_ANALYSIS_DURATION_MINUTES, type SeaAnalysisState } from '../types'
 
@@ -15,7 +16,15 @@ type Props = {
 }
 
 export function SeaAnalysisTimer({ state, onTimeUp }: Props) {
+  const { t } = useI18n()
   const [now, setNow] = useState(() => Date.now())
+  const firedRef = useRef(false)
+  const onTimeUpRef = useRef(onTimeUp)
+  onTimeUpRef.current = onTimeUp
+
+  useEffect(() => {
+    firedRef.current = false
+  }, [state.timerStartedAt, state.endedAt])
 
   useEffect(() => {
     if (!state.timerStartedAt || state.endedAt) return
@@ -26,17 +35,18 @@ export function SeaAnalysisTimer({ state, onTimeUp }: Props) {
   const remaining = seaRemainingMs(state, now)
 
   useEffect(() => {
-    if (remaining === 0 && state.timerStartedAt && !state.endedAt) {
-      onTimeUp?.()
+    if (remaining === 0 && state.timerStartedAt && !state.endedAt && !firedRef.current) {
+      firedRef.current = true
+      onTimeUpRef.current?.()
     }
-  }, [remaining, state.timerStartedAt, state.endedAt, onTimeUp])
+  }, [remaining, state.timerStartedAt, state.endedAt])
 
   if (!state.timerStartedAt) {
     return (
       <div className="heat-timer heat-timer--idle">
-        <span className="heat-timer__label">Session length</span>
+        <span className="heat-timer__label">{t('ui.seaAnalysis.sessionLength')}</span>
         <strong className="heat-timer__value">{SEA_ANALYSIS_DURATION_MINUTES} min</strong>
-        <span className="muted heat-timer__hint">Start the clock when you begin watching the peaks</span>
+        <span className="muted heat-timer__hint">{t('ui.seaAnalysis.startClockHint')}</span>
       </div>
     )
   }
@@ -47,9 +57,9 @@ export function SeaAnalysisTimer({ state, onTimeUp }: Props) {
       : '0:00'
     return (
       <div className="heat-timer heat-timer--done">
-        <span className="heat-timer__label">Analysis finished</span>
+        <span className="heat-timer__label">{t('ui.seaAnalysis.analysisFinished')}</span>
         <strong className="heat-timer__value">{elapsed}</strong>
-        <span className="muted heat-timer__hint">Total elapsed</span>
+        <span className="muted heat-timer__hint">{t('ui.customTimer.totalElapsed')}</span>
       </div>
     )
   }
@@ -59,11 +69,11 @@ export function SeaAnalysisTimer({ state, onTimeUp }: Props) {
 
   return (
     <div className={urgent ? 'heat-timer heat-timer--urgent' : 'heat-timer heat-timer--run'}>
-      <span className="heat-timer__label">Time remaining</span>
+      <span className="heat-timer__label">{t('ui.customTimer.timeRemaining')}</span>
       <strong className="heat-timer__value" aria-live="polite">
         {formatClock(ms)}
       </strong>
-      <span className="muted heat-timer__hint">Log each wave with potential as you see it</span>
+      <span className="muted heat-timer__hint">{t('ui.seaAnalysis.logAsYouSeeHint')}</span>
     </div>
   )
 }

@@ -776,22 +776,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const saveToastTimerRef = useRef<number | null>(null)
+  const sessionsSaveGenerationRef = useRef(0)
+  const sessionsSaveChainRef = useRef<Promise<void>>(Promise.resolve())
+  const startingSessionRef = useRef(false)
 
   const syncSessionsToCloud = useCallback(
     (next: TrainingSession[], session: AuthSession | null = auth) => {
-      if (cloudMode && session?.role === 'treinador') {
-        void cloudSaveTrainingSessions(session.organizationId, session.coachId, next).then((result) => {
+      if (!(cloudMode && session?.role === 'treinador')) return
+      const generation = ++sessionsSaveGenerationRef.current
+      const orgId = session.organizationId
+      const coachId = session.coachId
+      const snapshot = next
+      sessionsSaveChainRef.current = sessionsSaveChainRef.current
+        .catch(() => undefined)
+        .then(async () => {
+          if (generation !== sessionsSaveGenerationRef.current) return
+          const result = await cloudSaveTrainingSessions(orgId, coachId, snapshot)
+          if (generation !== sessionsSaveGenerationRef.current) return
           if (!result.ok) {
-            showToast(`Failed to save sessions: ${result.error}`, 'error')
+            showToast(t('errors.saveSessionsFailed', { error: result.error }), 'error')
             return
           }
           if (saveToastTimerRef.current) window.clearTimeout(saveToastTimerRef.current)
           saveToastTimerRef.current = window.setTimeout(() => {
+            if (generation !== sessionsSaveGenerationRef.current) return
             showToast(t('errors.allChangesSaved'), 'success')
             saveToastTimerRef.current = null
           }, 1200)
         })
-      }
     },
     [auth, cloudMode, showToast, t],
   )
@@ -2452,13 +2464,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDraft((d) => ({ ...d, championshipParallelHeats: parallel }))
   }, [])
 
-  const addDraftAthlete = useCallback((athleteId: string) => {
-    setDraft((d) => {
-      if (d.athleteIds.includes(athleteId)) return d
-      if (d.mode === 'heats' && d.athleteIds.length >= MAX_HEAT_ATHLETES) return d
-      return { ...d, athleteIds: [...d.athleteIds, athleteId] }
-    })
-  }, [])
+  const addDraftAthlete = useCallback(
+    (athleteId: string) => {
+      setDraft((d) => {
+        if (d.athleteIds.includes(athleteId)) return d
+        if (d.mode === 'heats' && d.athleteIds.length >= MAX_HEAT_ATHLETES) {
+          showToast(t('errors.heatAthleteCap', { max: MAX_HEAT_ATHLETES }), 'info')
+          return d
+        }
+        return { ...d, athleteIds: [...d.athleteIds, athleteId] }
+      })
+    },
+    [showToast, t],
+  )
 
   const removeDraftAthlete = useCallback((athleteId: string) => {
     setDraft((d) => ({ ...d, athleteIds: d.athleteIds.filter((id) => id !== athleteId) }))
@@ -2527,6 +2545,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [auth, coachPlanId, customTemplates, navigateView, spots])
 
   const confirmAthletesAndStart = useCallback(() => {
+    if (startingSessionRef.current) return
     const currentDraft = draftRef.current
     if (!currentDraft.condition) {
       showToast(t('errors.needConditionToStart'), 'error')
@@ -2572,9 +2591,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    startingSessionRef.current = true
+
     const customTemplate =
       currentDraft.mode === 'custom'
-        ? customTemplates.find((t) => t.id === currentDraft.customTemplateId)
+        ? customTemplates.find((tmpl) => tmpl.id === currentDraft.customTemplateId)
         : null
     const customSnapshot = customTemplate ? snapshotCustomTemplate(customTemplate) : null
 
@@ -2638,6 +2659,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveHeatId(initialHeat?.id ?? championshipHeats[0]?.id ?? null)
     setTrainingAthleteGridEpoch((epoch) => epoch + 1)
     setView(viewForMode(currentDraft.mode))
+    window.setTimeout(() => {
+      startingSessionRef.current = false
+    }, 800)
   }, [auth, coachPlanId, customTemplates, persistSessions, showToast, spots, subscription?.planId, t])
 
   const openEndSessionSheet = useCallback(() => {
@@ -2646,14 +2670,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const labels = pendingHeatEndLabels(session)
       showToast(
         labels.length
-          ? `Finish ${labels.join(', ')} before ending the session.`
-          : 'Finish all heats before ending the session.',
+          ? t('errors.finishNamedHeatsBeforeEnd', { labels: labels.join(', ') })
+          : t('errors.finishAllHeatsBeforeEnd'),
         'error',
       )
       return
     }
     setEndSessionSheetOpen(true)
-  }, [activeSessionId, showToast, trainingSessions])
+  }, [activeSessionId, showToast, t, trainingSessions])
 
   const closeEndSessionSheet = useCallback(() => {
     setEndSessionSheetOpen(false)
@@ -2691,7 +2715,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       )
 
       if (!endedSession) {
-        showToast('Could not finish this session. Try again.', 'error')
+        showToast(t('errors.finishSessionFailed'), 'error')
         return
       }
 
@@ -2705,7 +2729,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setHistorySessionId(sessionId)
       setView('session-history-detail')
     },
-    [activeSessionId, persistSessions, resetDraft, showToast, spots],
+    [activeSessionId, persistSessions, resetDraft, showToast, spots, t],
   )
 
   const openHistorySession = useCallback((sessionId: string) => {
@@ -3026,51 +3050,61 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const endHeatTimers = useCallback(
     (heatIds: string[]) => {
       if (!activeSessionId || heatIds.length === 0) return
-      const session = trainingSessions.find((s) => s.id === activeSessionId)
-      if (!session) return
 
-      const idsToEnd = heatIds.filter((id) => {
-        const heat = session.heats.find((h) => h.id === id)
-        return heat && !heat.endedAt
-      })
-      if (idsToEnd.length === 0) return
+      let toast:
+        | { kind: 'champion'; name: string }
+        | { kind: 'ready'; label: string; heatId: string }
+        | null = null
 
-      const endedAt = new Date().toISOString()
-      let heats = session.heats.map((h) =>
-        idsToEnd.includes(h.id) && !h.endedAt ? { ...h, endedAt } : h,
-      )
-      let championship = session.championship ?? null
-      const endedHeat = heats.find((h) => idsToEnd.includes(h.id))
+      updateSession(activeSessionId, (session) => {
+        const idsToEnd = heatIds.filter((id) => {
+          const heat = session.heats.find((h) => h.id === id)
+          return Boolean(heat && !heat.endedAt)
+        })
+        if (idsToEnd.length === 0) return session
 
-      if (session.mode === 'campeonato' && championship?.status === 'active' && endedHeat) {
-        const result = processChampionshipRoundAdvance(
-          heats,
-          championship,
-          endedHeat.durationMinutes,
+        const endedAt = new Date().toISOString()
+        let heats = session.heats.map((h) =>
+          idsToEnd.includes(h.id) && !h.endedAt ? { ...h, endedAt } : h,
         )
-        heats = result.heats
-        const nextChampionship = result.championship
-        championship = nextChampionship
+        let championship = session.championship ?? null
+        const endedHeat = heats.find((h) => idsToEnd.includes(h.id))
 
-        if (nextChampionship.status === 'complete' && nextChampionship.championAthleteId) {
-          const name =
-            coachAthletes.find((a) => a.id === nextChampionship.championAthleteId)?.name ??
-            'Champion'
-          showToast(`${name} wins the championship!`, 'success')
-        } else if (result.advancedToNextRound) {
-          const nextHeat = heats.find(
-            (h) => !h.endedAt && !h.bracketLocked && h.round === (endedHeat.round ?? 1) + 1,
+        if (session.mode === 'campeonato' && championship?.status === 'active' && endedHeat) {
+          const result = processChampionshipRoundAdvance(
+            heats,
+            championship,
+            endedHeat.durationMinutes,
           )
-          if (nextHeat) {
-            setActiveHeatId(nextHeat.id)
-            showToast(`${nextHeat.label} is ready.`, 'info')
+          heats = result.heats
+          championship = result.championship
+
+          if (result.championship.status === 'complete' && result.championship.championAthleteId) {
+            const name =
+              coachAthletes.find((a) => a.id === result.championship.championAthleteId)?.name ??
+              t('ui.championship.championNameFallback')
+            toast = { kind: 'champion', name }
+          } else if (result.advancedToNextRound) {
+            const nextHeat = heats.find(
+              (h) => !h.endedAt && !h.bracketLocked && h.round === (endedHeat.round ?? 1) + 1,
+            )
+            if (nextHeat) {
+              toast = { kind: 'ready', label: nextHeat.label, heatId: nextHeat.id }
+            }
           }
         }
-      }
 
-      updateSession(activeSessionId, (s) => ({ ...s, heats, championship }))
+        return { ...session, heats, championship }
+      })
+
+      if (toast?.kind === 'champion') {
+        showToast(t('errors.championshipWinner', { name: toast.name }), 'success')
+      } else if (toast?.kind === 'ready') {
+        setActiveHeatId(toast.heatId)
+        showToast(t('errors.championshipHeatReady', { label: toast.label }), 'info')
+      }
     },
-    [activeSessionId, coachAthletes, showToast, trainingSessions, updateSession],
+    [activeSessionId, coachAthletes, showToast, t, updateSession],
   )
 
   const endHeat = useCallback(

@@ -92,9 +92,7 @@ export function ManageCustomTemplates() {
 
       {customTemplates.length === 0 ? (
         <div className="ss-card">
-          <p className="muted">
-            No templates yet. Create one to unlock the Custom training mode when starting a session.
-          </p>
+          <p className="muted">{t('ui.customTemplates.noTemplatesYet')}</p>
         </div>
       ) : (
         <ul className="catalog-list">

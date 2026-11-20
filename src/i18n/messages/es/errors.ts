@@ -27,4 +27,11 @@ export const errors = {
     'No se puede construir un cuadro válido con este número de surfistas. Cada heat necesita al menos 2 atletas.',
   needCustomTemplate: 'Selecciona primero una plantilla de entrenamiento personalizado.',
   psychologyLoadFailed: 'No se pudieron cargar los check-ins. Comprueba la conexión e inténtalo de nuevo.',
+  saveSessionsFailed: 'Error al guardar sesiones: {{error}}',
+  heatAthleteCap: 'El modo heats permite hasta {{max}} surfistas.',
+  finishNamedHeatsBeforeEnd: 'Termina {{labels}} antes de cerrar la sesión.',
+  finishAllHeatsBeforeEnd: 'Termina todos los heats antes de cerrar la sesión.',
+  finishSessionFailed: 'No se pudo terminar esta sesión. Inténtalo de nuevo.',
+  championshipWinner: '¡{{name}} gana el campeonato!',
+  championshipHeatReady: '{{label}} está listo.',
 } as const

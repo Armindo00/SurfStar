@@ -215,5 +215,7 @@ export const session = {
     waveLogHint: 'Modifiez ou supprimez des scores individuels enregistrés par erreur.',
     waveLogEntry: '{{name}} · Vague {{number}} · {{score}}',
     deleteWaveScoreMessage: 'Retirer {{score}} pour {{name}} ? Cette action est irréversible.',
+    pressStartHint: 'Appuyez sur démarrer pour lancer le chrono du heat',
+    heatFinished: 'Heat terminé',
   },
 } as const
