@@ -1,10 +1,12 @@
 export const components = {
   cookieConsent: {
     ariaLabel: 'Notice cookies',
-    text: 'Nous utilisons des cookies essentiels et le stockage local pour vous maintenir connecté et enregistrer la progression de session. Nous n\'utilisons pas de cookies publicitaires. Consultez notre',
+    text: 'Nous utilisons des cookies essentiels et le stockage local pour vous maintenir connecté et enregistrer votre progression. L\'analyse optionnelle nous aide à détecter les plantages. Nous n\'utilisons pas de cookies publicitaires. Consultez notre',
     privacyPolicy: 'Politique de confidentialité',
     complaintsBook: 'Livre de réclamations',
     accept: 'Accepter',
+    essentialOnly: 'Essentiels uniquement',
+    acceptAll: 'Tout accepter',
   },
   legalFooter: {
     ariaLabel: 'Mentions légales',
@@ -88,7 +90,7 @@ export const components = {
   },
   sessionFeedback: {
     title: 'Check-in rapide',
-    lead: 'Notez chaque élément de 0 à 5 — cela prend moins d\'une minute.',
+    lead: 'Choisissez une note de 0 à 5 pour chaque question — cela prend moins d\'une minute.',
     optionalSuffix: 'facultatif',
     notePlaceholder: 'Commentaire facultatif pour votre coach…',
     submit: 'Envoyer le check-in',
@@ -98,6 +100,18 @@ export const components = {
     fatigueScaleHint: 'Même échelle que les autres questions : plus c’est haut, mieux c’est.',
     fatigueScaleLow: 'Très fatigué(e) (mauvais)',
     fatigueScaleHigh: 'Pas de fatigue (bon)',
+    answerAllRequired: 'Répondez à toutes les questions avant d\'envoyer.',
+    coachNotePrompt: 'Y a-t-il quelque chose que votre coach devrait savoir sur cette session ?',
+    questions: {
+      mood: 'Comment est votre humeur ?',
+      confidenceToContinue: 'À quel point êtes-vous confiant(e) pour continuer à vous entraîner ?',
+      confidenceDuring: 'À quel point vous êtes-vous senti(e) confiant(e) pendant la session ?',
+      focusDuring: 'À quel point étiez-vous concentré(e) pendant la session ?',
+      errorHandling: 'Comment avez-vous géré les erreurs que vous avez faites aujourd\'hui ?',
+      feltImprovement: 'Avez-vous le sentiment d\'avoir progressé dans cette session ?',
+      performanceSatisfaction: 'À quel point êtes-vous satisfait(e) de votre performance ?',
+      mentalFatigue: 'Comment est votre fatigue mentale ?',
+    },
   },
   installInstructions: {
     alreadyInstalled: 'SurfStar est déjà installé sur cet appareil.',

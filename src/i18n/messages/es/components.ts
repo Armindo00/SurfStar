@@ -1,10 +1,12 @@
 export const components = {
   cookieConsent: {
     ariaLabel: 'Aviso de cookies',
-    text: 'Usamos cookies esenciales y almacenamiento local para mantenerte conectado y guardar el progreso de la sesión. No usamos cookies publicitarias. Consulta nuestra',
+    text: 'Usamos cookies esenciales y almacenamiento local para mantenerte conectado y guardar tu progreso. El análisis opcional nos ayuda a detectar fallos. No usamos cookies publicitarias. Consulta nuestra',
     privacyPolicy: 'Política de Privacidad',
     complaintsBook: 'Libro de reclamaciones',
     accept: 'Aceptar',
+    essentialOnly: 'Solo esenciales',
+    acceptAll: 'Aceptar todas',
   },
   legalFooter: {
     ariaLabel: 'Legal',
@@ -88,7 +90,7 @@ export const components = {
   },
   sessionFeedback: {
     title: 'Check-in rápido',
-    lead: 'Valora cada ítem de 0 a 5 — tarda menos de un minuto.',
+    lead: 'Elige una puntuación de 0 a 5 en cada pregunta — tarda menos de un minuto.',
     optionalSuffix: 'opcional',
     notePlaceholder: 'Comentario opcional para tu entrenador…',
     submit: 'Enviar check-in',
@@ -98,6 +100,18 @@ export const components = {
     fatigueScaleHint: 'Misma escala que las otras preguntas: cuanto más alto, mejor.',
     fatigueScaleLow: 'Muy fatigado/a (malo)',
     fatigueScaleHigh: 'Sin fatiga (bueno)',
+    answerAllRequired: 'Responde todas las preguntas antes de enviar.',
+    coachNotePrompt: '¿Hay algo que tu entrenador deba saber sobre esta sesión?',
+    questions: {
+      mood: '¿Cómo está tu estado de ánimo?',
+      confidenceToContinue: '¿Qué tan seguro/a te sientes de seguir entrenando?',
+      confidenceDuring: '¿Qué tan seguro/a te sentiste durante la sesión?',
+      focusDuring: '¿Qué tan concentrado/a estuviste durante la sesión?',
+      errorHandling: '¿Cómo manejaste los errores que cometiste hoy?',
+      feltImprovement: '¿Sientes que mejoraste en esta sesión?',
+      performanceSatisfaction: '¿Qué tan satisfecho/a estás con tu rendimiento?',
+      mentalFatigue: '¿Cómo está tu fatiga mental?',
+    },
   },
   installInstructions: {
     alreadyInstalled: 'SurfStar ya está instalado en este dispositivo.',

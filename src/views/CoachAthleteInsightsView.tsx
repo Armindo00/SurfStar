@@ -6,7 +6,11 @@ import { useApp } from '../AppContext'
 import { buildAthletePsychologyAnalytics, feedbackHasPsychologySurvey } from '../athletePsychologyStats'
 import { presetAnalyticsRange } from '../analyticsRange'
 import { formatMaterialDate } from '../materialUtils'
-import { averagePsychologyScore, PSYCHOLOGY_SURVEY_QUESTIONS } from '../psychologySurvey'
+import {
+  averagePsychologyScore,
+  PSYCHOLOGY_SURVEY_QUESTIONS,
+  psychologyQuestionLabelKey,
+} from '../psychologySurvey'
 import { mentalStateLabel } from '../mentalState'
 import { canUsePsychologyCheckins } from '../planUtils'
 import { linkHasPsychologyCheckins } from '../psychologyCheckins'
@@ -149,7 +153,7 @@ export function CoachAthleteInsightsView() {
                     <ul className="psych-survey-summary">
                       {PSYCHOLOGY_SURVEY_QUESTIONS.map((question) => (
                         <li key={question.id}>
-                          <span>{question.label}</span>
+                          <span>{t(psychologyQuestionLabelKey(question.id))}</span>
                           <strong>{row.psychologyScores![question.id]}/5</strong>
                         </li>
                       ))}

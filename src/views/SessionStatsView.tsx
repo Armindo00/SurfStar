@@ -191,24 +191,24 @@ export function SessionStatsView() {
       <ScreenHeader title={t('session.liveStatsTitles.technical')} onBack={() => setView(backView)} />
 
       <p className="stats-page__meta">
-        Athlete: <strong>{athleteName}</strong>
+        {t('ui.session.athleteLabel')} <strong>{athleteName}</strong>
       </p>
 
       <div className="kpi-grid">
         <article className="kpi-card">
-          <span className="kpi-card__label">Waves</span>
+          <span className="kpi-card__label">{t('ui.stats.waves')}</span>
           <strong className="kpi-card__value">{stats.waveStats.totalWaves}</strong>
         </article>
         <article className="kpi-card kpi-card--accent">
-          <span className="kpi-card__label">With potential</span>
+          <span className="kpi-card__label">{t('ui.stats.withPotential')}</span>
           <strong className="kpi-card__value">{stats.waveStats.withPotential}</strong>
         </article>
         <article className="kpi-card">
-          <span className="kpi-card__label">No potential</span>
+          <span className="kpi-card__label">{t('ui.stats.noPotential')}</span>
           <strong className="kpi-card__value">{stats.waveStats.withoutPotential}</strong>
         </article>
         <article className="kpi-card kpi-card--success">
-          <span className="kpi-card__label">Overall success</span>
+          <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
           <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>
           <RateBar value={stats.overallSuccessRate} />
         </article>

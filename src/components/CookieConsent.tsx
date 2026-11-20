@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getComplaintsBookUrl } from '../legalConfig'
+import { readCookieConsent, writeCookieConsent, type CookieConsentChoice } from '../cookieConsent'
 import { useI18n } from '../i18n'
-
-const STORAGE_KEY = 'surfstar_cookie_consent_v1'
+import { enableSentryAfterConsent } from '../sentry'
 
 export function CookieConsent() {
   const { messages } = useI18n()
@@ -10,11 +9,7 @@ export function CookieConsent() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    try {
-      if (localStorage.getItem(STORAGE_KEY) !== 'accepted') setVisible(true)
-    } catch {
-      setVisible(true)
-    }
+    setVisible(readCookieConsent() === null)
   }, [])
 
   useEffect(() => {
@@ -24,19 +19,16 @@ export function CookieConsent() {
     }
   }, [visible])
 
-  const accept = () => {
-    try {
-      localStorage.setItem(STORAGE_KEY, 'accepted')
-    } catch {
-      /* ignore */
-    }
+  const choose = (choice: CookieConsentChoice) => {
+    writeCookieConsent(choice)
+    if (choice === 'all') enableSentryAfterConsent()
     setVisible(false)
   }
 
   if (!visible) return null
 
   return (
-    <div className="cookie-consent" role="dialog" aria-label={c.ariaLabel}>
+    <div className="cookie-consent" role="dialog" aria-label={c.ariaLabel} aria-live="polite">
       <div className="cookie-consent__inner">
         <p className="cookie-consent__text">
           {c.text}{' '}
@@ -46,16 +38,11 @@ export function CookieConsent() {
           .
         </p>
         <div className="cookie-consent__actions">
-          <a
-            href={getComplaintsBookUrl()}
-            className="cookie-consent__link cookie-consent__link--muted"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {c.complaintsBook}
-          </a>
-          <button type="button" className="btn btn--gold btn--small" onClick={accept}>
-            {c.accept}
+          <button type="button" className="btn btn--ghost btn--small" onClick={() => choose('essential')}>
+            {c.essentialOnly}
+          </button>
+          <button type="button" className="btn btn--gold btn--small" onClick={() => choose('all')}>
+            {c.acceptAll}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { CookieConsent } from './components/CookieConsent'
+import { SyncStatusBanner } from './components/SyncStatusBanner'
 import { ToastProvider } from './components/ToastProvider'
 import { AppProvider, useApp } from './AppContext'
 import { I18nProvider, useI18n } from './i18n'
@@ -258,6 +259,7 @@ function Shell() {
   return (
     <div className="app-shell">
       <InstallAppBanner />
+      <SyncStatusBanner />
       <div className="app-shell__inner">
         <AppHeader />
         <main className="app-main">

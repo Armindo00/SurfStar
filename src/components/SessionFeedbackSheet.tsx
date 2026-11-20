@@ -4,11 +4,12 @@ import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
 import { formatShortDate } from '../dateFormat'
 import {
-  createDefaultPsychologySurveyScores,
-  PSYCHOLOGY_SURVEY_COACH_NOTE_PROMPT,
+  createEmptyPsychologySurveyScores,
+  isPsychologySurveyComplete,
   PSYCHOLOGY_SURVEY_QUESTIONS,
+  psychologyQuestionLabelKey,
+  type PsychologySurveyDraftScores,
   type PsychologySurveyKey,
-  type PsychologySurveyScores,
 } from '../psychologySurvey'
 import { trainingModeLabel } from '../i18n/labels'
 import type { TrainingSession } from '../types'
@@ -28,7 +29,7 @@ function PsychologyScaleRow({
   highLabel,
 }: {
   label: string
-  value: number
+  value: number | null
   onChange: (value: number) => void
   scaleHint?: string
   lowLabel?: string
@@ -43,7 +44,9 @@ function PsychologyScaleRow({
           <button
             key={score}
             type="button"
-            className={value === score ? 'psych-survey-row__btn psych-survey-row__btn--active' : 'psych-survey-row__btn'}
+            className={
+              value === score ? 'psych-survey-row__btn psych-survey-row__btn--active' : 'psych-survey-row__btn'
+            }
             aria-pressed={value === score}
             onClick={() => onChange(score)}
           >
@@ -65,7 +68,7 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
   const { submitSessionFeedback } = useApp()
   const { t, messages } = useI18n()
   const sf = messages.components.sessionFeedback
-  const [scores, setScores] = useState<PsychologySurveyScores>(createDefaultPsychologySurveyScores)
+  const [scores, setScores] = useState<PsychologySurveyDraftScores>(createEmptyPsychologySurveyScores)
   const [writtenNote, setWrittenNote] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -76,8 +79,10 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
     return `${trainingModeLabel(session.mode)} · ${formatShortDate(endedAt)}`
   }, [session])
 
+  const complete = isPsychologySurveyComplete(scores)
+
   useEffect(() => {
-    setScores(createDefaultPsychologySurveyScores())
+    setScores(createEmptyPsychologySurveyScores())
     setWrittenNote('')
     setError('')
     setBusy(false)
@@ -93,6 +98,10 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
 
   const submit = async () => {
     if (busy) return
+    if (!isPsychologySurveyComplete(scores)) {
+      setError(t('components.sessionFeedback.answerAllRequired'))
+      return
+    }
     setError('')
     setBusy(true)
     try {
@@ -139,7 +148,7 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
           {PSYCHOLOGY_SURVEY_QUESTIONS.map((question) => (
             <PsychologyScaleRow
               key={question.id}
-              label={question.label}
+              label={t(psychologyQuestionLabelKey(question.id))}
               value={scores[question.id]}
               scaleHint={question.id === 'mentalFatigue' ? sf.fatigueScaleHint : undefined}
               lowLabel={question.id === 'mentalFatigue' ? sf.fatigueScaleLow : undefined}
@@ -150,7 +159,9 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
         </div>
 
         <label className="field field--pro">
-          <span>{PSYCHOLOGY_SURVEY_COACH_NOTE_PROMPT} ({sf.optionalSuffix})</span>
+          <span>
+            {t('components.sessionFeedback.coachNotePrompt')} ({sf.optionalSuffix})
+          </span>
           <textarea
             rows={3}
             value={writtenNote}
@@ -166,7 +177,7 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
         ) : null}
 
         <div className="session-feedback-sheet__actions">
-          <button type="submit" className="btn btn--primary btn--block" disabled={busy}>
+          <button type="submit" className="btn btn--primary btn--block" disabled={busy || !complete}>
             {busy ? t('common.sending') : sf.submit}
           </button>
           <button type="button" className="btn btn--ghost btn--block" disabled={busy} onClick={onSkip}>
