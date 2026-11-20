@@ -8878,7 +8878,8 @@ body.has-cookie-consent {
 .athlete-report-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 120;
+  /* Above cookie consent (10000) and other app overlays */
+  z-index: 10050;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8886,16 +8887,17 @@ body.has-cookie-consent {
   overflow: hidden;
   padding: 1rem;
   color-scheme: light;
+  overscroll-behavior: none;
 }
 
 .athlete-report-print-root,
 .athlete-report-sheet {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: min(52rem, 100%);
   max-width: 52rem;
-  max-height: min(100%, calc(100dvh - 2rem));
-  height: min(100%, calc(100dvh - 2rem));
+  height: calc(100dvh - 2rem);
+  max-height: calc(100dvh - 2rem);
   min-height: 0;
   margin: 0 auto;
   background: #f1f5f9;
@@ -8955,6 +8957,8 @@ body.has-cookie-consent {
   overscroll-behavior: contain;
   touch-action: pan-y;
   padding: 0.75rem 1rem 1rem;
+  /* Only scrollport in the sheet — nested regions must not steal wheel/touch */
+  isolation: isolate;
 }
 
 .athlete-report-sheet__comments {
@@ -9027,9 +9031,12 @@ body.has-cookie-consent {
 
   .athlete-report-print-root,
   .athlete-report-sheet {
+    position: absolute;
+    inset: 0;
+    width: 100%;
     max-width: none;
-    max-height: 100dvh;
-    height: 100dvh;
+    height: auto;
+    max-height: none;
     border-radius: 0;
     box-shadow: none;
   }
@@ -9299,14 +9306,46 @@ body.has-cookie-consent {
   margin-top: 0.35rem;
 }
 
-/* overflow-x:auto alone promotes overflow-y to auto and traps vertical touch scroll */
+/*
+ * Do NOT create nested overflow scrollports inside the preview body.
+ * overflow-x:auto (even with overflow-y:hidden) still captures wheel/touch
+ * and eats vertical scrolling. Fit tables to the pane instead.
+ */
 .athlete-report .table-wrap,
 .athlete-report__table-wrap.table-wrap {
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior: contain;
-  touch-action: pan-x pan-y;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible !important; /* beat global .table-wrap { overflow-x: auto } */
+  max-width: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.athlete-report__table th,
+.athlete-report__table td {
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+.athlete-report__table th:nth-child(1),
+.athlete-report__table td:nth-child(1) {
+  width: 22%;
+  white-space: nowrap;
+}
+
+.athlete-report__table th:nth-child(2),
+.athlete-report__table td:nth-child(2) {
+  width: 18%;
+}
+
+.athlete-report__table th:nth-child(3),
+.athlete-report__table td:nth-child(3) {
+  width: 20%;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.athlete-report__table th:nth-child(4),
+.athlete-report__table td:nth-child(4) {
+  width: 40%;
 }
 
 .athlete-report__chart-stack {
@@ -9334,7 +9373,7 @@ body.has-cookie-consent {
   pointer-events: none;
   display: block;
   width: 100%;
-  max-width: 22rem;
+  max-width: min(22rem, 100%);
   height: auto;
 }
 
@@ -9506,6 +9545,8 @@ body.has-cookie-consent {
 }
 
 .athlete-report__table {
+  width: 100%;
+  table-layout: fixed;
   font-size: 0.82rem;
 }
 
@@ -9542,10 +9583,28 @@ body.has-cookie-consent {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .athlete-report .table-wrap {
-    -webkit-overflow-scrolling: touch;
-    overflow-x: auto;
-    overflow-y: hidden;
+  .athlete-report__table {
+    font-size: 0.74rem;
+  }
+
+  .athlete-report__table th:nth-child(1),
+  .athlete-report__table td:nth-child(1) {
+    width: 24%;
+  }
+
+  .athlete-report__table th:nth-child(2),
+  .athlete-report__table td:nth-child(2) {
+    width: 20%;
+  }
+
+  .athlete-report__table th:nth-child(3),
+  .athlete-report__table td:nth-child(3) {
+    width: 22%;
+  }
+
+  .athlete-report__table th:nth-child(4),
+  .athlete-report__table td:nth-child(4) {
+    width: 34%;
   }
 }
 
