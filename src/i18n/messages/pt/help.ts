@@ -21,7 +21,7 @@ export const help = {
       planLabel: 'Todos os planos',
       summary: 'Registo onda a onda para manobras rail, top turn e progressive — com nível, lado e sucesso.',
       steps: [
-        'Toca Nova sessão → escolhe Treino técnico, spot e condições de mar.',
+        'Toca Nova sessão → escolhe Treino técnico → define spot e condições.',
         'Seleciona os atletas que treinam e toca Iniciar sessão.',
         'Toca num tile de atleta para abrir a folha de registo da onda atual.',
         'Regista cada manobra (R / T / P), escolhe o nível (1–3 ou ★), frontside ou backside, e sucesso ou falha.',
@@ -32,7 +32,7 @@ export const help = {
       planLabel: 'Todos os planos',
       summary: 'Acompanha sequências de manobras ligadas (combos) com níveis e taxas de sucesso.',
       steps: [
-        'Toca Nova sessão → escolhe Combos, depois spot e condições.',
+        'Toca Nova sessão → escolhe Combos → define spot e condições.',
         'Seleciona atletas e inicia a sessão.',
         'Por cada onda, toca no atleta e regista o nível de combo alcançado (Combo 1–3 ou ★).',
         'Marca sucesso ou falha nessa tentativa de combo.',
@@ -43,7 +43,7 @@ export const help = {
       planLabel: 'Plano Coach e superiores',
       summary: 'Corre um heat cronometrado — pontua cada atleta onda a onda como num heat de competição.',
       steps: [
-        'Toca Nova sessão → escolhe Heats e define a duração (ex.: 15 ou 20 minutos).',
+        'Toca Nova sessão → escolhe Heats → define duração (ex.: 15 ou 20 minutos), spot e condições.',
         'Seleciona até quatro atletas para o heat e inicia.',
         'Regista cada onda com pontuações e interferências à medida que acontecem.',
         'Quando o heat termina, revê classificações e totais no ecrã do heat.',
@@ -54,7 +54,7 @@ export const help = {
       planLabel: 'Plano Coach e superiores',
       summary: 'Competição eliminatória completa — adiciona todos os surfistas, escolhe tamanho do heat (2 ou 4), e o SurfStar constrói todas as rondas até à final.',
       steps: [
-        'Toca Nova sessão → Campeonato, define duração do heat e surfistas por heat (2 = avança o 1.º, 4 = avançam os 2 primeiros).',
+        'Toca Nova sessão → escolhe Campeonato → define duração, surfistas por heat, spot e condições.',
         'Seleciona todos os atletas do campeonato e toca Iniciar campeonato.',
         'O SurfStar divide a ronda inicial em heats de 3 ou 4 (ex.: quartos de final com 8 surfistas = 2 heats de 4).',
         'Quando uma ronda tem vários heats, toca Iniciar todos os heats — partilham um relógio e pontuas cada heat lado a lado.',
@@ -65,7 +65,7 @@ export const help = {
       planLabel: 'Coach Premium',
       summary: 'Observação oceânica cronometrada de 30 minutos em dois picos — regista tipos de onda e obtém recomendação de pico.',
       steps: [
-        'Toca Nova sessão → escolhe Análise de mar, spot e condições (sem atletas necessários).',
+        'Toca Nova sessão → escolhe Análise de mar → define spot e condições (sem atletas necessários).',
         'Inicia a sessão e toca Iniciar temporizador quando começares a observar.',
         'Regista tipos de onda no Pico 1 e Pico 2 à medida que chegam os sets (sets, intermédias, ondas pequenas).',
         'O SurfStar pontua cada pico e mostra qual está a funcionar melhor.',
@@ -77,7 +77,7 @@ export const help = {
       summary: 'O teu formato de treino — botões de skill personalizados, níveis, sucesso/falha, temporizador e regras escritas.',
       steps: [
         'Vai a Modelos de treino personalizado e cria um modelo (botões, níveis, temporizador, regras).',
-        'Toca Nova sessão → escolhe Treino personalizado e seleciona o teu modelo.',
+        'Toca Nova sessão → escolhe Treino personalizado → seleciona o modelo, spot e condições.',
         'Seleciona atletas e inicia — o registo mostra os teus botões personalizados em vez das manobras integradas.',
         'Toca num botão de skill, escolhe nível e resultado, e regista diretamente ou por onda conforme o modelo.',
         'Se o temporizador estiver ativo, inicia-o na folha de registo quando o exercício começar.',

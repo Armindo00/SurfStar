@@ -7,6 +7,7 @@ import {
   previewBracketRounds,
 } from '../championshipUtils'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { SessionSetupSteps } from '../components/SessionSetupSteps'
 import { MAX_HEAT_ATHLETES } from '../heatUtils'
 
 export function SelectAthletes() {
@@ -49,8 +50,9 @@ export function SelectAthletes() {
   if (isSeaAnalysis) {
     return (
       <div className="ss-flow">
-        <ScreenHeader title={t('nav.seaAnalysis')} onBack={() => setView('start-session')} />
+        <ScreenHeader title={t('nav.seaAnalysis')} onBack={() => setView('configure-session')} />
         <div className="ss-card">
+          <SessionSetupSteps current={3} />
           <h2 className="page-title">{t('ui.selectAthletes.readyToObserve')}</h2>
           <p className="muted">{t('ui.selectAthletes.readyToObserveHint')}</p>
           <button type="button" className="btn btn--primary btn--block btn--lg" onClick={confirmAthletesAndStart}>
@@ -74,9 +76,10 @@ export function SelectAthletes() {
 
   return (
     <div className="ss-flow">
-      <ScreenHeader title={t('nav.athletesInSession')} onBack={() => setView('start-session')} />
+      <ScreenHeader title={t('nav.athletesInSession')} onBack={() => setView('configure-session')} />
 
       <div className="ss-card">
+        <SessionSetupSteps current={3} />
         <h2 className="page-title">{t('ui.selectAthletes.whoIsTraining')}</h2>
         <p className="muted">{selectHint}</p>
 

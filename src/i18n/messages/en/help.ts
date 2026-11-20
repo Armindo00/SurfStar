@@ -22,7 +22,7 @@ export const help = {
       summary:
         'Wave-by-wave logging for rail, top turn, and progressive maneuvers — with level, side, and success tracking.',
       steps: [
-        'Tap New session → choose Technical training, spot, and sea conditions.',
+        'Tap New session → choose Technical training → set spot and conditions.',
         'Select the athletes who are training, then tap Start session.',
         'Tap an athlete tile to open the register sheet for their current wave.',
         'Log each maneuver (R / T / P), pick the level (1–3 or ★), frontside or backside, and success or miss.',
@@ -33,7 +33,7 @@ export const help = {
       planLabel: 'All plans',
       summary: 'Track linked maneuver sequences (combos) with levels and success rates.',
       steps: [
-        'Tap New session → choose Combos, then spot and conditions.',
+        'Tap New session → choose Combos → set spot and conditions.',
         'Select athletes and start the session.',
         'For each wave, tap the athlete and log the combo level achieved (Combo 1–3 or ★).',
         'Mark success or fail for that combo attempt.',
@@ -44,7 +44,7 @@ export const help = {
       planLabel: 'Coach plan and above',
       summary: 'Run a single timed heat — score each athlete wave-by-wave like a contest heat.',
       steps: [
-        'Tap New session → choose Heats and set the heat length (e.g. 15 or 20 minutes).',
+        'Tap New session → choose Heats → set heat length, spot, and conditions.',
         'Select up to four athletes for the heat, then start.',
         'Log each wave with scores and interferences as they happen.',
         'When the heat ends, review placements and totals on the heat screen.',
@@ -56,7 +56,7 @@ export const help = {
       summary:
         'Full knockout contest — add all surfers, pick heat size (2 or 4), and SurfStar builds every round until the final.',
       steps: [
-        'Tap New session → Championship, set heat length and surfers per heat (2 = top 1 advances, 4 = top 2 advance).',
+        'Tap New session → choose Championship → set heat length, surfers per heat, spot, and conditions.',
         'Select all athletes in the contest and tap Start championship.',
         'SurfStar splits the opening round into heats of 3 or 4 (e.g. quarterfinals with 8 surfers = 2 heats of 4).',
         'When a round has multiple heats, tap Start all heats — they share one clock and you score each heat side by side.',
@@ -68,7 +68,7 @@ export const help = {
       summary:
         'Timed 30-minute ocean observation on two peaks — log wave types and get a peak recommendation.',
       steps: [
-        'Tap New session → choose Sea analysis, spot, and conditions (no athletes needed).',
+        'Tap New session → choose Sea analysis → set spot and conditions (no athletes needed).',
         'Start the session and tap Start timer when you begin observing.',
         'Log wave types on Peak 1 and Peak 2 as sets arrive (sets, intermediates, small waves).',
         'SurfStar scores each peak and shows which one is firing best.',
@@ -81,7 +81,7 @@ export const help = {
         'Your own training format — custom skill buttons, levels, success/fail, timer, and written rules.',
       steps: [
         'Go to Custom training templates and create a template (buttons, levels, timer, rules).',
-        'Tap New session → choose Custom training and pick your template.',
+        'Tap New session → choose Custom training → pick template, spot, and conditions.',
         'Select athletes and start — the register shows your custom buttons instead of built-in maneuvers.',
         'Tap a skill button, pick level and outcome, and log directly or per wave depending on your template.',
         'If a timer is enabled, start it from the register sheet when your drill begins.',
