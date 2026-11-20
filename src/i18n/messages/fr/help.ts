@@ -21,7 +21,7 @@ export const help = {
       planLabel: 'Tous les forfaits',
       summary: 'Enregistrement vague par vague pour rail, top turn et progressive — avec niveau, côté et réussite.',
       steps: [
-        'Appuyez sur Nouvelle session → choisissez Entraînement technique, spot et conditions mer.',
+        'Appuyez sur Nouvelle session → choisissez Entraînement technique → définissez spot et conditions.',
         'Sélectionnez les athlètes qui s\'entraînent, puis appuyez sur Démarrer la session.',
         'Appuyez sur une tuile athlète pour ouvrir la feuille de saisie de la vague en cours.',
         'Enregistrez chaque manœuvre (R / T / P), choisissez le niveau (1–3 ou ★), frontside ou backside, et réussite ou échec.',
@@ -32,7 +32,7 @@ export const help = {
       planLabel: 'Tous les forfaits',
       summary: 'Suivez les séquences de manœuvres liées (combos) avec niveaux et taux de réussite.',
       steps: [
-        'Appuyez sur Nouvelle session → choisissez Combos, puis spot et conditions.',
+        'Appuyez sur Nouvelle session → choisissez Combos → définissez spot et conditions.',
         'Sélectionnez les athlètes et démarrez la session.',
         'Pour chaque vague, appuyez sur l\'athlète et enregistrez le niveau de combo atteint (Combo 1–3 ou ★).',
         'Marquez réussite ou échec pour cette tentative de combo.',
@@ -43,7 +43,7 @@ export const help = {
       planLabel: 'Forfait Coach et supérieurs',
       summary: 'Lancez un heat chronométré — scorez chaque athlète vague par vague comme en compétition.',
       steps: [
-        'Appuyez sur Nouvelle session → choisissez Heats et définissez la durée (ex. 15 ou 20 minutes).',
+        'Appuyez sur Nouvelle session → choisissez Heats → définissez durée, spot et conditions.',
         'Sélectionnez jusqu\'à quatre athlètes pour le heat, puis démarrez.',
         'Enregistrez chaque vague avec scores et interférences au fil de l\'eau.',
         'À la fin du heat, consultez classements et totaux sur l\'écran heat.',
@@ -54,7 +54,7 @@ export const help = {
       planLabel: 'Forfait Coach et supérieurs',
       summary: 'Compétition éliminatoire complète — ajoutez tous les surfeurs, choisissez la taille de heat (2 ou 4), et SurfStar construit chaque tour jusqu\'à la finale.',
       steps: [
-        'Appuyez sur Nouvelle session → Championnat, définissez durée du heat et surfeurs par heat (2 = le 1er avance, 4 = les 2 premiers avancent).',
+        'Appuyez sur Nouvelle session → choisissez Championnat → définissez durée, surfeurs par heat, spot et conditions.',
         'Sélectionnez tous les athlètes du concours et appuyez sur Démarrer le championnat.',
         'SurfStar divise le tour d\'ouverture en heats de 3 ou 4 (ex. quarts avec 8 surfeurs = 2 heats de 4).',
         'Quand un tour a plusieurs heats, appuyez sur Démarrer tous les heats — ils partagent une horloge et vous scorez côte à côte.',
@@ -65,7 +65,7 @@ export const help = {
       planLabel: 'Coach Premium',
       summary: 'Observation océanique chronométrée de 30 minutes sur deux pics — enregistrez les types de vagues et obtenez une recommandation de pic.',
       steps: [
-        'Appuyez sur Nouvelle session → choisissez Analyse mer, spot et conditions (aucun athlète requis).',
+        'Appuyez sur Nouvelle session → choisissez Analyse mer → définissez spot et conditions (aucun athlète requis).',
         'Démarrez la session et appuyez sur Démarrer le minuteur quand vous commencez à observer.',
         'Enregistrez les types de vagues sur Pic 1 et Pic 2 à mesure que les sets arrivent (sets, intermédiaires, petites vagues).',
         'SurfStar score chaque pic et montre lequel fonctionne le mieux.',
@@ -77,7 +77,7 @@ export const help = {
       summary: 'Votre format d\'entraînement — boutons de skill personnalisés, niveaux, réussite/échec, minuteur et règles écrites.',
       steps: [
         'Allez dans Modèles d\'entraînement personnalisé et créez un modèle (boutons, niveaux, minuteur, règles).',
-        'Appuyez sur Nouvelle session → choisissez Entraînement personnalisé et sélectionnez votre modèle.',
+        'Appuyez sur Nouvelle session → choisissez Entraînement personnalisé → sélectionnez modèle, spot et conditions.',
         'Sélectionnez les athlètes et démarrez — la saisie affiche vos boutons personnalisés au lieu des manœuvres intégrées.',
         'Appuyez sur un bouton de skill, choisissez niveau et résultat, et enregistrez directement ou par vague selon votre modèle.',
         'Si un minuteur est activé, démarrez-le depuis la feuille de saisie au début de l\'exercice.',

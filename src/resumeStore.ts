@@ -43,7 +43,7 @@ export const ACTIVE_SESSION_FLOW_VIEWS: AppView[] = [
 
 const SESSION_VIEWS = ACTIVE_SESSION_FLOW_VIEWS
 
-const DRAFT_VIEWS: AppView[] = ['start-session', 'select-athletes']
+const DRAFT_VIEWS: AppView[] = ['start-session', 'configure-session', 'select-athletes']
 
 const COACH_NAV_VIEWS: AppView[] = [
   'coach-home',

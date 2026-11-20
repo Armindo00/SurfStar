@@ -21,7 +21,7 @@ export const help = {
       planLabel: 'Todos los planes',
       summary: 'Registro ola a ola para maniobras rail, top turn y progressive — con nivel, lado y éxito.',
       steps: [
-        'Pulsa Nueva sesión → elige Entrenamiento técnico, spot y condiciones de mar.',
+        'Pulsa Nueva sesión → elige Entrenamiento técnico → define spot y condiciones.',
         'Selecciona los atletas que entrenan y pulsa Iniciar sesión.',
         'Pulsa en un tile de atleta para abrir la hoja de registro de la ola actual.',
         'Registra cada maniobra (R / T / P), elige el nivel (1–3 o ★), frontside o backside, y éxito o fallo.',
@@ -32,7 +32,7 @@ export const help = {
       planLabel: 'Todos los planes',
       summary: 'Sigue secuencias de maniobras enlazadas (combos) con niveles y tasas de éxito.',
       steps: [
-        'Pulsa Nueva sesión → elige Combos, luego spot y condiciones.',
+        'Pulsa Nueva sesión → elige Combos → define spot y condiciones.',
         'Selecciona atletas e inicia la sesión.',
         'Por cada ola, pulsa el atleta y registra el nivel de combo conseguido (Combo 1–3 o ★).',
         'Marca éxito o fallo en ese intento de combo.',
@@ -43,7 +43,7 @@ export const help = {
       planLabel: 'Plan Coach y superiores',
       summary: 'Corre un heat cronometrado — puntúa cada atleta ola a ola como en un heat de competición.',
       steps: [
-        'Pulsa Nueva sesión → elige Heats y define la duración (ej. 15 o 20 minutos).',
+        'Pulsa Nueva sesión → elige Heats → define duración, spot y condiciones.',
         'Selecciona hasta cuatro atletas para el heat e inicia.',
         'Registra cada ola con puntuaciones e interferencias según ocurren.',
         'Al terminar el heat, revisa clasificaciones y totales en la pantalla del heat.',
@@ -54,7 +54,7 @@ export const help = {
       planLabel: 'Plan Coach y superiores',
       summary: 'Competición eliminatoria completa — añade todos los surfistas, elige tamaño de heat (2 o 4), y SurfStar construye todas las rondas hasta la final.',
       steps: [
-        'Pulsa Nueva sesión → Campeonato, define duración del heat y surfistas por heat (2 = avanza el 1.º, 4 = avanzan los 2 primeros).',
+        'Pulsa Nueva sesión → elige Campeonato → define duración, surfistas por heat, spot y condiciones.',
         'Selecciona todos los atletas del campeonato y pulsa Iniciar campeonato.',
         'SurfStar divide la ronda inicial en heats de 3 o 4 (ej. cuartos con 8 surfistas = 2 heats de 4).',
         'Cuando una ronda tiene varios heats, pulsa Iniciar todos los heats — comparten un reloj y puntúas cada heat lado a lado.',
@@ -65,7 +65,7 @@ export const help = {
       planLabel: 'Coach Premium',
       summary: 'Observación oceánica cronometrada de 30 minutos en dos picos — registra tipos de ola y obtén recomendación de pico.',
       steps: [
-        'Pulsa Nueva sesión → elige Análisis de mar, spot y condiciones (no se requieren atletas).',
+        'Pulsa Nueva sesión → elige Análisis de mar → define spot y condiciones (no se requieren atletas).',
         'Inicia la sesión y pulsa Iniciar temporizador cuando empieces a observar.',
         'Registra tipos de ola en Pico 1 y Pico 2 según llegan los sets (sets, intermedias, olas pequeñas).',
         'SurfStar puntúa cada pico y muestra cuál funciona mejor.',
@@ -77,7 +77,7 @@ export const help = {
       summary: 'Tu formato de entrenamiento — botones de skill personalizados, niveles, éxito/fallo, temporizador y reglas escritas.',
       steps: [
         'Ve a Plantillas de entrenamiento personalizado y crea una plantilla (botones, niveles, temporizador, reglas).',
-        'Pulsa Nueva sesión → elige Entrenamiento personalizado y selecciona tu plantilla.',
+        'Pulsa Nueva sesión → elige Entrenamiento personalizado → selecciona plantilla, spot y condiciones.',
         'Selecciona atletas e inicia — el registro muestra tus botones personalizados en lugar de maniobras integradas.',
         'Pulsa un botón de skill, elige nivel y resultado, y registra directamente o por ola según tu plantilla.',
         'Si hay temporizador, inícialo desde la hoja de registro cuando empiece el ejercicio.',

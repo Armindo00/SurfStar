@@ -44,6 +44,7 @@ import { SelectAthletes } from './views/SelectAthletes'
 import { SeaAnalysisSessionView } from './views/SeaAnalysisSessionView'
 import { SessionHistoryDetailView } from './views/SessionHistoryDetailView'
 import { SessionStatsView } from './views/SessionStatsView'
+import { ConfigureSession } from './views/ConfigureSession'
 import { StartSession } from './views/StartSession'
 import { TeamAnalyticsView } from './views/TeamAnalyticsView'
 import { TrainingSessionsView } from './views/TrainingSessionsView'
@@ -295,6 +296,9 @@ function Shell() {
           {role === 'atleta' && <AthletePortal />}
           {role === 'treinador' && !coachMenuFullScreen && view === 'coach-home' && <CoachHome />}
           {role === 'treinador' && !coachMenuFullScreen && view === 'start-session' && <StartSession />}
+          {role === 'treinador' && !coachMenuFullScreen && view === 'configure-session' && (
+            <ConfigureSession />
+          )}
           {role === 'treinador' && !coachMenuFullScreen && view === 'select-athletes' && <SelectAthletes />}
           {role === 'treinador' && !coachMenuFullScreen && view === 'training' && <TrainingSessionView />}
           {role === 'treinador' && !coachMenuFullScreen && view === 'combos' && <CombosSessionView />}

@@ -4,6 +4,7 @@ export const nav = {
   manageAthletes: 'Gestionar atletas',
   athletesAndPairing: 'Atletas y emparejamiento',
   newSession: 'Nueva sesión',
+  sessionSettings: 'Ajustes de sesión',
   teamAndCoaches: 'Equipo y entrenadores',
   teamAcademySuffix: ' · Team Academy',
   spotsAndConditions: 'Spots y condiciones',

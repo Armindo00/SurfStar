@@ -35,6 +35,7 @@ export type TrainingMode = 'tecnico' | 'combos' | 'heats' | 'campeonato' | 'sea-
 export type AppView =
   | 'coach-home'
   | 'start-session'
+  | 'configure-session'
   | 'select-athletes'
   | 'training'
   | 'combos'
