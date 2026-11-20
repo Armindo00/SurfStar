@@ -23,21 +23,18 @@ function PsychologyScaleRow({
   label,
   value,
   onChange,
-  reverseScale = false,
-  reverseHint,
+  scaleHint,
 }: {
   label: string
   value: number
   onChange: (value: number) => void
-  reverseScale?: boolean
-  reverseHint?: string
+  scaleHint?: string
 }) {
-  const scores = reverseScale ? [5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5]
   return (
-    <div className={reverseScale ? 'psych-survey-row psych-survey-row--reversed' : 'psych-survey-row'}>
+    <div className="psych-survey-row">
       <p className="psych-survey-row__label">{label}</p>
       <div className="psych-survey-row__scale" role="group" aria-label={label}>
-        {scores.map((score) => (
+        {[0, 1, 2, 3, 4, 5].map((score) => (
           <button
             key={score}
             type="button"
@@ -49,9 +46,7 @@ function PsychologyScaleRow({
           </button>
         ))}
       </div>
-      {reverseScale && reverseHint ? (
-        <p className="psych-survey-row__hint muted">{reverseHint}</p>
-      ) : null}
+      {scaleHint ? <p className="psych-survey-row__hint muted">{scaleHint}</p> : null}
     </div>
   )
 }
@@ -136,8 +131,7 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
               key={question.id}
               label={question.label}
               value={scores[question.id]}
-              reverseScale={Boolean(question.reverseScale)}
-              reverseHint={question.reverseScale ? sf.fatigueScaleHint : undefined}
+              scaleHint={question.id === 'mentalFatigue' ? sf.fatigueScaleHint : undefined}
               onChange={(value) => setScore(question.id, value)}
             />
           ))}
