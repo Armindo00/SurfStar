@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useToast } from './ToastProvider'
 import { AthleteReportPreview } from './AthleteReportPreview'
@@ -70,12 +70,56 @@ export function AthleteReportSheet({
     date: generatedDateLabel,
   })
 
+  const bodyRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow
+    const scrollY = window.scrollY
+    const { overflow, position, top, width, left, right } = document.body.style
     document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.left = '0'
+    document.body.style.right = '0'
+    document.body.style.width = '100%'
     return () => {
-      document.body.style.overflow = previousOverflow
+      document.body.style.overflow = overflow
+      document.body.style.position = position
+      document.body.style.top = top
+      document.body.style.left = left
+      document.body.style.right = right
+      document.body.style.width = width
+      window.scrollTo(0, scrollY)
     }
+  }, [])
+
+  // Nested overflow-x regions (if any remain) eat vertical wheel — forward to the sheet body.
+  useEffect(() => {
+    const root = bodyRef.current
+    if (!root) return
+
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) return
+      const target = event.target
+      if (!(target instanceof Element)) return
+      if (!root.contains(target)) return
+      if (target === root || target.classList.contains('athlete-report-sheet__body')) return
+
+      let node: Element | null = target
+      while (node && node !== root) {
+        const style = window.getComputedStyle(node)
+        const oy = style.overflowY
+        const canScrollY =
+          (oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 1
+        if (canScrollY) return
+        node = node.parentElement
+      }
+
+      root.scrollTop += event.deltaY
+      event.preventDefault()
+    }
+
+    root.addEventListener('wheel', onWheel, { passive: false, capture: true })
+    return () => root.removeEventListener('wheel', onWheel, true)
   }, [])
 
   const pdfPayload = useMemo(
@@ -187,7 +231,7 @@ export function AthleteReportSheet({
           </div>
         </header>
 
-        <div className="athlete-report-sheet__body">
+        <div className="athlete-report-sheet__body" ref={bodyRef}>
           <details className="athlete-report-sheet__comments">
             <summary>{r.coachCommentsOptional}</summary>
             <label className="field field--pro athlete-report__comment-field">
