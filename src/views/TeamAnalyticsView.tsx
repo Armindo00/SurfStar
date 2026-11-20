@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useI18n } from '../i18n'
 import { AnalyticsRangePicker } from '../components/AnalyticsRangePicker'
 import { AthleteReportSheet } from '../components/AthleteReportSheet'
@@ -44,7 +44,16 @@ type AthleteProfileSection = 'training' | 'psychology' | 'material'
 
 export function TeamAnalyticsView() {
   const { t } = useI18n()
-  const { coachAthletes, trainingSessions, auth, coachPlanId, getSpot, setView, sessionAthleteFeedback } = useApp()
+  const {
+    coachAthletes,
+    trainingSessions,
+    auth,
+    coachPlanId,
+    getSpot,
+    setView,
+    sessionAthleteFeedback,
+    refreshAthleteEquipment,
+  } = useApp()
   const [search, setSearch] = useState('')
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null)
   const [range, setRange] = useState<AnalyticsRange>(() => presetAnalyticsRange('6m'))
@@ -55,6 +64,13 @@ export function TeamAnalyticsView() {
   const hasAccess = canAccessTeamAnalytics(coachPlanId)
   const psychologyAvailable = canUsePsychologyCheckins(coachPlanId)
   const coachId = auth?.role === 'treinador' ? auth.coachId : null
+
+  // Prefetch session feedback (and equipment) when an athlete is selected —
+  // psychology panel and PDF report both depend on sessionAthleteFeedback.
+  useEffect(() => {
+    if (!selectedAthleteId) return
+    void refreshAthleteEquipment(selectedAthleteId)
+  }, [refreshAthleteEquipment, selectedAthleteId])
 
   const filteredAthletes = useMemo(() => {
     const q = search.trim().toLowerCase()

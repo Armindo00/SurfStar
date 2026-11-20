@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
 import {
@@ -19,8 +19,20 @@ type Props = {
 }
 
 export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: Props) {
-  const { sessionAthleteFeedback } = useApp()
+  const { sessionAthleteFeedback, refreshAthleteEquipment } = useApp()
   const { t } = useI18n()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    void refreshAthleteEquipment(athleteId).finally(() => {
+      if (!cancelled) setLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [athleteId, refreshAthleteEquipment])
 
   const psychology = useMemo(
     () =>
@@ -35,6 +47,17 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
   )
 
   const periodLabel = describeAnalyticsRange(range)
+
+  if (loading) {
+    return (
+      <div className="athlete-psychology-panel">
+        <div className="ss-card stats-panel athlete-psychology-panel__intro">
+          <h2 className="stats-panel__title">{t('ui.psychology.psychologicalProfile')}</h2>
+          <p className="muted stats-panel__sub">{t('common.pleaseWait')}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="athlete-psychology-panel">
