@@ -24,15 +24,20 @@ function PsychologyScaleRow({
   value,
   onChange,
   scaleHint,
+  lowLabel,
+  highLabel,
 }: {
   label: string
   value: number
   onChange: (value: number) => void
   scaleHint?: string
+  lowLabel?: string
+  highLabel?: string
 }) {
   return (
     <div className="psych-survey-row">
       <p className="psych-survey-row__label">{label}</p>
+      {scaleHint ? <p className="psych-survey-row__hint muted">{scaleHint}</p> : null}
       <div className="psych-survey-row__scale" role="group" aria-label={label}>
         {[0, 1, 2, 3, 4, 5].map((score) => (
           <button
@@ -46,7 +51,12 @@ function PsychologyScaleRow({
           </button>
         ))}
       </div>
-      {scaleHint ? <p className="psych-survey-row__hint muted">{scaleHint}</p> : null}
+      {lowLabel && highLabel ? (
+        <div className="psych-survey-row__ends" aria-hidden="true">
+          <span>0 · {lowLabel}</span>
+          <span>5 · {highLabel}</span>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -132,6 +142,8 @@ export function SessionFeedbackSheet({ session, onSubmitted, onSkip }: Props) {
               label={question.label}
               value={scores[question.id]}
               scaleHint={question.id === 'mentalFatigue' ? sf.fatigueScaleHint : undefined}
+              lowLabel={question.id === 'mentalFatigue' ? sf.fatigueScaleLow : undefined}
+              highLabel={question.id === 'mentalFatigue' ? sf.fatigueScaleHigh : undefined}
               onChange={(value) => setScore(question.id, value)}
             />
           ))}
