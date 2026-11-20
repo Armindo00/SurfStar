@@ -687,6 +687,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   draftRef.current = draft
   const trainingSessionsRef = useRef(trainingSessions)
   trainingSessionsRef.current = trainingSessions
+  const activeSessionIdRef = useRef(activeSessionId)
+  activeSessionIdRef.current = activeSessionId
   const [pendingLeaveView, setPendingLeaveView] = useState<AppView | null>(null)
   const [historySessionId, setHistorySessionId] = useState<string | null>(null)
   const [historySessionSnapshot, setHistorySessionSnapshot] = useState<TrainingSession | null>(null)
@@ -794,7 +796,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const orgId = session.organizationId
       const coachId = session.coachId
       const snapshot = next
-      setSessionsSyncStatus('syncing')
+      // Keep prior error visible until a save succeeds; never flash a layout banner while syncing.
+      setSessionsSyncStatus((status) => (status === 'error' ? 'error' : 'syncing'))
       sessionsSaveChainRef.current = sessionsSaveChainRef.current
         .catch(() => undefined)
         .then(async () => {
@@ -809,12 +812,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (pendingSessionsSyncRef.current === snapshot) {
             pendingSessionsSyncRef.current = null
           }
-          setSessionsSyncStatus('saved')
+          setSessionsSyncStatus('idle')
+          // Quiet during live logging — toasts on every wave break beach UX.
+          if (activeSessionIdRef.current) return
           if (saveToastTimerRef.current) window.clearTimeout(saveToastTimerRef.current)
           saveToastTimerRef.current = window.setTimeout(() => {
             if (generation !== sessionsSaveGenerationRef.current) return
             showToast(t('errors.allChangesSaved'), 'success')
-            setSessionsSyncStatus((status) => (status === 'saved' ? 'idle' : status))
             saveToastTimerRef.current = null
           }, 1200)
         })

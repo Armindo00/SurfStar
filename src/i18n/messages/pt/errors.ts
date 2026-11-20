@@ -35,7 +35,7 @@ export const errors = {
   championshipWinner: '{{name}} venceu o campeonato!',
   championshipHeatReady: '{{label}} está pronto.',
   sessionsSyncing: 'A guardar sessões…',
-  sessionsUnsynced: 'Sessões por sincronizar — verifica a ligação.',
+  sessionsUnsynced: 'Sem sync — verifica a ligação.',
   sessionsRetrySync: 'Tentar novamente',
   subscriptionActivated: 'Subscrição ativada.',
   subscriptionCanceled: 'Subscrição cancelada.',
