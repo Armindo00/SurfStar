@@ -6,7 +6,7 @@ import { useApp } from '../AppContext'
 import { buildAthletePsychologyAnalytics, feedbackHasPsychologySurvey } from '../athletePsychologyStats'
 import { presetAnalyticsRange } from '../analyticsRange'
 import { formatMaterialDate } from '../materialUtils'
-import { PSYCHOLOGY_SURVEY_QUESTIONS } from '../psychologySurvey'
+import { averagePsychologyScore, PSYCHOLOGY_SURVEY_QUESTIONS } from '../psychologySurvey'
 import { mentalStateLabel } from '../mentalState'
 import { canUsePsychologyCheckins } from '../planUtils'
 import { linkHasPsychologyCheckins } from '../psychologyCheckins'
@@ -138,12 +138,7 @@ export function CoachAthleteInsightsView() {
                     <strong>
                       {session ? trainingModeLabel(session.mode) : t('ui.psychology.sessionFallback')}
                       {feedbackHasPsychologySurvey(row)
-                        ? ` · avg ${(
-                            PSYCHOLOGY_SURVEY_QUESTIONS.reduce(
-                              (sum, question) => sum + row.psychologyScores![question.id],
-                              0,
-                            ) / PSYCHOLOGY_SURVEY_QUESTIONS.length
-                          ).toFixed(1)}/5`
+                        ? ` · avg ${averagePsychologyScore(row.psychologyScores!).toFixed(1)}/5`
                         : row.mentalState
                           ? ` · ${mentalStateLabel(row.mentalState)}`
                           : ''}

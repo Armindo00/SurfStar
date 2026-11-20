@@ -10399,6 +10399,12 @@ a.legal-footer-links__btn {
   color: var(--ss-accent-strong);
 }
 
+.psych-survey-row__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
 .psych-survey-summary {
   list-style: none;
   margin: 0.55rem 0 0;

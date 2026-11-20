@@ -13,7 +13,14 @@ export type PsychologySurveyKey = (typeof PSYCHOLOGY_SURVEY_KEYS)[number]
 
 export type PsychologySurveyScores = Record<PsychologySurveyKey, number>
 
-export const PSYCHOLOGY_SURVEY_QUESTIONS: { id: PsychologySurveyKey; label: string }[] = [
+export type PsychologySurveyQuestion = {
+  id: PsychologySurveyKey
+  label: string
+  /** When true, UI shows 5→0 (high fatigue on the left) and wellbeing averages invert the score. */
+  reverseScale?: boolean
+}
+
+export const PSYCHOLOGY_SURVEY_QUESTIONS: PsychologySurveyQuestion[] = [
   { id: 'mood', label: 'How is your mood?' },
   { id: 'confidenceToContinue', label: 'How confident do you feel about continuing to train?' },
   { id: 'confidenceDuring', label: 'How confident did you feel during the session?' },
@@ -24,8 +31,17 @@ export const PSYCHOLOGY_SURVEY_QUESTIONS: { id: PsychologySurveyKey; label: stri
   },
   { id: 'feltImprovement', label: 'Do you feel you improved in this session?' },
   { id: 'performanceSatisfaction', label: 'How satisfied are you with your performance?' },
-  { id: 'mentalFatigue', label: 'How is your mental fatigue?' },
+  { id: 'mentalFatigue', label: 'How is your mental fatigue?', reverseScale: true },
 ]
+
+export function isPsychologyReverseKey(key: PsychologySurveyKey): boolean {
+  return PSYCHOLOGY_SURVEY_QUESTIONS.some((question) => question.id === key && question.reverseScale)
+}
+
+/** Map a raw 0–5 answer into the wellbeing direction (higher = better). */
+export function psychologyScoreForWellbeing(key: PsychologySurveyKey, score: number): number {
+  return isPsychologyReverseKey(key) ? 5 - score : score
+}
 
 export const PSYCHOLOGY_SURVEY_COACH_NOTE_PROMPT =
   'Is there anything your coach should know about this session?'
@@ -55,7 +71,10 @@ export function isPsychologySurveyScores(value: unknown): value is PsychologySur
 }
 
 export function averagePsychologyScore(scores: PsychologySurveyScores): number {
-  const total = PSYCHOLOGY_SURVEY_KEYS.reduce((sum, key) => sum + scores[key], 0)
+  const total = PSYCHOLOGY_SURVEY_KEYS.reduce(
+    (sum, key) => sum + psychologyScoreForWellbeing(key, scores[key]),
+    0,
+  )
   return Math.round((total / PSYCHOLOGY_SURVEY_KEYS.length) * 10) / 10
 }
 
