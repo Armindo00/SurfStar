@@ -1,5 +1,7 @@
 # Coach transactional emails (manual billing)
 
+Checklist completo de lançamento: [`LAUNCH_OPS.md`](../LAUNCH_OPS.md).
+
 Automatic emails to coaches during the manual payment lifecycle:
 
 | When | Email to coach |

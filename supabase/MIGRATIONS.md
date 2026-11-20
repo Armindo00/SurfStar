@@ -37,6 +37,8 @@ Run **in this order** in Supabase → SQL Editor (once per project):
 | 30 | `patch-business-email-recipients.sql` | Admin alerts + BCC list: contact@surfstar.app + armindoapp@outlook.com |
 | 31 | `patch-renewal-period-stack-on-period-end.sql` | Renewal: +1 month/year from `current_period_end` (early pay keeps unused days) |
 
+**Launch ops (IBAN, SMTP, functions, Vercel, smoke test):** see **[`LAUNCH_OPS.md`](../LAUNCH_OPS.md)** at the repo root.
+
 See **`supabase/RENEWAL_EMAILS.md`** for deploying the daily cron edge function.
 
 See **`supabase/ADMIN_NOTIFY.md`** for deploying instant admin notification emails.
