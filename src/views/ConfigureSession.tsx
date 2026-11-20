@@ -182,9 +182,9 @@ export function ConfigureSession() {
         ) : null}
 
         <div className="form-pro">
-          <p className="field-label">{s('spot')}</p>
           {spots.length === 0 ? (
             <div className="custom-start-empty">
+              <p className="field-label">{s('spot')}</p>
               <p className="muted">{s('noSpotsHint')}</p>
               <button
                 type="button"
