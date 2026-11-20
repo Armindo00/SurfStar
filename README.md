@@ -35,9 +35,10 @@ npm run dev:phone
 1. Copy `.env.example` → `.env` and fill Supabase (manual payments work without Stripe)
 2. Run SQL migrations — see [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md)
 3. Deploy frontend (Vercel) with `VITE_*` env vars
-4. Optional (Stripe Phase 2): payment links + `supabase/functions/stripe-webhook`
+4. Complete the ops checklist — [`LAUNCH_OPS.md`](LAUNCH_OPS.md) (IBAN, SMTP, edge functions, smoke test)
+5. Optional (Stripe Phase 2): payment links + `supabase/functions/stripe-webhook`
 
-See [`DEPLOY_WEB.md`](DEPLOY_WEB.md) for detailed steps.
+See [`DEPLOY_WEB.md`](DEPLOY_WEB.md) for web deploy steps.
 
 ## Scripts
 
@@ -47,6 +48,7 @@ See [`DEPLOY_WEB.md`](DEPLOY_WEB.md) for detailed steps.
 | `npm run build` | Production build |
 | `npm test` | Unit tests |
 | `npm run lint` | ESLint |
+| `npm run ops:verify` | Check launch env / optional remote ops |
 
 ## Plans
 

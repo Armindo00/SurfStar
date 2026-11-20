@@ -11,7 +11,8 @@
     "test": "vitest run",
     "lint": "eslint .",
     "preview": "vite preview",
-    "preview:phone": "vite preview --host"
+    "preview:phone": "vite preview --host",
+    "ops:verify": "node scripts/verify-launch-ops.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.69.0",
