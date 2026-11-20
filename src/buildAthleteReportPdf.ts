@@ -351,27 +351,32 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
     pdf.drawHorizontalBars(input.trainingMix)
   }
 
-  pdf.sectionTitle(L.performanceOverview)
-
+  const performanceLines: string[] = []
   if (input.technical) {
-    pdf.bodyText(
+    performanceLines.push(
       `${L.technicalTraining}: ${input.technical.overallSuccessRate}% ${L.successCol} · ${input.technical.totalManeuvers} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.technical.averageLevel)}`,
     )
   }
   if (input.combo) {
-    pdf.bodyText(
+    performanceLines.push(
       `${L.comboTraining}: ${input.combo.overallSuccessRate}% ${L.successCol} · ${input.combo.totalAttempts} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.combo.averageLevel)}`,
     )
   }
   if (g.heatParticipations > 0) {
-    pdf.bodyText(
+    performanceLines.push(
       `${L.competition}: ${g.heatParticipations} heats · ${g.heatWins} ${L.heatWins} · ${L.avgLevel} ${g.avgHeatScore?.toFixed(1) ?? '—'}`,
     )
   }
   if (input.psychology && input.psychology.checkIns > 0) {
-    pdf.bodyText(
+    performanceLines.push(
       `${L.psychology}: ${input.psychology.checkIns} check-ins · ${L.avgLevel} ${input.psychology.averageOverall?.toFixed(1) ?? '—'}/5`,
     )
+  }
+  if (performanceLines.length > 0) {
+    pdf.sectionTitle(L.performanceOverview)
+    for (const line of performanceLines) {
+      pdf.bodyText(line)
+    }
   }
 
   if (input.sessionRows.length > 0) {

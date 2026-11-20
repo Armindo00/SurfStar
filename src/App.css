@@ -8808,7 +8808,7 @@ a.legal-footer-links__btn {
   inset: 0;
   z-index: 120;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
   background: rgba(15, 23, 42, 0.55);
   overflow: hidden;
@@ -8822,7 +8822,8 @@ a.legal-footer-links__btn {
   flex-direction: column;
   width: 100%;
   max-width: 52rem;
-  max-height: 100%;
+  max-height: min(100%, calc(100dvh - 2rem));
+  height: min(100%, calc(100dvh - 2rem));
   min-height: 0;
   margin: 0 auto;
   background: #f1f5f9;
@@ -8874,12 +8875,13 @@ a.legal-footer-links__btn {
 }
 
 .athlete-report-sheet__body {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  touch-action: pan-y;
   padding: 0.75rem 1rem 1rem;
 }
 
@@ -8947,13 +8949,14 @@ a.legal-footer-links__btn {
 @media (max-width: 767px) {
   .athlete-report-backdrop {
     padding: 0;
+    align-items: stretch;
     background: #f1f5f9;
   }
 
   .athlete-report-print-root,
   .athlete-report-sheet {
     max-width: none;
-    max-height: none;
+    max-height: 100dvh;
     height: 100dvh;
     border-radius: 0;
     box-shadow: none;
@@ -9224,6 +9227,16 @@ a.legal-footer-links__btn {
   margin-top: 0.35rem;
 }
 
+/* overflow-x:auto alone promotes overflow-y to auto and traps vertical touch scroll */
+.athlete-report .table-wrap,
+.athlete-report__table-wrap.table-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
 .athlete-report__chart-stack {
   display: grid;
   gap: 1.1rem;
@@ -9235,6 +9248,7 @@ a.legal-footer-links__btn {
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 12px;
   background: #f8fafc;
+  touch-action: pan-y;
 }
 
 .athlete-report__chart-title {
@@ -9245,6 +9259,7 @@ a.legal-footer-links__btn {
 }
 
 .athlete-report__chart svg {
+  pointer-events: none;
   display: block;
   width: 100%;
   max-width: 22rem;
@@ -9280,6 +9295,7 @@ a.legal-footer-links__btn {
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 12px;
   background: #f8fafc;
+  touch-action: pan-y;
 }
 
 .athlete-report__side-chart-title {
@@ -9456,6 +9472,8 @@ a.legal-footer-links__btn {
 
   .athlete-report .table-wrap {
     -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 }
 

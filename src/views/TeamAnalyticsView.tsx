@@ -431,7 +431,6 @@ export function TeamAnalyticsView() {
             coachName={coachName}
             organizationName={organizationName}
             analytics={analytics}
-            heatAnalytics={heatAnalytics}
             sessionSummaries={sessionSummaries}
             getSpot={getSpot}
             athleteId={selectedAthlete.id}
