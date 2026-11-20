@@ -95,7 +95,9 @@ export const components = {
     skip: 'Saltar por agora',
     submitFailed: 'Não foi possível enviar o check-in. Tenta novamente.',
     checkinSubmitted: 'Check-in enviado. Obrigado!',
-    fatigueScaleHint: '5 = muito fatigada/o · 0 = sem fadiga',
+    fatigueScaleHint: 'Mesma escala que as outras perguntas: quanto mais alto, melhor.',
+    fatigueScaleLow: 'Muito fatigado/a (mau)',
+    fatigueScaleHigh: 'Sem fadiga (bom)',
   },
   installInstructions: {
     alreadyInstalled: 'O SurfStar já está instalado neste dispositivo.',
