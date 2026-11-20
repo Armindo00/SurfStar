@@ -259,7 +259,6 @@ function Shell() {
   return (
     <div className="app-shell">
       <InstallAppBanner />
-      <SyncStatusBanner />
       <div className="app-shell__inner">
         <AppHeader />
         <main className="app-main">
@@ -334,6 +333,7 @@ function Shell() {
         <CloseWaveConfirmSheet />
         <SessionFeedbackPortal />
       </div>
+      <SyncStatusBanner />
     </div>
   )
 }

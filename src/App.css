@@ -8666,29 +8666,45 @@ body.has-cookie-consent {
   padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
 }
 
-.sync-status-banner {
-  position: sticky;
-  top: 0;
-  z-index: 90;
+/* Fixed chip — must not sit in .app-shell flex (that split the mobile viewport). */
+.sync-status-chip {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 110;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  padding: 0.55rem 0.85rem;
-  font-size: 0.84rem;
+  gap: 0.65rem;
+  max-width: min(22rem, calc(100vw - 1.5rem));
+  padding: 0.65rem 0.75rem 0.65rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.94);
+  color: #f8fafc;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.sync-status-chip__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.8rem;
   font-weight: 600;
-  text-align: center;
+  line-height: 1.3;
 }
 
-.sync-status-banner--syncing {
-  background: #e0f2fe;
-  color: #0c4a6e;
-}
-
-.sync-status-banner--error {
-  background: #fef2f2;
-  color: #991b1b;
+.sync-status-chip__retry {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0.35rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: #c9a962;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .cookie-consent__inner {
