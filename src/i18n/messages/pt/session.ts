@@ -215,5 +215,7 @@ export const session = {
     waveLogHint: 'Edita ou remove pontuações individuais se registadas por engano.',
     waveLogEntry: '{{name}} · Onda {{number}} · {{score}}',
     deleteWaveScoreMessage: 'Remover {{score}} de {{name}}? Isto não pode ser revertido.',
+    pressStartHint: 'Carrega em começar para arrancar o relógio do heat',
+    heatFinished: 'Heat terminado',
   },
 } as const

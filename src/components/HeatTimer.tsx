@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '../i18n'
 import { heatRemainingMs } from '../heatUtils'
 import type { HeatRecord } from '../types'
 
@@ -15,7 +16,15 @@ type Props = {
 }
 
 export function HeatTimer({ heat, onTimeUp }: Props) {
+  const { t } = useI18n()
   const [now, setNow] = useState(() => Date.now())
+  const firedRef = useRef(false)
+  const onTimeUpRef = useRef(onTimeUp)
+  onTimeUpRef.current = onTimeUp
+
+  useEffect(() => {
+    firedRef.current = false
+  }, [heat.id, heat.timerStartedAt, heat.endedAt])
 
   useEffect(() => {
     if (!heat.timerStartedAt || heat.endedAt) return
@@ -26,17 +35,18 @@ export function HeatTimer({ heat, onTimeUp }: Props) {
   const remaining = heatRemainingMs(heat, now)
 
   useEffect(() => {
-    if (remaining === 0 && heat.timerStartedAt && !heat.endedAt) {
-      onTimeUp?.()
+    if (remaining === 0 && heat.timerStartedAt && !heat.endedAt && !firedRef.current) {
+      firedRef.current = true
+      onTimeUpRef.current?.()
     }
-  }, [remaining, heat.timerStartedAt, heat.endedAt, onTimeUp])
+  }, [remaining, heat.timerStartedAt, heat.endedAt])
 
   if (!heat.timerStartedAt) {
     return (
       <div className="heat-timer heat-timer--idle">
-        <span className="heat-timer__label">Duration</span>
+        <span className="heat-timer__label">{t('session.heat.duration')}</span>
         <strong className="heat-timer__value">{heat.durationMinutes} min</strong>
-        <span className="muted heat-timer__hint">Press start to run the heat clock</span>
+        <span className="muted heat-timer__hint">{t('session.heat.pressStartHint')}</span>
       </div>
     )
   }
@@ -44,7 +54,7 @@ export function HeatTimer({ heat, onTimeUp }: Props) {
   if (heat.endedAt) {
     return (
       <div className="heat-timer heat-timer--done">
-        <span className="heat-timer__label">Heat finished</span>
+        <span className="heat-timer__label">{t('session.heat.heatFinished')}</span>
         <strong className="heat-timer__value">0:00</strong>
       </div>
     )
@@ -55,7 +65,7 @@ export function HeatTimer({ heat, onTimeUp }: Props) {
 
   return (
     <div className={urgent ? 'heat-timer heat-timer--urgent' : 'heat-timer heat-timer--run'}>
-      <span className="heat-timer__label">Time remaining</span>
+      <span className="heat-timer__label">{t('ui.customTimer.timeRemaining')}</span>
       <strong className="heat-timer__value" aria-live="polite">
         {formatClock(ms)}
       </strong>

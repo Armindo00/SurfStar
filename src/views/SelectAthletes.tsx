@@ -110,11 +110,15 @@ export function SelectAthletes() {
           ) : null}
           {activeCoachAthletes.map((a) => {
             const selected = draft.athleteIds.includes(a.id)
+            const atHeatCap = heatCap && !selected && selectedCount >= MAX_HEAT_ATHLETES
             return (
               <button
                 key={a.id}
                 type="button"
                 className={selected ? 'athlete-tile athlete-tile--selected' : 'athlete-tile'}
+                aria-pressed={selected}
+                disabled={atHeatCap}
+                title={atHeatCap ? t('errors.heatAthleteCap', { max: MAX_HEAT_ATHLETES }) : undefined}
                 onClick={() => toggleAthlete(a.id)}
               >
                 <span className="athlete-tile__avatar" aria-hidden="true">

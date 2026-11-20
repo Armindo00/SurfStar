@@ -223,5 +223,7 @@ export const session = {
     waveLogHint: 'Edit or remove individual scores if logged by mistake.',
     waveLogEntry: '{{name}} · Wave {{number}} · {{score}}',
     deleteWaveScoreMessage: 'Remove {{score}} for {{name}}? This cannot be undone.',
+    pressStartHint: 'Press start to run the heat clock',
+    heatFinished: 'Heat finished',
   },
 } as const

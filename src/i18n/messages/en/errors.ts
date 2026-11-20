@@ -27,4 +27,11 @@ export const errors = {
     'Cannot build a valid bracket with this number of surfers. Each heat needs at least 2 athletes.',
   needCustomTemplate: 'Select a custom training template first.',
   psychologyLoadFailed: 'Could not load psychology check-ins. Check your connection and try again.',
+  saveSessionsFailed: 'Failed to save sessions: {{error}}',
+  heatAthleteCap: 'Heat mode allows up to {{max}} surfers.',
+  finishNamedHeatsBeforeEnd: 'Finish {{labels}} before ending the session.',
+  finishAllHeatsBeforeEnd: 'Finish all heats before ending the session.',
+  finishSessionFailed: 'Could not finish this session. Try again.',
+  championshipWinner: '{{name}} wins the championship!',
+  championshipHeatReady: '{{label}} is ready.',
 } as const

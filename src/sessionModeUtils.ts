@@ -34,6 +34,25 @@ export function liveStatsBackView(session: TrainingSession): AppView {
   return 'training'
 }
 
+export function liveStatsTitleKey(
+  session: TrainingSession,
+):
+  | 'session.liveStatsTitles.championship'
+  | 'session.liveStatsTitles.heats'
+  | 'session.liveStatsTitles.combos'
+  | 'session.liveStatsTitles.seaAnalysis'
+  | 'session.liveStatsTitles.custom'
+  | 'session.liveStatsTitles.technical' {
+  const mode = resolveSessionMode(session)
+  if (mode === 'campeonato') return 'session.liveStatsTitles.championship'
+  if (mode === 'heats') return 'session.liveStatsTitles.heats'
+  if (mode === 'combos') return 'session.liveStatsTitles.combos'
+  if (mode === 'sea-analysis') return 'session.liveStatsTitles.seaAnalysis'
+  if (mode === 'custom') return 'session.liveStatsTitles.custom'
+  return 'session.liveStatsTitles.technical'
+}
+
+/** @deprecated Prefer liveStatsTitleKey + t() */
 export function liveStatsTitle(session: TrainingSession): string {
   const mode = resolveSessionMode(session)
   if (mode === 'campeonato') return 'Live stats · Championship'
@@ -44,6 +63,16 @@ export function liveStatsTitle(session: TrainingSession): string {
   return 'Live stats · Technical'
 }
 
+export function liveStatsButtonLabelKey(
+  session: TrainingSession,
+): 'session.heatStats' | 'session.seaStats' | 'session.liveStats' {
+  const mode = resolveSessionMode(session)
+  if (mode === 'heats' || mode === 'campeonato') return 'session.heatStats'
+  if (mode === 'sea-analysis') return 'session.seaStats'
+  return 'session.liveStats'
+}
+
+/** @deprecated Prefer liveStatsButtonLabelKey + t() */
 export function liveStatsButtonLabel(session: TrainingSession): string {
   const mode = resolveSessionMode(session)
   if (mode === 'heats' || mode === 'campeonato') return 'Heat stats'

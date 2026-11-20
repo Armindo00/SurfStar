@@ -10,7 +10,7 @@ import { useApp } from '../AppContext'
 import {
   isHeatLikeSession,
   liveStatsBackView,
-  liveStatsTitle,
+  liveStatsTitleKey,
   resolveSessionMode,
 } from '../sessionModeUtils'
 import { comboLevelLabel, maneuverLabel } from '../i18n/labels'
@@ -44,14 +44,12 @@ export function SessionStatsView() {
   const athleteName = activeAthleteId ? getAthlete(activeAthleteId)?.name : t('ui.session.allAthletes')
 
   if (isHeatLikeSession(activeSession)) {
-    const title = liveStatsTitle(activeSession)
-
     return (
       <div className="ss-flow stats-page heat-live-stats-page">
-        <ScreenHeader title={title} onBack={() => setView(backView)} />
+        <ScreenHeader title={t(liveStatsTitleKey(activeSession))} onBack={() => setView(backView)} />
         <HeatLiveStatsPanel
           session={activeSession}
-          getAthleteName={(id) => getAthlete(id)?.name ?? 'Athlete'}
+          getAthleteName={(id) => getAthlete(id)?.name ?? t('ui.championship.surferFallback')}
         />
       </div>
     )
@@ -166,7 +164,16 @@ export function SessionStatsView() {
   if (sessionMode !== 'tecnico') {
     return (
       <div className="ss-flow stats-page">
-        <ScreenHeader title={liveStatsTitle(activeSession)} onBack={() => setView(backView)} />
+        <ScreenHeader
+          title={
+            liveStatsTitleKey(activeSession) === 'session.liveStatsTitles.custom'
+              ? t('session.liveStatsTitles.custom', {
+                  templateName: activeSession.customTemplateName ?? t('ui.session.customTrainingFallback'),
+                })
+              : t(liveStatsTitleKey(activeSession))
+          }
+          onBack={() => setView(backView)}
+        />
         <div className="ss-card stats-panel">
           <p className="muted">{t('ui.stats.liveStatsUnavailable')}</p>
           <button type="button" className="btn btn--primary btn--block" onClick={() => setView(backView)}>

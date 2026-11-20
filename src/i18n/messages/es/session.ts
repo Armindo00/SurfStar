@@ -215,5 +215,7 @@ export const session = {
     waveLogHint: 'Edita o elimina puntuaciones individuales si se registraron por error.',
     waveLogEntry: '{{name}} · Ola {{number}} · {{score}}',
     deleteWaveScoreMessage: '¿Eliminar {{score}} de {{name}}? Esto no se puede deshacer.',
+    pressStartHint: 'Pulsa empezar para poner en marcha el reloj del heat',
+    heatFinished: 'Heat terminado',
   },
 } as const

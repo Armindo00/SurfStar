@@ -197,14 +197,11 @@ export function ChampionshipSessionView() {
           {activeHeat.bracketLocked ? (
             <div className="champ-bracket-wait">
               <h2 className="heat-runner__title">{activeHeat.label}</h2>
-              <p className="muted">
-                This heat unlocks when the previous round finishes. Finish every heat in the
-                current round to fill these slots automatically.
-              </p>
+              <p className="muted">{t('ui.championship.heatUnlocksHint')}</p>
               <ul className="champ-bracket-slots">
                 {Array.from({ length: activeHeat.bracketCapacity ?? 2 }, (_, i) => (
                   <li key={i} className="champ-bracket-slots__tbd">
-                    TBD
+                    {t('ui.championship.tbd')}
                   </li>
                 ))}
               </ul>
