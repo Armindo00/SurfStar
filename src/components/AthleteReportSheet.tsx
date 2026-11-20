@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useToast } from './ToastProvider'
 import { AthleteReportPreview } from './AthleteReportPreview'
 import {
@@ -161,7 +162,7 @@ export function AthleteReportSheet({
     }
   }
 
-  return (
+  return createPortal(
     <div className="athlete-report-backdrop" role="presentation" onClick={onClose}>
       <div
         className="athlete-report-print-root athlete-report-sheet"
@@ -244,6 +245,7 @@ export function AthleteReportSheet({
           ) : null}
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

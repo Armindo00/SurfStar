@@ -102,7 +102,9 @@ export async function cloudFetchSubscription(
       .maybeSingle()
 
     if (!error && data) {
-      return mapOrgRow(data, coachId)
+      const mapped = mapOrgRow(data, coachId)
+      // Prefer an active/trialing org subscription; otherwise fall through to coach-level.
+      if (isSubscriptionActive(mapped)) return mapped
     }
   }
 
@@ -112,8 +114,23 @@ export async function cloudFetchSubscription(
     .eq('coach_id', coachId)
     .maybeSingle()
 
-  if (error || !data) return null
-  return mapLegacyRow(data, orgId ?? coachId)
+  if (!error && data) {
+    const legacy = mapLegacyRow(data, orgId ?? coachId)
+    if (isSubscriptionActive(legacy)) return legacy
+    // Keep inactive coach sub only when no org row exists to show pending state.
+    if (!orgId) return legacy
+  }
+
+  if (orgId) {
+    const { data: orgAgain } = await getSupabase()
+      .from('organization_subscriptions')
+      .select('organization_id, plan_id, status, current_period_end')
+      .eq('organization_id', orgId)
+      .maybeSingle()
+    if (orgAgain) return mapOrgRow(orgAgain, coachId)
+  }
+
+  return null
 }
 
 export async function cloudCreatePendingSubscription(

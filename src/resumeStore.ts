@@ -154,6 +154,11 @@ export function validateAndNormalizeResume(
     } else if (!COACH_NAV_VIEWS.includes(view)) {
       view = 'coach-home'
     }
+
+    // Sea analysis skips the athletes step — don't resume onto a dead SelectAthletes screen.
+    if (view === 'select-athletes' && draft.mode === 'sea-analysis') {
+      view = 'configure-session'
+    }
   }
 
   if (!COACH_NAV_VIEWS.includes(view) && view !== 'athlete-portal') {

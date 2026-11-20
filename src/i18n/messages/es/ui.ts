@@ -237,11 +237,19 @@ export const ui = {
   },
   psychology: {
     psychologicalProfile: 'Perfil psicológico',
+    intro:
+      'Check-ins rápidos 0–5 tras cada sesión — humor, confianza, foco, satisfacción y fatiga mental.',
     noCheckinsInPeriod: 'Sin check-ins en este periodo',
     noCheckinsInPeriodBody:
-      '{{athleteName}} no ha enviado check-ins de psicología en este periodo. Prueba un intervalo más largo.',
+      'El atleta no ha enviado el cuestionario post-sesión en {{period}}.',
+    legacyCheckinsNote:
+      '{{count}} check-in antiguo usaba el formato anterior.',
+    legacyCheckinsNotePlural:
+      '{{count}} check-ins antiguos usaban el formato anterior.',
     questionAverages: 'Promedios por pregunta (0–5)',
+    questionAveragesHint: 'Puntuación media por pregunta en este periodo.',
     sessionTimeline: 'Línea temporal de sesión',
+    sessionTimelineHint: 'Últimos check-ins en orden cronológico.',
     psychologyCheckins: 'Check-ins de psicología',
     sessionCheckins: 'Check-ins de sesión',
     sessionCheckinsHint: 'Cuestionario de psicología 0–5 post-sesión del atleta.',
@@ -251,7 +259,11 @@ export const ui = {
     enableSharingHint:
       'Activa los check-ins psicológicos en la configuración de compartición de este atleta para recoger cuestionarios post-sesión.',
     avgOverall6m: 'Media global (6m)',
+    avgOverall: 'Media global',
     checkIns: 'Check-ins',
+    feedbackRate: 'Tasa de feedback',
+    withNotes: 'Con notas',
+    avgScore: 'med. {{score}}/5',
     wellbeingTab: 'Check-ins psicológicos',
     sessionFallback: 'Sesión',
   },
@@ -649,6 +661,7 @@ export const ui = {
   championship: {
     bracket: 'Bracket',
     roundInProgress: 'Ronda {{round}} en curso',
+    roundReady: 'Ronda {{round}} lista',
     noActiveSession: 'No hay sesión de campeonato activa.',
     bracketAriaLabel: 'Cuadro del campeonato',
     heatCount: '{{count}} heat',
@@ -661,6 +674,14 @@ export const ui = {
     winnersFromPrevious: 'Ganadores de la ronda anterior',
     heatDurationAdvance: '{{minutes}} min · avanzan los {{count}} primeros',
     through: 'Pasan:',
+    metaSurfers: '{{count}} surfistas',
+    metaHeatSize2: 'heats de 2 · avanza el 1.º',
+    metaHeatSize4: 'heats de 2–4 · avanzan los 2 primeros',
+    metaParallel: 'heats en paralelo',
+    metaSequential: 'heats secuenciales',
+    openingLayout: 'apertura: {{layout}}',
+    champion: 'Campeón:',
+    surferFallback: 'Surfista',
   },
   customTimer: {
     sessionTimer: 'Temporizador de sesión',

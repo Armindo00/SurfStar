@@ -53,6 +53,16 @@ export function ChampionshipSessionView() {
 
   const currentRound = useMemo(() => activeChampionshipRound(heats), [heats])
 
+  const roundHasStarted = useMemo(
+    () =>
+      heats.some(
+        (heat) =>
+          heat.round === currentRound &&
+          (Boolean(heat.timerStartedAt) || Boolean(heat.endedAt)),
+      ),
+    [currentRound, heats],
+  )
+
   const focusRound = activeHeat?.round ?? currentRound
 
   const focusRoundHeats = useMemo(
@@ -105,24 +115,34 @@ export function ChampionshipSessionView() {
       <div className="ss-card champ-bracket-card">
         <h2 className="page-title">{t('ui.championship.bracket')}</h2>
         <p className="muted stats-panel__sub">
-          {athleteCount} surfers ·{' '}
-          {heatSize === 2 ? 'heats of 2 · top 1 advances' : 'heats of 3 or 4 · top 2 advance'}
+          {t('ui.championship.metaSurfers', { count: athleteCount })}
           {' · '}
-          {parallelHeats ? 'parallel heats' : 'sequential heats'}
+          {heatSize === 2 ? t('ui.championship.metaHeatSize2') : t('ui.championship.metaHeatSize4')}
+          {' · '}
+          {parallelHeats ? t('ui.championship.metaParallel') : t('ui.championship.metaSequential')}
         </p>
         {bracketPreview.length > 0 ? (
           <p className="muted stats-panel__sub">
             {bracketPreview.join(' → ')}
-            {firstRoundLayout ? ` · opening: ${firstRoundLayout}` : ''}
+            {firstRoundLayout
+              ? ` · ${t('ui.championship.openingLayout', { layout: firstRoundLayout })}`
+              : ''}
           </p>
         ) : null}
 
         {champion ? (
           <p className="champ-winner-banner login-success">
-            Champion: <strong>{champion.name}</strong>
+            {t('ui.championship.champion')} <strong>{champion.name}</strong>
           </p>
         ) : (
-          <p className="muted">{t('ui.championship.roundInProgress', { round: currentRound })}</p>
+          <p className="muted">
+            {t(
+              roundHasStarted
+                ? 'ui.championship.roundInProgress'
+                : 'ui.championship.roundReady',
+              { round: currentRound },
+            )}
+          </p>
         )}
 
         <ChampionshipBracketBoard
@@ -131,7 +151,7 @@ export function ChampionshipSessionView() {
           activeHeatId={activeHeat?.id ?? null}
           runningHeatIds={runningHeatIds}
           onSelectHeat={setActiveHeatId}
-          getAthleteName={(id) => getAthlete(id)?.name ?? 'Surfer'}
+          getAthleteName={(id) => getAthlete(id)?.name ?? t('ui.championship.surferFallback')}
         />
       </div>
 

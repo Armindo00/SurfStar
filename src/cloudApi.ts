@@ -165,19 +165,21 @@ async function buildAthleteAuthSession(
 async function fetchProfileRow(userId: string): Promise<ProfileRow | null> {
   const supabase = getSupabase()
 
-  const { data: rpcData, error: rpcError } = await supabase.rpc('get_my_profile')
-  if (!rpcError && Array.isArray(rpcData) && rpcData.length > 0) {
-    return rpcData[0] as ProfileRow
-  }
-
+  // Prefer direct profile read — get_my_profile RPC is missing on some projects (404).
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('id, role, name, email, coach_id, athlete_id, must_change_password, is_platform_admin, blocked')
     .eq('id', userId)
     .maybeSingle()
 
-  if (error || !profile) return null
-  return profile as ProfileRow
+  if (!error && profile) return profile as ProfileRow
+
+  const { data: rpcData, error: rpcError } = await supabase.rpc('get_my_profile')
+  if (!rpcError && Array.isArray(rpcData) && rpcData.length > 0) {
+    return rpcData[0] as ProfileRow
+  }
+
+  return null
 }
 
 export async function cloudGetSession(): Promise<AuthSession | null> {

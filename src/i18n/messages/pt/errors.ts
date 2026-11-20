@@ -15,4 +15,16 @@ export const errors = {
   saveFailed: 'Falha ao guardar alterações.',
   deleteFailed: 'Falha ao eliminar.',
   networkError: 'Erro de rede. Verifica a ligação.',
+  allChangesSaved: 'Todas as alterações guardadas',
+  analyticsRequiresPlan: 'A análise de equipa requer o plano Coach ou Coach Premium.',
+  customRequiresPremium: 'O treino personalizado requer o plano Coach Premium.',
+  modeNotInPlan: 'Este modo de treino não está incluído no teu plano.',
+  needConditionToStart: 'Escolhe as condições de mar antes de começar.',
+  needSpotToStart: 'Adiciona um spot antes de começar.',
+  needAthletesToStart: 'Seleciona pelo menos um atleta para começar.',
+  championshipNeedTwoAthletes: 'Seleciona pelo menos 2 atletas para um campeonato.',
+  championshipInvalidBracket:
+    'Não é possível construir um quadro válido com este número de surfistas. Cada heat precisa de pelo menos 2 atletas.',
+  needCustomTemplate: 'Seleciona primeiro um modelo de treino personalizado.',
+  psychologyLoadFailed: 'Não foi possível carregar os check-ins. Verifica a ligação e tenta novamente.',
 } as const

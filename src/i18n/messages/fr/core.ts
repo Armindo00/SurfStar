@@ -22,6 +22,7 @@ export const common = {
   notNow: 'Pas maintenant',
   select: 'Sélectionner…',
   optional: 'facultatif',
+  tryAgain: 'Réessayer',
 } as const
 
 export const roles = {

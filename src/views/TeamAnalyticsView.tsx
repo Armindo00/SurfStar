@@ -73,9 +73,10 @@ export function TeamAnalyticsView() {
   }, [refreshAthleteEquipment, selectedAthleteId])
 
   const filteredAthletes = useMemo(() => {
+    const active = coachAthletes.filter((a) => !a.blocked)
     const q = search.trim().toLowerCase()
-    if (!q) return coachAthletes
-    return coachAthletes.filter((a) => a.name.toLowerCase().includes(q))
+    if (!q) return active
+    return active.filter((a) => a.name.toLowerCase().includes(q))
   }, [coachAthletes, search])
 
   const selectedAthlete = selectedAthleteId

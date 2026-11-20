@@ -158,6 +158,7 @@ import {
   type CoachSubscription,
 } from './subscriptionApi'
 import { useToast } from './components/ToastProvider'
+import { useI18n } from './i18n'
 import {
   navigateToLandingPricing,
   navigateToPlanDetail,
@@ -432,7 +433,7 @@ type AppContextValue = {
   sessionAthleteFeedback: SessionAthleteFeedback[]
   insightsAthlete: Athlete | null
   pendingSessionFeedback: TrainingSession[]
-  refreshAthleteEquipment: (athleteId: string) => Promise<void>
+  refreshAthleteEquipment: (athleteId: string) => Promise<boolean>
   openCoachAthleteInsights: (athleteId: string) => Promise<void>
   saveAthleteBoard: (input: {
     id?: string
@@ -590,6 +591,7 @@ async function upgradeStudentPassword(student: StudentAccount, password: string)
 export function AppProvider({ children }: { children: ReactNode }) {
   const cloudMode = isCloudEnabled()
   const { showToast } = useToast()
+  const { t } = useI18n()
   const [authReady, setAuthReady] = useState(!cloudMode)
   const [auth, setAuth] = useState<AuthSession | null>(() =>
     cloudMode ? null : authStore.getSession(),
@@ -785,13 +787,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
           if (saveToastTimerRef.current) window.clearTimeout(saveToastTimerRef.current)
           saveToastTimerRef.current = window.setTimeout(() => {
-            showToast('All changes saved', 'success')
+            showToast(t('errors.allChangesSaved'), 'success')
             saveToastTimerRef.current = null
           }, 1200)
         })
       }
     },
-    [auth, cloudMode, showToast],
+    [auth, cloudMode, showToast, t],
   )
 
   const setPublicView = useCallback((next: PublicView) => {
@@ -1297,26 +1299,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return { ok: true as const }
   }, [auth, cloudMode, refreshSubscription, showToast])
 
+  const equipmentRequestIdRef = useRef(0)
+
   const refreshAthleteEquipment = useCallback(
-    async (athleteId: string) => {
+    async (athleteId: string): Promise<boolean> => {
+      const requestId = ++equipmentRequestIdRef.current
       if (cloudMode) {
         try {
           const bundle = await cloudLoadAthleteEquipmentBundle(athleteId)
+          if (requestId !== equipmentRequestIdRef.current) return false
           setAthleteBoards(bundle.boards)
           setAthleteFins(bundle.fins)
           setEquipmentEvaluations(bundle.evaluations)
           setSessionAthleteFeedback((prev) => mergeSessionFeedback(bundle.sessionFeedback, prev))
+          return true
         } catch (err) {
           console.error('Failed to load athlete equipment', err)
+          return requestId === equipmentRequestIdRef.current ? false : false
         }
-        return
       }
+      if (requestId !== equipmentRequestIdRef.current) return false
       setAthleteBoards(equipmentStore.getBoards(athleteId))
       setAthleteFins(equipmentStore.getFins(athleteId))
       setEquipmentEvaluations(equipmentStore.getEvaluations(athleteId))
       setSessionAthleteFeedback((prev) =>
         mergeSessionFeedback(equipmentStore.getSessionFeedback(athleteId), prev),
       )
+      return true
     },
     [cloudMode],
   )
@@ -1841,6 +1850,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveAthleteId(null)
     setSubscription(null)
     setSelectedPlanId(null)
+    setSetupReturnView(null)
     setPublicView('landing')
     setView('coach-home')
     setAthleteMenuOpen(false)
@@ -2301,8 +2311,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (name: string) => {
       const trimmed = name.trim()
       if (!trimmed || auth?.role !== 'treinador') return
-      const next = [...spots, { id: crypto.randomUUID(), name: trimmed }]
+      const spot = { id: crypto.randomUUID(), name: trimmed }
+      const next = [...spots, spot]
       setSpots(next)
+      setDraft((d) => (d.spotId ? d : { ...d, spotId: spot.id }))
       if (cloudMode) saveSpotsToCloud(auth.organizationId, auth.coachId, next)
       else store.saveSpotsForOrg(auth.organizationId, next)
     },
@@ -2459,11 +2471,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const navigateView = useCallback(
     (next: AppView) => {
       if (next === 'analytics' && !canAccessTeamAnalytics(coachPlanId)) {
-        showToast('Team analytics requires Coach or Coach Premium plan.', 'error')
+        showToast(t('errors.analyticsRequiresPlan'), 'error')
         return
       }
       if (next === 'manage-custom-templates' && !canUseCustomTraining(coachPlanId)) {
-        showToast('Custom training requires Coach Premium plan.', 'error')
+        showToast(t('errors.customRequiresPremium'), 'error')
+        setSetupReturnView(null)
         setView('subscription')
         return
       }
@@ -2476,28 +2489,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setLeaveSessionConfirmOpen(true)
         return
       }
-      if (next === 'coach-home' || next === 'start-session') {
-        setSetupReturnView(null)
-      }
+      // Normal navigation clears sticky wizard return (Coach Home → Spots, etc.).
+      setSetupReturnView(null)
       setCoachMenuOpen(false)
       setView(next)
     },
-    [activeSessionId, coachPlanId, showToast, view],
+    [activeSessionId, coachPlanId, showToast, t, view],
   )
 
   const openFromSessionSetup = useCallback(
     (next: Extract<AppView, 'manage-spots' | 'manage-custom-templates'>) => {
       setSetupReturnView('configure-session')
-      navigateView(next)
+      setCoachMenuOpen(false)
+      // Bypass navigateView so setupReturnView is not cleared.
+      setView(next)
     },
-    [navigateView],
+    [],
   )
 
   const leaveSideScreen = useCallback(() => {
     const back = setupReturnView ?? 'coach-home'
     setSetupReturnView(null)
-    navigateView(back)
-  }, [navigateView, setupReturnView])
+    setCoachMenuOpen(false)
+    setView(back)
+  }, [setupReturnView])
 
   const beginDraftSession = useCallback(() => {
     const draftBase = emptyDraft(spots, customTemplates)
@@ -2513,20 +2528,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const confirmAthletesAndStart = useCallback(() => {
     const currentDraft = draftRef.current
-    if (!currentDraft.spotId || !currentDraft.condition) return
-    if (currentDraft.mode !== 'sea-analysis' && currentDraft.athleteIds.length === 0) return
+    if (!currentDraft.condition) {
+      showToast(t('errors.needConditionToStart'), 'error')
+      return
+    }
+    const resolvedSpotId = resolveDraftSpotId(currentDraft.spotId, spots)
+    if (!resolvedSpotId) {
+      showToast(t('errors.needSpotToStart'), 'error')
+      return
+    }
+    if (currentDraft.mode !== 'sea-analysis' && currentDraft.athleteIds.length === 0) {
+      showToast(t('errors.needAthletesToStart'), 'error')
+      return
+    }
     if (currentDraft.mode === 'campeonato' && currentDraft.athleteIds.length < 2) {
-      showToast('Select at least 2 athletes for a championship.', 'error')
+      showToast(t('errors.championshipNeedTwoAthletes'), 'error')
       return
     }
     if (
       currentDraft.mode === 'campeonato' &&
       !isValidChampionshipField(currentDraft.athleteIds.length, currentDraft.championshipHeatSize)
     ) {
-      showToast(
-        'Cannot build a valid bracket with this number of surfers. Each heat needs at least 2 athletes.',
-        'error',
-      )
+      showToast(t('errors.championshipInvalidBracket'), 'error')
       return
     }
     if (auth?.role !== 'treinador') return
@@ -2534,17 +2557,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!canUseTrainingMode(coachPlanId, currentDraft.mode)) {
       showToast(
         currentDraft.mode === 'custom'
-          ? 'Custom training requires Coach Premium plan.'
-          : 'This training mode is not included in your plan.',
+          ? t('errors.customRequiresPremium')
+          : t('errors.modeNotInPlan'),
         'error',
       )
       return
     }
 
     if (currentDraft.mode === 'custom') {
-      const template = customTemplates.find((t) => t.id === currentDraft.customTemplateId)
+      const template = customTemplates.find((tmpl) => tmpl.id === currentDraft.customTemplateId)
       if (!template) {
-        showToast('Select a custom training template first.', 'error')
+        showToast(t('errors.needCustomTemplate'), 'error')
         return
       }
     }
@@ -2569,7 +2592,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           )
         : []
 
-    const resolvedSpotId = resolveDraftSpotId(currentDraft.spotId, spots)
     saveLastSpotId(auth.organizationId, resolvedSpotId)
 
     const session: TrainingSession = {
@@ -2616,7 +2638,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveHeatId(initialHeat?.id ?? championshipHeats[0]?.id ?? null)
     setTrainingAthleteGridEpoch((epoch) => epoch + 1)
     setView(viewForMode(currentDraft.mode))
-  }, [auth, coachPlanId, customTemplates, persistSessions, showToast, spots, subscription?.planId])
+  }, [auth, coachPlanId, customTemplates, persistSessions, showToast, spots, subscription?.planId, t])
 
   const openEndSessionSheet = useCallback(() => {
     const session = trainingSessions.find((s) => s.id === activeSessionId)
