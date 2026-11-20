@@ -52,7 +52,7 @@ export function SelectAthletes() {
       <div className="ss-flow">
         <ScreenHeader title={t('nav.seaAnalysis')} onBack={() => setView('configure-session')} />
         <div className="ss-card">
-          <SessionSetupSteps current={3} />
+          <SessionSetupSteps current={2} totalSteps={2} />
           <h2 className="page-title">{t('ui.selectAthletes.readyToObserve')}</h2>
           <p className="muted">{t('ui.selectAthletes.readyToObserveHint')}</p>
           <button type="button" className="btn btn--primary btn--block btn--lg" onClick={confirmAthletesAndStart}>

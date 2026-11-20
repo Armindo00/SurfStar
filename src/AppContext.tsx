@@ -289,6 +289,10 @@ type AppContextValue = {
   role: UserRole
   view: AppView
   setView: (view: AppView) => void
+  /** When set, side screens (spots/templates) return here instead of coach home. */
+  setupReturnView: AppView | null
+  openFromSessionSetup: (view: Extract<AppView, 'manage-spots' | 'manage-custom-templates'>) => void
+  leaveSideScreen: () => void
   athleteMenuOpen: boolean
   setAthleteMenuOpen: (open: boolean) => void
   coachMenuOpen: boolean
@@ -627,6 +631,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [priorityFeedbackSessionId, setPriorityFeedbackSessionId] = useState<string | null>(null)
   const [seenRevision, setSeenRevision] = useState(0)
   const [view, setView] = useState<AppView>('coach-home')
+  const [setupReturnView, setSetupReturnView] = useState<AppView | null>(null)
   const [athleteMenuOpen, setAthleteMenuOpen] = useState(false)
   const [coachMenuOpen, setCoachMenuOpen] = useState(false)
   const [athleteMenuBadge, setAthleteMenuBadge] = useState(0)
@@ -2471,11 +2476,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setLeaveSessionConfirmOpen(true)
         return
       }
+      if (next === 'coach-home' || next === 'start-session') {
+        setSetupReturnView(null)
+      }
       setCoachMenuOpen(false)
       setView(next)
     },
     [activeSessionId, coachPlanId, showToast, view],
   )
+
+  const openFromSessionSetup = useCallback(
+    (next: Extract<AppView, 'manage-spots' | 'manage-custom-templates'>) => {
+      setSetupReturnView('configure-session')
+      navigateView(next)
+    },
+    [navigateView],
+  )
+
+  const leaveSideScreen = useCallback(() => {
+    const back = setupReturnView ?? 'coach-home'
+    setSetupReturnView(null)
+    navigateView(back)
+  }, [navigateView, setupReturnView])
 
   const beginDraftSession = useCallback(() => {
     const draftBase = emptyDraft(spots, customTemplates)
@@ -3735,6 +3757,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       role,
       view,
       setView: navigateView,
+      setupReturnView,
+      openFromSessionSetup,
+      leaveSideScreen,
       athleteMenuOpen,
       setAthleteMenuOpen,
       coachMenuOpen,
@@ -3910,6 +3935,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       role,
       view,
       navigateView,
+      setupReturnView,
+      openFromSessionSetup,
+      leaveSideScreen,
       athleteMenuOpen,
       coachMenuOpen,
       athleteMenuBadge,
