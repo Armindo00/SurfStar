@@ -244,6 +244,8 @@ type AppContextValue = {
   subscription: CoachSubscription | null
   coachPlanId: PlanId
   hasActiveSubscription: boolean
+  sessionsSyncStatus: 'idle' | 'syncing' | 'error' | 'saved'
+  retrySessionsSync: () => Promise<void>
   selectPlan: (planId: PlanId, options?: { goToLogin?: boolean }) => void
   openLanding: () => void
   openPrivacy: () => void
@@ -779,14 +781,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const sessionsSaveGenerationRef = useRef(0)
   const sessionsSaveChainRef = useRef<Promise<void>>(Promise.resolve())
   const startingSessionRef = useRef(false)
+  const pendingSessionsSyncRef = useRef<TrainingSession[] | null>(null)
+  const [sessionsSyncStatus, setSessionsSyncStatus] = useState<
+    'idle' | 'syncing' | 'error' | 'saved'
+  >('idle')
 
   const syncSessionsToCloud = useCallback(
     (next: TrainingSession[], session: AuthSession | null = auth) => {
       if (!(cloudMode && session?.role === 'treinador')) return
+      pendingSessionsSyncRef.current = next
       const generation = ++sessionsSaveGenerationRef.current
       const orgId = session.organizationId
       const coachId = session.coachId
       const snapshot = next
+      setSessionsSyncStatus('syncing')
       sessionsSaveChainRef.current = sessionsSaveChainRef.current
         .catch(() => undefined)
         .then(async () => {
@@ -794,19 +802,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const result = await cloudSaveTrainingSessions(orgId, coachId, snapshot)
           if (generation !== sessionsSaveGenerationRef.current) return
           if (!result.ok) {
+            setSessionsSyncStatus('error')
             showToast(t('errors.saveSessionsFailed', { error: result.error }), 'error')
             return
           }
+          if (pendingSessionsSyncRef.current === snapshot) {
+            pendingSessionsSyncRef.current = null
+          }
+          setSessionsSyncStatus('saved')
           if (saveToastTimerRef.current) window.clearTimeout(saveToastTimerRef.current)
           saveToastTimerRef.current = window.setTimeout(() => {
             if (generation !== sessionsSaveGenerationRef.current) return
             showToast(t('errors.allChangesSaved'), 'success')
+            setSessionsSyncStatus((status) => (status === 'saved' ? 'idle' : status))
             saveToastTimerRef.current = null
           }, 1200)
         })
     },
     [auth, cloudMode, showToast, t],
   )
+
+  const retrySessionsSync = useCallback(async () => {
+    if (!auth || auth.role !== 'treinador') return
+    const pending = pendingSessionsSyncRef.current ?? trainingSessionsRef.current
+    syncSessionsToCloud(pending, auth)
+  }, [auth, syncSessionsToCloud])
+
+  useEffect(() => {
+    if (!cloudMode || auth?.role !== 'treinador') return
+    const retryIfNeeded = () => {
+      if (pendingSessionsSyncRef.current || sessionsSyncStatus === 'error') {
+        void retrySessionsSync()
+      }
+    }
+    const onOnline = () => retryIfNeeded()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') retryIfNeeded()
+    }
+    window.addEventListener('online', onOnline)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.removeEventListener('online', onOnline)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [auth?.role, cloudMode, retrySessionsSync, sessionsSyncStatus])
 
   const setPublicView = useCallback((next: PublicView) => {
     setPublicViewState(next)
@@ -1152,7 +1191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const sub = await activateCoachSubscription(auth.coachId, auth.organizationId, planId, cloudMode, orgName)
       setSubscription(sub)
       setView('coach-home')
-      showToast('Subscription activated.', 'success')
+      showToast(t('errors.subscriptionActivated'), 'success')
       return { ok: true as const }
     } catch (err) {
       return {
@@ -1194,7 +1233,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const sub = changeLocalSubscriptionPlan(auth.organizationId, auth.coachId, planId)
         setSubscription(sub)
         setSelectedPlanId(planId)
-        showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+        showToast(t('errors.planChangedTo', { plan: getPlan(planId).name }), 'success')
         return { ok: true as const }
       }
 
@@ -1203,7 +1242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!direct.ok) return direct
         await refreshSubscription()
         setSelectedPlanId(planId)
-        showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+        showToast(t('errors.planChangedTo', { plan: getPlan(planId).name }), 'success')
         return { ok: true as const }
       }
 
@@ -1214,7 +1253,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (!direct.ok) return direct
           await refreshSubscription()
           setSelectedPlanId(planId)
-          showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+          showToast(t('errors.planChangedTo', { plan: getPlan(planId).name }), 'success')
           return { ok: true as const }
         }
         return result
@@ -1253,18 +1292,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
             selectedBillingInterval,
           )
           window.open(url, '_blank', 'noopener,noreferrer')
-          showToast('Complete payment to activate your new plan.', 'info')
+          showToast(t('errors.completePaymentToActivate'), 'info')
           return { ok: true as const }
         }
 
         const demo = await activateCoachSubscription(auth.coachId, auth.organizationId, planId, cloudMode)
         setSubscription(demo)
-        showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+        showToast(t('errors.planChangedTo', { plan: getPlan(planId).name }), 'success')
         return { ok: true as const }
       }
 
       await refreshSubscription()
-      showToast(`Plan changed to ${getPlan(planId).name}.`, 'success')
+      showToast(t('errors.planChangedTo', { plan: getPlan(planId).name }), 'success')
       return { ok: true as const }
     },
     [auth, cloudMode, refreshSubscription, selectedBillingInterval, showToast, subscription],
@@ -1278,7 +1317,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!cloudMode) {
       const sub = cancelLocalSubscription(auth.organizationId, auth.coachId)
       setSubscription(sub)
-      showToast('Subscription canceled.', 'success')
+      showToast(t('errors.subscriptionCanceled'), 'success')
       return { ok: true as const }
     }
 
@@ -1896,7 +1935,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const next = typeof nextOrUpdater === 'function' ? nextOrUpdater(prev) : nextOrUpdater
         if (cloudMode && auth?.role === 'treinador') {
           void cloudSaveCustomTemplates(auth.organizationId, auth.coachId, next).then((result) => {
-            if (!result.ok) showToast(`Failed to save templates: ${result.error}`, 'error')
+            if (!result.ok) showToast(t('errors.saveTemplatesFailed', { error: result.error }), 'error')
           })
         } else if (auth?.role === 'treinador') {
           store.saveCustomTemplatesForOrg(auth.organizationId, next)
@@ -2304,7 +2343,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const saveSpotsToCloud = useCallback(
     (organizationId: string, coachId: string, next: SurfSpot[]) => {
       void cloudSaveSpots(organizationId, coachId, next).then((result) => {
-        if (!result.ok) showToast(`Failed to save spots: ${result.error}`, 'error')
+        if (!result.ok) showToast(t('errors.saveSpotsFailed', { error: result.error }), 'error')
       })
     },
     [showToast],
@@ -2313,7 +2352,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const saveConditionsToCloud = useCallback(
     (organizationId: string, coachId: string, next: string[]) => {
       void cloudSaveConditions(organizationId, coachId, next).then((result) => {
-        if (!result.ok) showToast(`Failed to save conditions: ${result.error}`, 'error')
+        if (!result.ok) showToast(t('errors.saveConditionsFailed', { error: result.error }), 'error')
       })
     },
     [showToast],
@@ -3784,6 +3823,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       subscription,
       coachPlanId,
       hasActiveSubscription,
+      sessionsSyncStatus,
+      retrySessionsSync,
       selectPlan,
       openLanding,
       openPrivacy,
@@ -3962,6 +4003,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       subscription,
       coachPlanId,
       hasActiveSubscription,
+      sessionsSyncStatus,
+      retrySessionsSync,
       selectPlan,
       openLanding,
       openPrivacy,

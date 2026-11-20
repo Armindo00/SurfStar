@@ -12,7 +12,8 @@ Surf statistics platform for coaches and athletes — wave-by-wave sessions, tea
 - Team analytics with 6-month evolution charts
 - Plans: **Coach** (€49/mo) · **Coach Premium** (€89/mo) · **Team Academy** (€179/mo, approval-only)
 - Annual billing with 2 months free
-- Stripe checkout + Supabase webhook
+- **Launch billing:** manual admin approval + payment confirmation (default)
+- Stripe checkout + Supabase webhook (Phase 2 — configure when ready)
 - Platform admin panel for Team Academy approvals and account management
 - Local mode (no cloud) for development
 
@@ -31,10 +32,10 @@ npm run dev:phone
 
 ## Cloud (production)
 
-1. Copy `.env.example` → `.env` and fill Supabase + Stripe payment links
+1. Copy `.env.example` → `.env` and fill Supabase (manual payments work without Stripe)
 2. Run SQL migrations — see [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md)
-3. Deploy webhook: `supabase/functions/stripe-webhook`
-4. Deploy frontend (Vercel) with `VITE_*` env vars
+3. Deploy frontend (Vercel) with `VITE_*` env vars
+4. Optional (Stripe Phase 2): payment links + `supabase/functions/stripe-webhook`
 
 See [`DEPLOY_WEB.md`](DEPLOY_WEB.md) for detailed steps.
 

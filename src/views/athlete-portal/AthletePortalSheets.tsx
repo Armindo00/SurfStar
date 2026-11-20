@@ -11,6 +11,7 @@ import { feedbackHasPsychologySurvey } from '../../athletePsychologyStats'
 import {
   averagePsychologyScore,
   PSYCHOLOGY_SURVEY_QUESTIONS,
+  psychologyQuestionLabelKey,
 } from '../../psychologySurvey'
 import { coachIdsWithPsychologyCheckins } from '../../psychologyCheckins'
 import { formatHeatTotal } from '../../heatUtils'
@@ -452,7 +453,7 @@ function CheckinsSheet({
                         <ul className="athlete-checkin-timeline__scores">
                           {PSYCHOLOGY_SURVEY_QUESTIONS.map((question) => (
                             <li key={question.id}>
-                              <span>{question.label}</span>
+                              <span>{t(psychologyQuestionLabelKey(question.id))}</span>
                               <strong>{feedback.psychologyScores![question.id]}/5</strong>
                             </li>
                           ))}

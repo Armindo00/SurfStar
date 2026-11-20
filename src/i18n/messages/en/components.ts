@@ -1,10 +1,12 @@
 export const components = {
   cookieConsent: {
     ariaLabel: 'Cookie notice',
-    text: 'We use essential cookies and local storage to keep you signed in and save session progress. We do not use advertising cookies. See our',
+    text: 'We use essential cookies and local storage to keep you signed in and save your progress. Optional analytics help us find crashes. We do not use advertising cookies. See our',
     privacyPolicy: 'Privacy Policy',
     complaintsBook: 'Livro de reclamações',
     accept: 'Accept',
+    essentialOnly: 'Essential only',
+    acceptAll: 'Accept all',
   },
   legalFooter: {
     ariaLabel: 'Legal',
@@ -96,7 +98,7 @@ export const components = {
   },
   sessionFeedback: {
     title: 'Quick check-in',
-    lead: 'Rate each item from 0 to 5 — it takes less than a minute.',
+    lead: 'Tap a score from 0 to 5 for every question — it takes less than a minute.',
     optionalSuffix: 'optional',
     notePlaceholder: 'Optional comment for your coach…',
     submit: 'Submit check-in',
@@ -106,6 +108,18 @@ export const components = {
     fatigueScaleHint: 'Same scale as the other questions: higher is better.',
     fatigueScaleLow: 'Very fatigued (bad)',
     fatigueScaleHigh: 'Not fatigued (good)',
+    answerAllRequired: 'Answer every question before submitting.',
+    coachNotePrompt: 'Is there anything your coach should know about this session?',
+    questions: {
+      mood: 'How is your mood?',
+      confidenceToContinue: 'How confident do you feel about continuing to train?',
+      confidenceDuring: 'How confident did you feel during the session?',
+      focusDuring: 'How focused were you during the session?',
+      errorHandling: 'How well did you handle the mistakes you made today?',
+      feltImprovement: 'Do you feel you improved in this session?',
+      performanceSatisfaction: 'How satisfied are you with your performance?',
+      mentalFatigue: 'How is your mental fatigue?',
+    },
   },
   installInstructions: {
     alreadyInstalled: 'SurfStar is already installed on this device.',

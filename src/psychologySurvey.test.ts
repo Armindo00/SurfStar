@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   averagePsychologyScore,
   createDefaultPsychologySurveyScores,
+  createEmptyPsychologySurveyScores,
+  isPsychologySurveyComplete,
   isPsychologySurveyScores,
 } from './psychologySurvey'
 
@@ -20,5 +22,14 @@ describe('psychologySurvey', () => {
     expect(lowFatigueGood).toBeGreaterThan(highFatigueBad)
     expect(lowFatigueGood).toBe(3.3)
     expect(highFatigueBad).toBe(2.6)
+  })
+
+  it('starts the feedback form with unset scores until every question is answered', () => {
+    const empty = createEmptyPsychologySurveyScores()
+    expect(isPsychologySurveyComplete(empty)).toBe(false)
+    empty.mood = 4
+    expect(isPsychologySurveyComplete(empty)).toBe(false)
+    const filled = createDefaultPsychologySurveyScores()
+    expect(isPsychologySurveyComplete(filled)).toBe(true)
   })
 })

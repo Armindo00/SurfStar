@@ -1,10 +1,12 @@
 export const components = {
   cookieConsent: {
     ariaLabel: 'Aviso de cookies',
-    text: 'Utilizamos cookies essenciais e armazenamento local para te manter autenticado e guardar o progresso da sessão. Não usamos cookies publicitários. Consulta a nossa',
+    text: 'Utilizamos cookies essenciais e armazenamento local para te manter autenticado e guardar o progresso. A análise opcional ajuda a detetar falhas. Não usamos cookies publicitários. Consulta a nossa',
     privacyPolicy: 'Política de Privacidade',
     complaintsBook: 'Livro de reclamações',
     accept: 'Aceitar',
+    essentialOnly: 'Apenas essenciais',
+    acceptAll: 'Aceitar todos',
   },
   legalFooter: {
     ariaLabel: 'Legal',
@@ -88,7 +90,7 @@ export const components = {
   },
   sessionFeedback: {
     title: 'Check-in rápido',
-    lead: 'Avalia cada item de 0 a 5 — demora menos de um minuto.',
+    lead: 'Escolhe uma pontuação de 0 a 5 em cada pergunta — demora menos de um minuto.',
     optionalSuffix: 'opcional',
     notePlaceholder: 'Comentário opcional para o teu treinador…',
     submit: 'Enviar check-in',
@@ -98,6 +100,18 @@ export const components = {
     fatigueScaleHint: 'Mesma escala que as outras perguntas: quanto mais alto, melhor.',
     fatigueScaleLow: 'Muito fatigado/a (mau)',
     fatigueScaleHigh: 'Sem fadiga (bom)',
+    answerAllRequired: 'Responde a todas as perguntas antes de enviar.',
+    coachNotePrompt: 'Há algo que o teu treinador deva saber sobre esta sessão?',
+    questions: {
+      mood: 'Como está o teu humor?',
+      confidenceToContinue: 'Quão confiante te sentes para continuar a treinar?',
+      confidenceDuring: 'Quão confiante te sentiste durante a sessão?',
+      focusDuring: 'Quão focado/a estiveste durante a sessão?',
+      errorHandling: 'Como lidaste com os erros que cometeste hoje?',
+      feltImprovement: 'Sentes que melhoraste nesta sessão?',
+      performanceSatisfaction: 'Quão satisfeito/a estás com o teu desempenho?',
+      mentalFatigue: 'Como está a tua fadiga mental?',
+    },
   },
   installInstructions: {
     alreadyInstalled: 'O SurfStar já está instalado neste dispositivo.',

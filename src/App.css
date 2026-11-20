@@ -8663,7 +8663,32 @@ a.legal-footer-links__btn {
 }
 
 body.has-cookie-consent {
-  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.sync-status-banner {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.sync-status-banner--syncing {
+  background: #e0f2fe;
+  color: #0c4a6e;
+}
+
+.sync-status-banner--error {
+  background: #fef2f2;
+  color: #991b1b;
 }
 
 .cookie-consent__inner {

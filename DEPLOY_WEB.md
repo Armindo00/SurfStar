@@ -20,7 +20,8 @@ Sim — **já faz sentido**. Assim abres no telemóvel com um link `https://...`
    - Copia **Project URL** → `VITE_SUPABASE_URL`
    - Copia **anon public** key → `VITE_SUPABASE_ANON_KEY`
 4. **Authentication → Providers → Email**:
-   - Desliga **Confirm email** (para entrar logo após registo, ideal para testes).
+   - **Produção:** mantém **Confirm email** ligado (identidade verificada antes de treinar/pagar).
+   - **Só em testes locais:** podes desligar Confirm email para entrar logo após o registo.
 5. **Authentication → URL Configuration**:
    - **Site URL:** `https://www.surfstar.app`
    - **Redirect URLs:** inclui `https://www.surfstar.app/reset-password` e `https://www.surfstar.app/forgot-password`
@@ -29,17 +30,20 @@ Sim — **já faz sentido**. Assim abres no telemóvel com um link `https://...`
    - Exemplo: *"Your SurfStar reset code is: **{{ .Token }}**"*
    - Configura o remetente como **SurfStar** / `contact@surfstar.app` (SMTP customizado em Authentication → SMTP)
 7. **SQL Editor** — corre **todos** os scripts por ordem (ver [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md)), incluindo `fix-subscription-security.sql` para produção.
+8. **Produção checklist (pagamento manual):** `VITE_MANUAL_PAYMENTS=true` (ou omite Stripe links), `VITE_DEMO_SUBSCRIPTION=false`, preenche `VITE_LEGAL_*`, e confirma emails de admin em `platform_admin_emails`.
 
 ---
 
-## Passo 1b — Stripe (produção)
+## Passo 1b — Stripe (fase 2, opcional)
 
-1. Cria Payment Links para Starter, Team e Club no Stripe Dashboard.
-2. Cola os URLs em `.env` / Vercel (`VITE_STRIPE_LINK_*`).
-3. Deploy da Edge Function `supabase/functions/stripe-webhook` e configura webhook Stripe.
+O lançamento atual usa **aprovação admin + confirmação de pagamento manual**. Stripe fica para quando quiseres self-serve.
+
+1. Cria Payment Links para Coach e Coach Premium (mensal + anual) no Stripe Dashboard.
+2. Cola os URLs em `.env` / Vercel (`VITE_STRIPE_LINK_*`) e define `VITE_MANUAL_PAYMENTS=false`.
+3. Deploy da Edge Function `supabase/functions/stripe-webhook` e configura webhook Stripe (deve atualizar `organization_subscriptions`).
 4. Ver detalhes em [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md).
 
-Para **dev sem Stripe**: `VITE_DEMO_SUBSCRIPTION=true` + SQL `demo_subscriptions = true`.
+Para **dev sem Stripe**: `VITE_DEMO_SUBSCRIPTION=true` + SQL `demo_subscriptions = true` (nunca em produção).
 
 ---
 

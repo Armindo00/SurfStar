@@ -370,7 +370,15 @@ export type MessageCatalog = {
     validation: Record<string, string>
   }
   components: {
-    cookieConsent: Record<string, string>
+    cookieConsent: {
+      ariaLabel: string
+      text: string
+      privacyPolicy: string
+      complaintsBook: string
+      accept: string
+      essentialOnly: string
+      acceptAll: string
+    }
     legalFooter: Record<string, string>
     authShell: Record<string, string>
     termsAcceptance: Record<string, string>
@@ -382,7 +390,22 @@ export type MessageCatalog = {
       steps: readonly string[]
       footer: string
     }
-    sessionFeedback: Record<string, string>
+    sessionFeedback: {
+      title: string
+      lead: string
+      optionalSuffix: string
+      notePlaceholder: string
+      submit: string
+      skip: string
+      submitFailed: string
+      checkinSubmitted: string
+      fatigueScaleHint: string
+      fatigueScaleLow: string
+      fatigueScaleHigh: string
+      answerAllRequired: string
+      coachNotePrompt: string
+      questions: Record<string, string>
+    }
     installInstructions: Record<string, string>
     endSessionSheet: Record<string, string>
     leaveSessionConfirm: Record<string, string>

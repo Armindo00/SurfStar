@@ -5,7 +5,7 @@ import {
   buildAthletePsychologyAnalytics,
   feedbackHasPsychologySurvey,
 } from '../athletePsychologyStats'
-import { PSYCHOLOGY_SURVEY_QUESTIONS } from '../psychologySurvey'
+import { PSYCHOLOGY_SURVEY_QUESTIONS, psychologyQuestionLabelKey } from '../psychologySurvey'
 import { formatShortDate } from '../dateFormat'
 import { describeAnalyticsRange, type AnalyticsRange } from '../analyticsRange'
 import { trainingModeLabel } from '../i18n/labels'
@@ -170,7 +170,7 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
                     <ul className="psych-survey-summary">
                       {PSYCHOLOGY_SURVEY_QUESTIONS.map((question) => (
                         <li key={question.id}>
-                          <span>{question.label}</span>
+                          <span>{t(psychologyQuestionLabelKey(question.id))}</span>
                           <strong>{feedback.psychologyScores![question.id]}/5</strong>
                         </li>
                       ))}
