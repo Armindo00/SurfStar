@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar · North Atlantic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #07131f;
+      --foam: #f4f7fa;
+      --mist: #9aa8b8;
+      --signal: #d97706;
+      --signal-ink: #7c2d12;
+      --sea: #0c4a6e;
+      --line: rgba(255,255,255,.22);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Figtree, sans-serif;
+      color: var(--foam);
+      background: #041018;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .proto-bar {
+      position: sticky; top: 0; z-index: 40;
+      display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      background: rgba(4,16,24,.92);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      font-size: 0.85rem;
+    }
+    .proto-bar strong { font-weight: 700; }
+    .proto-bar nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .proto-bar a {
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      color: #c9d4df;
+    }
+    .proto-bar a.on { background: #fff; color: #041018; border-color: #fff; }
+
+    /* Full-bleed hero — one composition */
+    .hero {
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      background:
+        linear-gradient(180deg, rgba(4,16,24,.55) 0%, rgba(4,16,24,.25) 38%, rgba(4,16,24,.72) 100%),
+        url("./assets/wave-power.jpg") center/cover;
+    }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.25rem;
+      max-width: 1200px; width: 100%; margin: 0 auto;
+    }
+    .logo {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: 1.85rem;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .logo em { font-style: italic; color: #fbbf24; }
+    .nav-links { display: none; gap: 1.25rem; color: rgba(255,255,255,.82); font-size: 0.92rem; font-weight: 500; }
+    @media (min-width: 820px) { .nav-links { display: flex; } }
+    .nav-cta {
+      font-size: 0.88rem; font-weight: 600;
+      padding: 0.55rem 0.95rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-body {
+      max-width: 1200px; width: 100%; margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      gap: 1.35rem;
+    }
+    .brand-mark {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: clamp(3.4rem, 11vw, 6.5rem);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      margin: 0;
+      max-width: 10ch;
+    }
+    .brand-mark em { font-style: italic; color: #fcd34d; }
+    .headline {
+      margin: 0;
+      font-size: clamp(1.15rem, 2.6vw, 1.55rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      max-width: 22ch;
+      color: #fff;
+    }
+    .lead {
+      margin: 0;
+      max-width: 34ch;
+      color: rgba(244,247,250,.82);
+      font-size: 1.02rem;
+      line-height: 1.5;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 48px; padding: 0.75rem 1.25rem;
+      border-radius: 999px; font-weight: 700; font-size: 0.95rem;
+      border: 0; cursor: pointer;
+    }
+    .btn-primary { background: var(--signal); color: #fff7ed; }
+    .btn-ghost {
+      background: transparent; color: #fff;
+      border: 1px solid rgba(255,255,255,.45);
+    }
+
+    /* Second section: live session phone — not in first viewport conceptually as scroll */
+    .deck {
+      background: var(--foam);
+      color: var(--ink);
+      padding: 3.5rem 1.25rem 4.5rem;
+    }
+    .deck-inner { max-width: 1100px; margin: 0 auto; display: grid; gap: 2rem; align-items: center; }
+    @media (min-width: 900px) { .deck-inner { grid-template-columns: 1fr 1fr; gap: 3rem; } }
+    .deck h2 {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      letter-spacing: -0.03em;
+      margin: 0 0 0.75rem;
+      font-weight: 400;
+    }
+    .deck p { margin: 0 0 1rem; color: #4b5a6a; line-height: 1.55; max-width: 36ch; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .pill {
+      font-size: 0.8rem; font-weight: 600; color: var(--sea);
+      background: #e0f2fe; padding: 0.35rem 0.7rem; border-radius: 999px;
+    }
+
+    .phone {
+      width: min(320px, 100%);
+      margin: 0 auto;
+      border-radius: 28px;
+      background: #0b1724;
+      color: #e8eef5;
+      padding: 0.85rem 0.85rem 1.1rem;
+      border: 1px solid #1e2d3f;
+      animation: rise 0.8s ease both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: none; }
+    }
+    .phone-top {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 1rem; font-size: 0.78rem; color: #8fa0b3;
+    }
+    .phone-top strong { color: #fff; font-size: 1rem; }
+    .kpi {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .kpi div {
+      background: #132233; border-radius: 12px; padding: 0.7rem 0.55rem;
+      text-align: center;
+    }
+    .kpi span { display: block; font-size: 1.25rem; font-weight: 700; letter-spacing: -0.03em; }
+    .kpi small { color: #8fa0b3; font-size: 0.68rem; }
+    .wave-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.7rem 0; border-top: 1px solid #1e2d3f; font-size: 0.88rem;
+    }
+    .wave-row em { font-style: normal; color: #fbbf24; font-weight: 700; }
+    .fab {
+      margin-top: 1rem; width: 100%; min-height: 48px; border: 0; border-radius: 14px;
+      background: var(--signal); color: #fff7ed; font-weight: 700; font-family: inherit;
+    }
+
+    .note {
+      max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 2.5rem;
+      color: #7b8796; font-size: 0.88rem;
+      background: var(--foam);
+    }
+  </style>
+</head>
+<body>
+  <div class="proto-bar">
+    <strong>Protótipo 01 · North Atlantic</strong>
+    <nav>
+      <a href="./index.html">Galeria</a>
+      <a class="on" href="./01-north-atlantic.html">01</a>
+      <a href="./02-heat-clock.html">02</a>
+      <a href="./03-saltline.html">03</a>
+    </nav>
+  </div>
+
+  <section class="hero" aria-label="Hero SurfStar">
+    <header class="nav">
+      <div class="logo">Surf<em>Star</em></div>
+      <div class="nav-links">
+        <a href="#praia">Na praia</a>
+        <a href="#planos">Planos</a>
+      </div>
+      <a class="nav-cta" href="#">Entrar</a>
+    </header>
+
+    <div class="hero-body">
+      <h1 class="brand-mark">Surf<em>Star</em></h1>
+      <p class="headline">Estatísticas de surf para treinadores exigentes.</p>
+      <p class="lead">Regista onda a onda na praia. Vê evolução da equipa. Sem ruído — só o que decide o próximo treino.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#">Começar como treinador</a>
+        <a class="btn btn-ghost" href="#">Sou atleta</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="deck" id="praia">
+    <div class="deck-inner">
+      <div>
+        <h2>A praia como ecrã principal.</h2>
+        <p>KPIs grandes, um botão para a próxima onda, tipografia que se lê com luvas e sol. O brand fica na memória; a UI desaparece no fluxo.</p>
+        <div class="pill-row">
+          <span class="pill">Sessão ao vivo</span>
+          <span class="pill">Sync silenciosa</span>
+          <span class="pill">PT · EN · ES · FR</span>
+        </div>
+      </div>
+      <div class="phone" aria-label="Mock sessão ao vivo">
+        <div class="phone-top">
+          <strong>Ericeira · Pico</strong>
+          <span>42:18</span>
+        </div>
+        <div class="kpi">
+          <div><span>14</span><small>Ondas</small></div>
+          <div><span>7.2</span><small>Média</small></div>
+          <div><span>9.1</span><small>Melhor</small></div>
+        </div>
+        <div class="wave-row"><span>Onda 14 · bottom turn</span><em>8.4</em></div>
+        <div class="wave-row"><span>Onda 13 · cutback</span><em>7.0</em></div>
+        <div class="wave-row"><span>Onda 12 · snap</span><em>6.5</em></div>
+        <button class="fab" type="button">+ Registar onda</button>
+      </div>
+    </div>
+  </section>
+  <p class="note">Direção: editorial atlântico · marca heróica em serif · CTA âmbar · foto full-bleed. Ideal se queres parecer premium sem “app desportiva genérica”.</p>
+</body>
+</html>

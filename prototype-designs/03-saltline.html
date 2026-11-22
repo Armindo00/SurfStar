@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar · Saltline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #14202b;
+      --mute: #5f6d7b;
+      --foam: #ffffff;
+      --sky: #eef5f8;
+      --line: #d5e0e8;
+      --tide: #1a6b8a;
+      --tide-soft: #d6eaf2;
+      --sand: #f3f1ec;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Outfit, sans-serif;
+      color: var(--ink);
+      background: var(--sky);
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .proto-bar {
+      position: sticky; top: 0; z-index: 40;
+      display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      background: rgba(238,245,248,.94);
+      border-bottom: 1px solid var(--line);
+      font-size: 0.85rem;
+      backdrop-filter: blur(10px);
+    }
+    .proto-bar nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .proto-bar a {
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--mute);
+      background: #fff;
+    }
+    .proto-bar a.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+    .hero {
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(20,32,43,.15) 0%, rgba(20,32,43,.45) 100%),
+        url("./assets/morning-beach.jpg") center/cover;
+    }
+
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.15rem 1.25rem;
+      max-width: 1120px; width: 100%; margin: 0 auto;
+      color: #fff;
+    }
+    .logo {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 650;
+      font-size: 1.65rem;
+      letter-spacing: -0.03em;
+    }
+    .nav-links { display: none; gap: 1.4rem; font-weight: 500; font-size: 0.95rem; }
+    @media (min-width: 800px) { .nav-links { display: flex; } }
+    .nav-cta {
+      background: #fff; color: var(--ink);
+      font-weight: 600; font-size: 0.9rem;
+      padding: 0.55rem 1rem; border-radius: 999px;
+    }
+
+    .hero-body {
+      max-width: 1120px; width: 100%; margin: 0 auto;
+      padding: 1.25rem 1.25rem 3.25rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      color: #fff;
+      gap: 1rem;
+    }
+    .brand-mark {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 650;
+      font-size: clamp(3.6rem, 12vw, 7rem);
+      line-height: 0.9;
+      letter-spacing: -0.045em;
+      margin: 0;
+      max-width: 8ch;
+      animation: softIn 0.9s ease both;
+    }
+    @keyframes softIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: none; }
+    }
+    .headline {
+      margin: 0;
+      font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      max-width: 20ch;
+      animation: softIn 0.9s ease 0.08s both;
+    }
+    .lead {
+      margin: 0;
+      max-width: 34ch;
+      font-size: 1.05rem;
+      line-height: 1.5;
+      color: rgba(255,255,255,.88);
+      animation: softIn 0.9s ease 0.14s both;
+    }
+    .actions {
+      display: flex; flex-wrap: wrap; gap: 0.65rem;
+      margin-top: 0.35rem;
+      animation: softIn 0.9s ease 0.2s both;
+    }
+    .btn {
+      min-height: 50px; padding: 0.8rem 1.3rem;
+      border-radius: 999px; font-weight: 700; font-size: 0.95rem;
+      border: 0; display: inline-flex; align-items: center;
+      font-family: inherit;
+    }
+    .btn-primary { background: #fff; color: var(--ink); }
+    .btn-ghost {
+      background: transparent; color: #fff;
+      border: 1px solid rgba(255,255,255,.55);
+    }
+
+    .club {
+      background: var(--foam);
+      padding: 3.5rem 1.25rem 4rem;
+    }
+    .club-inner {
+      max-width: 1120px; margin: 0 auto;
+      display: grid; gap: 2rem;
+    }
+    @media (min-width: 900px) {
+      .club-inner { grid-template-columns: 1fr 1.05fr; align-items: center; gap: 3rem; }
+    }
+    .club h2 {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 650;
+      font-size: clamp(2rem, 4vw, 2.9rem);
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+      margin: 0 0 0.85rem;
+    }
+    .club p {
+      margin: 0 0 1.25rem;
+      color: var(--mute);
+      line-height: 1.55;
+      max-width: 36ch;
+      font-size: 1.02rem;
+    }
+    .steps { display: grid; gap: 0.75rem; }
+    .step {
+      display: grid; grid-template-columns: 40px 1fr; gap: 0.75rem; align-items: start;
+      padding: 0.85rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .step:last-child { border-bottom: 1px solid var(--line); }
+    .step b {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--tide-soft); color: var(--tide);
+      display: grid; place-items: center; font-weight: 700;
+    }
+    .step strong { display: block; margin-bottom: 0.15rem; }
+    .step span { color: var(--mute); font-size: 0.92rem; }
+
+    .panel {
+      background: var(--sand);
+      border-radius: 24px;
+      padding: 1.35rem;
+      border: 1px solid #e7e2d8;
+    }
+    .panel-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 1.1rem;
+    }
+    .panel-head strong {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.35rem; font-weight: 650;
+    }
+    .panel-head span { color: var(--mute); font-size: 0.85rem; }
+    .tiles {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem;
+      margin-bottom: 1rem;
+    }
+    .tiles div {
+      background: #fff;
+      border-radius: 14px;
+      padding: 0.9rem 0.6rem;
+      text-align: center;
+      border: 1px solid #ebe6dc;
+    }
+    .tiles em {
+      font-style: normal; display: block;
+      font-size: 1.35rem; font-weight: 700; letter-spacing: -0.03em;
+    }
+    .tiles small { color: var(--mute); font-size: 0.72rem; }
+    .primary {
+      width: 100%; min-height: 50px; border: 0; border-radius: 999px;
+      background: var(--ink); color: #fff;
+      font-family: inherit; font-weight: 700; font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .note {
+      max-width: 1120px; margin: 0 auto; padding: 0 1.25rem 2.5rem;
+      color: var(--mute); font-size: 0.88rem;
+      background: var(--foam);
+    }
+  </style>
+</head>
+<body>
+  <div class="proto-bar">
+    <strong>Protótipo 03 · Saltline</strong>
+    <nav>
+      <a href="./index.html">Galeria</a>
+      <a href="./01-north-atlantic.html">01</a>
+      <a href="./02-heat-clock.html">02</a>
+      <a class="on" href="./03-saltline.html">03</a>
+    </nav>
+  </div>
+
+  <section class="hero" aria-label="Hero SurfStar">
+    <header class="nav">
+      <div class="logo">SurfStar</div>
+      <div class="nav-links">
+        <a href="#metodo">Método</a>
+        <a href="#planos">Planos</a>
+      </div>
+      <a class="nav-cta" href="#">Entrar</a>
+    </header>
+    <div class="hero-body">
+      <h1 class="brand-mark">SurfStar</h1>
+      <p class="headline">O padrão do teu clube na água.</p>
+      <p class="lead">Uma app clara para treinadores que querem evolução mensurável — sem parecer software genérico.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#">Criar conta de treinador</a>
+        <a class="btn btn-ghost" href="#">Entrar como atleta</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="club" id="metodo">
+    <div class="club-inner">
+      <div>
+        <h2>Do primeiro login ao primeiro heat.</h2>
+        <p>Saltline privilegia ar, tipografia e confiança. A marca lidera; a interface só acompanha o ritual do treino.</p>
+        <div class="steps">
+          <div class="step"><b>1</b><div><strong>Escolhe o plano</strong><span>Coach, Premium ou Team Academy.</span></div></div>
+          <div class="step"><b>2</b><div><strong>Liga os atletas</strong><span>Código de pairing — conta grátis.</span></div></div>
+          <div class="step"><b>3</b><div><strong>Regista na praia</strong><span>Onda a onda, sync em silêncio.</span></div></div>
+        </div>
+      </div>
+      <div class="panel" aria-label="Mock dashboard treinador">
+        <div class="panel-head">
+          <strong>Olá, Armindo</strong>
+          <span>Coach Premium</span>
+        </div>
+        <div class="tiles">
+          <div><em>12</em><small>Atletas</small></div>
+          <div><em>38</em><small>Sessões</small></div>
+          <div><em>2d</em><small>Último</small></div>
+        </div>
+        <button class="primary" type="button">Nova sessão</button>
+      </div>
+    </div>
+  </section>
+  <p class="note">Direção: clube costeiro · luz · Fraunces no brand · Outfit na UI · foto de manhã clara full-bleed. Ideal se queres confiança “escola/clube premium” e legibilidade total.</p>
+</body>
+</html>
