@@ -256,16 +256,22 @@ export function LandingView() {
               </div>
               <div className="landing-showcase__bars">
                 <div className="landing-showcase__bar">
-                  <span>{showcase.rail}</span>
-                  <div><i style={{ width: '82%' }} /></div>
+                  <span className="landing-showcase__bar-label">{showcase.rail}</span>
+                  <div className="landing-showcase__bar-track" aria-hidden="true">
+                    <span className="landing-showcase__bar-fill" style={{ width: '82%' }} />
+                  </div>
                 </div>
                 <div className="landing-showcase__bar">
-                  <span>{showcase.topTurn}</span>
-                  <div><i style={{ width: '74%' }} /></div>
+                  <span className="landing-showcase__bar-label">{showcase.topTurn}</span>
+                  <div className="landing-showcase__bar-track" aria-hidden="true">
+                    <span className="landing-showcase__bar-fill" style={{ width: '74%' }} />
+                  </div>
                 </div>
                 <div className="landing-showcase__bar">
-                  <span>{showcase.progressive}</span>
-                  <div><i style={{ width: '91%' }} /></div>
+                  <span className="landing-showcase__bar-label">{showcase.progressive}</span>
+                  <div className="landing-showcase__bar-track" aria-hidden="true">
+                    <span className="landing-showcase__bar-fill" style={{ width: '91%' }} />
+                  </div>
                 </div>
               </div>
             </div>
