@@ -4930,17 +4930,18 @@ input[type='checkbox']:indeterminate {
 
 /* —— Landing & pricing —— */
 .landing-page {
-  --landing-navy: #050b18;
-  --landing-navy-mid: #0a1628;
-  --landing-gold: #c9a962;
-  --landing-gold-light: #e8d5a3;
-  --landing-text: #f1f5f9;
-  --landing-muted: #b8c5d6;
+  /* Palette D · Mist Daylight */
+  --landing-navy: #eef3f6;
+  --landing-navy-mid: #e8eef3;
+  --landing-gold: #0b6e99;
+  --landing-gold-light: #0b6e99;
+  --landing-text: #0f1c24;
+  --landing-muted: #5b6b78;
   min-height: 100svh;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201, 169, 98, 0.12), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(14, 165, 233, 0.08), transparent),
-    linear-gradient(180deg, var(--landing-navy) 0%, var(--landing-navy-mid) 45%, #0c1f3d 100%);
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(11, 110, 153, 0.1), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(56, 189, 248, 0.08), transparent),
+    linear-gradient(180deg, var(--landing-navy) 0%, var(--landing-navy-mid) 45%, #dfe7ee 100%);
   color: var(--landing-text);
 }
 
@@ -4950,11 +4951,11 @@ input[type='checkbox']:indeterminate {
 }
 
 .btn--gold {
-  background: linear-gradient(135deg, #dbbf6a 0%, #b8943f 100%);
-  border-color: #b8943f;
-  color: #1a1204;
+  background: #0b6e99;
+  border-color: #085578;
+  color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 4px 20px rgba(201, 169, 98, 0.35);
+  box-shadow: 0 4px 20px rgba(11, 110, 153, 0.28);
 }
 
 .btn--gold:hover {
@@ -4962,9 +4963,9 @@ input[type='checkbox']:indeterminate {
 }
 
 .btn--outline {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: white;
+  background: #ffffff;
+  border: 1px solid #d5dee6;
+  color: #0f1c24;
   font-weight: 600;
 }
 
@@ -4982,10 +4983,10 @@ input[type='checkbox']:indeterminate {
 }
 
 .landing-accent {
-  background: linear-gradient(135deg, #fff 30%, var(--landing-gold-light) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: #0b6e99;
 }
 
 .landing-nav {
@@ -4999,8 +5000,8 @@ input[type='checkbox']:indeterminate {
   top: 0;
   z-index: 20;
   backdrop-filter: blur(16px);
-  background: rgba(5, 11, 24, 0.82);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid #d5dee6;
 }
 
 .landing-nav__menu {
