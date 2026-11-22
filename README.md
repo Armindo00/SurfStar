@@ -60,6 +60,16 @@ See [`DEPLOY_WEB.md`](DEPLOY_WEB.md) for web deploy steps.
 
 Annual: €490 / €890 / €1790 (2 months free).
 
+## Design prototypes
+
+Three professional visual directions (landing + first coach surface) live in [`prototype-designs/`](prototype-designs/):
+
+```bash
+npx --yes serve prototype-designs -p 4177
+```
+
+Open `http://localhost:4177` — North Atlantic · Heat Clock · Saltline.
+
 ## License
 
 Private — SurfStar

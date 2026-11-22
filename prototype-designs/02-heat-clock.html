@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar · Heat Clock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void: #070a0d;
+      --panel: #10161c;
+      --line: #24303a;
+      --foam: #e8eef2;
+      --mute: #8b9aab;
+      --pulse: #2dd4bf;
+      --pulse-dim: rgba(45,212,191,.15);
+      --warn: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", sans-serif;
+      background: var(--void);
+      color: var(--foam);
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .proto-bar {
+      position: sticky; top: 0; z-index: 40;
+      display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      background: rgba(7,10,13,.95);
+      border-bottom: 1px solid var(--line);
+      font-size: 0.85rem;
+    }
+    .proto-bar nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .proto-bar a {
+      padding: 0.35rem 0.7rem;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      color: var(--mute);
+    }
+    .proto-bar a.on { background: var(--pulse); color: #042f2e; border-color: var(--pulse); font-weight: 700; }
+
+    .hero {
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(105deg, rgba(7,10,13,.92) 0%, rgba(7,10,13,.55) 48%, rgba(7,10,13,.78) 100%),
+        url("./assets/contest-energy.jpg") 70% center/cover;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(45,212,191,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(45,212,191,.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(180deg, #000 20%, transparent 90%);
+      pointer-events: none;
+    }
+
+    .nav {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.25rem;
+      max-width: 1200px; width: 100%; margin: 0 auto;
+    }
+    .logo {
+      font-family: Syne, sans-serif;
+      font-weight: 800;
+      font-size: 1.35rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .logo span { color: var(--pulse); }
+    .nav-cta {
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.55rem 0.9rem;
+      border: 1px solid var(--pulse);
+      color: var(--pulse);
+      border-radius: 6px;
+    }
+
+    .hero-body {
+      position: relative; z-index: 1;
+      max-width: 1200px; width: 100%; margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+      display: flex; flex-direction: column; justify-content: center;
+      gap: 1.1rem;
+    }
+    .status {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--pulse);
+    }
+    .status i {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--pulse);
+      display: inline-block;
+      animation: blink 1.6s ease infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+    .brand-mark {
+      font-family: Syne, sans-serif;
+      font-weight: 800;
+      font-size: clamp(3.2rem, 12vw, 6.8rem);
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      margin: 0;
+      max-width: 8ch;
+    }
+    .brand-mark span { color: var(--pulse); }
+    .headline {
+      margin: 0;
+      font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+      font-weight: 500;
+      max-width: 28ch;
+      color: #d7e0e8;
+    }
+    .lead {
+      margin: 0;
+      max-width: 40ch;
+      color: var(--mute);
+      line-height: 1.55;
+      font-size: 0.98rem;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.35rem; }
+    .btn {
+      min-height: 48px; padding: 0.75rem 1.2rem;
+      font-family: inherit; font-weight: 700; font-size: 0.88rem;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      border-radius: 6px; border: 0; cursor: pointer;
+      display: inline-flex; align-items: center;
+    }
+    .btn-primary { background: var(--pulse); color: #042f2e; }
+    .btn-ghost { background: transparent; color: var(--foam); border: 1px solid var(--line); }
+
+    .strip {
+      border-top: 1px solid var(--line);
+      background: var(--panel);
+      padding: 2.75rem 1.25rem 3.5rem;
+    }
+    .strip-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; gap: 1.5rem;
+    }
+    @media (min-width: 900px) {
+      .strip-inner { grid-template-columns: 1.1fr 0.9fr; align-items: stretch; }
+    }
+    .strip h2 {
+      font-family: Syne, sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      letter-spacing: -0.03em;
+      margin: 0 0 0.6rem;
+      text-transform: uppercase;
+    }
+    .strip p { margin: 0 0 1.25rem; color: var(--mute); line-height: 1.5; max-width: 38ch; }
+
+    .board {
+      display: grid; gap: 0.65rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .board-row {
+      display: grid; grid-template-columns: 64px 1fr auto;
+      gap: 0.75rem; align-items: center;
+      padding: 0.85rem 1rem;
+      background: var(--void);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      animation: tick 0.7s ease both;
+    }
+    .board-row:nth-child(2) { animation-delay: 0.08s; }
+    .board-row:nth-child(3) { animation-delay: 0.16s; }
+    .board-row:nth-child(4) { animation-delay: 0.24s; }
+    @keyframes tick {
+      from { opacity: 0; transform: translateX(-8px); }
+      to { opacity: 1; transform: none; }
+    }
+    .board-row b {
+      font-family: Syne, sans-serif;
+      color: var(--pulse);
+      font-size: 1.05rem;
+    }
+    .board-row span { color: #c5d0da; font-weight: 500; }
+    .board-row em { font-style: normal; font-weight: 700; font-size: 1.15rem; }
+
+    .clock {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--void);
+      padding: 1.25rem;
+      display: flex; flex-direction: column; justify-content: space-between;
+      min-height: 260px;
+    }
+    .clock label {
+      font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--mute); font-weight: 600;
+    }
+    .clock .time {
+      font-family: Syne, sans-serif;
+      font-weight: 800;
+      font-size: clamp(3rem, 8vw, 4.5rem);
+      letter-spacing: -0.05em;
+      line-height: 1;
+      color: var(--pulse);
+      margin: 0.5rem 0 1rem;
+    }
+    .meters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .meters div {
+      background: var(--pulse-dim);
+      border-radius: 8px;
+      padding: 0.7rem 0.5rem;
+      text-align: center;
+    }
+    .meters strong { display: block; font-size: 1.2rem; font-weight: 700; }
+    .meters small { color: var(--mute); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; }
+
+    .note {
+      max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 2.5rem;
+      color: #6d7c8c; font-size: 0.88rem;
+      background: var(--panel);
+    }
+  </style>
+</head>
+<body>
+  <div class="proto-bar">
+    <strong>Protótipo 02 · Heat Clock</strong>
+    <nav>
+      <a href="./index.html">Galeria</a>
+      <a href="./01-north-atlantic.html">01</a>
+      <a class="on" href="./02-heat-clock.html">02</a>
+      <a href="./03-saltline.html">03</a>
+    </nav>
+  </div>
+
+  <section class="hero" aria-label="Hero SurfStar">
+    <header class="nav">
+      <div class="logo">Surf<span>Star</span></div>
+      <a class="nav-cta" href="#">Login</a>
+    </header>
+    <div class="hero-body">
+      <div class="status"><i></i> Live session ready</div>
+      <h1 class="brand-mark">Surf<span>Star</span></h1>
+      <p class="headline">O heat clock da tua equipa — onda a onda.</p>
+      <p class="lead">Feito para campeonatos, combos e treino técnico. Tipografia de ranking, contraste de contest, zero distração.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#">Iniciar como coach</a>
+        <a class="btn btn-ghost" href="#">Portal atleta</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="strip">
+    <div class="strip-inner">
+      <div>
+        <h2>Leaderboard mental.</h2>
+        <p>Quando o relógio corre, a UI tem de ser um instrumento — não um feed. Heat Clock trata SurfStar como ferramenta de performance.</p>
+        <div class="board">
+          <div class="board-row"><b>01</b><span>M. Costa</span><em>9.17</em></div>
+          <div class="board-row"><b>02</b><span>A. Silva</span><em>8.64</em></div>
+          <div class="board-row"><b>03</b><span>R. Mendes</span><em>8.10</em></div>
+          <div class="board-row"><b>04</b><span>J. Rocha</span><em>7.55</em></div>
+        </div>
+      </div>
+      <div class="clock" aria-label="Heat timer">
+        <div>
+          <label>Heat · Final A</label>
+          <p class="time">12:47</p>
+        </div>
+        <div class="meters">
+          <div><strong>6</strong><small>Waves</small></div>
+          <div><strong>2</strong><small>Priority</small></div>
+          <div><strong>ON</strong><small>Sync</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <p class="note">Direção: competição / precisão · escuro intencional · Syne geométrica · teal de dados. Ideal se o posicionamento é “ferramenta de elite na areia”.</p>
+</body>
+</html>

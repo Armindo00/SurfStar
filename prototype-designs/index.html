@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar — 3 protótipos de design</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0b1220;
+      --mute: #5b6577;
+      --line: #e6eaf0;
+      --paper: #f7f8fa;
+      --accent: #0b6e99;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Figtree, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #dceef8 0%, transparent 55%),
+        radial-gradient(900px 400px at 100% 0%, #e8f0f6 0%, transparent 50%),
+        var(--paper);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    header { margin-bottom: 2.5rem; }
+    .brand {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: 2.4rem;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.35rem;
+    }
+    .brand span { color: var(--accent); font-style: italic; }
+    header p {
+      margin: 0;
+      max-width: 38rem;
+      color: var(--mute);
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 860px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    a.card {
+      text-decoration: none;
+      color: inherit;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    a.card:hover { transform: translateY(-3px); border-color: #b9c8d6; }
+    .swatch {
+      height: 168px;
+      position: relative;
+      isolation: isolate;
+    }
+    .swatch::after {
+      content: attr(data-label);
+      position: absolute;
+      left: 1rem;
+      bottom: 1rem;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      text-shadow: 0 1px 12px rgba(0,0,0,.45);
+      z-index: 1;
+    }
+    .a { background:
+      linear-gradient(160deg, rgba(6,18,33,.55), rgba(6,18,33,.2)),
+      url("./assets/wave-power.jpg") center/cover; }
+    .b { background:
+      linear-gradient(160deg, rgba(8,12,16,.75), rgba(8,12,16,.35)),
+      url("./assets/contest-energy.jpg") center/cover; }
+    .c { background:
+      linear-gradient(160deg, rgba(255,255,255,.15), rgba(20,40,55,.35)),
+      url("./assets/morning-beach.jpg") center/cover; }
+    .body { padding: 1.15rem 1.2rem 1.35rem; display: flex; flex-direction: column; gap: 0.65rem; flex: 1; }
+    .meta { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    .body h2 { margin: 0; font-size: 1.2rem; letter-spacing: -0.02em; }
+    .body p { margin: 0; color: var(--mute); font-size: 0.95rem; line-height: 1.5; flex: 1; }
+    .fonts { font-size: 0.82rem; color: #7a8494; }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: var(--ink);
+    }
+    .cta::after { content: "→"; transition: transform 0.2s ease; }
+    a.card:hover .cta::after { transform: translateX(3px); }
+    footer {
+      margin-top: 2.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+      color: var(--mute);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 class="brand">Surf<span>Star</span> — protótipos</h1>
+      <p>
+        Três direções visuais profissionais para a landing e o primeiro ecrã.
+        Cada protótipo é uma composição completa (marca, headline, CTA, imagem dominante) — não um dashboard.
+      </p>
+    </header>
+
+    <div class="grid">
+      <a class="card" href="./01-north-atlantic.html">
+        <div class="swatch a" data-label="01 · North Atlantic"></div>
+        <div class="body">
+          <div class="meta">Editorial · praia ao amanhecer</div>
+          <h2>North Atlantic</h2>
+          <p>Mar profundo, tipografia serif expressiva no brand, UI clara para o telemóvel na areia. Sensação de revista de alto nível + ferramenta séria.</p>
+          <div class="fonts">Instrument Serif · Figtree · amber signal</div>
+          <span class="cta">Abrir protótipo</span>
+        </div>
+      </a>
+
+      <a class="card" href="./02-heat-clock.html">
+        <div class="swatch b" data-label="02 · Heat Clock"></div>
+        <div class="body">
+          <div class="meta">Competição · precisão</div>
+          <h2>Heat Clock</h2>
+          <p>Estética de heat clock / timing board. Escuro deliberado para ler bem ao sol baixo; dados afiados, zero ornamento.</p>
+          <div class="fonts">Syne · IBM Plex Sans · sea-green</div>
+          <span class="cta">Abrir protótipo</span>
+        </div>
+      </a>
+
+      <a class="card" href="./03-saltline.html">
+        <div class="swatch c" data-label="03 · Saltline"></div>
+        <div class="body">
+          <div class="meta">Clube costeiro · luz</div>
+          <h2>Saltline</h2>
+          <p>Clareza portuguesa: ar, espaço, fotografia de manhã clara. Marca heróica, UI mínima, confiança de escola/clube premium.</p>
+          <div class="fonts">Fraunces · Outfit · ink + foam</div>
+          <span class="cta">Abrir protótipo</span>
+        </div>
+      </a>
+    </div>
+
+    <footer>
+      Estes ficheiros vivem em <code>prototype-designs/</code> e não alteram a app em produção.
+      Escolhe uma direção e implementamos na landing + shell reais.
+    </footer>
+  </div>
+</body>
+</html>
