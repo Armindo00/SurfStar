@@ -691,9 +691,34 @@ body {
 }
 
 .app-shell .btn--danger {
-  background: rgba(220, 38, 38, 0.2) !important;
-  border-color: rgba(248, 113, 113, 0.45) !important;
-  color: #fecaca !important;
+  background: #fde8e8 !important;
+  border-color: #f0b4b4 !important;
+  color: #9f1d1d !important;
+}
+
+.app-shell .btn--danger-quiet {
+  background: transparent !important;
+  border-color: #e2a4a4 !important;
+  color: #b42318 !important;
+}
+
+.app-shell .btn--danger-quiet:hover:not(:disabled) {
+  background: #fde8e8 !important;
+  border-color: #d98989 !important;
+  color: #912018 !important;
+}
+
+.app-shell .leave-session-sheet {
+  background: #ffffff !important;
+  border-color: #d0dae4 !important;
+}
+
+.app-shell .leave-session-sheet .sheet__eyebrow {
+  color: #0a6a94 !important;
+}
+
+.app-shell .leave-session-sheet__intro {
+  color: #4b5c6b !important;
 }
 
 .app-shell .login-success {

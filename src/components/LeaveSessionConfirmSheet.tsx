@@ -37,16 +37,20 @@ export function LeaveSessionConfirmSheet() {
           {s.intro}
         </p>
 
-        <div className="sea-confirm-actions">
+        <div className="sea-confirm-actions leave-session-sheet__actions">
           <button
             type="button"
-            className="btn btn--danger btn--block btn--lg"
+            className="btn btn--primary btn--block btn--lg"
+            onClick={closeLeaveSessionConfirm}
+          >
+            {s.stayInSession}
+          </button>
+          <button
+            type="button"
+            className="btn btn--danger-quiet btn--block"
             onClick={confirmLeaveActiveSession}
           >
             {s.leaveWithoutSaving}
-          </button>
-          <button type="button" className="btn btn--ghost btn--block" onClick={closeLeaveSessionConfirm}>
-            {s.stayInSession}
           </button>
         </div>
       </div>
