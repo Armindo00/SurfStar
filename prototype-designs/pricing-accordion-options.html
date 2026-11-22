@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Pricing accordion — 3 options</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--text:#0c1520;--muted:#4b5c6b;--primary:#0a6a94;--border:#d0dae4;font-family:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#e8eef3;color:var(--text);padding:1.1rem 1rem 2.2rem}
+h1{text-align:center;font-size:1.05rem;margin:0 0 .25rem}
+.page-sub{text-align:center;color:var(--muted);font-size:.86rem;margin:0 0 1.1rem}
+.options{display:grid;gap:1.25rem;max-width:980px;margin:0 auto}
+.option{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 10px 28px rgba(12,21,32,.07)}
+.meta{padding:.8rem 1rem;border-bottom:1px solid var(--border);background:#f8fafc}
+.meta strong{display:block}.meta span{color:var(--muted);font-size:.78rem}
+.section{padding:1.35rem 1.1rem 1.5rem;background:#fff}
+.head{text-align:center;margin:0 auto 1rem;max-width:34rem}
+.eyebrow{margin:0 0 .3rem;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0a6a94}
+.head h2{margin:0 0 .35rem;font-size:1.35rem}
+.head p{margin:0;color:var(--muted);font-size:.88rem}
+.toggle{display:inline-flex;align-items:center;gap:.35rem;margin:0 auto 1.15rem;padding:.28rem;border-radius:999px;background:#f3f6f9;border:1px solid #d0dae4}
+.toggle span{font-size:.82rem;font-weight:600;padding:.4rem .8rem;border-radius:999px;color:var(--muted)}
+.toggle .on{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(12,21,32,.08)}
+.save{font-size:.65rem;font-weight:700;padding:.2rem .45rem;border-radius:999px;background:#e8eef3;color:#085578;border:1px solid #d0dae4}
+.cta{margin-top:1rem;width:100%;border:0;border-radius:12px;padding:.75rem 1rem;background:#0a6a94;color:#fff;font-weight:700;font:inherit}
+.cta--ghost{background:#fff;color:#0c1520;border:1px solid #d0dae4}
+.list{margin:.85rem 0 0;padding:0;list-style:none;display:grid;gap:.45rem}
+.list li{display:flex;gap:.45rem;font-size:.86rem;color:#0c1520;line-height:1.4}
+.list span{color:#0a6a94;font-weight:700}
+.badge{display:inline-block;font-size:.65rem;font-weight:700;padding:.22rem .55rem;border-radius:999px;background:#0a6a94;color:#fff}
+.badge--muted{background:#475569}
+.desc{margin:.35rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.45}
+.price{font-size:1.55rem;font-weight:800;color:#0c1520}
+.price small{font-size:.85rem;font-weight:600;color:var(--muted)}
+.name{margin:0;font-size:1.05rem;font-weight:700;color:#0c1520}
+
+/* A: stack accordion */
+.opt-a .stack{display:grid;gap:.65rem;max-width:640px;margin:0 auto}
+.opt-a .row{border:1px solid #d0dae4;border-radius:14px;background:#fff;overflow:hidden}
+.opt-a .row--open{border-color:#0a6a94;box-shadow:0 8px 22px rgba(10,106,148,.12)}
+.opt-a .trig{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.95rem 1.05rem;background:#fff;border:0;font:inherit;text-align:left;cursor:default}
+.opt-a .trig-left{display:flex;align-items:center;gap:.7rem}
+.opt-a .chev{width:1.6rem;height:1.6rem;border-radius:999px;display:grid;place-items:center;background:#e8eef3;color:#0a6a94;font-size:.75rem;font-weight:800;transition:transform .2s}
+.opt-a .row--open .chev{transform:rotate(180deg);background:#0a6a94;color:#fff}
+.opt-a .panel{display:none;padding:0 1.05rem 1.05rem;border-top:1px solid #e2e8f0}
+.opt-a .row--open .panel{display:block;animation:slide .25s ease}
+@keyframes slide{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* B: card accordion 3-col */
+.opt-b .grid{display:grid;gap:.75rem}
+@media(min-width:800px){.opt-b .grid{grid-template-columns:repeat(3,1fr)}}
+.opt-b .card{border:1px solid #d0dae4;border-radius:16px;background:#fff;overflow:hidden;position:relative}
+.opt-b .card--open{border-color:#0a6a94;box-shadow:0 10px 26px rgba(10,106,148,.12)}
+.opt-b .card .top-badge{position:absolute;top:.55rem;right:.55rem}
+.opt-b .trig{width:100%;padding:1.15rem 1rem .9rem;background:#fff;border:0;font:inherit;text-align:left;cursor:default}
+.opt-b .trig .price{margin:.35rem 0 0}
+.opt-b .hint{margin-top:.55rem;font-size:.75rem;font-weight:700;color:#0a6a94}
+.opt-b .panel{display:none;padding:0 1rem 1rem;border-top:1px solid #e8eef3}
+.opt-b .card--open .panel{display:block}
+.opt-b .card--open .hint::after{content:' · hide'}
+
+/* C: switcher + detail */
+.opt-c .switch{display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem;margin-bottom:.85rem}
+.opt-c .sw{border:1px solid #d0dae4;background:#f8fafc;border-radius:14px;padding:.85rem .7rem;text-align:center;font:inherit;cursor:default}
+.opt-c .sw .name{font-size:.92rem}
+.opt-c .sw .price{font-size:1.15rem;margin-top:.2rem}
+.opt-c .sw--on{background:#fff;border-color:#0a6a94;box-shadow:0 8px 20px rgba(10,106,148,.12)}
+.opt-c .sw--on .name,.opt-c .sw--on .price{color:#0a6a94}
+.opt-c .detail{border:1px solid #d0dae4;border-radius:16px;background:#fff;padding:1.15rem 1.2rem;animation:slide .25s ease}
+.opt-c .detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.35rem}
+</style></head><body>
+<h1>Pricing packs — 3 opções (accordion)</h1>
+<p class="page-sub">Pacotes como botões que deslizam para mostrar detalhes. Diz A, B ou C.</p>
+<div class="options">
+<article class="option opt-a" id="a"><div class="meta"><strong>A · Stack accordion</strong><span>Lista vertical: toca num plano e os detalhes deslizam abaixo. Um aberto de cada vez. Muito limpo em telemóvel.</span></div><div class="section"><div class="head"><p class="eyebrow">Pricing</p><h2>Choose the right plan</h2><p>Monthly or annual billing. Annual plans include 2 months free.</p></div>
+<div style="text-align:center"><div class="toggle"><span class="on">Monthly</span><span>Annual</span><span class="save">2 months free</span></div></div><div class="stack"><div class="row"><button class="trig" type="button"><span class="trig-left"><div><p class="name">Coach</p><p class="price" style="font-size:1.2rem;margin:0">€49 <small>/mo</small></p></div></span><span class="chev">▾</span></button></div><div class="row row--open"><button class="trig" type="button"><span class="trig-left"><span class="badge">Most popular</span><div><p class="name">Coach Premium</p><p class="price" style="font-size:1.2rem;margin:0">€89 <small>/mo</small></p></div></span><span class="chev">▾</span></button><div class="panel"><p class="desc">Register, submit a payment request, and we activate after confirmation.</p><ul class="list"><li><span>✓</span>Unlimited athletes</li><li><span>✓</span>1 coach account</li><li><span>✓</span>Custom training templates</li><li><span>✓</span>Sea analysis</li><li><span>✓</span>Everything in Coach</li></ul><button class="cta" type="button">Continue with Coach Premium</button></div></div><div class="row"><button class="trig" type="button"><span class="trig-left"><span class="badge">By approval</span><div><p class="name">Team Academy</p><p class="price" style="font-size:1.2rem;margin:0">€179 <small>/mo</small></p></div></span><span class="chev">▾</span></button></div></div></div></article>
+<article class="option opt-b" id="b"><div class="meta"><strong>B · Card accordion</strong><span>Mantém as 3 colunas. Cada cartão é um botão; os detalhes abrem dentro do próprio cartão.</span></div><div class="section"><div class="head"><p class="eyebrow">Pricing</p><h2>Choose the right plan</h2><p>Monthly or annual billing. Annual plans include 2 months free.</p></div>
+<div style="text-align:center"><div class="toggle"><span class="on">Monthly</span><span>Annual</span><span class="save">2 months free</span></div></div><div class="grid"><article class="card"><button class="trig" type="button"><p class="name">Coach</p><p class="price">€49 <small>/mo</small></p><p class="hint">Details</p></button></article><article class="card card--open"><span class="badge top-badge">Most popular</span><button class="trig" type="button"><p class="name">Coach Premium</p><p class="price">€89 <small>/mo</small></p><p class="hint">Details</p></button><div class="panel"><p class="desc">Register, submit a payment request, and we activate after confirmation.</p><ul class="list"><li><span>✓</span>Unlimited athletes</li><li><span>✓</span>1 coach account</li><li><span>✓</span>Custom training templates</li><li><span>✓</span>Sea analysis</li><li><span>✓</span>Everything in Coach</li></ul><button class="cta" type="button">Continue</button></div></article><article class="card"><span class="badge top-badge">By approval</span><button class="trig" type="button"><p class="name">Team Academy</p><p class="price">€179 <small>/mo</small></p><p class="hint">Details</p></button></article></div></div></article>
+<article class="option opt-c" id="c"><div class="meta"><strong>C · Switcher + detail panel</strong><span>3 botões no topo; o painel de baixo muda e mostra todos os detalhes do plano escolhido.</span></div><div class="section"><div class="head"><p class="eyebrow">Pricing</p><h2>Choose the right plan</h2><p>Monthly or annual billing. Annual plans include 2 months free.</p></div>
+<div style="text-align:center"><div class="toggle"><span class="on">Monthly</span><span>Annual</span><span class="save">2 months free</span></div></div><div class="switch"><button class="sw" type="button"><p class="name">Coach</p><p class="price">€49 <small>/mo</small></p></button><button class="sw sw--on" type="button"><p class="name">Coach Premium</p><p class="price">€89 <small>/mo</small></p></button><button class="sw" type="button"><p class="name">Team Academy</p><p class="price">€179 <small>/mo</small></p></button></div><div class="detail"><div class="detail-head"><div><span class="badge">Most popular</span><h3 class="name" style="margin-top:.45rem;font-size:1.2rem">Coach Premium</h3><p class="price">€89 <small>/mo</small></p></div></div><p class="desc">Register, submit a payment request, and we activate after confirmation.</p><ul class="list"><li><span>✓</span>Unlimited athletes</li><li><span>✓</span>1 coach account</li><li><span>✓</span>Custom training templates</li><li><span>✓</span>Sea analysis</li><li><span>✓</span>Everything in Coach</li></ul><button class="cta" type="button">Continue with Coach Premium</button></div></div></article>
+</div></body></html>

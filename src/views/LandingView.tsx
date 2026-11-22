@@ -4,7 +4,12 @@ import { LegalFooterLinks } from '../components/LegalFooterLinks'
 import { PackCard } from '../components/PackCard'
 import { AppLogo } from '../components/AppLogo'
 import { LanguagePicker } from '../components/LanguagePicker'
-import { SUBSCRIPTION_PLANS } from '../plans'
+import {
+  SUBSCRIPTION_PLANS,
+  formatPlanPrice,
+  formatPlanPriceSuffix,
+  type PlanId,
+} from '../plans'
 import { scrollToPricingSection } from '../routing'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
@@ -108,8 +113,10 @@ export function LandingView() {
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [spotlightTab, setSpotlightTab] = useState<SpotlightId>('custom')
+  const [pricingPlanId, setPricingPlanId] = useState<PlanId>('club')
 
   const activeSpotlight = PREMIUM_SPOTLIGHTS.find((item) => item.id === spotlightTab) ?? PREMIUM_SPOTLIGHTS[0]
+  const pricingPlan = SUBSCRIPTION_PLANS.find((plan) => plan.id === pricingPlanId) ?? SUBSCRIPTION_PLANS[1]
 
   useEffect(() => {
     if (!mobileNavOpen) return
@@ -412,15 +419,46 @@ export function LandingView() {
             value={selectedBillingInterval}
             onChange={setBillingInterval}
           />
-          <div className="landing-pricing__grid">
-            {SUBSCRIPTION_PLANS.map((plan) => (
+          <div className="pricing-switcher">
+            <div className="pricing-switch" role="tablist" aria-label={L.pricing.sectionTitle}>
+              {SUBSCRIPTION_PLANS.map((plan) => {
+                const selected = pricingPlanId === plan.id
+                return (
+                  <button
+                    key={plan.id}
+                    type="button"
+                    role="tab"
+                    id={`pricing-tab-${plan.id}`}
+                    aria-selected={selected}
+                    aria-controls="pricing-detail-panel"
+                    className={selected ? 'pricing-switch__btn pricing-switch__btn--on' : 'pricing-switch__btn'}
+                    onClick={() => setPricingPlanId(plan.id)}
+                  >
+                    <span className="pricing-switch__name">{plan.name}</span>
+                    <strong className="pricing-switch__price">
+                      {formatPlanPrice(plan, selectedBillingInterval)}
+                    </strong>
+                    <span className="pricing-switch__suffix">
+                      {formatPlanPriceSuffix(selectedBillingInterval)}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            <div
+              className="pricing-detail"
+              role="tabpanel"
+              id="pricing-detail-panel"
+              aria-labelledby={`pricing-tab-${pricingPlan.id}`}
+              key={pricingPlanId}
+            >
               <PackCard
-                key={plan.id}
-                planId={plan.id}
+                planId={pricingPlanId}
                 billingInterval={selectedBillingInterval}
+                selected
                 onSelect={selectPlan}
               />
-            ))}
+            </div>
           </div>
         </section>
 
