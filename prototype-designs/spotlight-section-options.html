@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Spotlight section — 3 options</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --text: #0c1520;
+    --muted: #4b5c6b;
+    --primary: #0a6a94;
+    --primary-dark: #085578;
+    --border: #d0dae4;
+    --card: #ffffff;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #e8eef3;
+    color: var(--text);
+    padding: 1.5rem 1rem 3rem;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.15rem;
+    margin: 0 0 0.35rem;
+  }
+  .page-sub {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 1.5rem;
+  }
+  .options {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  @media (min-width: 900px) {
+    .options { grid-template-columns: 1fr; }
+  }
+  .option {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 10px 28px rgba(12,21,32,0.07);
+  }
+  .option__meta {
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    background: #f8fafc;
+  }
+  .option__meta strong {
+    display: block;
+    font-size: 1rem;
+  }
+  .option__meta span {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  .section {
+    padding: 1.75rem 1.25rem 2rem;
+  }
+  .section__head {
+    text-align: center;
+    margin-bottom: 1.15rem;
+  }
+  .section__head h2 {
+    margin: 0 0 0.45rem;
+    font-size: 1.45rem;
+  }
+  .section__head p {
+    margin: 0 auto 1rem;
+    max-width: 34rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .tabs {
+    display: inline-flex;
+    gap: 0.4rem;
+    padding: 0.3rem;
+    border-radius: 999px;
+  }
+  .tab {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    cursor: default;
+  }
+  .panel {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+  }
+  @media (min-width: 720px) {
+    .panel { grid-template-columns: 1fr 1fr; align-items: center; gap: 1.75rem; }
+  }
+  .eyebrow {
+    margin: 0 0 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+  .copy h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.35rem;
+  }
+  .copy p {
+    margin: 0 0 0.85rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+  .copy ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.45rem;
+  }
+  .copy li {
+    display: flex;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .copy li::before {
+    content: '✓';
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.1rem;
+    box-shadow: 0 10px 24px rgba(12,21,32,0.07);
+  }
+  .pill {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    background: #e8eef3;
+    color: #085578;
+    border: 1px solid var(--border);
+  }
+  .card strong.title {
+    display: block;
+    margin: 0.45rem 0 0.7rem;
+    font-size: 1rem;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.85rem;
+  }
+  .chips span {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.35rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--muted);
+  }
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.45rem;
+  }
+  .kpis div {
+    background: #f3f6f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.55rem 0.3rem;
+    text-align: center;
+  }
+  .kpis b {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--primary);
+  }
+  .kpis small {
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .foot {
+    margin: 0.7rem 0 0;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  /* —— Option A: Clean white band —— */
+  .opt-a .section {
+    background: #ffffff;
+    border-block: 1px solid #e2e8f0;
+  }
+  .opt-a .tabs {
+    background: #f3f6f9;
+    border: 1px solid var(--border);
+  }
+  .opt-a .tab--on {
+    background: #0a6a94;
+    color: #ffffff;
+    border-color: #085578;
+  }
+
+  /* —— Option B: Soft mist band + outlined active tab —— */
+  .opt-b .section {
+    background: #f7fafc;
+    border-block: 1px solid #e2e8f0;
+  }
+  .opt-b .tabs {
+    background: #ffffff;
+    border: 1px solid var(--border);
+  }
+  .opt-b .tab--on {
+    background: #ffffff;
+    color: #085578;
+    border-color: #0a6a94;
+    box-shadow: inset 0 0 0 1px #0a6a94;
+  }
+
+  /* —— Option C: Soft blue wash + white active tab —— */
+  .opt-c .section {
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 0%, rgba(10, 106, 148, 0.08), transparent 70%),
+      #f3f6f9;
+    border-block: 1px solid #dce5ee;
+  }
+  .opt-c .tabs {
+    background: rgba(255,255,255,0.75);
+    border: 1px solid var(--border);
+  }
+  .opt-c .tab--on {
+    background: #ffffff;
+    color: #0a6a94;
+    border-color: #0a6a94;
+    font-weight: 700;
+  }
+  .opt-c .card {
+    border-color: #c5d3df;
+  }
+</style>
+</head>
+<body>
+  <h1>Advanced coaching tools — 3 opções</h1>
+  <p class="page-sub">Só fundo da secção + tabs. Diz A, B ou C.</p>
+
+  <div class="options">
+    <!-- A -->
+    <article class="option opt-a" id="a">
+      <div class="option__meta">
+        <strong>A · White band</strong>
+        <span>Fundo branco limpo. Tab ativa azul oceano com texto branco.</span>
+      </div>
+      <div class="section">
+        <div class="section__head">
+          <h2>Advanced coaching tools</h2>
+          <p>From predefined sessions to a real work tool — custom training and sea analysis on Coach Premium.</p>
+          <div class="tabs">
+            <button class="tab tab--on" type="button">Custom training</button>
+            <button class="tab" type="button">Sea analysis</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="copy">
+            <p class="eyebrow">Coach Premium</p>
+            <h3>Custom training</h3>
+            <p>Build your own session template — maneuvers, scoring, and timing that match how you coach.</p>
+            <ul>
+              <li>Reusable templates for every beach day</li>
+              <li>Live register with success rates</li>
+              <li>Share progress with athletes</li>
+            </ul>
+          </div>
+          <div class="card">
+            <span class="pill">Custom training · Live register</span>
+            <strong class="title">Cutback focus · Carcavelos</strong>
+            <div class="chips"><span>Cutback</span><span>Re-entry</span><span>Tube</span><span>Layback</span></div>
+            <div class="kpis">
+              <div><b>76%</b><small>Success</small></div>
+              <div><b>12:40</b><small>Timer left</small></div>
+              <div><b>18</b><small>Logs</small></div>
+            </div>
+            <p class="foot">Level 3 cutback · Success · Frontside</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- B -->
+    <article class="option opt-b" id="b">
+      <div class="option__meta">
+        <strong>B · Soft mist + outline tab</strong>
+        <span>Fundo cinza-azulado muito suave. Tab ativa com contorno azul (sem preenchimento escuro).</span>
+      </div>
+      <div class="section">
+        <div class="section__head">
+          <h2>Advanced coaching tools</h2>
+          <p>From predefined sessions to a real work tool — custom training and sea analysis on Coach Premium.</p>
+          <div class="tabs">
+            <button class="tab tab--on" type="button">Custom training</button>
+            <button class="tab" type="button">Sea analysis</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="copy">
+            <p class="eyebrow">Coach Premium</p>
+            <h3>Custom training</h3>
+            <p>Build your own session template — maneuvers, scoring, and timing that match how you coach.</p>
+            <ul>
+              <li>Reusable templates for every beach day</li>
+              <li>Live register with success rates</li>
+              <li>Share progress with athletes</li>
+            </ul>
+          </div>
+          <div class="card">
+            <span class="pill">Custom training · Live register</span>
+            <strong class="title">Cutback focus · Carcavelos</strong>
+            <div class="chips"><span>Cutback</span><span>Re-entry</span><span>Tube</span><span>Layback</span></div>
+            <div class="kpis">
+              <div><b>76%</b><small>Success</small></div>
+              <div><b>12:40</b><small>Timer left</small></div>
+              <div><b>18</b><small>Logs</small></div>
+            </div>
+            <p class="foot">Level 3 cutback · Success · Frontside</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- C -->
+    <article class="option opt-c" id="c">
+      <div class="option__meta">
+        <strong>C · Soft blue wash</strong>
+        <span>Lavagem azul muito leve no fundo. Tab ativa branca com texto azul (sem bloco escuro).</span>
+      </div>
+      <div class="section">
+        <div class="section__head">
+          <h2>Advanced coaching tools</h2>
+          <p>From predefined sessions to a real work tool — custom training and sea analysis on Coach Premium.</p>
+          <div class="tabs">
+            <button class="tab tab--on" type="button">Custom training</button>
+            <button class="tab" type="button">Sea analysis</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="copy">
+            <p class="eyebrow">Coach Premium</p>
+            <h3>Custom training</h3>
+            <p>Build your own session template — maneuvers, scoring, and timing that match how you coach.</p>
+            <ul>
+              <li>Reusable templates for every beach day</li>
+              <li>Live register with success rates</li>
+              <li>Share progress with athletes</li>
+            </ul>
+          </div>
+          <div class="card">
+            <span class="pill">Custom training · Live register</span>
+            <strong class="title">Cutback focus · Carcavelos</strong>
+            <div class="chips"><span>Cutback</span><span>Re-entry</span><span>Tube</span><span>Layback</span></div>
+            <div class="kpis">
+              <div><b>76%</b><small>Success</small></div>
+              <div><b>12:40</b><small>Timer left</small></div>
+              <div><b>18</b><small>Logs</small></div>
+            </div>
+            <p class="foot">Level 3 cutback · Success · Frontside</p>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</body>
+</html>
