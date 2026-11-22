@@ -82,10 +82,6 @@ export function PackCard({
       ) : null}
       {manualFlow ? <p className="pack-card__approval-note muted">{p.manualFlowNote}</p> : null}
 
-      {planId === 'club' ? (
-        <p className="pack-card__premium-legend">{p.premiumExtraLegend}</p>
-      ) : null}
-
       <ul className="pack-card__features">
         {includedFeatures.map((feature) => {
           const premiumExtra = planId === 'club' && isCoachPremiumExclusiveFeature(feature)
