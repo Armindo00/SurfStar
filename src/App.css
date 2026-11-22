@@ -4157,9 +4157,11 @@ input[type='checkbox']:indeterminate {
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   padding: 0 1rem 1rem;
   border-top: 1px solid var(--ss-border);
-  background: var(--ss-card, #f8fafc);
+  background: #ffffff;
 }
 
 .athlete-share-option span {
@@ -4211,9 +4213,16 @@ input[type='checkbox']:indeterminate {
     top: 0;
     z-index: 2;
     padding-bottom: 0.65rem;
-    margin-bottom: 0.25rem;
-    background: inherit;
-    border-bottom: 1px solid var(--ss-border);
+    margin-bottom: 0;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .athlete-share-tabs {
+    position: sticky;
+    top: 3.1rem;
+    z-index: 2;
+    background: #ffffff;
   }
 
   .athlete-share-panel__title {
@@ -4222,9 +4231,19 @@ input[type='checkbox']:indeterminate {
     padding-right: 0.35rem;
   }
 
+  .athlete-share-panel__body {
+    flex: 1;
+    padding-bottom: 0.5rem;
+  }
+
   .athlete-share-panel__footer {
+    position: sticky;
+    bottom: 0;
     flex-direction: column;
     align-items: stretch;
+    margin-top: auto;
+    background: #ffffff;
+    padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
   }
 
   .athlete-share-panel__footer .btn {
@@ -4234,10 +4253,10 @@ input[type='checkbox']:indeterminate {
 
 .athlete-share-panel__toolbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.75rem 0 0.35rem;
+  padding: 0.75rem 0 0.65rem;
 }
 
 .athlete-share-panel__title {
@@ -4247,6 +4266,54 @@ input[type='checkbox']:indeterminate {
 
 .athlete-share-panel__close {
   flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: #e8eef3;
+  color: #4b5c6b;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.athlete-share-panel__close:hover {
+  background: #d0dae4;
+  color: #0c1520;
+}
+
+.athlete-share-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  margin: 0.15rem 0 0.35rem;
+  padding-bottom: 0.65rem;
+}
+
+.athlete-share-tabs__btn {
+  min-height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid #d0dae4;
+  background: #f3f6f9;
+  color: #4b5c6b;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.athlete-share-tabs__btn--on {
+  background: #0a6a94;
+  border-color: #0a6a94;
+  color: #ffffff;
+}
+
+.athlete-share-panel__body--account {
+  padding-top: 0.25rem;
 }
 
 .athlete-share-panel__footer {
@@ -4256,13 +4323,14 @@ input[type='checkbox']:indeterminate {
   justify-content: flex-end;
   margin-top: 1rem;
   padding-top: 0.85rem;
-  border-top: 1px solid var(--ss-border);
+  border-top: 1px solid #e2e8f0;
 }
 
 .athlete-share-panel__intro {
-  margin: 0.85rem 0;
+  margin: 0.55rem 0 0.75rem;
   font-size: 0.85rem;
-  color: var(--ss-muted);
+  color: #4b5c6b;
+  line-height: 1.4;
 }
 
 .athlete-share-option {
