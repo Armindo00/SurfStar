@@ -14,11 +14,14 @@
   }
 }
 
+/* Option A · Clean white cards */
 .landing-value-card {
   padding: 1.35rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #d0dae4;
+  box-shadow: 0 6px 18px rgba(12, 21, 32, 0.05);
+  color: #0c1520;
 }
 
 .landing-value-card__icon {
@@ -28,8 +31,8 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 10px;
-  background: rgba(201, 169, 98, 0.15);
-  color: #e8d5a3;
+  background: #e8eef3;
+  color: #0a6a94;
   font-size: 1rem;
   margin-bottom: 0.65rem;
 }
@@ -40,20 +43,21 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #7eb8e8;
+  color: #085578;
 }
 
 .landing-value-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1.15rem;
   line-height: 1.25;
+  color: #0c1520;
 }
 
 .landing-value-card__lead {
   margin: 0 0 0.85rem;
   font-size: 0.92rem;
   line-height: 1.55;
-  color: #b8c5d6;
+  color: #4b5c6b;
 }
 
 .landing-value-card__benefits {
@@ -69,14 +73,14 @@
   padding-left: 1.1rem;
   font-size: 0.85rem;
   line-height: 1.45;
-  color: #cbd5e1;
+  color: #0c1520;
 }
 
 .landing-value-card__benefits li::before {
   content: '✓';
   position: absolute;
   left: 0;
-  color: #c9a962;
+  color: #0a6a94;
   font-weight: 700;
 }
 
