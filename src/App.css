@@ -1828,6 +1828,31 @@ input[type='checkbox']:indeterminate {
   background: white;
 }
 
+/* Secondary setup actions — keep focus on the form, not management screens */
+.session-setup-quiet-link {
+  align-self: flex-start;
+  margin: -0.15rem 0 0.55rem;
+  padding: 0.15rem 0;
+  border: 0;
+  background: transparent;
+  color: #4b5c6b;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: #b8c5d2;
+  text-underline-offset: 0.15em;
+}
+
+.session-setup-quiet-link:hover,
+.session-setup-quiet-link:focus-visible {
+  color: #0a6a94;
+  text-decoration-color: #0a6a94;
+  outline: none;
+}
+
 .input-readonly {
   background: #e2e8f0 !important;
   color: var(--ss-muted);
