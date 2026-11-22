@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Leave session modal — 3 tone options</title>
+  <style>
+    :root {
+      --bg: #e8eef3;
+      --ink: #0c1520;
+      --muted: #4b5c6b;
+      --ocean: #0a6a94;
+      --ocean-dark: #085578;
+      --line: #d0dae4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      background: linear-gradient(180deg, #f3f6f9 0%, #e8eef3 100%);
+      color: var(--ink);
+      padding: 2rem 1.25rem 3rem;
+    }
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+    .lead {
+      margin: 0 0 1.75rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 42rem;
+    }
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      align-items: start;
+    }
+    .option {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 1rem 1rem 1.15rem;
+      box-shadow: 0 10px 28px rgba(12, 21, 32, 0.06);
+    }
+    .option__tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ocean);
+    }
+    .option__note {
+      margin: 0.85rem 0 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .stage {
+      background: #f3f6f9;
+      border-radius: 14px;
+      padding: 1.25rem 0.85rem 1.4rem;
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+    }
+    .modal {
+      width: min(100%, 340px);
+      border-radius: 16px;
+      padding: 1rem 1.05rem 1.1rem;
+      box-shadow: 0 18px 40px rgba(12, 21, 32, 0.14);
+    }
+    .head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 0.85rem;
+    }
+    .eyebrow {
+      margin: 0 0 0.2rem;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .close {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 999px;
+      border: 0;
+      display: grid;
+      place-items: center;
+      font-size: 0.85rem;
+      cursor: default;
+      flex-shrink: 0;
+    }
+    .intro {
+      margin: 0 0 1rem;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    .actions {
+      display: grid;
+      gap: 0.55rem;
+    }
+    .btn {
+      width: 100%;
+      min-height: 2.85rem;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: default;
+    }
+
+    /* —— A: Soft coral danger, fixed contrast —— */
+    .a .modal { background: #ffffff; border: 1px solid #e2e8f0; }
+    .a .eyebrow { color: #0a6a94; }
+    .a h2 { color: #0c1520; }
+    .a .close { background: #e8eef3; color: #4b5c6b; }
+    .a .intro { color: #4b5c6b; }
+    .a .btn-danger {
+      background: #fde8e8;
+      border-color: #f0b4b4;
+      color: #9f1d1d;
+    }
+    .a .btn-stay {
+      background: #ffffff;
+      border-color: #d0dae4;
+      color: #0a6a94;
+    }
+
+    /* —— B: Solid danger + solid stay —— */
+    .b .modal { background: #ffffff; border: 1px solid #d0dae4; }
+    .b .eyebrow { color: #085578; }
+    .b h2 { color: #0c1520; }
+    .b .close { background: #e8eef3; color: #0c1520; }
+    .b .intro { color: #4b5c6b; }
+    .b .btn-danger {
+      background: #c62828;
+      border-color: #b71c1c;
+      color: #ffffff;
+    }
+    .b .btn-stay {
+      background: #0a6a94;
+      border-color: #085578;
+      color: #ffffff;
+    }
+
+    /* —— C: Safe-first — Stay is primary, Leave is quiet outline —— */
+    .c .modal { background: #ffffff; border: 1px solid #d0dae4; }
+    .c .eyebrow { color: #0a6a94; }
+    .c h2 { color: #0c1520; }
+    .c .close { background: #e8eef3; color: #4b5c6b; }
+    .c .intro { color: #4b5c6b; }
+    .c .btn-danger {
+      background: transparent;
+      border-color: #e2a4a4;
+      color: #b42318;
+      order: 2;
+    }
+    .c .btn-stay {
+      background: #0a6a94;
+      border-color: #085578;
+      color: #ffffff;
+      order: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Leave session — 3 tone options</h1>
+  <p class="lead">Same layout as today. Only colors, contrast, and button hierarchy change. Choose A, B, or C.</p>
+
+  <div class="grid">
+    <section class="option a" id="opt-a">
+      <div class="option__tag">Option A · Soft coral</div>
+      <div class="stage">
+        <div class="modal">
+          <div class="head">
+            <div>
+              <p class="eyebrow">Active session</p>
+              <h2>Leave this session?</h2>
+            </div>
+            <button class="close" type="button" aria-hidden="true">✕</button>
+          </div>
+          <p class="intro">Are you sure you want to go back? This session will not be saved and all logged data will be lost.</p>
+          <div class="actions">
+            <button class="btn btn-danger" type="button">Leave without saving</button>
+            <button class="btn btn-stay" type="button">Stay in session</button>
+          </div>
+        </div>
+      </div>
+      <p class="option__note">Soft coral danger with dark red text (readable). Stay stays a quiet outline. Closest to today’s structure, just fixed.</p>
+    </section>
+
+    <section class="option b" id="opt-b">
+      <div class="option__tag">Option B · Solid pair</div>
+      <div class="stage">
+        <div class="modal">
+          <div class="head">
+            <div>
+              <p class="eyebrow">Active session</p>
+              <h2>Leave this session?</h2>
+            </div>
+            <button class="close" type="button" aria-hidden="true">✕</button>
+          </div>
+          <p class="intro">Are you sure you want to go back? This session will not be saved and all logged data will be lost.</p>
+          <div class="actions">
+            <button class="btn btn-danger" type="button">Leave without saving</button>
+            <button class="btn btn-stay" type="button">Stay in session</button>
+          </div>
+        </div>
+      </div>
+      <p class="option__note">Solid crimson Leave + solid ocean Stay. Maximum clarity and contrast; both actions feel equally decisive.</p>
+    </section>
+
+    <section class="option c" id="opt-c">
+      <div class="option__tag">Option C · Safe first</div>
+      <div class="stage">
+        <div class="modal">
+          <div class="head">
+            <div>
+              <p class="eyebrow">Active session</p>
+              <h2>Leave this session?</h2>
+            </div>
+            <button class="close" type="button" aria-hidden="true">✕</button>
+          </div>
+          <p class="intro">Are you sure you want to go back? This session will not be saved and all logged data will be lost.</p>
+          <div class="actions">
+            <button class="btn btn-danger" type="button">Leave without saving</button>
+            <button class="btn btn-stay" type="button">Stay in session</button>
+          </div>
+        </div>
+      </div>
+      <p class="option__note">Stay becomes the solid ocean primary (top). Leave is a quiet red outline below — safer hierarchy for a destructive confirm.</p>
+    </section>
+  </div>
+</body>
+</html>

@@ -443,6 +443,20 @@ input[type='checkbox']:indeterminate {
   color: var(--ss-danger);
 }
 
+/* Quiet destructive — outline, for confirmations where Stay is primary */
+.btn--danger-quiet {
+  background: transparent;
+  border-color: #e2a4a4;
+  color: #b42318;
+  font-weight: 700;
+}
+
+.btn--danger-quiet:hover:not(:disabled) {
+  background: #fde8e8;
+  border-color: #d98989;
+  color: #912018;
+}
+
 .btn--block {
   width: 100%;
 }
@@ -3020,6 +3034,24 @@ input[type='checkbox']:indeterminate {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.leave-session-sheet {
+  background: #ffffff;
+  border-color: #d0dae4;
+}
+
+.leave-session-sheet .sheet__eyebrow {
+  color: #0a6a94;
+}
+
+.leave-session-sheet__intro {
+  margin: 0 0 1rem;
+  color: #4b5c6b;
+}
+
+.leave-session-sheet__actions {
+  gap: 0.55rem;
 }
 
 .chip-row--modes {
