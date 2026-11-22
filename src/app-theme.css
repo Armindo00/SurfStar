@@ -318,10 +318,70 @@ body {
 
 /* Signed-in app shell — do not bleed into landing pricing cards */
 .app-shell .btn--primary {
-  background: linear-gradient(135deg, #0a6a94 0%, #085578 100%) !important;
+  background: #0a6a94 !important;
   border-color: #085578 !important;
-  color: #1a1204 !important;
+  color: #ffffff !important;
   font-weight: 700;
+}
+
+.app-shell .session-setup-steps {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+.app-shell .session-setup-steps__item {
+  background: #f3f6f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #4b5c6b !important;
+}
+
+.app-shell .session-setup-steps__num {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #4b5c6b !important;
+}
+
+.app-shell .session-setup-steps__item--current {
+  background: #0a6a94 !important;
+  border-color: #0a6a94 !important;
+  color: #ffffff !important;
+}
+
+.app-shell .session-setup-steps__item--current .session-setup-steps__num {
+  background: #ffffff !important;
+  border-color: #ffffff !important;
+  color: #0a6a94 !important;
+}
+
+.app-shell .session-setup-steps__item--done {
+  background: #e8eef3 !important;
+  border-color: #d0dae4 !important;
+  color: #085578 !important;
+}
+
+.app-shell .session-setup-steps__item--done .session-setup-steps__num {
+  background: #0a6a94 !important;
+  border-color: #0a6a94 !important;
+  color: #ffffff !important;
+}
+
+.app-shell .session-mode-card {
+  background: #ffffff !important;
+  border: 1px solid #d0dae4 !important;
+  color: #0c1520 !important;
+}
+
+.app-shell .session-mode-card--on {
+  border-color: #0a6a94 !important;
+  box-shadow:
+    0 0 0 1px #0a6a94,
+    0 8px 18px rgba(10, 106, 148, 0.1) !important;
+}
+
+.app-shell .session-mode-card__check {
+  background: #0a6a94 !important;
+  color: #ffffff !important;
 }
 
 .app-shell .btn--secondary {

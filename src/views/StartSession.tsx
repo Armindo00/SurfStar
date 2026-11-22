@@ -35,17 +35,23 @@ export function StartSession() {
         <h2 className="stats-panel__title">{s('step1Title')}</h2>
         <p className="muted stats-panel__sub">{s('step1Subtitle')}</p>
 
-        <div className="chip-row chip-row--pro chip-row--modes">
-          {modes.map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              className={draft.mode === mode ? 'chip chip--active' : 'chip'}
-              onClick={() => setDraftMode(mode)}
-            >
-              {trainingModeLabel(mode)}
-            </button>
-          ))}
+        <div className="session-mode-grid" role="radiogroup" aria-label={s('step1Title')}>
+          {modes.map((mode) => {
+            const selected = draft.mode === mode
+            return (
+              <button
+                key={mode}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className={selected ? 'session-mode-card session-mode-card--on' : 'session-mode-card'}
+                onClick={() => setDraftMode(mode)}
+              >
+                {selected ? <span className="session-mode-card__check" aria-hidden="true">✓</span> : null}
+                <strong className="session-mode-card__label">{trainingModeLabel(mode)}</strong>
+              </button>
+            )
+          })}
         </div>
 
         {lockedModes.length > 0 ? <p className="plan-lock-note muted">{lockedModesHint}</p> : null}
