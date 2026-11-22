@@ -11084,6 +11084,7 @@ body.has-cookie-consent {
   right: 0;
   z-index: 250;
   min-width: 11.5rem;
+  max-width: min(16rem, calc(100vw - 1.5rem));
   margin: 0;
   padding: 0.35rem;
   list-style: none;
@@ -11161,7 +11162,36 @@ body.has-cookie-consent {
 }
 
 .landing-page .language-picker__menu {
-  background: #0c1220;
+  background: #ffffff;
+  color: #0c1520;
+}
+
+.landing-page .language-picker__option {
+  color: #0c1520;
+}
+
+.landing-page .language-picker__option:hover,
+.landing-page .language-picker__option:focus-visible {
+  background: #e8eef3;
+}
+
+.landing-page .language-picker__option--active {
+  background: rgba(10, 106, 148, 0.12);
+  color: #0a6a94;
+}
+
+/* Header actions: flag sits on the left on mobile — open menu rightward */
+@media (max-width: 767px) {
+  .landing-nav__actions .language-picker__menu {
+    left: 0;
+    right: auto;
+  }
+}
+
+/* Auth top bar language picker is also left-aligned */
+.auth-panel__top .language-picker__menu {
+  left: 0;
+  right: auto;
 }
 
 .landing-nav__language--mobile .language-picker__menu {
