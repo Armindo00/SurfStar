@@ -391,8 +391,8 @@ input[type='checkbox']:checked {
 
 input[type='checkbox']:focus-visible {
   outline: none;
-  border-color: var(--ss-primary);
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.22);
+  border-color: var(--ss-primary, #0a6a94);
+  box-shadow: 0 0 0 3px rgba(10, 106, 148, 0.22);
 }
 
 input[type='checkbox']:active:not(:disabled) {
@@ -7779,7 +7779,8 @@ input[type='checkbox']:indeterminate {
 }
 
 .field--check input {
-  width: var(--ss-check-size, 1.15rem);
+  width: var(--ss-check-size, 1.25rem);
+  height: var(--ss-check-size, 1.25rem);
   margin-top: 0.12rem;
 }
 
