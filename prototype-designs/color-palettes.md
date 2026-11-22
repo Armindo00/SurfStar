@@ -38,3 +38,38 @@ When you pick a letter, we update `:root` in `src/app-theme.css` (`--landing-*` 
 | Accent light | `#e8d5a3` |
 | Text | `#f1f5f9` |
 | Muted | `#94a3b8` |
+
+---
+
+Round 2 preview: [`color-options-2.html`](./color-options-2.html) (more background variation).
+
+## D · Mist Daylight (light)
+
+| Token | Hex |
+|-------|-----|
+| Shell / bg | `#eef3f6` |
+| Header / card | `#ffffff` |
+| Accent | `#0b6e99` |
+| Accent light | `#38bdf8` |
+| Text | `#0f1c24` |
+| Muted | `#5b6b78` |
+
+## E · Ember Night (warm dark)
+
+| Token | Hex |
+|-------|-----|
+| Shell | `#140f0c` |
+| Card | `#221b16` |
+| Accent | `#e8a54b` |
+| Text | `#f5efe8` |
+| Muted | `#a89888` |
+
+## F · Pine Coast (green ocean)
+
+| Token | Hex |
+|-------|-----|
+| Shell | `#0b1f1a` |
+| Card | `#143028` |
+| Accent | `#5eead4` |
+| Text | `#e8f5f0` |
+| Muted | `#8fb5a8` |

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar — 3 cores (ronda 2)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", sans-serif;
+      background: #e5e7eb;
+      color: #0f172a;
+      padding: 1.5rem 1rem 3rem;
+    }
+    .intro { max-width: 1100px; margin: 0 auto 1.5rem; }
+    .intro h1 { margin: 0 0 0.4rem; font-size: 1.55rem; letter-spacing: -0.02em; }
+    .intro p { margin: 0; color: #64748b; line-height: 1.5; max-width: 42rem; font-size: 0.98rem; }
+    .intro a { color: #0f172a; font-weight: 600; }
+
+    .grid {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; gap: 1.1rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 960px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .option { display: flex; flex-direction: column; gap: 0.65rem; }
+    .option h2 {
+      margin: 0;
+      font-size: 0.95rem;
+      display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem;
+    }
+    .option h2 span { color: #64748b; font-weight: 500; font-size: 0.8rem; }
+    .swatches { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .swatches i {
+      width: 1.35rem; height: 1.35rem; border-radius: 6px;
+      border: 1px solid rgba(0,0,0,.1);
+      display: block;
+    }
+
+    .phone {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--frame);
+      background: var(--shell);
+      color: var(--text);
+      min-height: 440px;
+      display: flex; flex-direction: column;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+    }
+    .bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 1rem;
+      background: var(--header);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { font-weight: 700; letter-spacing: -0.02em; }
+    .brand em { font-style: normal; color: var(--accent); }
+    .bar-link { color: var(--accent); font-size: 0.82rem; font-weight: 600; }
+
+    .body { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
+    .hello { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .muted { margin: 0; color: var(--muted); font-size: 0.88rem; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.9rem;
+    }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; margin-top: 0.65rem; }
+    .kpis div {
+      text-align: center;
+      padding: 0.55rem 0.3rem;
+      border-radius: 10px;
+      background: var(--chip);
+    }
+    .kpis strong { display: block; font-size: 1.1rem; }
+    .kpis small { color: var(--muted); font-size: 0.68rem; }
+
+    .btn {
+      min-height: 44px; border-radius: 12px; border: 0;
+      font-family: inherit; font-weight: 700; font-size: 0.9rem;
+      cursor: default;
+    }
+    .btn-primary { background: var(--accent); color: var(--accent-ink); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+    .actions { display: grid; gap: 0.5rem; margin-top: auto; }
+
+    .tokens {
+      font-size: 0.75rem; color: #64748b; line-height: 1.45;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 0.75rem 0.85rem;
+    }
+    .tokens code { color: #334155; }
+
+    /* D · Mist Daylight — LIGHT background */
+    .d {
+      --frame: #c5d0d8;
+      --shell: #eef3f6;
+      --header: #ffffff;
+      --card: #ffffff;
+      --chip: #e8eef3;
+      --text: #0f1c24;
+      --muted: #5b6b78;
+      --line: #d5dee6;
+      --accent: #0b6e99;
+      --accent-ink: #ffffff;
+    }
+    .d .s1 { background: #eef3f6; }
+    .d .s2 { background: #ffffff; }
+    .d .s3 { background: #0b6e99; }
+    .d .s4 { background: #38bdf8; }
+    .d .s5 { background: #0f1c24; }
+
+    /* E · Ember Night — warm near-black + ember accent */
+    .e {
+      --frame: #2a221c;
+      --shell: #140f0c;
+      --header: #1a1410;
+      --card: #221b16;
+      --chip: #2a221c;
+      --text: #f5efe8;
+      --muted: #a89888;
+      --line: #3a3028;
+      --accent: #e8a54b;
+      --accent-ink: #1a1006;
+    }
+    .e .s1 { background: #140f0c; }
+    .e .s2 { background: #221b16; }
+    .e .s3 { background: #e8a54b; }
+    .e .s4 { background: #f5efe8; }
+    .e .s5 { background: #a89888; }
+
+    /* F · Pine Coast — deep green-ink shell + mint */
+    .f {
+      --frame: #143028;
+      --shell: #0b1f1a;
+      --header: #0f2922;
+      --card: #143028;
+      --chip: #1a3a31;
+      --text: #e8f5f0;
+      --muted: #8fb5a8;
+      --line: #1f4338;
+      --accent: #5eead4;
+      --accent-ink: #042f2e;
+    }
+    .f .s1 { background: #0b1f1a; }
+    .f .s2 { background: #143028; }
+    .f .s3 { background: #5eead4; }
+    .f .s4 { background: #e8f5f0; }
+    .f .s5 { background: #8fb5a8; }
+
+    .note {
+      max-width: 1100px; margin: 1.5rem auto 0;
+      color: #64748b; font-size: 0.88rem; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="intro">
+    <h1>SurfStar — cores ronda 2</h1>
+    <p>
+      Mais variação: fundo claro, noite quente, e verde-costeiro.
+      Mesma estrutura — só tokens. Ronda 1: <a href="./color-options.html">A / B / C</a>.
+    </p>
+  </div>
+
+  <div class="grid">
+    <section class="option">
+      <h2>D · Mist Daylight <span>fundo claro</span></h2>
+      <div class="swatches d"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <div class="phone d">
+        <div class="bar">
+          <div class="brand">Surf<em>Star</em></div>
+          <span class="bar-link">Ajuda</span>
+        </div>
+        <div class="body">
+          <p class="hello">Olá, Armindo</p>
+          <p class="muted">Coach Premium · Ericeira</p>
+          <div class="card">
+            <strong>Resumo da equipa</strong>
+            <div class="kpis">
+              <div><strong>12</strong><small>Atletas</small></div>
+              <div><strong>38</strong><small>Sessões</small></div>
+              <div><strong>7.2</strong><small>Média</small></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button">Nova sessão</button>
+            <button class="btn btn-secondary" type="button">Ver atletas</button>
+          </div>
+        </div>
+      </div>
+      <div class="tokens">
+        Fundo <code>#eef3f6</code> · Cards brancos · Accent <code>#0b6e99</code><br />
+        App clara — legível ao sol na praia.
+      </div>
+    </section>
+
+    <section class="option">
+      <h2>E · Ember Night <span>noite quente</span></h2>
+      <div class="swatches e"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <div class="phone e">
+        <div class="bar">
+          <div class="brand">Surf<em>Star</em></div>
+          <span class="bar-link">Ajuda</span>
+        </div>
+        <div class="body">
+          <p class="hello">Olá, Armindo</p>
+          <p class="muted">Coach Premium · Ericeira</p>
+          <div class="card">
+            <strong>Resumo da equipa</strong>
+            <div class="kpis">
+              <div><strong>12</strong><small>Atletas</small></div>
+              <div><strong>38</strong><small>Sessões</small></div>
+              <div><strong>7.2</strong><small>Média</small></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button">Nova sessão</button>
+            <button class="btn btn-secondary" type="button">Ver atletas</button>
+          </div>
+        </div>
+      </div>
+      <div class="tokens">
+        Fundo <code>#140f0c</code> · Cards <code>#221b16</code> · Accent <code>#e8a54b</code><br />
+        Escuro quente (não navy frio) + âmbar.
+      </div>
+    </section>
+
+    <section class="option">
+      <h2>F · Pine Coast <span>verde oceano</span></h2>
+      <div class="swatches f"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <div class="phone f">
+        <div class="bar">
+          <div class="brand">Surf<em>Star</em></div>
+          <span class="bar-link">Ajuda</span>
+        </div>
+        <div class="body">
+          <p class="hello">Olá, Armindo</p>
+          <p class="muted">Coach Premium · Ericeira</p>
+          <div class="card">
+            <strong>Resumo da equipa</strong>
+            <div class="kpis">
+              <div><strong>12</strong><small>Atletas</small></div>
+              <div><strong>38</strong><small>Sessões</small></div>
+              <div><strong>7.2</strong><small>Média</small></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button">Nova sessão</button>
+            <button class="btn btn-secondary" type="button">Ver atletas</button>
+          </div>
+        </div>
+      </div>
+      <div class="tokens">
+        Fundo <code>#0b1f1a</code> · Cards <code>#143028</code> · Accent <code>#5eead4</code><br />
+        Verde-costeiro profundo + mint.
+      </div>
+    </section>
+  </div>
+
+  <p class="note">
+    Responde <strong>D</strong>, <strong>E</strong> ou <strong>F</strong> (ou A/B/C da ronda 1). Aplico só as cores na app.
+  </p>
+</body>
+</html>
