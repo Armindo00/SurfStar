@@ -628,6 +628,10 @@ export const ui = {
     removeFromTeam: 'Retirer de mon équipe',
     sharePanelIntro:
       'Choisissez ce que cet athlète peut voir de vos sessions au-delà du tableau de bord général.',
+    shareTabVisibility: 'Visibilité',
+    shareTabAccount: 'Compte',
+    accountTabIntro:
+      'Bloquer suspend cet athlète dans votre équipe. Retirer le désassocie — son compte et ses stats restent.',
     closeSharePanel: 'Fermer',
     saveShareSettings: 'Enregistrer le partage',
     removeTitle: 'Retirer {{name}} ?',

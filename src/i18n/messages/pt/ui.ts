@@ -628,6 +628,10 @@ export const ui = {
     removeFromTeam: 'Remover da minha equipa',
     sharePanelIntro:
       'Escolhe o que este atleta pode ver das tuas sessões além do dashboard geral.',
+    shareTabVisibility: 'Visibilidade',
+    shareTabAccount: 'Conta',
+    accountTabIntro:
+      'Bloquear suspende o atleta na tua equipa. Remover desliga-o — a conta e as estatísticas ficam.',
     closeSharePanel: 'Fechar',
     saveShareSettings: 'Guardar partilha',
     removeTitle: 'Remover {{name}}?',

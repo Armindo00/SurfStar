@@ -982,22 +982,46 @@ body {
 }
 
 .app-shell .athlete-share-panel {
-  background: linear-gradient(180deg, #e8eef3 0%, #f3f6f9 100%) !important;
+  background: #ffffff !important;
   border-color: #d0dae4 !important;
-  color: var(--landing-text) !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .athlete-share-option {
   background: transparent !important;
-  border-color: #d0dae4 !important;
+  border-color: #e8eef3 !important;
 }
 
 .app-shell .athlete-share-panel__intro {
-  color: var(--ss-muted) !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .athlete-share-panel__toolbar {
-  border-bottom-color: #d0dae4 !important;
+  background: #ffffff !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+.app-shell .athlete-share-panel__close {
+  background: #e8eef3 !important;
+  border: 0 !important;
+  color: #4b5c6b !important;
+}
+
+.app-shell .athlete-share-tabs__btn {
+  background: #f3f6f9 !important;
+  border-color: #d0dae4 !important;
+  color: #4b5c6b !important;
+}
+
+.app-shell .athlete-share-tabs__btn--on {
+  background: #0a6a94 !important;
+  border-color: #0a6a94 !important;
+  color: #ffffff !important;
+}
+
+.app-shell .athlete-share-panel__footer {
+  background: #ffffff !important;
+  border-top-color: #e2e8f0 !important;
 }
 
 .app-shell .athlete-share-option strong {
@@ -1005,7 +1029,7 @@ body {
 }
 
 .app-shell .athlete-share-option small {
-  color: #a8b8cc !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .pairing-code-box {

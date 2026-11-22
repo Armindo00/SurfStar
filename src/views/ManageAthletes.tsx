@@ -50,6 +50,7 @@ export function ManageAthletes() {
   const [actionError, setActionError] = useState('')
   const [actionBusyId, setActionBusyId] = useState<string | null>(null)
   const [revokeTarget, setRevokeTarget] = useState<{ linkId: string; name: string } | null>(null)
+  const [sharePanelTab, setSharePanelTab] = useState<'visibility' | 'account'>('visibility')
 
   const pendingLinks = coachLinks.filter((l) => l.status === 'pending')
 
@@ -73,6 +74,7 @@ export function ManageAthletes() {
     setShareDraftBaseline(null)
     setShareDraftLinkId(null)
     setShareSaveBusy(false)
+    setSharePanelTab('visibility')
   }
 
   const openSharePanel = (athleteId: string) => {
@@ -85,6 +87,7 @@ export function ManageAthletes() {
     setShareDraft({ ...baseline })
     setShareDraftBaseline({ ...baseline })
     setShareDraftLinkId(athlete.linkId)
+    setSharePanelTab('visibility')
   }
 
   const submitCode = async () => {
@@ -263,89 +266,129 @@ export function ManageAthletes() {
                         </strong>
                         <button
                           type="button"
-                          className="btn btn--ghost btn--small athlete-share-panel__close"
+                          className="athlete-share-panel__close"
                           onClick={closeSharePanel}
+                          aria-label={t('ui.manageAthletes.closeSharePanel')}
                         >
-                          {t('ui.manageAthletes.closeSharePanel')}
+                          ✕
                         </button>
                       </div>
 
-                      <div className="athlete-manage-actions">
+                      <div className="athlete-share-tabs" role="tablist" aria-label={a.name}>
                         <button
                           type="button"
+                          role="tab"
+                          aria-selected={sharePanelTab === 'visibility'}
                           className={
-                            a.blocked ? 'btn btn--primary btn--small' : 'btn btn--ghost btn--small'
+                            sharePanelTab === 'visibility'
+                              ? 'athlete-share-tabs__btn athlete-share-tabs__btn--on'
+                              : 'athlete-share-tabs__btn'
                           }
-                          disabled={busyRow}
-                          onClick={() => toggleBlocked(a.linkId!, !a.blocked)}
+                          onClick={() => setSharePanelTab('visibility')}
                         >
-                          {busyRow
-                            ? t('ui.manageAthletes.saving')
-                            : a.blocked
-                              ? t('ui.manageAthletes.unblockAthlete')
-                              : t('ui.manageAthletes.blockAthlete')}
+                          {t('ui.manageAthletes.shareTabVisibility')}
                         </button>
                         <button
                           type="button"
-                          className="btn btn--danger btn--small"
-                          disabled={busyRow}
-                          onClick={() => setRevokeTarget({ linkId: a.linkId!, name: a.name })}
+                          role="tab"
+                          aria-selected={sharePanelTab === 'account'}
+                          className={
+                            sharePanelTab === 'account'
+                              ? 'athlete-share-tabs__btn athlete-share-tabs__btn--on'
+                              : 'athlete-share-tabs__btn'
+                          }
+                          onClick={() => setSharePanelTab('account')}
                         >
-                          {t('ui.manageAthletes.removeFromTeam')}
+                          {t('ui.manageAthletes.shareTabAccount')}
                         </button>
                       </div>
 
-                      <p className="athlete-share-panel__intro">{t('ui.manageAthletes.sharePanelIntro')}</p>
-                      {SHARE_OPTIONS.map((option) => (
-                        <label key={option.key} className="athlete-share-option">
-                          <input
-                            type="checkbox"
-                            checked={draft[option.key]}
-                            onChange={(e) => toggleShareDraft(option.key, e.target.checked)}
-                          />
-                          <span>
-                            <strong>{option.label}</strong>
-                            <small>{option.hint}</small>
-                          </span>
-                        </label>
-                      ))}
-                      {psychologyCheckinsAvailable ? (
-                        <label className="athlete-share-option athlete-share-option--highlight">
-                          <input
-                            type="checkbox"
-                            checked={draft.psychologyCheckins}
-                            onChange={(e) => toggleShareDraft('psychologyCheckins', e.target.checked)}
-                          />
-                          <span>
-                            <strong>{PSYCHOLOGY_SHARE_OPTION.label}</strong>
-                            <small>{PSYCHOLOGY_SHARE_OPTION.hint}</small>
-                          </span>
-                        </label>
+                      {sharePanelTab === 'visibility' ? (
+                        <>
+                          <div className="athlete-share-panel__body">
+                            <p className="athlete-share-panel__intro">
+                              {t('ui.manageAthletes.sharePanelIntro')}
+                            </p>
+                            {SHARE_OPTIONS.map((option) => (
+                              <label key={option.key} className="athlete-share-option">
+                                <input
+                                  type="checkbox"
+                                  checked={draft[option.key]}
+                                  onChange={(e) => toggleShareDraft(option.key, e.target.checked)}
+                                />
+                                <span>
+                                  <strong>{option.label}</strong>
+                                  <small>{option.hint}</small>
+                                </span>
+                              </label>
+                            ))}
+                            {psychologyCheckinsAvailable ? (
+                              <label className="athlete-share-option athlete-share-option--highlight">
+                                <input
+                                  type="checkbox"
+                                  checked={draft.psychologyCheckins}
+                                  onChange={(e) =>
+                                    toggleShareDraft('psychologyCheckins', e.target.checked)
+                                  }
+                                />
+                                <span>
+                                  <strong>{PSYCHOLOGY_SHARE_OPTION.label}</strong>
+                                  <small>{PSYCHOLOGY_SHARE_OPTION.hint}</small>
+                                </span>
+                              </label>
+                            ) : (
+                              <p className="muted athlete-share-panel__upgrade">
+                                {planUpgradeHint(coachPlanId, 'psychology')}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="athlete-share-panel__footer">
+                            <button
+                              type="button"
+                              className="btn btn--primary btn--block"
+                              disabled={!shareDraftDirty || shareSaveBusy}
+                              onClick={() => void saveShareDraft()}
+                            >
+                              {shareSaveBusy
+                                ? t('ui.manageAthletes.saving')
+                                : t('ui.manageAthletes.saveShareSettings')}
+                            </button>
+                          </div>
+                        </>
                       ) : (
-                        <p className="muted athlete-share-panel__upgrade">
-                          {planUpgradeHint(coachPlanId, 'psychology')}
-                        </p>
+                        <div className="athlete-share-panel__body athlete-share-panel__body--account">
+                          <p className="athlete-share-panel__intro">
+                            {t('ui.manageAthletes.accountTabIntro')}
+                          </p>
+                          <div className="athlete-manage-actions">
+                            <button
+                              type="button"
+                              className={
+                                a.blocked
+                                  ? 'btn btn--primary btn--block'
+                                  : 'btn btn--ghost btn--block'
+                              }
+                              disabled={busyRow}
+                              onClick={() => toggleBlocked(a.linkId!, !a.blocked)}
+                            >
+                              {busyRow
+                                ? t('ui.manageAthletes.saving')
+                                : a.blocked
+                                  ? t('ui.manageAthletes.unblockAthlete')
+                                  : t('ui.manageAthletes.blockAthlete')}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn--danger btn--block"
+                              disabled={busyRow}
+                              onClick={() => setRevokeTarget({ linkId: a.linkId!, name: a.name })}
+                            >
+                              {t('ui.manageAthletes.removeFromTeam')}
+                            </button>
+                          </div>
+                        </div>
                       )}
-
-                      <div className="athlete-share-panel__footer">
-                        <button
-                          type="button"
-                          className="btn btn--secondary btn--small"
-                          onClick={closeSharePanel}
-                        >
-                          {t('ui.manageAthletes.closeSharePanel')}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn--primary btn--small"
-                          disabled={!shareDraftDirty || shareSaveBusy}
-                          onClick={() => void saveShareDraft()}
-                        >
-                          {shareSaveBusy
-                            ? t('ui.manageAthletes.saving')
-                            : t('ui.manageAthletes.saveShareSettings')}
-                        </button>
-                      </div>
                     </div>
                   ) : null}
                 </li>
