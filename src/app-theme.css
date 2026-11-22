@@ -2571,6 +2571,42 @@ body {
   box-shadow: 0 12px 28px rgba(15, 28, 36, 0.12) !important;
 }
 
+.landing-page .language-picker__option,
+.auth-page .language-picker__option {
+  color: #0c1520 !important;
+}
+
+.landing-page .language-picker__option:hover,
+.landing-page .language-picker__option:focus-visible,
+.auth-page .language-picker__option:hover,
+.auth-page .language-picker__option:focus-visible {
+  background: #e8eef3 !important;
+}
+
+.landing-page .language-picker__option--active,
+.auth-page .language-picker__option--active {
+  background: rgba(10, 106, 148, 0.12) !important;
+  color: #0a6a94 !important;
+}
+
+.landing-page .language-picker__label,
+.auth-page .language-picker__label {
+  color: inherit !important;
+}
+
+@media (max-width: 767px) {
+  .landing-page .landing-nav__actions .language-picker__menu {
+    left: 0 !important;
+    right: auto !important;
+    transform: none !important;
+  }
+}
+
+.auth-page .auth-panel__top .language-picker__menu {
+  left: 0 !important;
+  right: auto !important;
+}
+
 .app-shell .language-picker__trigger,
 .auth-page .language-picker__trigger,
 .landing-page .language-picker__trigger {
