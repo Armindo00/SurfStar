@@ -73,3 +73,37 @@ Round 2 preview: [`color-options-2.html`](./color-options-2.html) (more backgrou
 | Accent | `#5eead4` |
 | Text | `#e8f5f0` |
 | Muted | `#8fb5a8` |
+
+---
+
+Round 3 preview: [`color-options-3.html`](./color-options-3.html).
+
+## G · Ivory Coast (warm light)
+
+| Token | Hex |
+|-------|-----|
+| Shell | `#f4f0e8` |
+| Card | `#fffcf7` |
+| Accent | `#1f4e5f` |
+| Text | `#1a2332` |
+| Muted | `#6b655c` |
+
+## H · Cobalt Depth (true blue)
+
+| Token | Hex |
+|-------|-----|
+| Shell | `#0b2250` |
+| Card | `#14356a` |
+| Accent | `#7dd3fc` |
+| Text | `#eaf2ff` |
+| Muted | `#9db4d4` |
+
+## I · Zinc Signal (zinc + lime)
+
+| Token | Hex |
+|-------|-----|
+| Shell | `#18181b` |
+| Card | `#27272a` |
+| Accent | `#a3e635` |
+| Text | `#fafafa` |
+| Muted | `#a1a1aa` |
