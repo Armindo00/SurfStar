@@ -383,18 +383,27 @@ body {
 }
 
 .action-card--primary {
-  background: linear-gradient(135deg, rgba(10, 106, 148, 0.2), rgba(10, 106, 148, 0.15)) !important;
-  border: 1px solid rgba(10, 106, 148, 0.45) !important;
-  color: var(--landing-text) !important;
+  background: #0a6a94 !important;
+  border: 1px solid #085578 !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(10, 106, 148, 0.22) !important;
+}
+
+.action-card--primary:hover {
+  background: #085578 !important;
+}
+
+.action-card--primary strong {
+  color: #ffffff !important;
 }
 
 .action-card--primary small {
-  color: var(--landing-muted) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
 }
 
 .action-card__icon {
-  background: rgba(10, 106, 148, 0.14) !important;
-  color: var(--landing-gold-light) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
 }
 
 /* Coach home — readable on navy shell (summary tiles must not stay white + light muted text) */
@@ -431,19 +440,27 @@ body {
 }
 
 .app-shell .action-card--primary {
-  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%) !important;
-  border: 1px solid rgba(56, 189, 248, 0.4) !important;
-  color: #fff !important;
-  box-shadow: 0 10px 28px rgba(14, 165, 233, 0.28) !important;
+  background: #0a6a94 !important;
+  border: 1px solid #085578 !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(10, 106, 148, 0.22) !important;
+}
+
+.app-shell .action-card--primary:hover {
+  background: #085578 !important;
+}
+
+.app-shell .action-card--primary strong {
+  color: #ffffff !important;
 }
 
 .app-shell .action-card--primary small {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
 }
 
 .app-shell .action-card--primary .action-card__icon {
-  background: #ffffff !important;
-  color: #fff !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
 }
 
 .app-shell .action-list__item .action-list__icon {

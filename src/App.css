@@ -1393,24 +1393,42 @@ input[type='checkbox']:indeterminate {
 }
 
 .action-card--primary {
-  background: linear-gradient(135deg, #0284c7, #0369a1);
-  color: white;
+  background: #0a6a94;
+  color: #ffffff;
+  border: 1px solid #085578;
+  box-shadow: 0 8px 22px rgba(10, 106, 148, 0.22);
+}
+
+.action-card--primary:hover {
+  background: #085578;
+}
+
+.action-card--primary:active {
+  background: #074a68;
+}
+
+.action-card--primary strong {
+  color: #ffffff;
+  font-weight: 700;
 }
 
 .action-card--primary small {
   display: block;
-  opacity: 0.85;
+  opacity: 0.9;
   font-weight: 400;
   margin-top: 0.15rem;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .action-card__icon {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
   display: grid;
   place-items: center;
+  flex-shrink: 0;
 }
 
 .action-list {
