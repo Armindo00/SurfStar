@@ -3407,6 +3407,27 @@ input:focus, select:focus, textarea:focus,
   color: #0a6a94 !important;
 }
 
+/* How it works — Option C: soft mist + top accent */
+.landing-page .landing-step {
+  background: #f3f6f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-top: 3px solid #0a6a94 !important;
+  border-radius: 16px !important;
+}
+
+.landing-page .landing-step__num {
+  color: #0a6a94 !important;
+  opacity: 1 !important;
+}
+
+.landing-page .landing-step h3 {
+  color: #0c1520 !important;
+}
+
+.landing-page .landing-step p {
+  color: #4b5c6b !important;
+}
+
 .pack-card__badge {
   background: #0a6a94 !important;
   color: #ffffff !important;

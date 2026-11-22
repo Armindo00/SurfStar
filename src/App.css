@@ -5627,7 +5627,7 @@ input[type='checkbox']:indeterminate {
 }
 
 .landing-steps--compact .landing-step {
-  padding: 1rem;
+  padding: 1.1rem 1.05rem;
 }
 
 .landing-cta-band__actions {
@@ -6161,31 +6161,36 @@ input[type='checkbox']:indeterminate {
   }
 }
 
+/* Option C · Soft mist + top accent */
 .landing-step {
   display: flex;
-  gap: 1rem;
-  padding: 1.35rem;
-  background: #ffffff;
-  border: 1px solid #d5dee6;
-  border-radius: 18px;
+  gap: 0.9rem;
+  align-items: flex-start;
+  padding: 1.25rem 1.2rem;
+  background: #f3f6f9;
+  border: 1px solid #e2e8f0;
+  border-top: 3px solid #0a6a94;
+  border-radius: 16px;
 }
 
 .landing-step__num {
-  font-size: 1.75rem;
+  font-size: 1.55rem;
   font-weight: 800;
   line-height: 1;
-  color: rgba(10, 106, 148, 0.45);
+  color: #0a6a94;
+  flex-shrink: 0;
 }
 
 .landing-step h3 {
   margin: 0 0 0.35rem;
   font-size: 1rem;
+  color: #0c1520;
 }
 
 .landing-step p {
   margin: 0;
   font-size: 0.88rem;
-  color: var(--landing-muted);
+  color: #4b5c6b;
   line-height: 1.5;
 }
 

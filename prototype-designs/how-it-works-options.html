@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>How it works — 3 options</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--text:#0c1520;--muted:#4b5c6b;--primary:#0a6a94;--border:#d0dae4;font-family:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#e8eef3;color:var(--text);padding:1.25rem 1rem 2.5rem}
+h1{text-align:center;font-size:1.1rem;margin:0 0 .3rem}
+.page-sub{text-align:center;color:var(--muted);font-size:.88rem;margin:0 0 1.25rem}
+.options{display:grid;gap:1.35rem;max-width:1040px;margin:0 auto}
+.option{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 10px 28px rgba(12,21,32,.07)}
+.meta{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);background:#f8fafc}
+.meta strong{display:block}.meta span{color:var(--muted);font-size:.8rem}
+.section{padding:1.5rem 1.15rem 1.7rem;background:#f7fafc;border-block:1px solid #e2e8f0}
+.head{text-align:center;margin:0 auto 1.25rem}
+.eyebrow{margin:0 0 .35rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0a6a94}
+.head h2{margin:0;font-size:1.4rem}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:.9rem}
+@media(min-width:780px){.steps{grid-template-columns:repeat(3,1fr);gap:1rem}}
+.step{background:#fff;border:1px solid #d0dae4;border-radius:16px;padding:1.15rem}
+.step h3{margin:0 0 .35rem;font-size:1rem;color:#0c1520}
+.step p{margin:0;font-size:.86rem;color:#4b5c6b;line-height:1.5}
+
+/* A: Badge numbers stacked */
+.opt-a .step{display:flex;flex-direction:column;gap:.7rem;box-shadow:0 6px 18px rgba(12,21,32,.05)}
+.opt-a .num{display:inline-flex;align-items:center;justify-content:center;width:2.35rem;height:2.35rem;border-radius:999px;background:#0a6a94;color:#fff;font-weight:800;font-size:.95rem}
+
+/* B: Connected timeline */
+.opt-b .steps{position:relative}
+@media(min-width:780px){
+  .opt-b .steps::before{content:'';position:absolute;top:1.55rem;left:12%;right:12%;height:2px;background:#d0dae4;z-index:0}
+}
+.opt-b .step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:.65rem;background:#fff}
+.opt-b .num{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:999px;background:#fff;border:2px solid #0a6a94;color:#0a6a94;font-weight:800;font-size:.95rem;box-shadow:0 0 0 6px #f7fafc}
+
+/* C: Soft mist + top accent */
+.opt-c .section{background:#fff}
+.opt-c .step{background:#f3f6f9;border-color:#e2e8f0;border-top:3px solid #0a6a94;display:flex;gap:.9rem;align-items:flex-start}
+.opt-c .num{font-size:1.55rem;font-weight:800;line-height:1;color:#0a6a94;opacity:.9}
+</style>
+</head>
+<body>
+<h1>Get started in three steps — 3 opções</h1>
+<p class="page-sub">Só esta secção. Diz A, B ou C.</p>
+<div class="options">
+<article class="option opt-a" id="a"><div class="meta"><strong>A · Badge numbers</strong><span>Número em círculo azul sólido (branco). Cartões brancos limpos, layout vertical.</span></div><div class="section"><div class="head"><p class="eyebrow">How it works</p><h2>Get started in three steps</h2></div><ol class="steps"><li class="step"><span class="num">01</span><div><h3>Pick your plan</h3><p>Coach, Coach Premium, or Team Academy.</p></div></li><li class="step"><span class="num">02</span><div><h3>Set up your team</h3><p>Create spots, invite athletes by code, and start logging.</p></div></li><li class="step"><span class="num">03</span><div><h3>Review with data</h3><p>Live stats on the beach, monthly trends, and season totals.</p></div></li></ol></div></article><article class="option opt-b" id="b"><div class="meta"><strong>B · Connected timeline</strong><span>Círculos com contorno azul ligados por uma linha — fluxo mais claro entre passos.</span></div><div class="section"><div class="head"><p class="eyebrow">How it works</p><h2>Get started in three steps</h2></div><ol class="steps"><li class="step"><span class="num">01</span><div><h3>Pick your plan</h3><p>Coach, Coach Premium, or Team Academy.</p></div></li><li class="step"><span class="num">02</span><div><h3>Set up your team</h3><p>Create spots, invite athletes by code, and start logging.</p></div></li><li class="step"><span class="num">03</span><div><h3>Review with data</h3><p>Live stats on the beach, monthly trends, and season totals.</p></div></li></ol></div></article><article class="option opt-c" id="c"><div class="meta"><strong>C · Soft mist + top accent</strong><span>Cartões cinza-azulados suaves com barra oceano no topo e número grande.</span></div><div class="section"><div class="head"><p class="eyebrow">How it works</p><h2>Get started in three steps</h2></div><ol class="steps"><li class="step"><span class="num">01</span><div><h3>Pick your plan</h3><p>Coach, Coach Premium, or Team Academy.</p></div></li><li class="step"><span class="num">02</span><div><h3>Set up your team</h3><p>Create spots, invite athletes by code, and start logging.</p></div></li><li class="step"><span class="num">03</span><div><h3>Review with data</h3><p>Live stats on the beach, monthly trends, and season totals.</p></div></li></ol></div></article></div></body></html>
