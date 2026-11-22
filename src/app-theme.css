@@ -1,34 +1,32 @@
 /* SurfStar app theme — Palette D · Mist Daylight (light) */
 
 :root {
-  /* Palette D · Mist Daylight */
-  --landing-navy: #eef3f6;
-  --landing-navy-mid: #e8eef3;
-  --landing-gold: #0b6e99;
-  --landing-gold-light: #0b6e99;
-  --landing-text: #0f1c24;
-  --landing-muted: #5b6b78;
+  /* Mist Daylight — refined */
+  --landing-navy: #f3f6f9;
+  --landing-navy-mid: #f3f6f9;
+  --landing-gold: #0a6a94;
+  --landing-gold-light: #0a6a94;
+  --landing-text: #0c1520;
+  --landing-muted: #4b5c6b;
 
-  --ss-bg-top: #eef3f6;
-  --ss-bg-mid: #e8eef3;
-  --ss-bg-bottom: #dfe7ee;
+  --ss-bg-top: #f3f6f9;
+  --ss-bg-mid: #f3f6f9;
+  --ss-bg-bottom: #e5ecf2;
   --ss-header: #ffffff;
-  --ss-surface: #eef3f6;
+  --ss-surface: #f3f6f9;
   --ss-card: #ffffff;
-  --ss-text: #0f1c24;
-  --ss-muted: #5b6b78;
-  --ss-primary: #0b6e99;
+  --ss-text: #0c1520;
+  --ss-muted: #4b5c6b;
+  --ss-primary: #0a6a94;
   --ss-primary-dark: #085578;
-  --ss-hero: #38bdf8;
-  --ss-border: #d5dee6;
-  --ss-shadow: 0 8px 28px rgba(15, 28, 36, 0.08);
+  --ss-hero: #0284c7;
+  --ss-border: #d0dae4;
+  --ss-shadow: 0 8px 28px rgba(12, 21, 32, 0.07);
   color: var(--ss-text);
 }
 
 body {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(11, 110, 153, 0.08), transparent),
-    linear-gradient(180deg, var(--landing-navy) 0%, var(--landing-navy-mid) 45%, #dfe7ee 100%);
+  background: #f3f6f9;
 }
 
 .app-shell__inner {
@@ -38,7 +36,7 @@ body {
 
 @media (min-width: 768px) {
   .app-shell__inner {
-    border: 1px solid #d5dee6;
+    border: 1px solid #d0dae4;
     border-radius: 24px;
     overflow: hidden;
     background: #ffffff;
@@ -49,7 +47,7 @@ body {
 
 .app-brandbar {
   background: #ffffff;
-  border-bottom: 1px solid #d5dee6;
+  border-bottom: 1px solid #d0dae4;
   backdrop-filter: blur(16px);
 }
 
@@ -61,7 +59,7 @@ body {
 .screen-header {
   background: #ffffff !important;
   color: var(--landing-text) !important;
-  border-bottom: 1px solid #d5dee6 !important;
+  border-bottom: 1px solid #d0dae4 !important;
 }
 
 .screen-header__title {
@@ -75,7 +73,7 @@ body {
 
 .ss-card {
   background: #ffffff !important;
-  border: 1px solid #d5dee6 !important;
+  border: 1px solid #d0dae4 !important;
   box-shadow: 0 16px 40px rgba(15, 28, 36, 0.08) !important;
   color: var(--landing-text);
 }
@@ -93,14 +91,14 @@ body {
 .login-page,
 .checkout-page {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(11, 110, 153, 0.1), transparent),
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(10, 106, 148, 0.1), transparent),
     linear-gradient(180deg, var(--landing-navy) 0%, var(--landing-navy-mid) 45%, #dfe7ee 100%) !important;
 }
 
 .login-card,
 .checkout-card {
   background: #ffffff !important;
-  border: 1px solid #d5dee6 !important;
+  border: 1px solid #d0dae4 !important;
   backdrop-filter: blur(12px);
   color: var(--landing-text);
 }
@@ -119,21 +117,21 @@ body {
 }
 
 .login-page .login-switch {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .login-page .login-switch__btn {
   color: var(--landing-gold-light) !important;
 }
 
-/* Login tab bars: never light-gray track + light text (App.css #0f1c24 leak) */
+/* Login tab bars: never light-gray track + light text (App.css #0c1520 leak) */
 .login-page .login-tabs,
 .checkout-page .login-tabs,
 .login-page .login-subtabs,
 .checkout-page .login-subtabs,
 .app-shell .login-tabs {
   background: rgba(15, 28, 36, 0.08) !important;
-  border: 1px solid #d5dee6;
+  border: 1px solid #d0dae4;
 }
 
 .login-page .login-tabs__btn,
@@ -141,7 +139,7 @@ body {
 .login-page .login-subtabs__btn,
 .checkout-page .login-subtabs__btn,
 .app-shell .login-tabs__btn {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .login-page .login-tabs__btn--on,
@@ -149,14 +147,14 @@ body {
 .login-page .login-subtabs__btn--on,
 .checkout-page .login-subtabs__btn--on,
 .app-shell .login-tabs__btn--on {
-  background: rgba(11, 110, 153, 0.12) !important;
+  background: rgba(10, 106, 148, 0.12) !important;
   color: var(--landing-gold-light) !important;
   box-shadow: none !important;
 }
 
 .field--login span,
 .field span {
-  color: #5b6b78;
+  color: #4b5c6b;
 }
 
 .field input:not([type='checkbox']):not([type='radio']),
@@ -172,7 +170,7 @@ body {
 .checkout-pending,
 .login-plan-banner {
   background: rgba(15, 28, 36, 0.08) !important;
-  border: 1px solid #d5dee6;
+  border: 1px solid #d0dae4;
   color: var(--landing-muted);
 }
 
@@ -184,32 +182,32 @@ body {
 /* Checkout — readable contrast on dark glass card */
 .checkout-page .checkout-card .billing-toggle {
   background: rgba(15, 28, 36, 0.06) !important;
-  border: 1px solid #d5dee6 !important;
+  border: 1px solid #d0dae4 !important;
 }
 
 .checkout-page .checkout-card .billing-toggle__btn {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .checkout-page .checkout-card .billing-toggle__btn--active {
-  background: rgba(11, 110, 153, 0.14) !important;
+  background: rgba(10, 106, 148, 0.14) !important;
   color: var(--landing-gold-light) !important;
   box-shadow: none !important;
 }
 
 .checkout-page .checkout-card .billing-toggle__save {
-  background: rgba(11, 110, 153, 0.2) !important;
-  color: #fde68a !important;
+  background: rgba(10, 106, 148, 0.2) !important;
+  color: #0a6a94 !important;
 }
 
 .checkout-page .checkout-card .billing-toggle__btn--active .billing-toggle__save {
-  background: linear-gradient(135deg, #0b6e99, #085578) !important;
+  background: linear-gradient(135deg, #0a6a94, #085578) !important;
   color: #1a1204 !important;
 }
 
 .checkout-page .checkout-summary__label,
 .checkout-page .checkout-summary__price span {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .checkout-page .checkout-features,
@@ -218,9 +216,9 @@ body {
 }
 
 .checkout-page .checkout-manual-total {
-  color: #5b6b78 !important;
-  background: rgba(11, 110, 153, 0.1) !important;
-  border-color: rgba(11, 110, 153, 0.2) !important;
+  color: #4b5c6b !important;
+  background: rgba(10, 106, 148, 0.1) !important;
+  border-color: rgba(10, 106, 148, 0.2) !important;
 }
 
 .checkout-page .checkout-manual-total strong {
@@ -243,7 +241,7 @@ body {
 }
 
 .checkout-page .checkout-notice__footer {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .checkout-page .checkout-pending__title {
@@ -251,19 +249,19 @@ body {
 }
 
 .checkout-page .checkout-request-meta dt {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .checkout-page .checkout-request-meta dd {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .checkout-page .checkout-back {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .checkout-page .field--login span {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .checkout-page .field--login select {
@@ -275,7 +273,7 @@ body {
     no-repeat right 0.85rem center,
     rgba(15, 28, 36, 0.06) !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .checkout-page .field--login select option {
@@ -284,7 +282,7 @@ body {
 }
 
 .checkout-page .checkout-note {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .auth-page .checkout-notice {
@@ -303,15 +301,15 @@ body {
 }
 
 .auth-page .checkout-notice__footer {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .auth-page .checkout-notice__steps strong {
-  color: #fde68a;
+  color: #0a6a94;
 }
 
 .checkout-page .checkout-notice__steps strong {
-  color: #fde68a;
+  color: #0a6a94;
 }
 
 .login-forgot {
@@ -320,15 +318,15 @@ body {
 
 /* Signed-in app shell — do not bleed into landing pricing cards */
 .app-shell .btn--primary {
-  background: linear-gradient(135deg, #0b6e99 0%, #085578 100%) !important;
+  background: linear-gradient(135deg, #0a6a94 0%, #085578 100%) !important;
   border-color: #085578 !important;
   color: #1a1204 !important;
   font-weight: 700;
 }
 
 .app-shell .btn--secondary {
-  background: #d5dee6 !important;
-  border-color: #d5dee6 !important;
+  background: #d0dae4 !important;
+  border-color: #d0dae4 !important;
   color: var(--landing-text) !important;
 }
 
@@ -340,7 +338,7 @@ body {
 
 .login-page .btn--primary,
 .checkout-page .btn--primary {
-  background: linear-gradient(135deg, #0b6e99 0%, #085578 100%) !important;
+  background: linear-gradient(135deg, #0a6a94 0%, #085578 100%) !important;
   border-color: #085578 !important;
   color: #1a1204 !important;
   font-weight: 700;
@@ -359,11 +357,11 @@ body {
 }
 
 .landing-page .pack-card .btn--gold {
-  background: linear-gradient(135deg, #0b6e99 0%, #085578 100%) !important;
+  background: linear-gradient(135deg, #0a6a94 0%, #085578 100%) !important;
   border-color: #085578 !important;
   color: #1a1204 !important;
   font-weight: 700;
-  box-shadow: 0 4px 20px rgba(11, 110, 153, 0.2);
+  box-shadow: 0 4px 20px rgba(10, 106, 148, 0.2);
 }
 
 .landing-page .pack-card .btn--gold:hover {
@@ -385,8 +383,8 @@ body {
 }
 
 .action-card--primary {
-  background: linear-gradient(135deg, rgba(11, 110, 153, 0.2), rgba(11, 110, 153, 0.15)) !important;
-  border: 1px solid rgba(11, 110, 153, 0.45) !important;
+  background: linear-gradient(135deg, rgba(10, 106, 148, 0.2), rgba(10, 106, 148, 0.15)) !important;
+  border: 1px solid rgba(10, 106, 148, 0.45) !important;
   color: var(--landing-text) !important;
 }
 
@@ -395,14 +393,14 @@ body {
 }
 
 .action-card__icon {
-  background: rgba(11, 110, 153, 0.14) !important;
+  background: rgba(10, 106, 148, 0.14) !important;
   color: var(--landing-gold-light) !important;
 }
 
 /* Coach home — readable on navy shell (summary tiles must not stay white + light muted text) */
 .app-shell .dashboard-summary__tile {
   background: #ffffff !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22) !important;
 }
 
@@ -421,7 +419,7 @@ body {
 
 .app-shell .dashboard__plan-link {
   color: var(--landing-gold) !important;
-  text-decoration-color: rgba(11, 110, 153, 0.45);
+  text-decoration-color: rgba(10, 106, 148, 0.45);
 }
 
 .app-shell .dashboard__plan-link:hover {
@@ -458,30 +456,30 @@ body {
 
 .action-list__item {
   background: #e8eef3 !important;
-  border: 1px solid #d5dee6 !important;
+  border: 1px solid #d0dae4 !important;
   color: var(--landing-text) !important;
 }
 
 .action-list__item:hover {
-  border-color: rgba(11, 110, 153, 0.2) !important;
+  border-color: rgba(10, 106, 148, 0.2) !important;
 }
 
 .chip {
   background: #ffffff !important;
-  border: 1px solid #d5dee6 !important;
-  color: #5b6b78 !important;
+  border: 1px solid #d0dae4 !important;
+  color: #4b5c6b !important;
   font-weight: 600;
 }
 
 .chip--active {
-  background: rgba(11, 110, 153, 0.12) !important;
-  border-color: rgba(11, 110, 153, 0.5) !important;
+  background: rgba(10, 106, 148, 0.12) !important;
+  border-color: rgba(10, 106, 148, 0.5) !important;
   color: var(--landing-gold-light) !important;
 }
 
 .kpi-card {
   background: rgba(15, 28, 36, 0.08) !important;
-  border: 1px solid #d5dee6 !important;
+  border: 1px solid #d0dae4 !important;
 }
 
 .kpi-card__label {
@@ -495,7 +493,7 @@ body {
 .stats-table th,
 .stats-table td,
 .rate-bar {
-  border-color: #d5dee6;
+  border-color: #d0dae4;
 }
 
 .input-readonly {
@@ -536,14 +534,14 @@ body {
 .app-shell .spot-row,
 .app-shell .condition-row {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
   color: var(--landing-text) !important;
 }
 
 .app-shell .ss-pick-item--on,
 .app-shell .athlete-tile--selected {
-  background: rgba(11, 110, 153, 0.1) !important;
-  border-color: rgba(11, 110, 153, 0.45) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
+  border-color: rgba(10, 106, 148, 0.45) !important;
 }
 
 .app-shell .ss-mini-stats,
@@ -556,24 +554,24 @@ body {
 
 .app-shell .ss-tools__toggle {
   background: #ffffff !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
   color: var(--landing-text) !important;
 }
 
 .app-shell .sheet,
 .app-shell .modal.sheet {
   background: #e8eef3 !important;
-  border: 1px solid #d5dee6;
+  border: 1px solid #d0dae4;
   color: var(--landing-text);
 }
 
 .app-shell .sheet__close {
-  background: #d5dee6 !important;
+  background: #d0dae4 !important;
   color: var(--landing-text) !important;
 }
 
 .app-shell .sheet-divider {
-  border-top-color: #d5dee6 !important;
+  border-top-color: #d0dae4 !important;
 }
 
 .app-shell .sheet__eyebrow {
@@ -590,16 +588,16 @@ body {
 }
 
 .app-shell .rate-bar__fill {
-  background: linear-gradient(90deg, #085578, #0b6e99) !important;
+  background: linear-gradient(90deg, #085578, #0a6a94) !important;
 }
 
 .app-shell .rate-bar__track {
-  background: #d5dee6 !important;
+  background: #d0dae4 !important;
 }
 
 .app-shell .btn--ghost {
   background: transparent !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
   color: var(--landing-gold-light) !important;
 }
 
@@ -610,11 +608,11 @@ body {
 }
 
 .app-shell .login-success {
-  color: #86efac !important;
+  color: #047857 !important;
 }
 
 .app-shell .login-error {
-  color: #fca5a5 !important;
+  color: #b91c1c !important;
 }
 
 .app-shell .page-title,
@@ -625,14 +623,14 @@ body {
 }
 
 .app-shell .ss-wave-btn {
-  background: #d5dee6 !important;
+  background: #d0dae4 !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
   color: var(--landing-text) !important;
 }
 
 .app-shell .ss-wave-btn--dark {
-  background: rgba(11, 110, 153, 0.14) !important;
-  border-color: rgba(11, 110, 153, 0.5) !important;
+  background: rgba(10, 106, 148, 0.14) !important;
+  border-color: rgba(10, 106, 148, 0.5) !important;
   color: var(--landing-gold-light) !important;
 }
 
@@ -642,15 +640,15 @@ body {
 }
 
 .app-shell .plan-limit-banner {
-  background: rgba(11, 110, 153, 0.1) !important;
-  border: 1px solid rgba(11, 110, 153, 0.2) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
+  border: 1px solid rgba(10, 106, 148, 0.2) !important;
   border-radius: 12px;
   padding: 0.75rem 1rem;
 }
 
 .app-shell .paywall-card {
   background: #ffffff !important;
-  border: 1px solid #d5dee6 !important;
+  border: 1px solid #d0dae4 !important;
 }
 
 .modal-backdrop {
@@ -659,7 +657,7 @@ body {
 
 .toast {
   background: #e8eef3 !important;
-  border: 1px solid #d5dee6 !important;
+  border: 1px solid #d0dae4 !important;
   color: var(--landing-text) !important;
   box-shadow: 0 16px 40px rgba(15, 28, 36, 0.12) !important;
 }
@@ -673,11 +671,11 @@ body {
 }
 
 .login-error {
-  color: #fca5a5 !important;
+  color: #b91c1c !important;
 }
 
 .login-success {
-  color: #86efac !important;
+  color: #047857 !important;
 }
 
 .login-forgot {
@@ -703,7 +701,7 @@ body {
   padding: 1rem 1.1rem;
   border-radius: 16px;
   background: #ffffff;
-  border: 1px solid rgba(11, 110, 153, 0.2);
+  border: 1px solid rgba(10, 106, 148, 0.2);
   box-shadow: 0 12px 32px rgba(15, 28, 36, 0.1);
 }
 
@@ -759,7 +757,7 @@ body {
 .app-shell .stats-panel__sub,
 .app-shell .plan-lock-note,
 .app-shell .side-chart__sub {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .muted {
@@ -768,13 +766,13 @@ body {
 
 .app-shell .input-readonly {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell select option {
   background: #e8eef3;
-  color: #0f1c24;
+  color: #0c1520;
 }
 
 .app-shell .data-table thead {
@@ -782,12 +780,12 @@ body {
 }
 
 .app-shell .data-table th {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .data-table td {
-  color: #0f1c24 !important;
-  border-bottom-color: #d5dee6 !important;
+  color: #0c1520 !important;
+  border-bottom-color: #d0dae4 !important;
 }
 
 .app-shell .data-table tbody tr:nth-child(even) {
@@ -795,16 +793,16 @@ body {
 }
 
 .app-shell .table-wrap {
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .side-chart {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .side-chart__title {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .side-chart__overall {
@@ -816,48 +814,48 @@ body {
 }
 
 .app-shell .side-chart__row span {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .stats-badge {
-  background: rgba(11, 110, 153, 0.1) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
   color: var(--landing-gold-light) !important;
-  border: 1px solid rgba(11, 110, 153, 0.2);
+  border: 1px solid rgba(10, 106, 148, 0.2);
 }
 
 .app-shell .history-card {
   background: #ffffff !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
   box-shadow: none !important;
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .history-card__headline {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .history-card__mode {
-  background: rgba(11, 110, 153, 0.1) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
   color: var(--landing-gold-light) !important;
 }
 
 .app-shell .history-card__notes-preview {
-  color: #5b6b78 !important;
-  border-top-color: #d5dee6 !important;
+  color: #4b5c6b !important;
+  border-top-color: #d0dae4 !important;
 }
 
 .app-shell .history-detail-hero {
-  background: linear-gradient(180deg, rgba(11, 110, 153, 0.1), rgba(15, 28, 36, 0.06) 72%) !important;
+  background: linear-gradient(180deg, rgba(10, 106, 148, 0.1), rgba(15, 28, 36, 0.06) 72%) !important;
 }
 
 .app-shell .athlete-manage-list__head {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .athlete-manage-list__head strong {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .athlete-manage-list__toggle {
@@ -866,18 +864,18 @@ body {
 
 .app-shell .athlete-manage-list__item {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .athlete-share-panel {
-  background: linear-gradient(180deg, #e8eef3 0%, #eef3f6 100%) !important;
-  border-color: #d5dee6 !important;
+  background: linear-gradient(180deg, #e8eef3 0%, #f3f6f9 100%) !important;
+  border-color: #d0dae4 !important;
   color: var(--landing-text) !important;
 }
 
 .app-shell .athlete-share-option {
   background: transparent !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .athlete-share-panel__intro {
@@ -885,11 +883,11 @@ body {
 }
 
 .app-shell .athlete-share-panel__toolbar {
-  border-bottom-color: #d5dee6 !important;
+  border-bottom-color: #d0dae4 !important;
 }
 
 .app-shell .athlete-share-option strong {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .athlete-share-option small {
@@ -898,7 +896,7 @@ body {
 
 .app-shell .pairing-code-box {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: rgba(11, 110, 153, 0.2) !important;
+  border-color: rgba(10, 106, 148, 0.2) !important;
 }
 
 .app-shell .pairing-code-box__code {
@@ -907,22 +905,22 @@ body {
 
 .app-shell .pairing-list__item {
   background: #e8eef3 !important;
-  border: 1px solid #d5dee6 !important;
-  color: #0f1c24 !important;
+  border: 1px solid #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .athlete-tile__name {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .athlete-tile__avatar {
-  background: rgba(11, 110, 153, 0.12) !important;
+  background: rgba(10, 106, 148, 0.12) !important;
   color: var(--landing-gold-light) !important;
 }
 
 .app-shell .athlete-potential-card {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .athlete-potential-card strong {
@@ -930,13 +928,13 @@ body {
 }
 
 .app-shell .athlete-potential-card--yes {
-  background: rgba(11, 110, 153, 0.1) !important;
-  border-color: rgba(11, 110, 153, 0.2) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
+  border-color: rgba(10, 106, 148, 0.2) !important;
 }
 
 .app-shell .athlete-history-list li {
-  border-bottom-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-bottom-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .heat-timer,
@@ -947,12 +945,12 @@ body {
 .app-shell .heat-live-stats__athlete {
   background: rgba(15, 28, 36, 0.08) !important;
   border-color: rgba(255, 255, 255, 0.14) !important;
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .heat-live-stats__athlete--lead {
-  background: rgba(11, 110, 153, 0.14) !important;
-  border-color: rgba(11, 110, 153, 0.42) !important;
+  background: rgba(10, 106, 148, 0.14) !important;
+  border-color: rgba(10, 106, 148, 0.42) !important;
 }
 
 .app-shell .heat-live-stats__athlete-head strong {
@@ -960,7 +958,7 @@ body {
 }
 
 .app-shell .heat-live-stats__place {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .heat-live-stats__total {
@@ -974,15 +972,15 @@ body {
 .app-shell .heat-live-stats__rhythm li span,
 .app-shell .heat-live-stats__rhythm-empty,
 .app-shell .heat-live-stats .stats-panel__sub {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .heat-live-stats__rhythm li strong {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .heat-live-stats .kpi-card__label {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .heat-live-stats .kpi-card--compact .kpi-card__value {
@@ -999,13 +997,13 @@ body {
 
 .app-shell .heat-results-table th,
 .app-shell .heat-results-table td {
-  color: #0f1c24 !important;
-  border-color: #d5dee6 !important;
+  color: #0c1520 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .sea-peak-column {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .sea-peak-column__title {
@@ -1013,8 +1011,8 @@ body {
 }
 
 .app-shell .sea-timeline li {
-  border-bottom-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-bottom-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .sea-recommend__pick {
@@ -1022,7 +1020,7 @@ body {
 }
 
 .app-shell .sea-recommend-row--on {
-  background: rgba(11, 110, 153, 0.2) !important;
+  background: rgba(10, 106, 148, 0.2) !important;
 }
 
 .app-shell .sea-recommend-row--on td {
@@ -1031,27 +1029,27 @@ body {
 }
 
 .app-shell .sea-recommend-tag {
-  background: rgba(11, 110, 153, 0.85) !important;
+  background: rgba(10, 106, 148, 0.85) !important;
   color: #1a1204 !important;
 }
 
 .app-shell .sea-stats-table td,
 .app-shell .sea-stats-table th {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .wave-summary {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .wave-summary__title,
 .app-shell .wave-summary__eyebrow {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .wave-list li {
-  border-bottom-color: #d5dee6 !important;
+  border-bottom-color: #d0dae4 !important;
 }
 
 .app-shell .evolution-chart__title {
@@ -1060,13 +1058,13 @@ body {
 
 .app-shell .evolution-chart__tick,
 .app-shell .evolution-chart__month {
-  fill: #5b6b78;
+  fill: #4b5c6b;
 }
 
 .app-shell .ss-athlete-list li,
 .app-shell .ss-athlete-list__row {
-  color: #0f1c24 !important;
-  border-color: #d5dee6 !important;
+  color: #0c1520 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .ss-athlete-list__row small {
@@ -1078,7 +1076,7 @@ body {
 }
 
 .app-shell .athlete-portal__nav-icon {
-  background: rgba(11, 110, 153, 0.1) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
   color: var(--landing-gold-light) !important;
 }
 
@@ -1088,7 +1086,7 @@ body {
 
 .app-shell .athlete-portal__nav-badge,
 .app-shell .nav-badge {
-  background: rgba(11, 110, 153, 0.85) !important;
+  background: rgba(10, 106, 148, 0.85) !important;
   color: #e8eef3 !important;
 }
 
@@ -1097,7 +1095,7 @@ body {
 .app-shell .athlete-checkin-pending__item,
 .app-shell .athlete-checkin-list__item {
   background: rgba(0, 0, 0, 0.22) !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .athlete-checkin-list__item--pending {
@@ -1111,7 +1109,7 @@ body {
 
 .app-shell .athlete-checkin-list__badge--done {
   background: rgba(34, 197, 94, 0.16) !important;
-  color: #86efac !important;
+  color: #047857 !important;
 }
 
 .app-shell .athlete-checkin-list__badge--pending {
@@ -1121,18 +1119,18 @@ body {
 
 .app-shell .athlete-checkin-list__detail,
 .app-shell .athlete-checkin-list__prompt {
-  border-top-color: #d5dee6 !important;
+  border-top-color: #d0dae4 !important;
 }
 
 .app-shell .athlete-checkin-list__prompt p {
   background: rgba(245, 158, 11, 0.14) !important;
   border-color: rgba(251, 191, 36, 0.35) !important;
-  color: #fde68a !important;
+  color: #0a6a94 !important;
 }
 
 .app-shell .custom-button-stats-list__item {
   background: rgba(0, 0, 0, 0.22) !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .custom-button-stats-list__row:hover {
@@ -1140,7 +1138,7 @@ body {
 }
 
 .app-shell .custom-button-stats-list__detail {
-  border-top-color: #d5dee6 !important;
+  border-top-color: #d0dae4 !important;
 }
 
 .app-shell .custom-button-stats-list__avg {
@@ -1152,29 +1150,29 @@ body {
 }
 
 .app-shell .athlete-history-list__detail {
-  border-top-color: #d5dee6 !important;
+  border-top-color: #d0dae4 !important;
 }
 
 .app-shell .evaluation-history__item {
   background: rgba(0, 0, 0, 0.22) !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .evaluation-history__coach {
-  background: rgba(11, 110, 153, 0.1) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
   color: var(--landing-gold-light) !important;
 }
 
 .app-shell .material-section--cta {
-  border-left-color: rgba(11, 110, 153, 0.65) !important;
+  border-left-color: rgba(10, 106, 148, 0.65) !important;
 }
 .app-shell .athlete-history-list--cards li {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .athlete-share-coaches__tag {
-  background: rgba(11, 110, 153, 0.1) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
   color: var(--landing-gold-light) !important;
 }
 
@@ -1189,7 +1187,7 @@ body {
 .app-shell .evolution-chart__col--active,
 .app-shell .evolution-chart__table thead th.evolution-chart__col--active,
 .app-shell .evolution-chart__table tbody td.evolution-chart__col--active {
-  background: rgba(11, 110, 153, 0.1) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
 }
 
 .app-shell .kpi-card__value {
@@ -1198,40 +1196,40 @@ body {
 
 .app-shell .kpi-card--accent .kpi-card__value,
 .app-shell .kpi-card--success .kpi-card__value {
-  color: #86efac !important;
+  color: #047857 !important;
 }
 
 /* Selection / highlight: dark surfaces only — never light row + light text */
 .app-shell .ss-pick-item--on,
 .app-shell .athlete-tile--selected,
 .app-shell .champ-heat-item--on {
-  background: rgba(11, 110, 153, 0.12) !important;
-  border-color: rgba(11, 110, 153, 0.5) !important;
+  background: rgba(10, 106, 148, 0.12) !important;
+  border-color: rgba(10, 106, 148, 0.5) !important;
   color: #f8fafc !important;
 }
 
 .app-shell .champ-heat-item--on small {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .champ-heat-item {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .champ-heat-item strong {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .kpi-card--accent {
-  background: rgba(11, 110, 153, 0.1) !important;
-  border-color: rgba(11, 110, 153, 0.2) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
+  border-color: rgba(10, 106, 148, 0.2) !important;
 }
 
 .app-shell .kpi-card--star {
-  background: rgba(11, 110, 153, 0.08) !important;
-  border-color: rgba(11, 110, 153, 0.3) !important;
+  background: rgba(10, 106, 148, 0.08) !important;
+  border-color: rgba(10, 106, 148, 0.3) !important;
 }
 
 .app-shell .kpi-card--star .kpi-card__value {
@@ -1239,8 +1237,8 @@ body {
 }
 
 .app-shell .level-chart__row--top {
-  background: rgba(11, 110, 153, 0.2) !important;
-  outline: 1px solid rgba(11, 110, 153, 0.45) !important;
+  background: rgba(10, 106, 148, 0.2) !important;
+  outline: 1px solid rgba(10, 106, 148, 0.45) !important;
 }
 
 .app-shell .level-chart__row--top .level-chart__label,
@@ -1249,19 +1247,19 @@ body {
 }
 
 .app-shell .level-chart__row--top .level-chart__meta small {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .level-chart__track {
-  background: #d5dee6 !important;
+  background: #d0dae4 !important;
 }
 
 .app-shell .level-chart__fill {
-  background: linear-gradient(90deg, #085578, #0b6e99) !important;
+  background: linear-gradient(90deg, #085578, #0a6a94) !important;
 }
 
 .app-shell .level-chart__fill--top {
-  background: linear-gradient(90deg, #0b6e99, #0b6e99) !important;
+  background: linear-gradient(90deg, #0a6a94, #0a6a94) !important;
 }
 
 .app-shell .level-chart__highlight {
@@ -1270,15 +1268,15 @@ body {
 
 .app-shell .maneuver-level {
   background: #ffffff !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .maneuver-level__label {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .heat-cell--counting {
-  background: rgba(11, 110, 153, 0.12) !important;
+  background: rgba(10, 106, 148, 0.12) !important;
   color: var(--landing-gold-light) !important;
   font-weight: 700;
 }
@@ -1297,8 +1295,8 @@ body {
 }
 
 .app-shell .heat-results-legend__item--counting {
-  background: rgba(11, 110, 153, 0.2) !important;
-  border: 1px solid rgba(11, 110, 153, 0.4) !important;
+  background: rgba(10, 106, 148, 0.2) !important;
+  border: 1px solid rgba(10, 106, 148, 0.4) !important;
   color: var(--landing-gold-light) !important;
 }
 
@@ -1309,13 +1307,13 @@ body {
 }
 
 .app-shell .sea-recommend {
-  border-color: rgba(11, 110, 153, 0.2) !important;
+  border-color: rgba(10, 106, 148, 0.2) !important;
 }
 
 .app-shell .sea-recommend__title,
 .app-shell .sea-recommend__summary,
 .app-shell .sea-recommend__formula {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .sea-recommend__pick--tie {
@@ -1332,7 +1330,7 @@ body {
 }
 
 .app-shell tr[class*='--on'] {
-  background: rgba(11, 110, 153, 0.2) !important;
+  background: rgba(10, 106, 148, 0.2) !important;
 }
 
 .app-shell tr[class*='--on'] td,
@@ -1357,7 +1355,7 @@ body {
 :root {
   --on-light-text: #e8eef3;
   --on-light-muted: #475569;
-  --on-light-subtle: #64748b;
+  --on-light-subtle: #4b5c6b;
   --on-light-border: #e2e8f0;
 }
 
@@ -1429,7 +1427,7 @@ body {
 .auth-page .field--pro span,
 .login-page .field--pro span,
 .checkout-page .field--pro span {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .field--pro input:not([type='checkbox']):not([type='radio']),
@@ -1447,13 +1445,13 @@ body {
 .app-shell .catalog-list__edit input,
 .app-shell .end-session-sheet__textarea {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .auth-page .field--pro input::placeholder,
 .auth-page .field--pro textarea::placeholder {
-  color: #64748b !important;
+  color: #4b5c6b !important;
 }
 
 .auth-page .field--pro select {
@@ -1464,8 +1462,8 @@ body {
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23cbd5e1' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
     no-repeat right 0.85rem center,
     rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .auth-page .field--pro select:focus {
@@ -1495,9 +1493,9 @@ body {
 .app-shell .catalog-list__edit input:focus,
 .app-shell .end-session-sheet__textarea:focus {
   background: rgba(15, 28, 36, 0.1) !important;
-  border-color: rgba(11, 110, 153, 0.45) !important;
-  box-shadow: 0 0 0 3px rgba(11, 110, 153, 0.15) !important;
-  color: #0f1c24 !important;
+  border-color: rgba(10, 106, 148, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(10, 106, 148, 0.15) !important;
+  color: #0c1520 !important;
 }
 
 /* Semantic tints on pale backgrounds — keep readable (not white-on-white) */
@@ -1513,8 +1511,8 @@ body {
 .app-shell .custom-rules-panel,
 .app-shell .custom-editor__button-card {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell :is(.custom-rules-panel, .custom-editor__button-card) .muted,
@@ -1526,40 +1524,40 @@ body {
 
 .app-shell :is(.custom-rules-panel, .custom-editor__button-card) strong,
 .app-shell .custom-editor__button-head strong {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .custom-editor__button-card .btn--ghost {
   color: var(--landing-gold-light) !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .custom-rules-panel__notes {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .key--custom {
-  background: #d5dee6 !important;
-  color: #0f1c24 !important;
+  background: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .key--custom.key--active {
-  background: rgba(11, 110, 153, 0.12) !important;
+  background: rgba(10, 106, 148, 0.12) !important;
   color: #f8fafc !important;
 }
 
 /* Wave summary rows — dark cards */
 .app-shell .wave-summary__item {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 /* Condition chips — dark pills */
 .app-shell .condition-chip {
   background: #ffffff !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
   box-shadow: none !important;
 }
 
@@ -1568,19 +1566,19 @@ body {
 }
 
 .app-shell .condition-chip__btn:hover {
-  background: #d5dee6 !important;
+  background: #d0dae4 !important;
 }
 
 /* Team analytics list — dark cards */
 .app-shell .team-analytics-list__item {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
   box-shadow: none !important;
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .team-analytics-list__body strong {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .team-analytics-list__body small {
@@ -1593,7 +1591,7 @@ body {
 
 .app-shell .team-analytics-list__avatar,
 .app-shell .team-analytics-hero__avatar {
-  background: rgba(11, 110, 153, 0.12) !important;
+  background: rgba(10, 106, 148, 0.12) !important;
   color: var(--landing-gold-light) !important;
 }
 
@@ -1604,14 +1602,14 @@ body {
   background: #ffffff !important;
   border-color: rgba(255, 255, 255, 0.14) !important;
   box-shadow: none !important;
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .team-analytics-page .analytics-overview-strip__item--accent,
 .app-shell .team-analytics-page .analytics-topic-tile--accent,
 .app-shell .analytics-topic-sheet .kpi-card--accent {
-  background: rgba(11, 110, 153, 0.1) !important;
-  border-color: rgba(11, 110, 153, 0.38) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
+  border-color: rgba(10, 106, 148, 0.38) !important;
 }
 
 .app-shell .team-analytics-page .analytics-topic-tile--success {
@@ -1633,7 +1631,7 @@ body {
 .app-shell .analytics-topic-sheet .kpi-card__label,
 .app-shell .analytics-topic-sheet .kpi-card__hint,
 .app-shell .analytics-topic-sheet .analytics-topic-sheet__note {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .team-analytics-page .analytics-overview-strip__item strong,
@@ -1650,27 +1648,27 @@ body {
 .app-shell .team-analytics-page .chip:not(.chip--active) {
   background: #ffffff !important;
   border-color: rgba(255, 255, 255, 0.14) !important;
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .team-analytics-page .analytics-topic-sheet__breakdown {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .team-analytics-page .analytics-topic-sheet__breakdown-list li,
 .app-shell .analytics-topic-sheet .analytics-topic-sheet__breakdown-list li {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .team-analytics-page .analytics-topic-sheet__section-title,
 .app-shell .analytics-topic-sheet .analytics-topic-sheet__section-title {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .team-analytics-page .rate-bar,
 .app-shell .analytics-topic-sheet .rate-bar {
-  background: #d5dee6 !important;
+  background: #d0dae4 !important;
 }
 
 .app-shell .team-analytics-page .team-analytics-hero .muted,
@@ -1680,23 +1678,23 @@ body {
 
 .app-shell .team-analytics-page .psych-state-badge--positive {
   background: rgba(34, 197, 94, 0.18) !important;
-  color: #86efac !important;
+  color: #047857 !important;
 }
 
 .app-shell .team-analytics-page .psych-state-badge--neutral {
   background: rgba(148, 163, 184, 0.18) !important;
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .team-analytics-page .psych-state-badge--challenging {
   background: rgba(248, 113, 113, 0.16) !important;
-  color: #fca5a5 !important;
+  color: #b91c1c !important;
 }
 
 .app-shell .psych-survey-row__btn {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .psych-survey-row__btn--active {
@@ -1707,7 +1705,7 @@ body {
 
 .app-shell .session-feedback-sheet__actions {
   background: rgba(8, 30, 58, 0.98) !important;
-  border-top-color: #d5dee6 !important;
+  border-top-color: #d0dae4 !important;
 }
 
 .app-shell .session-feedback-sheet__error {
@@ -1719,7 +1717,7 @@ body {
 /* Heat results mobile cards */
 .app-shell .heat-results-card {
   background: rgba(15, 28, 36, 0.06) !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 .app-shell .heat-results-card__rank {
@@ -1732,8 +1730,8 @@ body {
 
 .app-shell .heat-results-card__wave {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
 }
 
 .app-shell .heat-results-card__wave-label {
@@ -1741,8 +1739,8 @@ body {
 }
 
 .app-shell .heat-results-card__wave--counting {
-  background: rgba(11, 110, 153, 0.15) !important;
-  border-color: rgba(11, 110, 153, 0.2) !important;
+  background: rgba(10, 106, 148, 0.15) !important;
+  border-color: rgba(10, 106, 148, 0.2) !important;
 }
 
 .app-shell .heat-results-card__wave--int-drop {
@@ -1751,9 +1749,9 @@ body {
 }
 
 .app-shell .heat-results-legend__item--counting {
-  background: rgba(11, 110, 153, 0.1) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
   color: var(--landing-gold-light) !important;
-  border-color: rgba(11, 110, 153, 0.2) !important;
+  border-color: rgba(10, 106, 148, 0.2) !important;
 }
 
 .app-shell .heat-results-legend__item--int {
@@ -1765,7 +1763,7 @@ body {
 /* Catalog / template lists — dark-native cards */
 .app-shell .catalog-list__item {
   background: #e8eef3 !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
   box-shadow: none !important;
   color: var(--landing-text) !important;
 }
@@ -1780,11 +1778,11 @@ body {
 }
 
 .app-shell .catalog-list__icon {
-  background: rgba(11, 110, 153, 0.1) !important;
+  background: rgba(10, 106, 148, 0.1) !important;
 }
 
 .app-shell .field--check {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 /* Dark-surface checkboxes (app shell, auth, checkout, admin) */
@@ -1793,7 +1791,7 @@ body {
 .login-page input[type='checkbox'],
 .checkout-page input[type='checkbox'] {
   border-color: rgba(232, 213, 163, 0.45);
-  background-color: #d5dee6;
+  background-color: #d0dae4;
   box-shadow: inset 0 1px 0 #ffffff;
 }
 
@@ -1822,7 +1820,7 @@ body {
 .login-page input[type='checkbox']:focus-visible,
 .checkout-page input[type='checkbox']:focus-visible {
   border-color: var(--landing-gold);
-  box-shadow: 0 0 0 3px rgba(11, 110, 153, 0.28);
+  box-shadow: 0 0 0 3px rgba(10, 106, 148, 0.28);
 }
 
 .app-shell .athlete-tile__check {
@@ -1840,7 +1838,7 @@ body {
 .help-list {
   margin: 0;
   padding-left: 1.15rem;
-  color: #0f1c24;
+  color: #0c1520;
   line-height: 1.55;
   font-size: 0.92rem;
 }
@@ -1855,7 +1853,7 @@ body {
 }
 
 .help-faq__item {
-  border: 1px solid #d5dee6;
+  border: 1px solid #d0dae4;
   border-radius: 12px;
   padding: 0.65rem 0.85rem;
   background: rgba(8, 30, 58, 0.35);
@@ -1887,7 +1885,7 @@ body {
   letter-spacing: 0.06em;
   padding: 0.2rem 0.45rem;
   border-radius: 999px;
-  background: rgba(11, 110, 153, 0.1);
+  background: rgba(10, 106, 148, 0.1);
   color: var(--landing-gold-light);
 }
 
@@ -1898,7 +1896,7 @@ body {
 .help-steps {
   margin: 0;
   padding-left: 1.15rem;
-  color: #5b6b78;
+  color: #4b5c6b;
   font-size: 0.88rem;
   line-height: 1.55;
 }
@@ -1910,7 +1908,7 @@ body {
 .install-help__platform {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #d5dee6;
+  border-top: 1px solid #d0dae4;
 }
 
 .install-help__platform:first-of-type {
@@ -1928,7 +1926,7 @@ body {
 .install-help__steps {
   margin: 0;
   padding-left: 1.15rem;
-  color: #5b6b78;
+  color: #4b5c6b;
   font-size: 0.88rem;
   line-height: 1.55;
 }
@@ -1966,7 +1964,7 @@ body {
 .champ-round + .champ-round {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #d5dee6;
+  border-top: 1px solid #d0dae4;
 }
 
 .champ-round__title {
@@ -1987,7 +1985,7 @@ body {
 .champ-advance-panel {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #d5dee6;
+  border-top: 1px solid #d0dae4;
 }
 
 .champ-advance-list {
@@ -2006,12 +2004,12 @@ body {
   padding: 0.55rem 0.75rem;
   border-radius: 10px;
   background: rgba(8, 30, 58, 0.35);
-  color: #5b6b78;
+  color: #4b5c6b;
   font-size: 0.88rem;
 }
 
 .champ-advance-list__on {
-  border: 1px solid rgba(11, 110, 153, 0.2);
+  border: 1px solid rgba(10, 106, 148, 0.2);
   color: #eef3f9;
 }
 
@@ -2061,7 +2059,7 @@ body {
 
 .champ-bracket-col__head span {
   font-size: 0.72rem;
-  color: #5b6b78;
+  color: #4b5c6b;
 }
 
 .champ-bracket-col__heats {
@@ -2074,7 +2072,7 @@ body {
   right: -0.55rem;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(11, 110, 153, 0.55);
+  color: rgba(10, 106, 148, 0.55);
   font-size: 1rem;
   pointer-events: none;
 }
@@ -2082,17 +2080,17 @@ body {
 .champ-bracket-heat {
   width: 100%;
   text-align: left;
-  border: 1px solid #d5dee6;
+  border: 1px solid #d0dae4;
   border-radius: 12px;
   background: rgba(8, 30, 58, 0.45);
   padding: 0.65rem 0.75rem;
-  color: #0f1c24;
+  color: #0c1520;
   cursor: pointer;
 }
 
 .champ-bracket-heat--on {
-  border-color: rgba(11, 110, 153, 0.55);
-  box-shadow: 0 0 0 1px rgba(11, 110, 153, 0.15);
+  border-color: rgba(10, 106, 148, 0.55);
+  box-shadow: 0 0 0 1px rgba(10, 106, 148, 0.15);
 }
 
 .champ-bracket-heat--locked {
@@ -2118,7 +2116,7 @@ body {
   letter-spacing: 0.05em;
   padding: 0.15rem 0.4rem;
   border-radius: 999px;
-  background: #d5dee6;
+  background: #d0dae4;
   color: #a8b8cc;
 }
 
@@ -2129,7 +2127,7 @@ body {
 
 .champ-bracket-heat__badge--wait {
   background: #ffffff;
-  color: #5b6b78;
+  color: #4b5c6b;
 }
 
 .champ-bracket-heat__badge--done {
@@ -2176,8 +2174,8 @@ body {
   margin: 0.65rem 0 0;
   padding: 0.65rem 0.75rem;
   border-radius: 10px;
-  background: rgba(11, 110, 153, 0.08);
-  border: 1px solid rgba(11, 110, 153, 0.2);
+  background: rgba(10, 106, 148, 0.08);
+  border: 1px solid rgba(10, 106, 148, 0.2);
   color: #e8edf4;
   font-size: 0.84rem;
   line-height: 1.45;
@@ -2210,7 +2208,7 @@ body {
 
 .champ-round-runner__heat {
   padding-top: 0.85rem;
-  border-top: 1px solid #d5dee6;
+  border-top: 1px solid #d0dae4;
 }
 
 .champ-round-runner__heat:first-child {
@@ -2234,7 +2232,7 @@ body {
 .heat-leaderboard--compact {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid #d5dee6;
+  border-top: 1px solid #d0dae4;
 }
 
 .app-shell .heat-runner--compact .heat-runner__head {
@@ -2253,7 +2251,7 @@ body {
   display: grid;
   grid-template-columns: 1fr;
   background:
-    radial-gradient(ellipse 90% 60% at 10% 0%, rgba(11, 110, 153, 0.14), transparent 55%),
+    radial-gradient(ellipse 90% 60% at 10% 0%, rgba(10, 106, 148, 0.14), transparent 55%),
     radial-gradient(ellipse 70% 50% at 100% 100%, rgba(56, 100, 180, 0.12), transparent 50%),
     linear-gradient(165deg, var(--landing-navy) 0%, var(--landing-navy-mid) 42%, #dfe7ee 100%) !important;
 }
@@ -2284,7 +2282,7 @@ body {
   position: absolute;
   inset: 20% -15% auto -15%;
   height: 50%;
-  background: radial-gradient(ellipse at center, rgba(11, 110, 153, 0.2), transparent 72%);
+  background: radial-gradient(ellipse at center, rgba(10, 106, 148, 0.2), transparent 72%);
   pointer-events: none;
 }
 
@@ -2315,7 +2313,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(11, 110, 153, 0.55) 50%,
+    rgba(10, 106, 148, 0.55) 50%,
     transparent
   );
 }
@@ -2325,7 +2323,7 @@ body {
   font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0.03em;
-  color: #5b6b78;
+  color: #4b5c6b;
 }
 
 .auth-brand-mark__slogan {
@@ -2393,7 +2391,7 @@ body {
 .auth-page .language-picker__menu,
 .landing-page .language-picker__menu {
   background: #ffffff !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
   color: var(--landing-text) !important;
   box-shadow: 0 12px 28px rgba(15, 28, 36, 0.12) !important;
 }
@@ -2402,7 +2400,7 @@ body {
 .auth-page .language-picker__trigger,
 .landing-page .language-picker__trigger {
   background: #ffffff !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
   color: var(--landing-text) !important;
 }
 
@@ -2417,11 +2415,11 @@ body {
 
 .app-shell .language-picker__option:hover,
 .app-shell .language-picker__option:focus-visible {
-  background: #d5dee6 !important;
+  background: #d0dae4 !important;
 }
 
 .app-shell .language-picker__option--active {
-  background: rgba(11, 110, 153, 0.14) !important;
+  background: rgba(10, 106, 148, 0.14) !important;
   color: var(--landing-gold-light) !important;
 }
 
@@ -2443,7 +2441,7 @@ body {
   padding: clamp(1.35rem, 3vw, 1.85rem);
   border-radius: 20px;
   background: #ffffff !important;
-  border: 1px solid #d5dee6 !important;
+  border: 1px solid #d0dae4 !important;
   box-shadow: 0 16px 40px rgba(15, 28, 36, 0.1);
   backdrop-filter: none;
   color: var(--landing-text);
@@ -2459,7 +2457,7 @@ body {
   background: transparent;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #5b6b78;
+  color: #4b5c6b;
   cursor: pointer;
 }
 
@@ -2482,7 +2480,7 @@ body {
 .auth-card__mobile-tagline {
   margin: 0;
   font-size: 0.82rem;
-  color: #5b6b78;
+  color: #4b5c6b;
 }
 
 .auth-badges {
@@ -2504,28 +2502,28 @@ body {
 }
 
 .auth-badge--role {
-  background: rgba(11, 110, 153, 0.1);
-  border: 1px solid rgba(11, 110, 153, 0.2);
+  background: rgba(10, 106, 148, 0.1);
+  border: 1px solid rgba(10, 106, 148, 0.2);
   color: var(--landing-gold-light);
 }
 
 .auth-badge--mode {
   background: #e8eef3;
-  border: 1px solid #d5dee6;
-  color: #5b6b78;
+  border: 1px solid #d0dae4;
+  color: #4b5c6b;
 }
 
 .auth-switch {
   margin: 1rem 0 0;
   text-align: center;
   font-size: 0.9rem;
-  color: #5b6b78;
+  color: #4b5c6b;
 }
 
 .auth-switch--muted {
   margin-top: 0.55rem;
   font-size: 0.82rem;
-  color: #64748b;
+  color: #4b5c6b;
 }
 
 .auth-switch__btn {
@@ -2553,7 +2551,7 @@ body {
   margin-bottom: 0.85rem;
   border-radius: 12px;
   background: rgba(15, 28, 36, 0.06);
-  border: 1px solid #d5dee6;
+  border: 1px solid #d0dae4;
 }
 
 .auth-mode-tabs {
@@ -2568,21 +2566,21 @@ body {
   border-radius: 9px;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #5b6b78;
+  color: #4b5c6b;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .auth-role-tabs__btn:hover,
 .auth-mode-tabs__btn:hover {
-  color: #0f1c24;
+  color: #0c1520;
 }
 
 .auth-role-tabs__btn--on,
 .auth-mode-tabs__btn--on {
-  background: rgba(11, 110, 153, 0.2);
+  background: rgba(10, 106, 148, 0.2);
   color: var(--landing-gold-light);
-  box-shadow: inset 0 0 0 1px rgba(11, 110, 153, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(10, 106, 148, 0.14);
 }
 
 .auth-card__head {
@@ -2609,8 +2607,8 @@ body {
   margin-bottom: 1rem;
   padding: 0.75rem 0.9rem;
   border-radius: 12px;
-  background: rgba(11, 110, 153, 0.08) !important;
-  border: 1px solid rgba(11, 110, 153, 0.28) !important;
+  background: rgba(10, 106, 148, 0.08) !important;
+  border: 1px solid rgba(10, 106, 148, 0.28) !important;
 }
 
 .auth-plan-banner__label {
@@ -2618,7 +2616,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5b6b78;
+  color: #4b5c6b;
 }
 
 .auth-plan-banner strong {
@@ -2641,7 +2639,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #5b6b78;
+  color: #4b5c6b;
 }
 
 .auth-field input {
@@ -2656,13 +2654,13 @@ body {
 }
 
 .auth-field input::placeholder {
-  color: #64748b;
+  color: #4b5c6b;
 }
 
 .auth-field input:focus {
   outline: none;
-  border-color: rgba(11, 110, 153, 0.55);
-  box-shadow: 0 0 0 3px rgba(11, 110, 153, 0.15);
+  border-color: rgba(10, 106, 148, 0.55);
+  box-shadow: 0 0 0 3px rgba(10, 106, 148, 0.15);
 }
 
 .auth-field select,
@@ -2679,8 +2677,8 @@ body {
 .auth-field select:focus,
 .field--pro select:focus {
   outline: none;
-  border-color: rgba(11, 110, 153, 0.55);
-  box-shadow: 0 0 0 3px rgba(11, 110, 153, 0.15);
+  border-color: rgba(10, 106, 148, 0.55);
+  box-shadow: 0 0 0 3px rgba(10, 106, 148, 0.15);
 }
 
 .auth-billing-block {
@@ -2725,7 +2723,7 @@ body {
   margin: 0;
   font-size: 0.8rem;
   line-height: 1.45;
-  color: var(--ss-muted, #5b6b78);
+  color: var(--ss-muted, #4b5c6b);
 }
 
 .billing-fields__hint--inline {
@@ -2735,7 +2733,7 @@ body {
 .billing-fields__optional {
   font-style: normal;
   font-weight: 400;
-  color: var(--ss-muted, #5b6b78);
+  color: var(--ss-muted, #4b5c6b);
   font-size: 0.82em;
 }
 
@@ -2814,8 +2812,8 @@ body {
 
 .auth-otp-cell:focus {
   outline: none;
-  border-color: rgba(11, 110, 153, 0.55);
-  box-shadow: 0 0 0 3px rgba(11, 110, 153, 0.15);
+  border-color: rgba(10, 106, 148, 0.55);
+  box-shadow: 0 0 0 3px rgba(10, 106, 148, 0.15);
 }
 
 .auth-code-hint {
@@ -2832,11 +2830,11 @@ body {
 
 .auth-page .auth-submit.btn--primary {
   margin-top: 0.15rem;
-  background: linear-gradient(135deg, #0b6e99 0%, #085578 100%) !important;
+  background: linear-gradient(135deg, #0a6a94 0%, #085578 100%) !important;
   border: 1px solid #a68435 !important;
   color: #1a1204 !important;
   font-weight: 700;
-  box-shadow: 0 8px 24px rgba(11, 110, 153, 0.14);
+  box-shadow: 0 8px 24px rgba(10, 106, 148, 0.14);
 }
 
 .auth-page .auth-submit.btn--primary:disabled {
@@ -2851,11 +2849,11 @@ body {
   gap: 0.45rem;
   margin-top: 1.15rem;
   padding-top: 1rem;
-  border-top: 1px solid #d5dee6;
+  border-top: 1px solid #d0dae4;
   font-size: 0.72rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: #64748b;
+  color: #4b5c6b;
 }
 
 .auth-page--loading {
@@ -2887,8 +2885,8 @@ body {
 
 .contact-form textarea:focus {
   outline: none;
-  border-color: rgba(11, 110, 153, 0.55);
-  box-shadow: 0 0 0 3px rgba(11, 110, 153, 0.15);
+  border-color: rgba(10, 106, 148, 0.55);
+  box-shadow: 0 0 0 3px rgba(10, 106, 148, 0.15);
 }
 
 .contact-form select {
@@ -2924,7 +2922,7 @@ body {
 .app-shell .athlete-report-print-root .athlete-report__comment-field {
   background: #ffffff !important;
   color: #0f172a !important;
-  border-color: #5b6b78 !important;
+  border-color: #4b5c6b !important;
   box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18) !important;
 }
 
@@ -2971,26 +2969,26 @@ body {
 
 .app-shell .athlete-report__comment-field textarea {
   background: #f8fafc !important;
-  border-color: #5b6b78 !important;
+  border-color: #4b5c6b !important;
   color: #0f172a !important;
 }
 
 .app-shell .athlete-report__comment-field textarea::placeholder {
-  color: #64748b !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .athlete-report__comment-field .muted {
-  color: #64748b !important;
+  color: #4b5c6b !important;
 }
 
 .app-shell .athlete-report__kpi-grid article {
   background: #f8fafc !important;
-  border-color: #5b6b78 !important;
+  border-color: #4b5c6b !important;
 }
 
 .app-shell .athlete-report__comment {
   background: #f8fafc !important;
-  border-color: #5b6b78 !important;
+  border-color: #4b5c6b !important;
 }
 
 .app-shell .athlete-report__lead,
@@ -3018,17 +3016,17 @@ body {
 /* Report sheet chrome (light panel) — override dark-shell button colors */
 .app-shell .athlete-report-sheet .btn--ghost {
   background: transparent !important;
-  border-color: #5b6b78 !important;
+  border-color: #4b5c6b !important;
   color: #334155 !important;
 }
 
 .app-shell .athlete-report-sheet .btn--ghost:hover:not(:disabled) {
-  background: #0f1c24 !important;
+  background: #0c1520 !important;
   color: #0f172a !important;
 }
 
 .app-shell .athlete-report-sheet .btn--gold {
-  background: linear-gradient(135deg, #0b6e99 0%, #085578 100%) !important;
+  background: linear-gradient(135deg, #0a6a94 0%, #085578 100%) !important;
   border-color: #085578 !important;
   color: #1a1204 !important;
   font-weight: 700 !important;
@@ -3041,14 +3039,14 @@ body {
 
 .app-shell .athlete-report-sheet .btn--secondary {
   background: #ffffff !important;
-  border-color: #5b6b78 !important;
+  border-color: #4b5c6b !important;
   color: #0f172a !important;
   font-weight: 600 !important;
 }
 
 .app-shell .athlete-report-sheet .btn--secondary:hover:not(:disabled) {
   background: #f8fafc !important;
-  border-color: #64748b !important;
+  border-color: #4b5c6b !important;
 }
 
 .app-shell .athlete-report-sheet .btn:disabled {
@@ -3061,26 +3059,26 @@ body {
 }
 
 .app-shell .athlete-report-sheet .muted {
-  color: #64748b !important;
+  color: #4b5c6b !important;
 }
 
 
 /* —— Mist Daylight safety overrides —— */
 body {
-  background: #eef3f6 !important;
-  color: #0f1c24 !important;
+  background: #f3f6f9 !important;
+  color: #0c1520 !important;
 }
 
 .landing-page {
-  background: #eef3f6 !important;
-  color: #0f1c24 !important;
+  background: #f3f6f9 !important;
+  color: #0c1520 !important;
 }
 
 .landing-page .landing-nav,
 .landing-page .landing-nav--scrolled {
   background: rgba(255, 255, 255, 0.94) !important;
-  border-bottom: 1px solid #d5dee6 !important;
-  color: #0f1c24 !important;
+  border-bottom: 1px solid #d0dae4 !important;
+  color: #0c1520 !important;
   backdrop-filter: blur(12px);
 }
 
@@ -3089,25 +3087,25 @@ body {
 .landing-page h3,
 .landing-page .landing-hero h1,
 .landing-page .page-title {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .landing-page p,
 .landing-page .landing-hero__lead,
 .landing-page .muted,
 .landing-page .landing-section__lead {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .landing-page a,
 .landing-page .landing-nav a {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .landing-page .landing-eyebrow,
 .landing-page .landing-kicker,
 .landing-page .section-eyebrow {
-  color: #0b6e99 !important;
+  color: #0a6a94 !important;
 }
 
 .landing-showcase__card,
@@ -3115,28 +3113,28 @@ body {
 .landing-page .pack-card,
 .landing-page .ss-card {
   background: #ffffff !important;
-  border: 1px solid #d5dee6 !important;
-  color: #0f1c24 !important;
+  border: 1px solid #d0dae4 !important;
+  color: #0c1520 !important;
   box-shadow: 0 10px 28px rgba(15, 28, 36, 0.08) !important;
 }
 
 .landing-page .btn--primary,
 .landing-page .btn--gold,
 .landing-page .pack-card .btn--gold {
-  background: #0b6e99 !important;
+  background: #0a6a94 !important;
   color: #ffffff !important;
-  border-color: #0b6e99 !important;
+  border-color: #0a6a94 !important;
 }
 
 .landing-page .btn--outline,
 .landing-page .btn--secondary {
   background: #ffffff !important;
-  color: #0f1c24 !important;
-  border: 1px solid #d5dee6 !important;
+  color: #0c1520 !important;
+  border: 1px solid #d0dae4 !important;
 }
 
 .app-shell {
-  background: #eef3f6;
+  background: #f3f6f9;
 }
 
 .app-shell__inner {
@@ -3146,7 +3144,7 @@ body {
 @media (min-width: 768px) {
   .app-shell__inner {
     background: #ffffff !important;
-    border: 1px solid #d5dee6 !important;
+    border: 1px solid #d0dae4 !important;
     box-shadow: 0 16px 40px rgba(15, 28, 36, 0.1) !important;
     backdrop-filter: none !important;
   }
@@ -3156,8 +3154,8 @@ body {
 .screen-header,
 .app-shell .screen-header {
   background: #ffffff !important;
-  color: #0f1c24 !important;
-  border-bottom: 1px solid #d5dee6 !important;
+  color: #0c1520 !important;
+  border-bottom: 1px solid #d0dae4 !important;
 }
 
 .ss-card,
@@ -3167,15 +3165,15 @@ body {
 .checkout-page .checkout-card,
 .app-shell .ss-card {
   background: #ffffff !important;
-  border: 1px solid #d5dee6 !important;
-  color: #0f1c24 !important;
+  border: 1px solid #d0dae4 !important;
+  color: #0c1520 !important;
   box-shadow: 0 8px 24px rgba(15, 28, 36, 0.06) !important;
 }
 
 .login-page,
 .checkout-page {
-  background: #eef3f6 !important;
-  color: #0f1c24 !important;
+  background: #f3f6f9 !important;
+  color: #0c1520 !important;
 }
 
 .login-page .login-brand,
@@ -3185,43 +3183,43 @@ body {
 .checkout-brand h1,
 .login-page p,
 .login-page .muted {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .login-page .login-brand small,
 .login-page .field--pro span,
 .login-page label {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 .login-page .login-tabs,
 .login-page .login-subtabs,
 .login-page .login-switch {
   background: #e8eef3 !important;
-  border: 1px solid #d5dee6 !important;
+  border: 1px solid #d0dae4 !important;
 }
 
 .login-page .login-tabs__btn--on,
 .login-page .login-subtabs__btn--on,
 .login-page .login-switch__btn--on {
-  background: #0b6e99 !important;
+  background: #0a6a94 !important;
   color: #ffffff !important;
 }
 
 .btn--gold,
 .app-shell .athlete-report-sheet .btn--gold,
 .btn--primary {
-  background: #0b6e99 !important;
+  background: #0a6a94 !important;
   color: #ffffff !important;
-  border-color: #0b6e99 !important;
+  border-color: #0a6a94 !important;
 }
 
 .cookie-consent,
 .cookie-banner,
 [class*="cookie-consent"] {
   background: #ffffff !important;
-  color: #0f1c24 !important;
-  border-top: 1px solid #d5dee6 !important;
+  color: #0c1520 !important;
+  border-top: 1px solid #d0dae4 !important;
   box-shadow: 0 -8px 24px rgba(15, 28, 36, 0.06) !important;
 }
 
@@ -3232,54 +3230,104 @@ body {
 .modal__panel,
 .drawer__panel {
   background: #ffffff !important;
-  color: #0f1c24 !important;
-  border-color: #d5dee6 !important;
+  color: #0c1520 !important;
+  border-color: #d0dae4 !important;
 }
 
 .dashboard__hero,
 .coach-home,
 .ss-flow {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .dashboard__hero h1,
 .page-title,
 .stats-panel__title,
 .ss-card h2 {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
 }
 
 .muted,
 .ss-muted {
-  color: #5b6b78 !important;
+  color: #4b5c6b !important;
 }
 
 input, select, textarea,
 .field--pro input:not([type='checkbox']):not([type='radio']),
 .field--pro select,
 .field--pro textarea {
-  color: #0f1c24 !important;
+  color: #0c1520 !important;
   background: #ffffff !important;
-  border-color: #d5dee6 !important;
+  border-color: #d0dae4 !important;
 }
 
 input:focus, select:focus, textarea:focus,
 .field--pro input:focus,
 .field--pro select:focus,
 .field--pro textarea:focus {
-  border-color: #0b6e99 !important;
-  box-shadow: 0 0 0 3px rgba(11, 110, 153, 0.15) !important;
+  border-color: #0a6a94 !important;
+  box-shadow: 0 0 0 3px rgba(10, 106, 148, 0.15) !important;
 }
 
 /* Progress / bars: use ocean instead of gold */
 .progress__fill,
-[class*="progress"] > span,
-.landing-showcase__bar span {
-  background: linear-gradient(90deg, #0b6e99, #38bdf8) !important;
+.landing-showcase__bar i {
+  background: linear-gradient(90deg, #085578, #0a6a94) !important;
+}
+
+.landing-showcase__bar > span {
+  background: transparent !important;
+  color: #4b5c6b !important;
+  font-weight: 600;
+}
+
+.landing-showcase__pill {
+  background: rgba(10, 106, 148, 0.12) !important;
+  color: #085578 !important;
 }
 
 .sync-status-chip {
   background: #ffffff !important;
-  color: #0f1c24 !important;
-  border: 1px solid #d5dee6 !important;
+  color: #0c1520 !important;
+  border: 1px solid #d0dae4 !important;
+}
+
+
+/* —— Mist Daylight contrast polish —— */
+.app-shell .admin-badge--pending,
+.admin-badge--pending {
+  background: rgba(180, 83, 9, 0.12) !important;
+  color: #9a3412 !important;
+}
+.app-shell .admin-badge--approved,
+.admin-badge--approved {
+  background: rgba(4, 120, 87, 0.12) !important;
+  color: #047857 !important;
+}
+.app-shell .admin-badge--rejected,
+.app-shell .admin-badge--blocked,
+.admin-badge--rejected,
+.admin-badge--blocked {
+  background: rgba(220, 38, 38, 0.1) !important;
+  color: #b91c1c !important;
+}
+.app-shell .muted,
+.landing-page .muted,
+.auth-page .muted {
+  color: #4b5c6b !important;
+}
+.app-shell .ss-card h2,
+.app-shell .page-title,
+.app-shell .stats-panel__title {
+  color: #0c1520 !important;
+}
+.landing-page .landing-accent {
+  color: #0a6a94 !important;
+  background: none !important;
+  -webkit-text-fill-color: #0a6a94;
+}
+.btn--outline:hover {
+  background: #e8eef3 !important;
+  border-color: #b8c5d2 !important;
+  color: #0c1520 !important;
 }
