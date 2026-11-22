@@ -1392,15 +1392,41 @@ body {
   color: var(--on-light-subtle) !important;
 }
 
-.landing-page .pack-card__feature--yes,
-.landing-page .pack-card__feature--yes .pack-card__mark {
-  color: #047857 !important;
+.landing-page .pack-card__features {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 0.5rem !important;
 }
 
-.landing-page .pack-card__feature--yes.pack-card__feature--premium-extra,
-.landing-page .pack-card__feature--yes.pack-card__feature--premium-extra .pack-card__mark {
-  color: #92702a !important;
+@media (min-width: 420px) {
+  .landing-page .pack-card__features {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem 0.65rem !important;
+  }
+}
+
+.landing-page .pack-card__feature {
+  background: #f3f6f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 0.5rem 0.6rem !important;
+  margin: 0 !important;
+}
+
+.landing-page .pack-card__feature--yes {
+  color: #0c1520 !important;
+  font-weight: 600 !important;
+}
+
+.landing-page .pack-card__feature--yes .pack-card__mark {
+  color: #0a6a94 !important;
+}
+
+.landing-page .pack-card__feature--yes.pack-card__feature--premium-extra {
+  color: #0c1520 !important;
   font-weight: 700 !important;
+  background: #eef4f8 !important;
+  border-color: #b8c5d2 !important;
 }
 
 .landing-page .pack-card__feature--yes.pack-card__feature--premium-extra .pack-card__mark {
@@ -1409,7 +1435,11 @@ body {
 
 .landing-page .pack-card__feature--no,
 .landing-page .pack-card__feature--no .pack-card__mark {
-  color: #b91c1c !important;
+  color: #94a3b8 !important;
+}
+
+.landing-page .pack-card__premium-legend {
+  color: #085578 !important;
 }
 
 .landing-page .pack-card__features-divider {
