@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar — 3 opções de cor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* Same UI chrome three times — only tokens change */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", sans-serif;
+      background: #eceff3;
+      color: #0f172a;
+      padding: 1.5rem 1rem 3rem;
+    }
+    .intro { max-width: 1100px; margin: 0 auto 1.5rem; }
+    .intro h1 { margin: 0 0 0.4rem; font-size: 1.55rem; letter-spacing: -0.02em; }
+    .intro p { margin: 0; color: #64748b; line-height: 1.5; max-width: 40rem; font-size: 0.98rem; }
+    .intro code { font-size: 0.85em; }
+
+    .grid {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; gap: 1.1rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 960px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .option { display: flex; flex-direction: column; gap: 0.65rem; }
+    .option h2 {
+      margin: 0;
+      font-size: 0.95rem;
+      display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem;
+    }
+    .option h2 span { color: #64748b; font-weight: 500; font-size: 0.8rem; }
+    .swatches { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .swatches i {
+      width: 1.35rem; height: 1.35rem; border-radius: 6px;
+      border: 1px solid rgba(0,0,0,.08);
+      display: block;
+    }
+
+    /* —— Shared mock (structure identical) —— */
+    .phone {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,.08);
+      background: var(--shell);
+      color: var(--text);
+      min-height: 420px;
+      display: flex; flex-direction: column;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+    }
+    .bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 1rem;
+      background: var(--header);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { font-weight: 700; letter-spacing: -0.02em; }
+    .brand em { font-style: normal; color: var(--accent); }
+    .bar-link { color: var(--accent); font-size: 0.82rem; font-weight: 600; }
+
+    .body { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
+    .hello { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .muted { margin: 0; color: var(--muted); font-size: 0.88rem; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.9rem;
+    }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; margin-top: 0.65rem; }
+    .kpis div {
+      text-align: center;
+      padding: 0.55rem 0.3rem;
+      border-radius: 10px;
+      background: var(--chip);
+    }
+    .kpis strong { display: block; font-size: 1.1rem; }
+    .kpis small { color: var(--muted); font-size: 0.68rem; }
+
+    .btn {
+      min-height: 44px; border-radius: 12px; border: 0;
+      font-family: inherit; font-weight: 700; font-size: 0.9rem;
+      cursor: default;
+    }
+    .btn-primary { background: var(--accent); color: var(--accent-ink); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+    .actions { display: grid; gap: 0.5rem; margin-top: auto; }
+
+    .tokens {
+      font-size: 0.75rem; color: #64748b; line-height: 1.45;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 0.75rem 0.85rem;
+    }
+    .tokens code { color: #334155; }
+
+    /* —— Palette A: Atlantic Teal —— */
+    .a {
+      --shell: #061820;
+      --header: rgba(6, 24, 32, 0.96);
+      --card: rgba(255, 255, 255, 0.06);
+      --chip: rgba(255, 255, 255, 0.05);
+      --text: #eef6f8;
+      --muted: #8aa3ad;
+      --line: rgba(255, 255, 255, 0.12);
+      --accent: #2a9d8f;
+      --accent-ink: #042f2a;
+    }
+    .a .s1 { background: #061820; }
+    .a .s2 { background: #0c2c36; }
+    .a .s3 { background: #2a9d8f; }
+    .a .s4 { background: #5ec4b6; }
+    .a .s5 { background: #eef6f8; }
+
+    /* —— Palette B: Harbor Steel —— */
+    .b {
+      --shell: #12151a;
+      --header: rgba(18, 21, 26, 0.96);
+      --card: rgba(255, 255, 255, 0.06);
+      --chip: rgba(255, 255, 255, 0.05);
+      --text: #eef1f5;
+      --muted: #93a0b0;
+      --line: rgba(255, 255, 255, 0.12);
+      --accent: #5b8def;
+      --accent-ink: #071428;
+    }
+    .b .s1 { background: #12151a; }
+    .b .s2 { background: #1c222c; }
+    .b .s3 { background: #5b8def; }
+    .b .s4 { background: #9bb8f5; }
+    .b .s5 { background: #eef1f5; }
+
+    /* —— Palette C: Champagne Navy (refined current) —— */
+    .c {
+      --shell: #050b18;
+      --header: rgba(5, 11, 24, 0.96);
+      --card: rgba(255, 255, 255, 0.06);
+      --chip: rgba(255, 255, 255, 0.05);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --line: rgba(255, 255, 255, 0.12);
+      --accent: #c9a962;
+      --accent-ink: #1a1408;
+    }
+    .c .s1 { background: #050b18; }
+    .c .s2 { background: #0a1628; }
+    .c .s3 { background: #c9a962; }
+    .c .s4 { background: #e8d5a3; }
+    .c .s5 { background: #f1f5f9; }
+
+    .pick {
+      display: block; text-align: center;
+      padding: 0.65rem; border-radius: 10px;
+      background: #0f172a; color: #fff;
+      font-weight: 600; font-size: 0.88rem;
+      text-decoration: none;
+    }
+    .note {
+      max-width: 1100px; margin: 1.5rem auto 0;
+      color: #64748b; font-size: 0.88rem; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="intro">
+    <h1>SurfStar — só cores</h1>
+    <p>
+      Mesma estrutura da app (header, card, botões). Mudam <strong>apenas</strong> as cores.
+      Escolhe A, B ou C — aplico os tokens em <code>app-theme.css</code>.
+    </p>
+  </div>
+
+  <div class="grid">
+    <!-- A -->
+    <section class="option">
+      <h2>A · Atlantic Teal <span>oceano / teal</span></h2>
+      <div class="swatches a"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <div class="phone a">
+        <div class="bar">
+          <div class="brand">Surf<em>Star</em></div>
+          <span class="bar-link">Ajuda</span>
+        </div>
+        <div class="body">
+          <p class="hello">Olá, Armindo</p>
+          <p class="muted">Coach Premium · Ericeira</p>
+          <div class="card">
+            <strong>Resumo da equipa</strong>
+            <div class="kpis">
+              <div><strong>12</strong><small>Atletas</small></div>
+              <div><strong>38</strong><small>Sessões</small></div>
+              <div><strong>7.2</strong><small>Média</small></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button">Nova sessão</button>
+            <button class="btn btn-secondary" type="button">Ver atletas</button>
+          </div>
+        </div>
+      </div>
+      <div class="tokens">
+        Navy <code>#061820</code> · Accent <code>#2a9d8f</code><br />
+        Sem ouro — accent = água / performance.
+      </div>
+    </section>
+
+    <!-- B -->
+    <section class="option">
+      <h2>B · Harbor Steel <span>aço / azul frio</span></h2>
+      <div class="swatches b"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <div class="phone b">
+        <div class="bar">
+          <div class="brand">Surf<em>Star</em></div>
+          <span class="bar-link">Ajuda</span>
+        </div>
+        <div class="body">
+          <p class="hello">Olá, Armindo</p>
+          <p class="muted">Coach Premium · Ericeira</p>
+          <div class="card">
+            <strong>Resumo da equipa</strong>
+            <div class="kpis">
+              <div><strong>12</strong><small>Atletas</small></div>
+              <div><strong>38</strong><small>Sessões</small></div>
+              <div><strong>7.2</strong><small>Média</small></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button">Nova sessão</button>
+            <button class="btn btn-secondary" type="button">Ver atletas</button>
+          </div>
+        </div>
+      </div>
+      <div class="tokens">
+        Charcoal <code>#12151a</code> · Accent <code>#5b8def</code><br />
+        Visual de ferramenta / dados — sem dourado.
+      </div>
+    </section>
+
+    <!-- C -->
+    <section class="option">
+      <h2>C · Champagne Navy <span>atual refinada</span></h2>
+      <div class="swatches c"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <div class="phone c">
+        <div class="bar">
+          <div class="brand">Surf<em>Star</em></div>
+          <span class="bar-link">Ajuda</span>
+        </div>
+        <div class="body">
+          <p class="hello">Olá, Armindo</p>
+          <p class="muted">Coach Premium · Ericeira</p>
+          <div class="card">
+            <strong>Resumo da equipa</strong>
+            <div class="kpis">
+              <div><strong>12</strong><small>Atletas</small></div>
+              <div><strong>38</strong><small>Sessões</small></div>
+              <div><strong>7.2</strong><small>Média</small></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button">Nova sessão</button>
+            <button class="btn btn-secondary" type="button">Ver atletas</button>
+          </div>
+        </div>
+      </div>
+      <div class="tokens">
+        Navy <code>#050b18</code> · Accent <code>#c9a962</code><br />
+        A direção de hoje (navy + champagne) — para manter.
+      </div>
+    </section>
+  </div>
+
+  <p class="note">
+    Responde com <strong>A</strong>, <strong>B</strong> ou <strong>C</strong>. Não altero layout nem tipografia — só os tokens de cor na app.
+  </p>
+</body>
+</html>
