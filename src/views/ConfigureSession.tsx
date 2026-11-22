@@ -208,7 +208,7 @@ export function ConfigureSession() {
               </label>
               <button
                 type="button"
-                className="btn btn--ghost btn--block"
+                className="session-setup-quiet-link"
                 onClick={() => openFromSessionSetup('manage-spots')}
               >
                 {s('manageSpots')}
