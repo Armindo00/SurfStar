@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Value groups — 3 options</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--text:#0c1520;--muted:#4b5c6b;--primary:#0a6a94;--border:#d0dae4;font-family:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#e8eef3;color:var(--text);padding:1.25rem 1rem 2.5rem}
+h1{text-align:center;font-size:1.1rem;margin:0 0 .3rem}
+.page-sub{text-align:center;color:var(--muted);font-size:.88rem;margin:0 0 1.25rem}
+.options{display:grid;gap:1.35rem;max-width:1080px;margin:0 auto}
+.option{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 10px 28px rgba(12,21,32,.07)}
+.meta{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);background:#f8fafc}
+.meta strong{display:block;font-size:.98rem}
+.meta span{color:var(--muted);font-size:.8rem}
+.section{padding:1.6rem 1.2rem 1.8rem}
+.head{text-align:center;margin:0 auto 1.35rem;max-width:36rem}
+.head h2{margin:0 0 .45rem;font-size:1.45rem}
+.head p{margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}
+.grid{display:grid;gap:1rem}
+@media(min-width:800px){.grid{grid-template-columns:repeat(3,1fr);gap:1.05rem}}
+.card{padding:1.25rem;border-radius:16px}
+.icon{display:inline-flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;border-radius:10px;font-size:1rem;margin-bottom:.55rem}
+.label{margin:0 0 .3rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.card h3{margin:0 0 .45rem;font-size:1.08rem;line-height:1.25;color:var(--text)}
+.lead{margin:0 0 .8rem;font-size:.88rem;line-height:1.5}
+.benefits{margin:0;padding:0;list-style:none;display:grid;gap:.45rem}
+.benefits li{position:relative;padding-left:1.1rem;font-size:.82rem;line-height:1.4}
+.benefits li::before{content:'✓';position:absolute;left:0;font-weight:700}
+
+/* A: Clean white cards */
+.opt-a .section{background:#fff}
+.opt-a .card{background:#fff;border:1px solid #d0dae4;box-shadow:0 6px 18px rgba(12,21,32,.05)}
+.opt-a .icon{background:#e8eef3;color:#0a6a94}
+.opt-a .label{color:#085578}
+.opt-a .lead{color:#4b5c6b}
+.opt-a .benefits li{color:#0c1520}
+.opt-a .benefits li::before{color:#0a6a94}
+
+/* B: Soft mist filled cards */
+.opt-b .section{background:#fff}
+.opt-b .card{background:#f3f6f9;border:1px solid #e2e8f0}
+.opt-b .icon{background:#fff;border:1px solid #d0dae4;color:#0a6a94}
+.opt-b .label{color:#0a6a94}
+.opt-b .lead{color:#4b5c6b}
+.opt-b .benefits li{color:#0c1520}
+.opt-b .benefits li::before{color:#085578}
+
+/* C: Soft wash + accent edge */
+.opt-c .section{
+  background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(10,106,148,.07),transparent 70%),#f7fafc;
+}
+.opt-c .card{background:#fff;border:1px solid #d0dae4;border-left:3px solid #0a6a94;box-shadow:0 8px 22px rgba(12,21,32,.06)}
+.opt-c .icon{background:#e8eef3;color:#085578}
+.opt-c .label{color:#085578}
+.opt-c .lead{color:#4b5c6b}
+.opt-c .benefits li{color:#1e293b}
+.opt-c .benefits li::before{color:#0a6a94}
+</style>
+</head>
+<body>
+<h1>Built for coaches, athletes, and teams — 3 opções</h1>
+<p class="page-sub">Só esta secção. Diz A, B ou C.</p>
+<div class="options">
+<article class="option opt-a" id="a"><div class="meta"><strong>A · Clean white cards</strong><span>Cartões brancos com borda limpa, texto escuro legível, checks azul oceano.</span></div><div class="section"><div class="head"><h2>Built for coaches, athletes, and teams</h2><p>Coaches subscribe — athletes join free. Everyone gets clearer feedback and a stronger season.</p></div><div class="grid"><article class="card"><span class="icon">◈</span><p class="label">COACHES</p><h3>Coach with data, not guesswork</h3><p class="lead">One subscription covers your athletes — log on the beach and back every decision with real numbers.</p><ul class="benefits"><li>Live success rates during training — adjust focus before the session ends</li><li>Heats, championships, and contest-style stats your athletes understand</li><li>Season analytics and PDF reports to download or share with parents or sponsors</li></ul></article><article class="card"><span class="icon">◎</span><p class="label">ATHLETES</p><h3>Your progress, free forever</h3><p class="lead">Join with a coach code at no cost — keep your quiver, sessions, and shared stats in one app.</p><ul class="benefits"><li>Pair with several coaches and control what each one sees</li><li>Add your board and fin quiver — coaches review and rate your gear</li><li>See the stats your coach chooses to share after every session</li></ul></article><article class="card"><span class="icon">▣</span><p class="label">TEAMS & ACADEMIES</p><h3>One platform for the whole squad</h3><p class="lead">From small squads to federations — coaches, athletes, and analytics stay in sync.</p><ul class="benefits"><li>Athletes join free — only the coach subscribes</li><li>Six-month team trends and per-athlete profiles in one hub</li><li>Team Academy: up to 5 coaches, shared roster, every Premium tool</li></ul></article></div></div></article><article class="option opt-b" id="b"><div class="meta"><strong>B · Soft mist panels</strong><span>Cartões preenchidos em cinza-azulado suave, ícones brancos, hierarquia mais suave.</span></div><div class="section"><div class="head"><h2>Built for coaches, athletes, and teams</h2><p>Coaches subscribe — athletes join free. Everyone gets clearer feedback and a stronger season.</p></div><div class="grid"><article class="card"><span class="icon">◈</span><p class="label">COACHES</p><h3>Coach with data, not guesswork</h3><p class="lead">One subscription covers your athletes — log on the beach and back every decision with real numbers.</p><ul class="benefits"><li>Live success rates during training — adjust focus before the session ends</li><li>Heats, championships, and contest-style stats your athletes understand</li><li>Season analytics and PDF reports to download or share with parents or sponsors</li></ul></article><article class="card"><span class="icon">◎</span><p class="label">ATHLETES</p><h3>Your progress, free forever</h3><p class="lead">Join with a coach code at no cost — keep your quiver, sessions, and shared stats in one app.</p><ul class="benefits"><li>Pair with several coaches and control what each one sees</li><li>Add your board and fin quiver — coaches review and rate your gear</li><li>See the stats your coach chooses to share after every session</li></ul></article><article class="card"><span class="icon">▣</span><p class="label">TEAMS & ACADEMIES</p><h3>One platform for the whole squad</h3><p class="lead">From small squads to federations — coaches, athletes, and analytics stay in sync.</p><ul class="benefits"><li>Athletes join free — only the coach subscribes</li><li>Six-month team trends and per-athlete profiles in one hub</li><li>Team Academy: up to 5 coaches, shared roster, every Premium tool</li></ul></article></div></div></article><article class="option opt-c" id="c"><div class="meta"><strong>C · Soft wash + accent edge</strong><span>Fundo com lavagem azul leve e cartões brancos com barra lateral oceano.</span></div><div class="section"><div class="head"><h2>Built for coaches, athletes, and teams</h2><p>Coaches subscribe — athletes join free. Everyone gets clearer feedback and a stronger season.</p></div><div class="grid"><article class="card"><span class="icon">◈</span><p class="label">COACHES</p><h3>Coach with data, not guesswork</h3><p class="lead">One subscription covers your athletes — log on the beach and back every decision with real numbers.</p><ul class="benefits"><li>Live success rates during training — adjust focus before the session ends</li><li>Heats, championships, and contest-style stats your athletes understand</li><li>Season analytics and PDF reports to download or share with parents or sponsors</li></ul></article><article class="card"><span class="icon">◎</span><p class="label">ATHLETES</p><h3>Your progress, free forever</h3><p class="lead">Join with a coach code at no cost — keep your quiver, sessions, and shared stats in one app.</p><ul class="benefits"><li>Pair with several coaches and control what each one sees</li><li>Add your board and fin quiver — coaches review and rate your gear</li><li>See the stats your coach chooses to share after every session</li></ul></article><article class="card"><span class="icon">▣</span><p class="label">TEAMS & ACADEMIES</p><h3>One platform for the whole squad</h3><p class="lead">From small squads to federations — coaches, athletes, and analytics stay in sync.</p><ul class="benefits"><li>Athletes join free — only the coach subscribes</li><li>Six-month team trends and per-athlete profiles in one hub</li><li>Team Academy: up to 5 coaches, shared roster, every Premium tool</li></ul></article></div></div></article></div></body></html>
