@@ -6199,6 +6199,112 @@ input[type='checkbox']:indeterminate {
   gap: 1.25rem;
 }
 
+/* Option C · Plan switcher + detail panel */
+.pricing-switcher {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.pricing-switch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
+}
+
+.pricing-switch__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.85rem 0.55rem;
+  border: 1px solid #d0dae4;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #0c1520;
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.pricing-switch__btn:hover {
+  border-color: #b8c5d2;
+  background: #ffffff;
+}
+
+.pricing-switch__btn--on {
+  background: #ffffff;
+  border-color: #0a6a94;
+  box-shadow: 0 8px 20px rgba(10, 106, 148, 0.12);
+}
+
+.pricing-switch__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0c1520;
+}
+
+.pricing-switch__btn--on .pricing-switch__name,
+.pricing-switch__btn--on .pricing-switch__price {
+  color: #0a6a94;
+}
+
+.pricing-switch__price {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0c1520;
+  line-height: 1.2;
+}
+
+.pricing-switch__suffix {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5c6b;
+}
+
+.pricing-detail {
+  animation: pricing-detail-in 0.22s ease;
+}
+
+.pricing-detail .pack-card {
+  transform: none;
+  margin: 0;
+}
+
+.pricing-detail .pack-card--highlighted {
+  transform: none;
+}
+
+@keyframes pricing-detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .pricing-switch {
+    gap: 0.4rem;
+  }
+
+  .pricing-switch__btn {
+    padding: 0.7rem 0.35rem;
+  }
+
+  .pricing-switch__name {
+    font-size: 0.75rem;
+  }
+
+  .pricing-switch__price {
+    font-size: 1rem;
+  }
+}
+
 .billing-toggle {
   display: inline-flex;
   align-items: center;
@@ -6262,17 +6368,17 @@ input[type='checkbox']:indeterminate {
 
 .billing-toggle__btn--active .billing-toggle__save {
   background: #0a6a94;
-  color: #1a1204;
+  color: #ffffff;
 }
 
 .checkout-card .billing-toggle__save {
   background: rgba(10, 106, 148, 0.28);
-  color: #92702a;
+  color: #085578;
 }
 
 .checkout-card .billing-toggle__btn--active .billing-toggle__save {
   background: #0a6a94;
-  color: #1a1204;
+  color: #ffffff;
 }
 
 .pack-card__annual-equiv {

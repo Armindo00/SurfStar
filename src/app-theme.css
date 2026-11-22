@@ -345,9 +345,9 @@ body {
 }
 
 .landing-page .pack-card .btn--secondary {
-  background: #e8eef3 !important;
-  border-color: #e8eef3 !important;
-  color: #f8fafc !important;
+  background: #ffffff !important;
+  border: 1px solid #d0dae4 !important;
+  color: #0c1520 !important;
   font-weight: 700;
 }
 
@@ -357,11 +357,11 @@ body {
 }
 
 .landing-page .pack-card .btn--gold {
-  background: linear-gradient(135deg, #0a6a94 0%, #085578 100%) !important;
+  background: #0a6a94 !important;
   border-color: #085578 !important;
-  color: #1a1204 !important;
+  color: #ffffff !important;
   font-weight: 700;
-  box-shadow: 0 4px 20px rgba(10, 106, 148, 0.2);
+  box-shadow: 0 4px 16px rgba(10, 106, 148, 0.22);
 }
 
 .landing-page .pack-card .btn--gold:hover {
@@ -1370,7 +1370,7 @@ body {
 /* —— Light / white surfaces: dark text only —— */
 
 :root {
-  --on-light-text: #e8eef3;
+  --on-light-text: #0c1520;
   --on-light-muted: #475569;
   --on-light-subtle: #4b5c6b;
   --on-light-border: #e2e8f0;
@@ -3431,6 +3431,43 @@ input:focus, select:focus, textarea:focus,
 .pack-card__badge {
   background: #0a6a94 !important;
   color: #ffffff !important;
+}
+
+/* Pricing switcher — Option C */
+.landing-page .pricing-switch__btn {
+  background: #f8fafc !important;
+  border: 1px solid #d0dae4 !important;
+  color: #0c1520 !important;
+}
+
+.landing-page .pricing-switch__btn--on {
+  background: #ffffff !important;
+  border-color: #0a6a94 !important;
+}
+
+.landing-page .pricing-switch__name,
+.landing-page .pricing-switch__price {
+  color: #0c1520 !important;
+}
+
+.landing-page .pricing-switch__btn--on .pricing-switch__name,
+.landing-page .pricing-switch__btn--on .pricing-switch__price {
+  color: #0a6a94 !important;
+}
+
+.landing-page .pricing-switch__suffix {
+  color: #4b5c6b !important;
+}
+
+.landing-page .pricing-detail .pack-card {
+  background: #ffffff !important;
+  border: 1px solid #d0dae4 !important;
+  color: #0c1520 !important;
+}
+
+.landing-page .pricing-detail .pack-card--highlighted {
+  border-color: #0a6a94 !important;
+  transform: none !important;
 }
 
 .sync-status-chip {
