@@ -1,0 +1,426 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"/><link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0d1b24;
+      --muted: #5a6b76;
+      --line: #d5dee5;
+      --ocean: #0a6a94;
+      --ocean-deep: #074d6c;
+      --mist: #eef4f7;
+      --paper: #f7fafb;
+      --ok: #0f6b4c;
+      --ok-soft: #e6f4ee;
+      --watch: #9b2c2c;
+      --watch-soft: #f8ecec;
+      --sand: #f3ebe0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Instrument Sans", sans-serif;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, rgba(10,106,148,0.12), transparent 55%),
+        linear-gradient(180deg, #d9e4ea 0%, #cfdce4 100%);
+      color: var(--ink);
+      padding: 1.5rem 1rem 3rem;
+    }
+    .intro {
+      max-width: 720px;
+      margin: 0 auto 1.4rem;
+    }
+    .intro h1 {
+      font-family: "Newsreader", Georgia, serif;
+      font-weight: 600;
+      font-size: clamp(1.6rem, 3vw, 2.1rem);
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.02em;
+    }
+    .intro p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .stack {
+      display: grid;
+      gap: 1.35rem;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .page {
+      background: var(--paper);
+      border: 1px solid rgba(13,27,36,0.08);
+      border-radius: 6px;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.7) inset,
+        0 18px 40px rgba(13,27,36,0.1);
+      padding: 1.35rem 1.4rem 1.25rem;
+      min-height: 920px;
+      position: relative;
+      overflow: hidden;
+    }
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--ocean-deep), var(--ocean), #3d9bb8);
+    }
+    .page-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ocean);
+    }
+    .page-label small {
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+    .athlete {
+      margin: 0 0 0.15rem;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.85rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .meta {
+      margin: 0 0 1.1rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 0.75rem;
+      margin-bottom: 1.1rem;
+    }
+    .hero-card {
+      background: linear-gradient(165deg, #f4f9fb 0%, #e7f0f5 100%);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.85rem 0.95rem;
+    }
+    .hero-card .k {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .hero-card .v {
+      margin-top: 0.25rem;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 2.1rem;
+      font-weight: 600;
+      color: var(--ocean-deep);
+      line-height: 1;
+    }
+    .hero-card .v.focus {
+      font-size: 1.2rem;
+      line-height: 1.25;
+      color: var(--ink);
+      margin-top: 0.4rem;
+    }
+    .hero-card .h {
+      margin-top: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .sec {
+      margin-top: 1.05rem;
+    }
+    .sec-title {
+      margin: 0 0 0.55rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ocean);
+    }
+    .insights { display: grid; gap: 0.45rem; }
+    .insight {
+      display: grid;
+      grid-template-columns: 4.6rem 1fr;
+      gap: 0.65rem;
+      padding: 0.65rem 0.7rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .insight--watch { background: var(--watch-soft); border-color: rgba(155,44,44,0.22); }
+    .insight--ok { background: var(--ok-soft); border-color: rgba(15,107,76,0.22); }
+    .pill {
+      align-self: start;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.28rem 0.35rem;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .pill--watch { background: rgba(155,44,44,0.14); color: var(--watch); }
+    .pill--ok { background: rgba(15,107,76,0.14); color: var(--ok); }
+    .insight strong {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 650;
+      line-height: 1.3;
+    }
+    .insight p {
+      margin: 0.2rem 0 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .insight .src {
+      display: inline-block;
+      margin-top: 0.28rem;
+      font-size: 0.68rem;
+      font-weight: 650;
+      color: var(--ocean-deep);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 0.48rem 0.55rem;
+      text-align: left;
+      border-bottom: 1px solid #e8eef2;
+    }
+    th {
+      background: var(--mist);
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    tr:last-child td { border-bottom: 0; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .reading { color: var(--ocean-deep); font-weight: 600; }
+
+    .topic-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 1rem;
+      margin-bottom: 0.85rem;
+    }
+    .topic-head h2 {
+      margin: 0;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.55rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .topic-head p {
+      margin: 0.25rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      max-width: 26rem;
+      line-height: 1.4;
+    }
+    .readout {
+      margin: 0 0 0.9rem;
+      padding: 0.7rem 0.8rem;
+      border-left: 3px solid var(--ocean);
+      background: #fff;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    .readout strong { color: var(--ocean-deep); }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.55rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.85rem;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 6.2rem 1fr 2.4rem 1fr 2.4rem;
+      gap: 0.4rem;
+      align-items: center;
+      font-size: 0.78rem;
+    }
+    .row .name { font-weight: 650; }
+    .bar {
+      height: 0.55rem;
+      border-radius: 999px;
+      background: #e4ebf0;
+      overflow: hidden;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      background: var(--ocean);
+      border-radius: inherit;
+    }
+    .bar--bs > i { background: #5f7f90; }
+    .pct { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; color: var(--ocean-deep); }
+    .pct--dim { color: var(--muted); }
+    .legend {
+      display: flex; gap: 1rem; margin-top: 0.55rem;
+      font-size: 0.68rem; color: var(--muted);
+    }
+    .dot { width: 0.55rem; height: 0.55rem; border-radius: 50%; display: inline-block; margin-right: 0.3rem; vertical-align: -1px; }
+    .dot--fs { background: var(--ocean); }
+    .dot--bs { background: #5f7f90; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.45rem;
+      margin-bottom: 0.75rem;
+    }
+    .kpi {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.65rem 0.7rem;
+    }
+    .kpi span {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .kpi strong {
+      display: block;
+      margin-top: 0.2rem;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.35rem;
+      color: var(--ocean-deep);
+      font-weight: 600;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.55rem;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.7rem 0.75rem;
+    }
+    .panel h3 {
+      margin: 0 0 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .panel ul { margin: 0; padding-left: 1rem; font-size: 0.8rem; color: var(--ink); line-height: 1.45; }
+    .panel li { margin: 0.2rem 0; }
+    .foot {
+      position: absolute;
+      left: 1.4rem; right: 1.4rem; bottom: 0.85rem;
+      display: flex; justify-content: space-between;
+      font-size: 0.68rem; color: var(--muted);
+      border-top: 1px dashed var(--line);
+      padding-top: 0.4rem;
+    }
+    @media (max-width: 640px) {
+      .hero, .split, .kpi-grid { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 4.5rem 1fr 2rem; }
+      .row .bar--bs, .row .pct--dim { display: none; }
+      .page { min-height: auto; padding-bottom: 2.4rem; }
+    }
+  </style>
+<style>body{padding:1.2rem;background:#cfdce4}.page{max-width:680px;margin:0 auto}</style>
+</head><body><article class="page" id="page-exec">
+      <div class="page-label">
+        <span class="brand">SurfStar</span>
+        <small>Executivo · pág. 1 de 4</small>
+      </div>
+      <h2 class="athlete">Maria Santos</h2>
+      <p class="meta">Últimos 6 meses · Coach João Ribeiro · Clube Norte · gerado 23 Nov 2026</p>
+
+      <div class="hero">
+        <div class="hero-card">
+          <div class="k">Nível médio geral</div>
+          <div class="v">2.8</div>
+          <div class="h">técnico 2.9 · combo 2.6 · 24 sessões</div>
+        </div>
+        <div class="hero-card">
+          <div class="k">Foco do período</div>
+          <div class="v focus">Fechar heats com intenção + top-turn backside</div>
+          <div class="h">Nota do coach alinhada com os insights automáticos</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h3 class="sec-title">Focos do período</h3>
+        <div class="insights">
+          <div class="insight insight--watch">
+            <span class="pill pill--watch">Atenção</span>
+            <div>
+              <strong>Top-turn backside está a travar o progresso técnico</strong>
+              <p>58% BS vs 74% FS — o maior gap entre lados no período.</p>
+              <span class="src">Técnica · gap 16 pts</span>
+            </div>
+          </div>
+          <div class="insight insight--watch">
+            <span class="pill pill--watch">Atenção</span>
+            <div>
+              <strong>Fecha heats abaixo do potencial de abertura</strong>
+              <p>Clutch −0.4: a melhor onda no fecho fica aquém da abertura.</p>
+              <span class="src">Competição · clutch</span>
+            </div>
+          </div>
+          <div class="insight insight--ok">
+            <span class="pill pill--ok">Forte</span>
+            <div>
+              <strong>Rail frontside é a âncora de confiança</strong>
+              <p>78% de sucesso — manter volume aqui enquanto se trabalha o BS.</p>
+              <span class="src">Técnica · rail FS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <h3 class="sec-title">Quadro-resumo</h3>
+        <table>
+          <thead>
+            <tr><th>Domínio</th><th>Métrica</th><th class="num">Valor</th><th>Leitura</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ondas</td><td>Potencial</td><td class="num">62%</td><td class="reading">Estável</td></tr>
+            <tr><td>Técnico</td><td>Sucesso</td><td class="num">71%</td><td class="reading">Bom</td></tr>
+            <tr><td>Combo</td><td>Sucesso</td><td class="num">64%</td><td class="reading">OK</td></tr>
+            <tr><td>Heat</td><td>Win rate</td><td class="num">63%</td><td class="reading">5 / 8</td></tr>
+            <tr><td>Psicologia</td><td>Média /5</td><td class="num">3.9</td><td class="reading">OK</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="foot"><span>surfstar.app</span><span>Decisão primeiro · detalhe nas páginas seguintes</span></div>
+    </article></body></html>
