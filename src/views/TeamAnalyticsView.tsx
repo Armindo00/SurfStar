@@ -273,7 +273,7 @@ export function TeamAnalyticsView() {
           <div className="team-analytics-hero__actions">
             <button
               type="button"
-              className="btn btn--gold btn--small"
+              className="btn btn--primary btn--small"
               onClick={() => setShowReport(true)}
             >
               {t('analytics.pdfReport')}
@@ -281,14 +281,9 @@ export function TeamAnalyticsView() {
           </div>
         </div>
 
-        <div className="ss-card analytics-period-bar">
+        <div className="analytics-period-bar analytics-period-bar--flush">
           <div className="analytics-period-bar__copy">
             <span className="analytics-period-bar__label">{t('analytics.timeRange')}</span>
-            <p className="muted">
-              {profileSection === 'material'
-                ? t('analytics.timeRangeMaterialHint')
-                : t('analytics.timeRangeHint')}
-            </p>
           </div>
           {profileSection !== 'material' ? (
             <AnalyticsRangePicker
@@ -376,8 +371,8 @@ export function TeamAnalyticsView() {
           </div>
         ) : (
           <>
-            <div className="analytics-overview-strip">
-              <article className="analytics-overview-strip__item analytics-overview-strip__item--accent">
+            <div className="analytics-overview-strip analytics-overview-strip--dense">
+              <article className="analytics-overview-strip__item">
                 <span>{t('analytics.overview.avgLevel')}</span>
                 <strong>{formatAverageLevelValue(general.avgOverallManeuverLevel)}</strong>
               </article>
