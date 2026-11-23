@@ -1,11 +1,20 @@
 import type { AthletePsychologyAnalytics } from './athletePsychologyStats'
 import type { AthleteGeneralStats, AthleteSessionSummary } from './athleteStats'
-import type { AthleteReportPdfInput, AthleteReportPdfLabels, ManeuverSummaryRow, TrainingMixRow } from './buildAthleteReportPdf'
+import type {
+  AthleteReportPdfInput,
+  AthleteReportPdfLabels,
+  DomainSummaryRow,
+  ManeuverSummaryRow,
+  ReportCallout,
+  TrainingMixRow,
+} from './buildAthleteReportPdf'
 import {
   buildComboSideCharts,
   buildPdfEvolutionCharts,
   buildTechnicalSideCharts,
+  type SideCompareChart,
 } from './athleteReportPdfEvolution'
+import type { AthleteHeatAnalyticsSummary } from './heatAnalyticsStats'
 import { formatSessionDate, resolveSessionSpotName } from './sessionHistoryUtils'
 import { comboLevelLabel, trainingModeLabel, maneuverLabel } from './i18n/labels'
 import type { AthletePeriodAnalytics } from './teamAnalyticsStats'
@@ -89,6 +98,162 @@ export function buildSessionRows(
   }))
 }
 
+type ExecutiveLabelPick = Pick<
+  AthleteReportPdfLabels,
+  | 'frontside'
+  | 'backside'
+  | 'clutchHeat'
+  | 'earlyTenPoints'
+  | 'domainWaves'
+  | 'technicalTraining'
+  | 'comboTraining'
+  | 'domainHeat'
+  | 'psychology'
+  | 'potentialRate'
+  | 'successCol'
+  | 'winRate'
+  | 'psychologyAvgLabel'
+  | 'psychologyCheckInsLabel'
+  | 'readingStable'
+  | 'readingGood'
+  | 'readingOk'
+  | 'readingWatch'
+  | 'readingThin'
+>
+
+type SideRate = { label: string; rate: number }
+
+function collectSideRates(charts: SideCompareChart[], frontside: string, backside: string): SideRate[] {
+  const rows: SideRate[] = []
+  for (const chart of charts) {
+    if (chart.frontsideSuccess !== null) {
+      rows.push({ label: `${chart.title} ${frontside}`, rate: chart.frontsideSuccess })
+    }
+    if (chart.backsideSuccess !== null) {
+      rows.push({ label: `${chart.title} ${backside}`, rate: chart.backsideSuccess })
+    }
+  }
+  return rows
+}
+
+function readingForRate(
+  rate: number | null,
+  labels: Pick<ExecutiveLabelPick, 'readingGood' | 'readingOk' | 'readingWatch' | 'readingStable' | 'readingThin'>,
+  kind: 'success' | 'potential' | 'psych' | 'win' = 'success',
+): string {
+  if (rate === null) return labels.readingThin
+  if (kind === 'psych') {
+    if (rate >= 4) return labels.readingGood
+    if (rate >= 3.2) return labels.readingOk
+    return labels.readingWatch
+  }
+  if (kind === 'potential') {
+    if (rate >= 60) return labels.readingStable
+    if (rate >= 45) return labels.readingOk
+    return labels.readingWatch
+  }
+  if (kind === 'win') {
+    if (rate >= 60) return labels.readingGood
+    if (rate >= 40) return labels.readingOk
+    return labels.readingWatch
+  }
+  if (rate >= 70) return labels.readingGood
+  if (rate >= 55) return labels.readingOk
+  return labels.readingWatch
+}
+
+export function buildExecutiveInsights(args: {
+  analytics: AthletePeriodAnalytics
+  technicalSideCharts: SideCompareChart[]
+  psychology?: AthletePsychologyAnalytics | null
+  heatAnalytics?: AthleteHeatAnalyticsSummary | null
+  labels: ExecutiveLabelPick
+}): { strengths: ReportCallout[]; attention: ReportCallout[]; domainRows: DomainSummaryRow[] } {
+  const L = args.labels
+  const strengths: ReportCallout[] = []
+  const attention: ReportCallout[] = []
+
+  const sideRates = collectSideRates(args.technicalSideCharts, L.frontside, L.backside)
+  if (sideRates.length > 0) {
+    const ranked = [...sideRates].sort((a, b) => b.rate - a.rate)
+    const best = ranked[0]
+    const worst = ranked[ranked.length - 1]
+    if (best) strengths.push({ label: best.label, value: `${best.rate}%` })
+    if (worst && worst !== best) attention.push({ label: worst.label, value: `${worst.rate}%` })
+  }
+
+  const heat = args.heatAnalytics
+  if (heat?.clutchDelta !== null && heat?.clutchDelta !== undefined) {
+    const signed = `${heat.clutchDelta > 0 ? '+' : ''}${heat.clutchDelta.toFixed(1)}`
+    const item = { label: L.clutchHeat, value: signed }
+    if (heat.clutchDelta >= 0) strengths.push(item)
+    else attention.push(item)
+  }
+  if (heat?.earlyTenPointsRate !== null && heat?.earlyTenPointsRate !== undefined) {
+    const item = { label: L.earlyTenPoints, value: `${heat.earlyTenPointsRate}%` }
+    if (heat.earlyTenPointsRate >= 70) strengths.push(item)
+    else attention.push(item)
+  }
+
+  const psych = args.psychology
+  if (psych && psych.checkIns > 0 && psych.byQuestion.length > 0) {
+    const ranked = [...psych.byQuestion].sort((a, b) => b.average - a.average)
+    const high = ranked[0]
+    const low = ranked[ranked.length - 1]
+    if (high) strengths.push({ label: high.label, value: `${high.average.toFixed(1)}/5` })
+    if (low && low !== high) attention.push({ label: low.label, value: `${low.average.toFixed(1)}/5` })
+  }
+
+  const g = args.analytics.general
+  const winRate =
+    g.heatParticipations > 0 ? Math.round((g.heatWins / g.heatParticipations) * 100) : null
+
+  const domainRows: DomainSummaryRow[] = [
+    {
+      domain: L.domainWaves,
+      metric: L.potentialRate,
+      value: g.withPotentialRate === null ? '—' : `${g.withPotentialRate}%`,
+      reading: readingForRate(g.withPotentialRate, L, 'potential'),
+    },
+    {
+      domain: L.technicalTraining,
+      metric: L.successCol,
+      value: args.analytics.technical ? `${args.analytics.technical.overallSuccessRate}%` : '—',
+      reading: readingForRate(args.analytics.technical?.overallSuccessRate ?? null, L, 'success'),
+    },
+    {
+      domain: L.comboTraining,
+      metric: L.successCol,
+      value: args.analytics.combo ? `${args.analytics.combo.overallSuccessRate}%` : '—',
+      reading: readingForRate(args.analytics.combo?.overallSuccessRate ?? null, L, 'success'),
+    },
+    {
+      domain: L.domainHeat,
+      metric: L.winRate,
+      value:
+        winRate === null
+          ? '—'
+          : `${winRate}% (${g.heatWins}/${g.heatParticipations})`,
+      reading: readingForRate(winRate, L, 'win'),
+    },
+    {
+      domain: L.psychology,
+      metric: L.psychologyAvgLabel,
+      value:
+        psych && psych.checkIns > 0 && psych.averageOverall !== null
+          ? `${psych.averageOverall.toFixed(1)} (${psych.checkIns} ${L.psychologyCheckInsLabel.toLowerCase()})`
+          : '—',
+      reading: readingForRate(psych?.averageOverall ?? null, L, 'psych'),
+    },
+  ]
+
+  return {
+    strengths: strengths.slice(0, 3),
+    attention: attention.slice(0, 3),
+    domainRows,
+  }
+}
+
 export function buildAthleteReportPdfInput(args: {
   athleteName: string
   coachName: string
@@ -101,6 +266,7 @@ export function buildAthleteReportPdfInput(args: {
   analytics: AthletePeriodAnalytics
   athleteId: string
   psychology?: AthletePsychologyAnalytics | null
+  heatAnalytics?: AthleteHeatAnalyticsSummary | null
   sessionSummaries: AthleteSessionSummary[]
   getSpot: (id: string) => SurfSpot | undefined
   evolutionColumnLabel: string
@@ -124,6 +290,14 @@ export function buildAthleteReportPdfInput(args: {
     progressive: maneuverLabel('progressive'),
   }
 
+  const executive = buildExecutiveInsights({
+    analytics: args.analytics,
+    technicalSideCharts,
+    psychology: args.psychology,
+    heatAnalytics: args.heatAnalytics,
+    labels: args.labels,
+  })
+
   return {
     athleteName: args.athleteName,
     coachName: args.coachName,
@@ -144,6 +318,10 @@ export function buildAthleteReportPdfInput(args: {
     technical: args.analytics.technical,
     combo: args.analytics.combo,
     psychology: args.psychology,
+    heatAnalytics: args.heatAnalytics ?? null,
+    strengths: executive.strengths,
+    attention: executive.attention,
+    domainRows: executive.domainRows,
     maneuverSummaries,
     sessionRows: buildSessionRows(args.sessionSummaries, args.getSpot),
     labels: args.labels,

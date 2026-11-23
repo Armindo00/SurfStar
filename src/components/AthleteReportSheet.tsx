@@ -15,6 +15,7 @@ import {
 } from '../analyticsRange'
 import type { AthletePsychologyAnalytics } from '../athletePsychologyStats'
 import type { AthleteSessionSummary } from '../athleteStats'
+import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
 import { formatShortDate, formatShortDateTime } from '../dateFormat'
 import { getAppSiteUrl } from '../config'
 import { formatAverageLevelValue } from '../sessionStats'
@@ -39,6 +40,7 @@ type Props = {
   getSpot: (id: string) => SurfSpot | undefined
   athleteId: string
   psychology?: AthletePsychologyAnalytics | null
+  heatAnalytics?: AthleteHeatAnalyticsSummary | null
   onClose: () => void
 }
 
@@ -51,6 +53,7 @@ export function AthleteReportSheet({
   getSpot,
   athleteId,
   psychology,
+  heatAnalytics,
   onClose,
 }: Props) {
   const { t, messages } = useI18n()
@@ -148,6 +151,7 @@ export function AthleteReportSheet({
         analytics,
         athleteId,
         psychology: localizedPsychology,
+        heatAnalytics,
         sessionSummaries,
         getSpot,
         evolutionColumnLabel: evolutionColumn,
@@ -165,6 +169,7 @@ export function AthleteReportSheet({
       analytics,
       athleteId,
       localizedPsychology,
+      heatAnalytics,
       sessionSummaries,
       getSpot,
       evolutionColumn,
@@ -276,6 +281,10 @@ export function AthleteReportSheet({
             performanceLines={performanceLines}
             sessionRows={sessionRows}
             psychology={localizedPsychology}
+            heatAnalytics={heatAnalytics}
+            strengths={pdfPayload.strengths}
+            attention={pdfPayload.attention}
+            domainRows={pdfPayload.domainRows}
             r={r}
             formatAvgLevel={formatAverageLevelValue}
           />
