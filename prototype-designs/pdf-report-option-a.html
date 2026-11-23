@@ -1,0 +1,319 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><style>
+    :root {
+      --ink: #0c1520;
+      --muted: #4b5c6b;
+      --line: #d0dae4;
+      --ocean: #0a6a94;
+      --soft: #e8eef3;
+      --ok: #047857;
+      --warn: #b45309;
+      --bad: #b42318;
+      --page: #f3f6f9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+      background: #dfe6ec;
+      color: var(--ink);
+      padding: 1.25rem 1rem 2.5rem;
+    }
+    h1 { margin: 0 0 0.25rem; font-size: 1.35rem; }
+    .lead { margin: 0 0 0.85rem; color: var(--muted); font-size: 0.9rem; max-width: 54rem; line-height: 1.45; }
+    .inventory {
+      max-width: 54rem;
+      margin: 0 0 1.35rem;
+      padding: 0.85rem 1rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .inventory strong { color: var(--ink); }
+    .inventory ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      align-items: start;
+    }
+    .option {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 0.85rem;
+    }
+    .option__tag {
+      margin-bottom: 0.35rem;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ocean);
+    }
+    .option__title { margin: 0 0 0.35rem; font-size: 1.02rem; }
+    .option__note { margin: 0.65rem 0 0; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+    .sheet {
+      max-width: 440px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: 0 10px 28px rgba(12,21,32,0.08);
+      padding: 0.95rem 1rem 1.1rem;
+      min-height: 640px;
+    }
+    .sheet--tall { min-height: 720px; }
+    .pdf-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.55rem;
+      margin-bottom: 0.7rem;
+    }
+    .pdf-head small { color: var(--muted); font-size: 0.68rem; display: block; }
+    .pdf-head strong { display: block; font-size: 1rem; margin-top: 0.1rem; }
+    .brand {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ocean);
+    }
+    .sec {
+      margin-top: 0.75rem;
+    }
+    .sec-title {
+      margin: 0 0 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--ocean);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #e8eef3;
+      padding-bottom: 0.2rem;
+    }
+    .sub {
+      margin: 0.45rem 0 0.25rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .muted { color: var(--muted); font-size: 0.7rem; line-height: 1.35; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.35rem;
+    }
+    .kpis--4 { grid-template-columns: repeat(4, 1fr); }
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.4rem 0.35rem;
+      text-align: center;
+      background: #f8fafc;
+    }
+    .kpi span { display: block; font-size: 0.55rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+    .kpi strong { font-size: 0.92rem; color: var(--ocean); }
+    .kpi em { display: block; font-style: normal; font-size: 0.58rem; color: var(--muted); margin-top: 0.1rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.68rem;
+    }
+    th, td {
+      border-bottom: 1px solid #e8eef3;
+      padding: 0.28rem 0.25rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 700; background: #f8fafc; }
+    td.num, th.num { text-align: right; }
+    .callouts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35rem;
+    }
+    .callout {
+      border-radius: 8px;
+      padding: 0.4rem 0.45rem;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      font-size: 0.68rem;
+    }
+    .callout--hi { border-color: rgba(4,120,87,0.35); background: rgba(4,120,87,0.06); }
+    .callout--lo { border-color: rgba(180,35,24,0.3); background: rgba(180,35,24,0.05); }
+    .callout span { display: block; font-size: 0.55rem; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 0.12rem; }
+    .callout strong { display: block; color: var(--ink); line-height: 1.25; }
+    .callout b { color: var(--ocean); }
+    .note {
+      border-left: 3px solid rgba(10,106,148,0.45);
+      background: rgba(10,106,148,0.04);
+      padding: 0.35rem 0.5rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.72rem;
+      line-height: 1.35;
+      margin: 0.35rem 0 0;
+    }
+    .bars { display: grid; gap: 0.28rem; }
+    .bar-row { display: grid; grid-template-columns: 4.2rem 1fr 1.4rem; gap: 0.35rem; align-items: center; font-size: 0.68rem; }
+    .track { height: 0.38rem; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
+    .track > i { display: block; height: 100%; background: var(--ocean); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+    .block {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.4rem 0.45rem;
+      background: #f8fafc;
+    }
+    .block .lbl { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.04em; }
+    .block .val { font-size: 0.95rem; font-weight: 800; color: var(--ocean); margin-top: 0.1rem; }
+    .block .hint { font-size: 0.62rem; color: var(--muted); margin-top: 0.1rem; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.35rem; }
+    .chip {
+      font-size: 0.62rem;
+      padding: 0.18rem 0.4rem;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .chip--ok { background: rgba(4,120,87,0.12); color: var(--ok); }
+    .chip--warn { background: rgba(180,83,9,0.12); color: var(--warn); }
+    .chip--bad { background: rgba(180,35,24,0.1); color: var(--bad); }
+    .page-mark {
+      margin-top: 0.7rem;
+      text-align: center;
+      font-size: 0.62rem;
+      color: var(--muted);
+      border-top: 1px dashed var(--line);
+      padding-top: 0.35rem;
+    }
+    .exec-hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 0.5rem;
+      margin-bottom: 0.55rem;
+    }
+    .big-stat {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.55rem 0.6rem;
+      background: linear-gradient(160deg, #f7fbfe 0%, #eef5f9 100%);
+    }
+    .big-stat span { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.04em; }
+    .big-stat strong { display: block; font-size: 1.45rem; color: var(--ocean); line-height: 1.1; margin: 0.15rem 0; }
+    .big-stat small { color: var(--muted); font-size: 0.68rem; }
+    .list-tight { margin: 0; padding-left: 1rem; font-size: 0.7rem; color: var(--muted); }
+    .list-tight li { margin: 0.15rem 0; }
+    .domain {
+      display: grid;
+      gap: 0.35rem;
+    }
+    .domain-item {
+      display: grid;
+      grid-template-columns: 5.5rem 1fr auto;
+      gap: 0.4rem;
+      align-items: start;
+      font-size: 0.7rem;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #eef2f6;
+    }
+    .domain-item b { color: var(--ocean); font-size: 0.78rem; }
+  </style>
+<style>body{padding:1rem;background:#dfe6ec}.option{max-width:460px;margin:0 auto}</style>
+</head><body><section class="option" id="option-a">
+      <div class="option__tag">Opção A</div>
+      <h2 class="option__title">Scorecard objetivo</h2>
+      <div class="sheet sheet--tall" data-shot="a">
+        <div class="pdf-head">
+          <div>
+            <span class="brand">SurfStar</span>
+            <strong>Maria Santos</strong>
+            <small>Últimos 6 meses · Coach João · Clube Norte</small>
+          </div>
+          <div style="text-align:right">
+            <small>Relatório</small>
+            <small>23 Nov 2026</small>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Scorecard</div>
+          <div class="kpis">
+            <div class="kpi"><span>Sessões</span><strong>24</strong></div>
+            <div class="kpi"><span>Ondas</span><strong>186</strong></div>
+            <div class="kpi"><span>Nível méd.</span><strong>2.8</strong></div>
+            <div class="kpi"><span>Potencial</span><strong>62%</strong></div>
+            <div class="kpi"><span>Estrelas</span><strong>14</strong></div>
+            <div class="kpi"><span>Heats</span><strong>5W / 8</strong><em>média 12.4</em></div>
+          </div>
+          <p class="note"><strong>Nota do coach:</strong> Priorizar top-turn backside e fecho de heat sob pressão.</p>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Treino — números</div>
+          <table>
+            <thead>
+              <tr><th>Modo</th><th class="num">Sucesso</th><th class="num">Tent.</th><th class="num">Nível</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Técnico</td><td class="num">71%</td><td class="num">148</td><td class="num">2.9</td></tr>
+              <tr><td>Combo</td><td class="num">64%</td><td class="num">52</td><td class="num">2.6</td></tr>
+            </tbody>
+          </table>
+          <div class="sub">Técnico · FS vs BS (sucesso)</div>
+          <table>
+            <thead><tr><th>Manobra</th><th class="num">FS</th><th class="num">BS</th></tr></thead>
+            <tbody>
+              <tr><td>Rail</td><td class="num">78%</td><td class="num">70%</td></tr>
+              <tr><td>Top-turn</td><td class="num">74%</td><td class="num">58%</td></tr>
+              <tr><td>Progressive</td><td class="num">69%</td><td class="num">65%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Competição — ritmo</div>
+          <div class="kpis kpis--4">
+            <div class="kpi"><span>10 pts cedo</span><strong>63%</strong></div>
+            <div class="kpi"><span>1ª onda</span><strong>1.8'</strong></div>
+            <div class="kpi"><span>2 majors</span><strong>4.1'</strong></div>
+            <div class="kpi"><span>Clutch</span><strong>+0.8</strong></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Psicologia</div>
+          <div class="kpis">
+            <div class="kpi"><span>Check-ins</span><strong>12</strong></div>
+            <div class="kpi"><span>Média /5</span><strong>3.9</strong></div>
+            <div class="kpi"><span>Resposta</span><strong>50%</strong></div>
+          </div>
+          <div class="callouts" style="margin-top:0.35rem">
+            <div class="callout callout--hi"><span>Mais alto</span><strong>Humor <b>4.6</b></strong></div>
+            <div class="callout callout--lo"><span>Atenção</span><strong>Fadiga mental <b>2.8</b></strong></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Diário (últimas)</div>
+          <table>
+            <thead><tr><th>Data</th><th>Modo</th><th>Resumo</th></tr></thead>
+            <tbody>
+              <tr><td>18 Nov</td><td>Técnico</td><td>72% · 14 ondas</td></tr>
+              <tr><td>12 Nov</td><td>Heat</td><td>2 heats · 1 win</td></tr>
+              <tr><td>05 Nov</td><td>Combo</td><td>60% · 10 tent.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="page-mark">Página 1 · tabelas densas · sem gráficos longos</div>
+      </div>
+      <p class="option__note">
+        <strong>Ideia:</strong> relatório tipo scorecard desportivo — tudo em tabelas e KPIs.
+        Poucos gráficos. Inclui heat rhythm e psicologia cedo. Bom para comparar períodos.
+      </p>
+    </section></body></html>
