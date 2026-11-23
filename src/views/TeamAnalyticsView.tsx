@@ -455,6 +455,7 @@ export function TeamAnalyticsView() {
             getSpot={getSpot}
             athleteId={selectedAthlete.id}
             psychology={reportPsychology}
+            heatAnalytics={heatAnalytics}
             onClose={() => setShowReport(false)}
           />
         ) : null}

@@ -2,6 +2,7 @@ import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { AthleteGeneralStats } from './athleteStats'
 import type { AthletePsychologyAnalytics } from './athletePsychologyStats'
+import type { AthleteHeatAnalyticsSummary } from './heatAnalyticsStats'
 import type { ComboSessionStatsSnapshot, SessionStatsSnapshot } from './sessionStats'
 import type { EvolutionPoint } from './teamAnalyticsStats'
 import type { PdfEvolutionCharts, SideCompareChart } from './athleteReportPdfEvolution'
@@ -72,10 +73,53 @@ export type AthleteReportPdfLabels = {
   maneuvers: string
   attempts: string
   page: string
+  executiveLabel: string
+  annexLabel: string
+  overallAvgLevel: string
+  periodDecision: string
+  periodDecisionHint: string
+  periodDecisionEmpty: string
+  strengthsAttentionTitle: string
+  strengths: string
+  attention: string
+  domainSummaryTitle: string
+  domainCol: string
+  keyMetricCol: string
+  valueCol: string
+  readingCol: string
+  domainWaves: string
+  domainHeat: string
+  readingStable: string
+  readingGood: string
+  readingOk: string
+  readingWatch: string
+  readingThin: string
+  annexTitle: string
+  winRate: string
+  clutchHeat: string
+  earlyTenPoints: string
+  technicalSubtitle: string
+  competitionHeatsRhythm: string
+  openingEarlyRhythm: string
+  closingUnderPressure: string
+  clutchDelta: string
+  bestWaveFirst5Avg: string
+  bestWaveLast5Avg: string
+  timeToFirstWaveAvg: string
+  timeToTwoMajorAvg: string
+  heatLog: string
+  heat: string
+  total: string
+  place: string
+  yes: string
+  no: string
+  winSuffix: string
 }
 
 export type TrainingMixRow = { label: string; count: number }
 export type ManeuverSummaryRow = { label: string; attempts: number; rate: number | null }
+export type ReportCallout = { label: string; value: string }
+export type DomainSummaryRow = { domain: string; metric: string; value: string; reading: string }
 
 export type AthleteReportPdfInput = {
   athleteName: string
@@ -97,6 +141,10 @@ export type AthleteReportPdfInput = {
   technical: SessionStatsSnapshot | null
   combo: ComboSessionStatsSnapshot | null
   psychology: AthletePsychologyAnalytics | null | undefined
+  heatAnalytics?: AthleteHeatAnalyticsSummary | null
+  strengths: ReportCallout[]
+  attention: ReportCallout[]
+  domainRows: DomainSummaryRow[]
   maneuverSummaries: ManeuverSummaryRow[]
   sessionRows: { date: string; mode: string; spot: string; summary: string }[]
   labels: AthleteReportPdfLabels
@@ -388,6 +436,115 @@ function drawPsychologyHighlightsSection(
   }
 }
 
+function interpolate(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => String(values[key] ?? ''))
+}
+
+function drawCalloutColumns(
+  pdf: PdfDoc,
+  leftTitle: string,
+  leftItems: ReportCallout[],
+  rightTitle: string,
+  rightItems: ReportCallout[],
+) {
+  const { doc } = pdf
+  const gap = 3
+  const boxW = (CONTENT_W - gap) / 2
+  const lineH = 5
+  const leftH = 8 + Math.max(leftItems.length, 1) * lineH
+  const rightH = 8 + Math.max(rightItems.length, 1) * lineH
+  const boxH = Math.max(leftH, rightH, 18)
+  pdf.ensureSpace(boxH + 4)
+
+  const columns = [
+    { x: MARGIN, title: leftTitle, items: leftItems, accent: COLOR_SUCCESS },
+    { x: MARGIN + boxW + gap, title: rightTitle, items: rightItems, accent: COLOR_DANGER },
+  ] as const
+
+  for (const col of columns) {
+    doc.setDrawColor(...COLOR_BAR_BG)
+    doc.setFillColor(255, 255, 255)
+    doc.roundedRect(col.x, pdf.y, boxW, boxH, 2, 2, 'FD')
+    const [ar, ag, ab] = col.accent
+    doc.setFillColor(ar, ag, ab)
+    doc.rect(col.x, pdf.y, 1.2, boxH, 'F')
+    doc.setFontSize(7)
+    doc.setTextColor(...COLOR_MUTED)
+    doc.text(col.title, col.x + 4, pdf.y + 5)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(8)
+    doc.setTextColor(...COLOR_TEXT)
+    let ty = pdf.y + 11
+    if (col.items.length === 0) {
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...COLOR_MUTED)
+      doc.text('—', col.x + 4, ty)
+    } else {
+      for (const item of col.items) {
+        doc.text(`${item.label}  ${item.value}`, col.x + 4, ty)
+        ty += lineH
+      }
+    }
+    doc.setFont('helvetica', 'normal')
+  }
+  pdf.y += boxH + 5
+}
+
+function drawHeatAnnexSection(
+  pdf: PdfDoc,
+  heat: AthleteHeatAnalyticsSummary,
+  L: AthleteReportPdfLabels,
+) {
+  if (heat.heatsTotal <= 0) return
+  const { doc } = pdf
+  pdf.sectionTitle(L.competitionHeatsRhythm)
+  pdf.kpiGrid([
+    { label: L.heatWins, value: String(heat.rows.filter((r) => r.won).length) },
+    { label: L.avgLevel, value: heat.avgHeatScore?.toFixed(1) ?? '—' },
+    { label: L.earlyTenPoints, value: formatRate(heat.earlyTenPointsRate) },
+    { label: L.clutchDelta, value: heat.clutchDelta === null ? '—' : `${heat.clutchDelta > 0 ? '+' : ''}${heat.clutchDelta.toFixed(1)}` },
+    { label: L.timeToFirstWaveAvg, value: heat.avgTimeToFirstWaveMin === null ? '—' : `${heat.avgTimeToFirstWaveMin.toFixed(1)}'` },
+    { label: L.timeToTwoMajorAvg, value: heat.avgTimeToTwoMajorMin === null ? '—' : `${heat.avgTimeToTwoMajorMin.toFixed(1)}'` },
+  ])
+
+  if (heat.heatsWithTiming > 0) {
+    pdf.bodyText(
+      `${L.openingEarlyRhythm}: ${L.bestWaveFirst5Avg} ${heat.avgBestWaveOpening?.toFixed(1) ?? '—'} · ${L.closingUnderPressure}: ${L.bestWaveLast5Avg} ${heat.avgBestWaveClosing?.toFixed(1) ?? '—'}`,
+    )
+  }
+
+  if (heat.rows.length === 0) return
+  pdf.ensureSpace(20)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.setTextColor(...COLOR_TEXT)
+  doc.text(L.heatLog, MARGIN, pdf.y)
+  pdf.y += 3
+
+  autoTable(doc, {
+    startY: pdf.y,
+    margin: { left: MARGIN, right: MARGIN },
+    head: [[L.heat, L.total, L.place, L.earlyTenPoints, L.clutchDelta]],
+    body: heat.rows.slice(0, 12).map((row) => [
+      row.heatLabel,
+      row.total.toFixed(1),
+      `${row.placement}${row.won ? L.winSuffix : ''}`,
+      row.hasTimerData ? (row.reachedTenPointsInEarlyWindow ? L.yes : L.no) : '—',
+      row.bestWaveClosing === null || row.bestWaveOpening === null
+        ? '—'
+        : `${(row.bestWaveClosing - row.bestWaveOpening).toFixed(1)}`,
+    ]),
+    styles: { fontSize: 7.5, cellPadding: 2, overflow: 'linebreak' },
+    headStyles: { fillColor: [226, 232, 240], textColor: [51, 65, 85], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    tableWidth: CONTENT_W,
+    showHead: 'everyPage',
+    rowPageBreak: 'avoid',
+    didDrawPage: () => pdf.drawFooter(),
+  })
+  pdf.y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5
+}
+
 export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): Promise<Blob> {
   const logo = await loadLogoDataUrl()
   const pdf = new PdfDoc(input.athleteName, input.labels)
@@ -408,7 +565,7 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(...COLOR_MUTED)
-  doc.text(L.sheetEyebrow, MARGIN, pdf.y)
+  doc.text(`${L.sheetEyebrow} · ${L.executiveLabel}`, MARGIN, pdf.y)
   pdf.y += 5
   doc.setFontSize(10)
   doc.setTextColor(...COLOR_TEXT)
@@ -425,34 +582,86 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
   }
   pdf.metaRow(meta.slice(0, 4))
 
-  pdf.sectionTitle(L.summary)
-  pdf.kpiGrid([
-    { label: L.sessions, value: String(g.totalTrainings) },
-    { label: L.wavesLogged, value: String(g.totalWaves) },
-    { label: L.avgLevel, value: formatLevel(g.avgOverallManeuverLevel) },
-    { label: L.potentialRate, value: formatRate(g.withPotentialRate) },
-    { label: L.stars, value: String(g.totalStars) },
-    { label: L.heatWins, value: String(g.heatWins) },
-  ])
+  // —— Executive hero ——
+  pdf.ensureSpace(28)
+  const heroGap = 3
+  const heroW = (CONTENT_W - heroGap) / 2
+  const heroH = 24
+  doc.setDrawColor(...COLOR_BAR_BG)
+  doc.setFillColor(247, 251, 254)
+  doc.roundedRect(MARGIN, pdf.y, heroW, heroH, 2, 2, 'FD')
+  doc.roundedRect(MARGIN + heroW + heroGap, pdf.y, heroW, heroH, 2, 2, 'FD')
+
+  doc.setFontSize(7)
+  doc.setTextColor(...COLOR_MUTED)
+  doc.text(L.overallAvgLevel, MARGIN + 4, pdf.y + 5)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(18)
+  doc.setTextColor(...COLOR_PRIMARY)
+  doc.text(formatLevel(g.avgOverallManeuverLevel), MARGIN + 4, pdf.y + 14)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.setTextColor(...COLOR_MUTED)
+  const subtitle = interpolate(L.technicalSubtitle, {
+    level: formatLevel(g.avgTechnicalManeuverLevel),
+    combo: formatLevel(g.avgComboLevel),
+    sessions: g.totalTrainings,
+  })
+  doc.text(doc.splitTextToSize(subtitle, heroW - 8), MARGIN + 4, pdf.y + 19)
+
+  doc.setFontSize(7)
+  doc.text(L.periodDecision, MARGIN + heroW + heroGap + 4, pdf.y + 5)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.setTextColor(...COLOR_TEXT)
+  const decision = input.coachComment?.trim() || L.periodDecisionEmpty
+  doc.text(doc.splitTextToSize(decision, heroW - 8), MARGIN + heroW + heroGap + 4, pdf.y + 12)
+  doc.setFont('helvetica', 'normal')
+  pdf.y += heroH + 6
+
+  // —— Strengths / attention ——
+  if (input.strengths.length > 0 || input.attention.length > 0) {
+    pdf.sectionTitle(L.strengthsAttentionTitle)
+    drawCalloutColumns(pdf, L.strengths, input.strengths, L.attention, input.attention)
+  }
+
+  // —— Domain summary ——
+  pdf.sectionTitle(L.domainSummaryTitle)
+  autoTable(doc, {
+    startY: pdf.y,
+    margin: { left: MARGIN, right: MARGIN },
+    head: [[L.domainCol, L.keyMetricCol, L.valueCol, L.readingCol]],
+    body: input.domainRows.map((row) => [row.domain, row.metric, row.value, row.reading]),
+    styles: { fontSize: 8, cellPadding: 2.2, overflow: 'linebreak' },
+    headStyles: { fillColor: [226, 232, 240], textColor: [51, 65, 85], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    tableWidth: CONTENT_W,
+    showHead: 'everyPage',
+    rowPageBreak: 'avoid',
+    didDrawPage: () => pdf.drawFooter(),
+  })
+  pdf.y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5
 
   if (input.coachComment?.trim()) {
     pdf.sectionTitle(L.coachComments)
     pdf.bodyText(input.coachComment.trim())
   }
 
-  if (input.psychology && input.psychology.checkIns > 0) {
-    drawPsychologyHighlightsSection(pdf, input.psychology, L)
-  }
+  // —— Annex page ——
+  pdf.drawFooter()
+  doc.addPage()
+  pdf.y = MARGIN
+  pdf.sectionTitle(L.annexTitle)
 
-  if (input.evolutionCharts.periodLabels.length > 0) {
-    pdf.sectionTitle(L.evolution)
-    drawEvolutionSection(pdf.chartLayout(), input.evolutionCharts, input.maneuverLabels, {
-      potential: L.pdfChartPotentialEvolution,
-      maneuverSuccess: L.pdfChartManeuverSuccessEvolution,
-      maneuverLevel: L.pdfChartManeuverLevelEvolution,
-      comboSuccess: L.pdfChartComboSuccessEvolution,
-      comboLevel: L.pdfChartComboLevelEvolution,
-    })
+  if (input.technical) {
+    pdf.bodyText(
+      `${L.technicalTraining}: ${input.technical.overallSuccessRate}% ${L.successCol} · ${input.technical.totalManeuvers} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.technical.averageLevel)}`,
+    )
+  }
+  if (input.combo) {
+    pdf.bodyText(
+      `${L.comboTraining}: ${input.combo.overallSuccessRate}% ${L.successCol} · ${input.combo.totalAttempts} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.combo.averageLevel)}`,
+    )
   }
 
   if (input.technicalSideCharts.length > 0) {
@@ -479,32 +688,17 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
     }
   }
 
+  if (input.heatAnalytics) {
+    drawHeatAnnexSection(pdf, input.heatAnalytics, L)
+  }
+
+  if (input.psychology && input.psychology.checkIns > 0) {
+    drawPsychologyHighlightsSection(pdf, input.psychology, L)
+  }
+
   if (input.trainingMix.length > 0) {
     pdf.sectionTitle(L.trainingMix)
     pdf.drawHorizontalBars(input.trainingMix)
-  }
-
-  const performanceLines: string[] = []
-  if (input.technical) {
-    performanceLines.push(
-      `${L.technicalTraining}: ${input.technical.overallSuccessRate}% ${L.successCol} · ${input.technical.totalManeuvers} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.technical.averageLevel)}`,
-    )
-  }
-  if (input.combo) {
-    performanceLines.push(
-      `${L.comboTraining}: ${input.combo.overallSuccessRate}% ${L.successCol} · ${input.combo.totalAttempts} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.combo.averageLevel)}`,
-    )
-  }
-  if (g.heatParticipations > 0) {
-    performanceLines.push(
-      `${L.competition}: ${g.heatParticipations} heats · ${g.heatWins} ${L.heatWins} · ${L.avgLevel} ${g.avgHeatScore?.toFixed(1) ?? '—'}`,
-    )
-  }
-  if (performanceLines.length > 0) {
-    pdf.sectionTitle(L.performanceOverview)
-    for (const line of performanceLines) {
-      pdf.bodyText(line)
-    }
   }
 
   if (input.sessionRows.length > 0) {
@@ -530,6 +724,17 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
       didDrawPage: () => pdf.drawFooter(),
     })
     pdf.y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6
+  }
+
+  if (input.evolutionCharts.periodLabels.length > 0) {
+    pdf.sectionTitle(L.evolution)
+    drawEvolutionSection(pdf.chartLayout(), input.evolutionCharts, input.maneuverLabels, {
+      potential: L.pdfChartPotentialEvolution,
+      maneuverSuccess: L.pdfChartManeuverSuccessEvolution,
+      maneuverLevel: L.pdfChartManeuverLevelEvolution,
+      comboSuccess: L.pdfChartComboSuccessEvolution,
+      comboLevel: L.pdfChartComboLevelEvolution,
+    })
   }
 
   pdf.ensureSpace(10)

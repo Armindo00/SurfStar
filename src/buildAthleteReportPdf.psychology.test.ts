@@ -58,6 +58,47 @@ const labels: AthleteReportPdfInput['labels'] = {
   maneuvers: 'Maneuvers',
   attempts: 'Attempts',
   page: 'Page',
+  executiveLabel: 'Executive',
+  annexLabel: 'Annex',
+  overallAvgLevel: 'Overall avg level',
+  periodDecision: 'Period focus',
+  periodDecisionHint: 'From coach note',
+  periodDecisionEmpty: 'Add a coach note to set the period focus.',
+  strengthsAttentionTitle: 'Strengths / needs attention',
+  strengths: 'Strengths',
+  attention: 'Needs attention',
+  domainSummaryTitle: 'Domain summary',
+  domainCol: 'Domain',
+  keyMetricCol: 'Key metric',
+  valueCol: 'Value',
+  readingCol: 'Reading',
+  domainWaves: 'Waves',
+  domainHeat: 'Heat',
+  readingStable: 'Stable',
+  readingGood: 'Good',
+  readingOk: 'OK',
+  readingWatch: 'Watch',
+  readingThin: 'Limited data',
+  annexTitle: 'Annex — detail',
+  winRate: 'Win rate',
+  clutchHeat: 'Clutch heat',
+  earlyTenPoints: '10 pts early',
+  technicalSubtitle: 'technical {{level}} · combo {{combo}} · {{sessions}} sessions',
+  competitionHeatsRhythm: 'Competition — heats & rhythm',
+  openingEarlyRhythm: 'Opening & early rhythm',
+  closingUnderPressure: 'Closing under pressure',
+  clutchDelta: 'Clutch delta',
+  bestWaveFirst5Avg: 'Best wave · first 5 min',
+  bestWaveLast5Avg: 'Best wave · last 5 min',
+  timeToFirstWaveAvg: 'Time to 1st wave',
+  timeToTwoMajorAvg: 'Time to 2 major',
+  heatLog: 'Heat log',
+  heat: 'Heat',
+  total: 'Total',
+  place: 'Place',
+  yes: 'Yes',
+  no: 'No',
+  winSuffix: ' · Win',
 }
 
 function session(id: string, endedAt: string): TrainingSession {
@@ -150,6 +191,13 @@ describe('buildAthleteReportPdfBlob psychology', () => {
       technical: null,
       combo: null,
       psychology,
+      heatAnalytics: null,
+      strengths: [{ label: 'Mood', value: '5.0/5' }],
+      attention: [{ label: 'Focus', value: '2.0/5' }],
+      domainRows: [
+        { domain: 'Waves', metric: 'Potential', value: '—', reading: 'Limited data' },
+        { domain: 'Psychology', metric: 'Avg /5', value: '3.9', reading: 'OK' },
+      ],
       maneuverSummaries: [],
       sessionRows: [],
       labels,
@@ -160,6 +208,9 @@ describe('buildAthleteReportPdfBlob psychology', () => {
     const asLatin1 = bytes.toString('latin1')
 
     expect(psychology.checkIns).toBe(1)
+    expect(asLatin1).toContain('Executive')
+    expect(asLatin1).toContain('Domain summary')
+    expect(asLatin1).toContain('Annex')
     expect(asLatin1).toContain('Psychology check-ins')
     expect(asLatin1).toContain('Standouts')
     expect(asLatin1).toContain('Question averages')

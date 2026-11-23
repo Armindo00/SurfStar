@@ -6,7 +6,12 @@ import {
 import type { AthletePsychologyAnalytics } from '../athletePsychologyStats'
 import type { AthleteGeneralStats } from '../athleteStats'
 import type { PdfEvolutionCharts, SideCompareChart } from '../athleteReportPdfEvolution'
-import type { TrainingMixRow } from '../buildAthleteReportPdf'
+import type {
+  DomainSummaryRow,
+  ReportCallout,
+  TrainingMixRow,
+} from '../buildAthleteReportPdf'
+import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
 import { formatSessionDate } from '../sessionHistoryUtils'
 import type { AnalyticsReportCopy } from '../i18n/types'
 
@@ -28,6 +33,10 @@ type Props = {
   performanceLines: string[]
   sessionRows: { date: string; mode: string; spot: string; summary: string }[]
   psychology?: AthletePsychologyAnalytics | null
+  heatAnalytics?: AthleteHeatAnalyticsSummary | null
+  strengths: ReportCallout[]
+  attention: ReportCallout[]
+  domainRows: DomainSummaryRow[]
   r: AnalyticsReportCopy
   formatAvgLevel: (value: number | null) => string
 }
@@ -50,6 +59,10 @@ function MixBars({ rows }: { rows: TrainingMixRow[] }) {
   )
 }
 
+function interpolate(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => String(values[key] ?? ''))
+}
+
 export function AthleteReportPreview({
   athleteName,
   coachName,
@@ -68,6 +81,10 @@ export function AthleteReportPreview({
   performanceLines,
   sessionRows,
   psychology,
+  heatAnalytics,
+  strengths,
+  attention,
+  domainRows,
   r,
   formatAvgLevel,
 }: Props) {
@@ -90,13 +107,22 @@ export function AthleteReportPreview({
         })()
       : null
 
+  const decision = coachComment?.trim() || r.periodDecisionEmpty
+  const subtitle = interpolate(r.technicalSubtitle, {
+    level: formatAvgLevel(general.avgTechnicalManeuverLevel),
+    combo: formatAvgLevel(general.avgComboLevel),
+    sessions: general.totalTrainings,
+  })
+
   return (
     <article className="athlete-report">
       <header className="athlete-report__header">
         <div className="athlete-report__brand">
           <AppLogo size="sm" />
           <div>
-            <p className="athlete-report__eyebrow">{r.sheetEyebrow}</p>
+            <p className="athlete-report__eyebrow">
+              {r.sheetEyebrow} · {r.executiveLabel}
+            </p>
             <h1 id="athlete-report-title">{athleteName}</h1>
             <p className="athlete-report__subtitle">{reportTitle}</p>
           </div>
@@ -124,32 +150,75 @@ export function AthleteReportPreview({
       </header>
 
       <section className="athlete-report__section">
-        <h2>{r.summary}</h2>
-        <div className="athlete-report__kpi-grid">
-          <article>
-            <span>{r.sessions}</span>
-            <strong>{general.totalTrainings}</strong>
-          </article>
-          <article>
-            <span>{r.wavesLogged}</span>
-            <strong>{general.totalWaves}</strong>
-          </article>
-          <article>
-            <span>{r.avgLevel}</span>
+        <div className="athlete-report__exec-hero">
+          <article className="athlete-report__exec-card">
+            <span>{r.overallAvgLevel}</span>
             <strong>{formatAvgLevel(general.avgOverallManeuverLevel)}</strong>
+            <small>{subtitle}</small>
           </article>
-          <article>
-            <span>{r.potentialRate}</span>
-            <strong>{general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`}</strong>
+          <article className="athlete-report__exec-card">
+            <span>{r.periodDecision}</span>
+            <strong className="athlete-report__exec-card-focus">{decision}</strong>
+            <small>{r.periodDecisionHint}</small>
           </article>
-          <article>
-            <span>{r.stars}</span>
-            <strong>{general.totalStars}</strong>
-          </article>
-          <article>
-            <span>{r.heatWins}</span>
-            <strong>{general.heatWins}</strong>
-          </article>
+        </div>
+      </section>
+
+      {strengths.length > 0 || attention.length > 0 ? (
+        <section className="athlete-report__section">
+          <h2>{r.strengthsAttentionTitle}</h2>
+          <div className="athlete-report__psych-callouts">
+            <div className="athlete-report__psych-callout athlete-report__psych-callout--hi">
+              <strong>{r.strengths}</strong>
+              {strengths.length === 0 ? (
+                <small>—</small>
+              ) : (
+                strengths.map((item) => (
+                  <small key={`${item.label}-${item.value}`}>
+                    {item.label} · {item.value}
+                  </small>
+                ))
+              )}
+            </div>
+            <div className="athlete-report__psych-callout athlete-report__psych-callout--lo">
+              <strong>{r.attention}</strong>
+              {attention.length === 0 ? (
+                <small>—</small>
+              ) : (
+                attention.map((item) => (
+                  <small key={`${item.label}-${item.value}`}>
+                    {item.label} · {item.value}
+                  </small>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="athlete-report__section">
+        <h2>{r.domainSummaryTitle}</h2>
+        <div className="table-wrap athlete-report__table-wrap">
+          <table className="data-table athlete-report__table athlete-report__detail-table">
+            <thead>
+              <tr>
+                <th>{r.domainCol}</th>
+                <th>{r.keyMetricCol}</th>
+                <th>{r.valueCol}</th>
+                <th>{r.readingCol}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {domainRows.map((row) => (
+                <tr key={row.domain}>
+                  <td>{row.domain}</td>
+                  <td>{row.metric}</td>
+                  <td>{row.value}</td>
+                  <td>{row.reading}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -157,6 +226,128 @@ export function AthleteReportPreview({
         <section className="athlete-report__section athlete-report__section--comments">
           <h2>{r.coachComments}</h2>
           <p className="athlete-report__comment">{coachComment}</p>
+        </section>
+      ) : null}
+
+      <div className="athlete-report__annex-break" role="presentation">
+        <span>{r.annexTitle}</span>
+      </div>
+
+      {performanceLines.length > 0 ? (
+        <section className="athlete-report__section">
+          <h2>{r.performanceOverview}</h2>
+          <ul className="athlete-report__highlights">
+            {performanceLines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {technicalSideCharts.length > 0 ? (
+        <section className="athlete-report__section">
+          <h2>{r.pdfTechnicalSideCharts}</h2>
+          <div className="athlete-report__side-chart-grid">
+            {technicalSideCharts.map((chart) => (
+              <SideCompareFigure key={chart.title} chart={chart} labels={sideLabels} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {comboSideCharts.length > 0 ? (
+        <section className="athlete-report__section">
+          <h2>{r.pdfComboSideCharts}</h2>
+          <div className="athlete-report__side-chart-grid">
+            {comboSideCharts.map((chart) => (
+              <SideCompareFigure key={chart.title} chart={chart} labels={sideLabels} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {heatAnalytics && heatAnalytics.heatsTotal > 0 ? (
+        <section className="athlete-report__section">
+          <h2>{r.competitionHeatsRhythm}</h2>
+          <div className="athlete-report__kpi-grid">
+            <article>
+              <span>{r.heatWins}</span>
+              <strong>{heatAnalytics.rows.filter((row) => row.won).length}</strong>
+            </article>
+            <article>
+              <span>{r.avgLevel}</span>
+              <strong>{heatAnalytics.avgHeatScore?.toFixed(1) ?? '—'}</strong>
+            </article>
+            <article>
+              <span>{r.earlyTenPoints}</span>
+              <strong>
+                {heatAnalytics.earlyTenPointsRate === null
+                  ? '—'
+                  : `${heatAnalytics.earlyTenPointsRate}%`}
+              </strong>
+            </article>
+            <article>
+              <span>{r.clutchDelta}</span>
+              <strong>
+                {heatAnalytics.clutchDelta === null
+                  ? '—'
+                  : `${heatAnalytics.clutchDelta > 0 ? '+' : ''}${heatAnalytics.clutchDelta.toFixed(1)}`}
+              </strong>
+            </article>
+            <article>
+              <span>{r.timeToFirstWaveAvg}</span>
+              <strong>
+                {heatAnalytics.avgTimeToFirstWaveMin === null
+                  ? '—'
+                  : `${heatAnalytics.avgTimeToFirstWaveMin.toFixed(1)}'`}
+              </strong>
+            </article>
+            <article>
+              <span>{r.timeToTwoMajorAvg}</span>
+              <strong>
+                {heatAnalytics.avgTimeToTwoMajorMin === null
+                  ? '—'
+                  : `${heatAnalytics.avgTimeToTwoMajorMin.toFixed(1)}'`}
+              </strong>
+            </article>
+          </div>
+
+          {heatAnalytics.rows.length > 0 ? (
+            <>
+              <h3 className="athlete-report__subsection-title">{r.heatLog}</h3>
+              <div className="table-wrap athlete-report__table-wrap">
+                <table className="data-table athlete-report__table athlete-report__detail-table">
+                  <thead>
+                    <tr>
+                      <th>{r.heat}</th>
+                      <th>{r.total}</th>
+                      <th>{r.place}</th>
+                      <th>{r.earlyTenPoints}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {heatAnalytics.rows.slice(0, 12).map((row) => (
+                      <tr key={`${row.sessionId}-${row.heatId}`}>
+                        <td>{row.heatLabel}</td>
+                        <td>{row.total.toFixed(1)}</td>
+                        <td>
+                          {row.placement}
+                          {row.won ? r.winSuffix : ''}
+                        </td>
+                        <td>
+                          {row.hasTimerData
+                            ? row.reachedTenPointsInEarlyWindow
+                              ? r.yes
+                              : r.no
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : null}
         </section>
       ) : null}
 
@@ -240,60 +431,10 @@ export function AthleteReportPreview({
         </section>
       ) : null}
 
-      {evolutionCharts.periodLabels.length > 0 ? (
-        <section className="athlete-report__section">
-          <h2>{r.evolution}</h2>
-          <EvolutionChartStack
-            charts={evolutionCharts}
-            maneuverLabels={maneuverLabels}
-            labels={{
-              potential: r.pdfChartPotentialEvolution,
-              maneuverSuccess: r.pdfChartManeuverSuccessEvolution,
-              maneuverLevel: r.pdfChartManeuverLevelEvolution,
-              comboSuccess: r.pdfChartComboSuccessEvolution,
-              comboLevel: r.pdfChartComboLevelEvolution,
-            }}
-          />
-        </section>
-      ) : null}
-
-      {technicalSideCharts.length > 0 ? (
-        <section className="athlete-report__section">
-          <h2>{r.pdfTechnicalSideCharts}</h2>
-          <div className="athlete-report__side-chart-grid">
-            {technicalSideCharts.map((chart) => (
-              <SideCompareFigure key={chart.title} chart={chart} labels={sideLabels} />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {comboSideCharts.length > 0 ? (
-        <section className="athlete-report__section">
-          <h2>{r.pdfComboSideCharts}</h2>
-          <div className="athlete-report__side-chart-grid">
-            {comboSideCharts.map((chart) => (
-              <SideCompareFigure key={chart.title} chart={chart} labels={sideLabels} />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
       {trainingMix.length > 0 ? (
         <section className="athlete-report__section">
           <h2>{r.trainingMix}</h2>
           <MixBars rows={trainingMix} />
-        </section>
-      ) : null}
-
-      {performanceLines.length > 0 ? (
-        <section className="athlete-report__section">
-          <h2>{r.performanceOverview}</h2>
-          <ul className="athlete-report__highlights">
-            {performanceLines.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
         </section>
       ) : null}
 
@@ -322,6 +463,23 @@ export function AthleteReportPreview({
               </tbody>
             </table>
           </div>
+        </section>
+      ) : null}
+
+      {evolutionCharts.periodLabels.length > 0 ? (
+        <section className="athlete-report__section">
+          <h2>{r.evolution}</h2>
+          <EvolutionChartStack
+            charts={evolutionCharts}
+            maneuverLabels={maneuverLabels}
+            labels={{
+              potential: r.pdfChartPotentialEvolution,
+              maneuverSuccess: r.pdfChartManeuverSuccessEvolution,
+              maneuverLevel: r.pdfChartManeuverLevelEvolution,
+              comboSuccess: r.pdfChartComboSuccessEvolution,
+              comboLevel: r.pdfChartComboLevelEvolution,
+            }}
+          />
         </section>
       ) : null}
 
