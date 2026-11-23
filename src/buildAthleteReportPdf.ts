@@ -440,6 +440,10 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
     pdf.bodyText(input.coachComment.trim())
   }
 
+  if (input.psychology && input.psychology.checkIns > 0) {
+    drawPsychologyHighlightsSection(pdf, input.psychology, L)
+  }
+
   if (input.evolutionCharts.periodLabels.length > 0) {
     pdf.sectionTitle(L.evolution)
     drawEvolutionSection(pdf.chartLayout(), input.evolutionCharts, input.maneuverLabels, {
@@ -501,10 +505,6 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
     for (const line of performanceLines) {
       pdf.bodyText(line)
     }
-  }
-
-  if (input.psychology && input.psychology.checkIns > 0) {
-    drawPsychologyHighlightsSection(pdf, input.psychology, L)
   }
 
   if (input.sessionRows.length > 0) {
