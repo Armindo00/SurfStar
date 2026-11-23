@@ -210,11 +210,13 @@ describe('buildAthleteReportPdfBlob psychology', () => {
     expect(psychology.checkIns).toBe(1)
     expect(asLatin1).toContain('Executive')
     expect(asLatin1).toContain('Domain summary')
-    expect(asLatin1).toContain('Annex')
     expect(asLatin1).toContain('Psychology check-ins')
     expect(asLatin1).toContain('Standouts')
     expect(asLatin1).toContain('Question averages')
     expect(asLatin1).toContain('Athlete notes')
     expect(asLatin1).toContain('Felt focused after the session.')
+    // Executive page + dedicated psychology topic page
+    const pageCount = (asLatin1.match(/\/Type\s*\/Page\b/g) ?? []).length
+    expect(pageCount).toBeGreaterThanOrEqual(2)
   })
 })
