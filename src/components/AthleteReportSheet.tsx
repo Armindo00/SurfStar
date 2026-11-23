@@ -20,6 +20,7 @@ import { getAppSiteUrl } from '../config'
 import { formatAverageLevelValue } from '../sessionStats'
 import type { AthletePeriodAnalytics } from '../teamAnalyticsStats'
 import { useI18n } from '../i18n'
+import { psychologyQuestionLabelKey } from '../psychologySurvey'
 import type { SurfSpot } from '../types'
 import {
   athleteReportPdfFilename,
@@ -122,6 +123,17 @@ export function AthleteReportSheet({
     return () => root.removeEventListener('wheel', onWheel, true)
   }, [])
 
+  const localizedPsychology = useMemo(() => {
+    if (!psychology) return null
+    return {
+      ...psychology,
+      byQuestion: psychology.byQuestion.map((entry) => ({
+        ...entry,
+        label: t(psychologyQuestionLabelKey(entry.key)),
+      })),
+    }
+  }, [psychology, t])
+
   const pdfPayload = useMemo(
     () =>
       buildAthleteReportPdfInput({
@@ -135,7 +147,7 @@ export function AthleteReportSheet({
         coachComment: trimmedComment || undefined,
         analytics,
         athleteId,
-        psychology,
+        psychology: localizedPsychology,
         sessionSummaries,
         getSpot,
         evolutionColumnLabel: evolutionColumn,
@@ -152,7 +164,7 @@ export function AthleteReportSheet({
       trimmedComment,
       analytics,
       athleteId,
-      psychology,
+      localizedPsychology,
       sessionSummaries,
       getSpot,
       evolutionColumn,
@@ -166,8 +178,8 @@ export function AthleteReportSheet({
     [sessionSummaries, getSpot],
   )
   const performanceLines = useMemo(
-    () => buildPerformanceLines(general, analytics, psychology, r),
-    [general, analytics, psychology, r],
+    () => buildPerformanceLines(general, analytics, r),
+    [general, analytics, r],
   )
 
   const pdfFilename = athleteReportPdfFilename(athleteName)

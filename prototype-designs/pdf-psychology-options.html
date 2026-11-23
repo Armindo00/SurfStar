@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF psychology — 3 options</title>
+  <style>
+    :root {
+      --ink: #0c1520;
+      --muted: #4b5c6b;
+      --line: #d0dae4;
+      --ocean: #0a6a94;
+      --soft: #e8eef3;
+      --page: #f3f6f9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+      background: #dfe6ec;
+      color: var(--ink);
+      padding: 1.25rem 1rem 2.5rem;
+    }
+    h1 { margin: 0 0 0.25rem; font-size: 1.25rem; }
+    .lead { margin: 0 0 1.15rem; color: var(--muted); font-size: 0.9rem; max-width: 48rem; }
+    .grid {
+      display: grid;
+      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      align-items: start;
+    }
+    .option {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 0.85rem;
+    }
+    .option__tag {
+      margin-bottom: 0.55rem;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ocean);
+    }
+    .option__note { margin: 0.7rem 0 0; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+    .sheet {
+      max-width: 420px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: 0 10px 28px rgba(12,21,32,0.08);
+      padding: 1rem 1.05rem 1.15rem;
+      min-height: 560px;
+    }
+    .pdf-head {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.55rem;
+      margin-bottom: 0.75rem;
+    }
+    .pdf-head small { color: var(--muted); font-size: 0.72rem; }
+    .pdf-head strong { display: block; font-size: 0.95rem; margin-top: 0.15rem; }
+    .sec-title {
+      margin: 0.85rem 0 0.4rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--ocean);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .lead-line { margin: 0 0 0.65rem; font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+    .sub { margin: 0.7rem 0 0.35rem; font-size: 0.78rem; font-weight: 700; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+    }
+    th, td {
+      border-bottom: 1px solid #e8eef3;
+      padding: 0.35rem 0.3rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 700; background: #f8fafc; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.35rem;
+      margin-bottom: 0.55rem;
+    }
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.45rem 0.4rem;
+      text-align: center;
+      background: #f8fafc;
+    }
+    .kpi span { display: block; font-size: 0.58rem; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+    .kpi strong { font-size: 0.95rem; color: var(--ocean); }
+    .qrow {
+      display: grid;
+      grid-template-columns: 1fr 2.2rem;
+      gap: 0.4rem;
+      align-items: center;
+      margin: 0.35rem 0;
+      font-size: 0.72rem;
+    }
+    .track {
+      height: 0.42rem;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+      margin-top: 0.15rem;
+    }
+    .track > i { display: block; height: 100%; background: var(--ocean); }
+    .score { text-align: right; font-weight: 800; color: var(--ocean); }
+    .callouts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      margin: 0.45rem 0 0.65rem;
+    }
+    .callout {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.5rem 0.55rem;
+      background: #fff;
+    }
+    .callout strong { display: block; font-size: 0.72rem; }
+    .callout small { color: var(--muted); font-size: 0.68rem; }
+    .callout--hi { border-left: 3px solid #047857; }
+    .callout--lo { border-left: 3px solid #b42318; }
+    .note {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.45rem 0.55rem;
+      margin-top: 0.35rem;
+      font-size: 0.7rem;
+      background: #f8fafc;
+    }
+    .note b { color: var(--ocean); }
+  </style>
+</head>
+<body>
+  <h1>Relatório PDF — psicologia: 3 opções</h1>
+  <p class="lead">Hoje o PDF só tem uma linha de resumo. A preview já tem tabelas. Escolhe como a secção de psicologia deve aparecer no PDF.</p>
+
+  <div class="grid">
+    <!-- A -->
+    <section class="option" id="opt-a">
+      <div class="option__tag">Option A · Full tables</div>
+      <div class="sheet">
+        <div class="pdf-head">
+          <small>SurfStar · Athlete report</small>
+          <strong>Francisca Maldonado Correia · 6 months</strong>
+        </div>
+        <div class="sec-title">Psychology check-ins</div>
+        <p class="lead-line">5 check-ins · avg 3.8/5 · feedback on 83% of sessions</p>
+        <div class="sub">Question averages</div>
+        <table>
+          <thead><tr><th>Question</th><th>Avg</th></tr></thead>
+          <tbody>
+            <tr><td>Mood after the session</td><td>4.0</td></tr>
+            <tr><td>Confidence to continue</td><td>3.8</td></tr>
+            <tr><td>Confidence during</td><td>3.6</td></tr>
+            <tr><td>Focus during</td><td>4.2</td></tr>
+            <tr><td>Error handling</td><td>3.4</td></tr>
+            <tr><td>Felt improvement</td><td>3.9</td></tr>
+            <tr><td>Performance satisfaction</td><td>3.7</td></tr>
+            <tr><td>Mental fatigue (5 = low)</td><td>3.5</td></tr>
+          </tbody>
+        </table>
+        <div class="sub">Check-in timeline</div>
+        <table>
+          <thead><tr><th>Date</th><th>Avg</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>18 Nov</td><td>4.1/5</td><td>Felt strong in waves</td></tr>
+            <tr><td>12 Nov</td><td>3.5/5</td><td>—</td></tr>
+            <tr><td>04 Nov</td><td>3.9/5</td><td>Tired after heats</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="option__note">Igual à preview: tabela por pergunta + timeline com notas. Completo e fácil de imprimir para pais.</p>
+    </section>
+
+    <!-- B -->
+    <section class="option" id="opt-b">
+      <div class="option__tag">Option B · Score bars</div>
+      <div class="sheet">
+        <div class="pdf-head">
+          <small>SurfStar · Athlete report</small>
+          <strong>Francisca Maldonado Correia · 6 months</strong>
+        </div>
+        <div class="sec-title">Psychology check-ins</div>
+        <div class="kpis">
+          <div class="kpi"><span>Check-ins</span><strong>5</strong></div>
+          <div class="kpi"><span>Avg /5</span><strong>3.8</strong></div>
+          <div class="kpi"><span>Response</span><strong>83%</strong></div>
+        </div>
+        <div class="sub">By question (0–5)</div>
+        <div class="qrow"><div>Mood after the session<div class="track"><i style="width:80%"></i></div></div><div class="score">4.0</div></div>
+        <div class="qrow"><div>Confidence to continue<div class="track"><i style="width:76%"></i></div></div><div class="score">3.8</div></div>
+        <div class="qrow"><div>Focus during<div class="track"><i style="width:84%"></i></div></div><div class="score">4.2</div></div>
+        <div class="qrow"><div>Error handling<div class="track"><i style="width:68%"></i></div></div><div class="score">3.4</div></div>
+        <div class="qrow"><div>Mental fatigue (5 = low)<div class="track"><i style="width:70%"></i></div></div><div class="score">3.5</div></div>
+        <div class="sub">Recent notes</div>
+        <div class="note"><b>18 Nov · 4.1</b> — Felt strong in waves</div>
+        <div class="note"><b>04 Nov · 3.9</b> — Tired after heats</div>
+      </div>
+      <p class="option__note">KPIs + barras 0–5 por pergunta. Timeline só com notas escritas (mais visual, menos tabela).</p>
+    </section>
+
+    <!-- C -->
+    <section class="option" id="opt-c">
+      <div class="option__tag">Option C · Highlights + notes</div>
+      <div class="sheet">
+        <div class="pdf-head">
+          <small>SurfStar · Athlete report</small>
+          <strong>Francisca Maldonado Correia · 6 months</strong>
+        </div>
+        <div class="sec-title">Psychology check-ins</div>
+        <div class="kpis">
+          <div class="kpi"><span>Check-ins</span><strong>5</strong></div>
+          <div class="kpi"><span>Avg /5</span><strong>3.8</strong></div>
+          <div class="kpi"><span>Response</span><strong>83%</strong></div>
+        </div>
+        <div class="sub">Standouts</div>
+        <div class="callouts">
+          <div class="callout callout--hi">
+            <strong>Highest</strong>
+            <small>Focus during · 4.2</small>
+          </div>
+          <div class="callout callout--lo">
+            <strong>Needs attention</strong>
+            <small>Error handling · 3.4</small>
+          </div>
+        </div>
+        <div class="sub">All question averages</div>
+        <table>
+          <thead><tr><th>Question</th><th>Avg</th></tr></thead>
+          <tbody>
+            <tr><td>Mood after the session</td><td>4.0</td></tr>
+            <tr><td>Confidence to continue</td><td>3.8</td></tr>
+            <tr><td>Focus during</td><td>4.2</td></tr>
+            <tr><td>Error handling</td><td>3.4</td></tr>
+            <tr><td>Mental fatigue (5 = low)</td><td>3.5</td></tr>
+          </tbody>
+        </table>
+        <div class="sub">Athlete notes</div>
+        <div class="note"><b>18 Nov</b> — Felt strong in waves</div>
+        <div class="note"><b>04 Nov</b> — Tired after heats</div>
+      </div>
+      <p class="option__note">Destaques high/low + tabela curta + notas. Mais “coach briefing”, menos log completo.</p>
+    </section>
+  </div>
+</body>
+</html>

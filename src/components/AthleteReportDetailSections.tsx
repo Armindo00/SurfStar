@@ -18,6 +18,7 @@ import {
 } from '../sessionStats'
 import type { AthletePeriodAnalytics } from '../teamAnalyticsStats'
 import { comboLevelLabel, levelLabelEn, maneuverLabel } from '../i18n/labels'
+import { psychologyQuestionLabelKey } from '../psychologySurvey'
 import { useI18n } from '../i18n'
 import type { AnalyticsReportCopy } from '../i18n/types'
 import type {
@@ -320,21 +321,51 @@ function ReportPsychologySection({
 }) {
   if (psychology.checkIns === 0) return null
 
-  const summaryKey =
-    psychology.checkIns === 1
-      ? 'analytics.analyticsReport.checkInsSummary'
-      : 'analytics.analyticsReport.checkInsSummaryPlural'
+  const ranked = [...psychology.byQuestion].sort((a, b) => b.average - a.average)
+  const highest = ranked[0]
+  const lowest = ranked[ranked.length - 1]
+  const notes = psychology.timeline.filter((row) => row.feedback.writtenNote?.trim())
 
   return (
     <section className="athlete-report__section">
       <h2>{r.psychologyCheckins}</h2>
-      <p className="athlete-report__lead">
-        {t(summaryKey, {
-          count: psychology.checkIns,
-          avg: psychology.averageOverall?.toFixed(1) ?? '—',
-          rate: psychology.feedbackRate === null ? '—' : `${psychology.feedbackRate}%`,
-        })}
-      </p>
+
+      <div className="athlete-report__kpi-grid athlete-report__kpi-grid--psych">
+        <article>
+          <span>{r.psychologyCheckInsLabel}</span>
+          <strong>{psychology.checkIns}</strong>
+        </article>
+        <article>
+          <span>{r.psychologyAvgLabel}</span>
+          <strong>{psychology.averageOverall?.toFixed(1) ?? '—'}</strong>
+        </article>
+        <article>
+          <span>{r.psychologyResponseLabel}</span>
+          <strong>
+            {psychology.feedbackRate === null ? '—' : `${psychology.feedbackRate}%`}
+          </strong>
+        </article>
+      </div>
+
+      {highest && lowest ? (
+        <>
+          <ReportSubheading>{r.psychologyStandouts}</ReportSubheading>
+          <div className="athlete-report__psych-callouts">
+            <div className="athlete-report__psych-callout athlete-report__psych-callout--hi">
+              <strong>{r.psychologyHighest}</strong>
+              <small>
+                {t(psychologyQuestionLabelKey(highest.key))} · {highest.average.toFixed(1)}
+              </small>
+            </div>
+            <div className="athlete-report__psych-callout athlete-report__psych-callout--lo">
+              <strong>{r.psychologyNeedsAttention}</strong>
+              <small>
+                {t(psychologyQuestionLabelKey(lowest.key))} · {lowest.average.toFixed(1)}
+              </small>
+            </div>
+          </div>
+        </>
+      ) : null}
 
       <ReportSubheading>{r.questionAverages}</ReportSubheading>
       <div className="table-wrap athlete-report__table-wrap">
@@ -348,7 +379,7 @@ function ReportPsychologySection({
           <tbody>
             {psychology.byQuestion.map((entry) => (
               <tr key={entry.key}>
-                <td>{entry.label}</td>
+                <td>{t(psychologyQuestionLabelKey(entry.key))}</td>
                 <td>{entry.average.toFixed(1)}</td>
               </tr>
             ))}
@@ -356,29 +387,20 @@ function ReportPsychologySection({
         </table>
       </div>
 
-      {psychology.timeline.length > 0 ? (
+      {notes.length > 0 ? (
         <>
-          <ReportSubheading>{r.checkInTimeline}</ReportSubheading>
-          <div className="table-wrap athlete-report__table-wrap">
-            <table className="data-table athlete-report__table athlete-report__detail-table">
-              <thead>
-                <tr>
-                  <th>{r.date}</th>
-                  <th>{r.avgScore}</th>
-                  <th>{r.note}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {psychology.timeline.map(({ feedback, averageScore }) => (
-                  <tr key={feedback.id}>
-                    <td>{formatSessionDate(feedback.submittedAt)}</td>
-                    <td>{averageScore === null ? '—' : `${averageScore.toFixed(1)}/5`}</td>
-                    <td>{feedback.writtenNote?.trim() || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ReportSubheading>{r.psychologyAthleteNotes}</ReportSubheading>
+          <ul className="athlete-report__psych-notes">
+            {notes.map(({ feedback, averageScore }) => (
+              <li key={feedback.id}>
+                <strong>
+                  {formatSessionDate(feedback.submittedAt)}
+                  {averageScore === null ? '' : ` · ${averageScore.toFixed(1)}/5`}
+                </strong>
+                <span>{feedback.writtenNote!.trim()}</span>
+              </li>
+            ))}
+          </ul>
         </>
       ) : null}
     </section>
