@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar Admin — 3 color options</title>
+  <style>
+    :root {
+      --page: #e8eef3;
+      --ink: #0c1520;
+      --muted: #4b5c6b;
+      --line: #d0dae4;
+      --ocean: #0a6a94;
+      --ocean-dark: #085578;
+      --card: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+      background: #dfe6ec;
+      color: var(--ink);
+      padding: 1.25rem 1rem 2.5rem;
+    }
+    h1 { margin: 0 0 0.25rem; font-size: 1.25rem; letter-spacing: -0.02em; }
+    .lead { margin: 0 0 1.25rem; color: var(--muted); font-size: 0.9rem; max-width: 46rem; }
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      align-items: start;
+    }
+    .option { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 0.85rem; }
+    .option__tag {
+      margin-bottom: 0.55rem;
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--ocean);
+    }
+    .option__note { margin: 0.7rem 0 0; font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+
+    /* Shared phone / admin shell matching SurfStar classes */
+    .phone {
+      width: 100%;
+      max-width: 380px;
+      margin: 0 auto;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      background: var(--page);
+      min-height: 640px;
+    }
+    .admin-page { padding: 0.85rem 0.9rem 1.1rem; }
+    .screen-header {
+      display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.85rem;
+    }
+    .back {
+      width: 2rem; height: 2rem; border-radius: 999px; border: 1px solid var(--line);
+      background: #fff; color: var(--muted); display: grid; place-items: center; font-size: 0.85rem;
+    }
+    .screen-header h2 { margin: 0; font-size: 1.15rem; letter-spacing: -0.02em; }
+    .admin-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
+    .admin-tabs__btn {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 0.42rem 0.8rem; font: inherit; font-size: 0.8rem; font-weight: 600; cursor: default;
+    }
+    .admin-tabs__badge {
+      min-width: 1.15rem; height: 1.15rem; padding: 0 0.3rem; border-radius: 999px;
+      font-size: 0.68rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .admin-panel__intro { margin: 0 0 0.85rem; font-size: 0.85rem; color: var(--muted); }
+    .admin-attention__title { margin: 0 0 0.55rem; font-size: 0.92rem; font-weight: 700; }
+    .admin-attention__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.9rem; }
+    .admin-attention-card {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 0.12rem;
+      padding: 0.75rem 0.8rem; border-radius: 0.75rem; border: 1px solid var(--line);
+      text-align: left; background: var(--card);
+    }
+    .admin-attention-card strong { font-size: 1.25rem; line-height: 1; }
+    .admin-attention-card span { font-size: 0.72rem; color: var(--muted); }
+    .admin-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.9rem; }
+    .admin-stat-card {
+      border: 1px solid var(--line); border-radius: 14px; padding: 0.85rem; display: grid; gap: 0.2rem;
+    }
+    .admin-stat-card strong { font-size: 1.4rem; line-height: 1; }
+    .admin-stat-card span { font-size: 0.78rem; color: var(--muted); }
+    .admin-card {
+      border: 1px solid var(--line); border-radius: 16px; padding: 0.9rem;
+    }
+    .admin-card__head { display: flex; justify-content: space-between; gap: 0.55rem; }
+    .admin-card__head h3 { margin: 0; font-size: 0.98rem; }
+    .admin-card__subtitle { margin: 0.2rem 0 0; font-size: 0.78rem; color: var(--muted); }
+    .admin-card__summary { margin: 0.35rem 0 0; font-size: 0.8rem; }
+    .admin-badge {
+      display: inline-flex; align-items: center; padding: 0.18rem 0.5rem; border-radius: 999px;
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .admin-card__actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+    .btn {
+      border-radius: 10px; border: 1px solid transparent; padding: 0.5rem 0.75rem;
+      font: inherit; font-size: 0.8rem; font-weight: 700; cursor: default;
+    }
+    .btn--primary { background: var(--ocean); border-color: var(--ocean-dark); color: #fff; }
+    .btn--ghost { background: #fff; border-color: var(--line); color: var(--ocean); }
+    .btn--danger-quiet { background: transparent; border-color: #e2a4a4; color: #b42318; }
+
+    /* —— CURRENT (broken leftovers) for reference, not shown as choice —— */
+
+    /* —— A: Mist ops —— */
+    .a { --page: #e8eef3; --card: #ffffff; }
+    .a .phone { background: var(--page); }
+    .a .admin-tabs__btn { background: #f3f6f9; color: #4b5c6b; border-color: #d0dae4; }
+    .a .admin-tabs__btn--active { background: #0a6a94; border-color: #0a6a94; color: #ffffff; }
+    .a .admin-tabs__badge { background: #085578; color: #ffffff; }
+    .a .admin-tabs__btn--active .admin-tabs__badge { background: #ffffff; color: #0a6a94; }
+    .a .admin-attention-card, .a .admin-stat-card, .a .admin-card { background: #ffffff; border-color: #d0dae4; }
+    .a .admin-stat-card--highlight { background: rgba(10,106,148,0.08); border-color: rgba(10,106,148,0.28); }
+    .a .admin-attention-card--pending { border-color: #f0c36a; }
+    .a .admin-attention-card--awaiting { border-color: #7db7d4; }
+    .a .admin-attention-card--overdue { border-color: #f0a0a0; }
+    .a .admin-badge--pending { background: #fff4e5; color: #9a3412; }
+    .a .admin-badge--awaiting { background: #e8f4fa; color: #085578; }
+
+    /* —— B: Slate console —— */
+    .b { --page: #eef2f6; --card: #ffffff; --line: #cfd7e1; }
+    .b .phone { background: var(--page); }
+    .b .admin-tabs { gap: 0.15rem; border-bottom: 1px solid #cfd7e1; padding-bottom: 0.35rem; }
+    .b .admin-tabs__btn {
+      background: transparent; border: 0; border-radius: 0; border-bottom: 2px solid transparent;
+      color: #64748b; padding: 0.45rem 0.55rem;
+    }
+    .b .admin-tabs__btn--active {
+      background: transparent; color: #0c1520; border-bottom-color: #0a6a94;
+    }
+    .b .admin-tabs__badge { background: #e2e8f0; color: #0c1520; }
+    .b .admin-tabs__btn--active .admin-tabs__badge { background: #0a6a94; color: #fff; }
+    .b .admin-attention-card, .b .admin-stat-card, .b .admin-card {
+      background: #ffffff; border-color: #cfd7e1; box-shadow: none; border-radius: 10px;
+    }
+    .b .admin-stat-card--highlight { border-color: #0a6a94; background: #fff; }
+    .b .admin-attention-card--pending { border-left: 3px solid #d97706; }
+    .b .admin-attention-card--awaiting { border-left: 3px solid #0a6a94; }
+    .b .admin-attention-card--overdue { border-left: 3px solid #dc2626; }
+    .b .admin-badge--pending { background: #fff7ed; color: #9a3412; }
+    .b .admin-badge--awaiting { background: #f1f5f9; color: #334155; }
+    .b .btn--primary { border-radius: 8px; }
+
+    /* —— C: Ink workspace —— */
+    .c { --page: #f3f6f9; --card: #ffffff; }
+    .c .phone { background: var(--page); }
+    .c .admin-tabs {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem;
+      background: #e8eef3; border-radius: 999px; padding: 0.25rem; margin-bottom: 1rem;
+    }
+    .c .admin-tabs__btn {
+      justify-content: center; background: transparent; border: 0; color: #4b5c6b; border-radius: 999px;
+      padding: 0.45rem 0.35rem; font-size: 0.74rem;
+    }
+    .c .admin-tabs__btn--active { background: #0a6a94; color: #fff; }
+    .c .admin-tabs__badge { background: #085578; color: #fff; }
+    .c .admin-tabs__btn--active .admin-tabs__badge { background: #fff; color: #0a6a94; }
+    .c .admin-attention-card, .c .admin-stat-card, .c .admin-card {
+      background: #ffffff; border: 1px solid #d0dae4; border-left: 3px solid #0a6a94; border-radius: 12px;
+    }
+    .c .admin-stat-card--highlight { border-left-color: #085578; background: rgba(10,106,148,0.06); }
+    .c .admin-attention-card--pending { border-left-color: #d97706; }
+    .c .admin-attention-card--awaiting { border-left-color: #0a6a94; }
+    .c .admin-attention-card--overdue { border-left-color: #dc2626; }
+    .c .admin-badge--pending { background: #fff4e5; color: #9a3412; }
+    .c .admin-badge--awaiting { background: #e8f4fa; color: #085578; }
+    .c .admin-card__head h3 { color: #0c1520; }
+  </style>
+</head>
+<body>
+  <h1>Admin — 3 opções (layout real SurfStar)</h1>
+  <p class="lead">Mesma estrutura da app: ScreenHeader, admin-tabs, Needs attention, stats, payment card. Só mudam cores / hierarquia. Escolhe A, B ou C.</p>
+
+  <div class="grid">
+    <section class="option a" id="opt-a">
+      <div class="option__tag">Option A · Mist ops</div>
+      <div class="phone">
+        <div class="admin-page">
+          <div class="screen-header"><span class="back">←</span><h2>SurfStar Admin</h2></div>
+          <nav class="admin-tabs">
+            <button class="admin-tabs__btn admin-tabs__btn--active">Overview</button>
+            <button class="admin-tabs__btn">Payments <span class="admin-tabs__badge">3</span></button>
+            <button class="admin-tabs__btn">Subscriptions</button>
+            <button class="admin-tabs__btn">Accounts</button>
+            <button class="admin-tabs__btn">Contact <span class="admin-tabs__badge">2</span></button>
+          </nav>
+          <p class="admin-panel__intro">Platform overview for coaches, billing, and support.</p>
+          <h3 class="admin-attention__title">Needs attention</h3>
+          <div class="admin-attention__grid">
+            <div class="admin-attention-card admin-attention-card--pending"><strong>3</strong><span>Pending review</span></div>
+            <div class="admin-attention-card admin-attention-card--awaiting"><strong>5</strong><span>Awaiting payment</span></div>
+            <div class="admin-attention-card admin-attention-card--overdue"><strong>1</strong><span>Overdue renewals</span></div>
+            <div class="admin-attention-card"><strong>2</strong><span>New messages</span></div>
+          </div>
+          <div class="admin-stats">
+            <div class="admin-stat-card"><strong>42</strong><span>Coaches</span></div>
+            <div class="admin-stat-card"><strong>186</strong><span>Athletes</span></div>
+            <div class="admin-stat-card admin-stat-card--highlight"><strong>31</strong><span>Active subscriptions</span></div>
+            <div class="admin-stat-card"><strong>2</strong><span>Blocked</span></div>
+          </div>
+          <article class="admin-card">
+            <div class="admin-card__head">
+              <div>
+                <h3>Ericeira Surf Academy</h3>
+                <p class="admin-card__subtitle">Ana Costa · ana@ericeira.pt</p>
+                <p class="admin-card__summary">Coach Pro · monthly · €49 · Submitted 22 Nov</p>
+              </div>
+              <span class="admin-badge admin-badge--pending">Pending</span>
+            </div>
+            <div class="admin-card__actions">
+              <button class="btn btn--primary">Approve</button>
+              <button class="btn btn--danger-quiet">Reject</button>
+            </div>
+          </article>
+        </div>
+      </div>
+      <p class="option__note">Pills oceano sólidas (como o resto da app). Cards brancos no mist. Badges legíveis. Mais consistente com Mist Daylight.</p>
+    </section>
+
+    <section class="option b" id="opt-b">
+      <div class="option__tag">Option B · Slate console</div>
+      <div class="phone">
+        <div class="admin-page">
+          <div class="screen-header"><span class="back">←</span><h2>SurfStar Admin</h2></div>
+          <nav class="admin-tabs">
+            <button class="admin-tabs__btn admin-tabs__btn--active">Overview</button>
+            <button class="admin-tabs__btn">Payments <span class="admin-tabs__badge">3</span></button>
+            <button class="admin-tabs__btn">Subscriptions</button>
+            <button class="admin-tabs__btn">Accounts</button>
+            <button class="admin-tabs__btn">Contact <span class="admin-tabs__badge">2</span></button>
+          </nav>
+          <p class="admin-panel__intro">Platform overview for coaches, billing, and support.</p>
+          <h3 class="admin-attention__title">Needs attention</h3>
+          <div class="admin-attention__grid">
+            <div class="admin-attention-card admin-attention-card--pending"><strong>3</strong><span>Pending review</span></div>
+            <div class="admin-attention-card admin-attention-card--awaiting"><strong>5</strong><span>Awaiting payment</span></div>
+            <div class="admin-attention-card admin-attention-card--overdue"><strong>1</strong><span>Overdue renewals</span></div>
+            <div class="admin-attention-card"><strong>2</strong><span>New messages</span></div>
+          </div>
+          <div class="admin-stats">
+            <div class="admin-stat-card"><strong>42</strong><span>Coaches</span></div>
+            <div class="admin-stat-card"><strong>186</strong><span>Athletes</span></div>
+            <div class="admin-stat-card admin-stat-card--highlight"><strong>31</strong><span>Active subscriptions</span></div>
+            <div class="admin-stat-card"><strong>2</strong><span>Blocked</span></div>
+          </div>
+          <article class="admin-card">
+            <div class="admin-card__head">
+              <div>
+                <h3>Ericeira Surf Academy</h3>
+                <p class="admin-card__subtitle">Ana Costa · ana@ericeira.pt</p>
+                <p class="admin-card__summary">Coach Pro · monthly · €49 · Submitted 22 Nov</p>
+              </div>
+              <span class="admin-badge admin-badge--pending">Pending</span>
+            </div>
+            <div class="admin-card__actions">
+              <button class="btn btn--primary">Approve</button>
+              <button class="btn btn--danger-quiet">Reject</button>
+            </div>
+          </article>
+        </div>
+      </div>
+      <p class="option__note">Tabs com underline (estilo console). Fundo slate frio, bordas mais secas, faixas laterais nos alerts. Mais “backoffice SaaS”.</p>
+    </section>
+
+    <section class="option c" id="opt-c">
+      <div class="option__tag">Option C · Ink workspace</div>
+      <div class="phone">
+        <div class="admin-page">
+          <div class="screen-header"><span class="back">←</span><h2>SurfStar Admin</h2></div>
+          <nav class="admin-tabs">
+            <button class="admin-tabs__btn admin-tabs__btn--active">Overview</button>
+            <button class="admin-tabs__btn">Payments <span class="admin-tabs__badge">3</span></button>
+            <button class="admin-tabs__btn">Subs</button>
+          </nav>
+          <p class="admin-panel__intro">Platform overview for coaches, billing, and support.</p>
+          <h3 class="admin-attention__title">Needs attention</h3>
+          <div class="admin-attention__grid">
+            <div class="admin-attention-card admin-attention-card--pending"><strong>3</strong><span>Pending review</span></div>
+            <div class="admin-attention-card admin-attention-card--awaiting"><strong>5</strong><span>Awaiting payment</span></div>
+            <div class="admin-attention-card admin-attention-card--overdue"><strong>1</strong><span>Overdue renewals</span></div>
+            <div class="admin-attention-card"><strong>2</strong><span>New messages</span></div>
+          </div>
+          <div class="admin-stats">
+            <div class="admin-stat-card"><strong>42</strong><span>Coaches</span></div>
+            <div class="admin-stat-card"><strong>186</strong><span>Athletes</span></div>
+            <div class="admin-stat-card admin-stat-card--highlight"><strong>31</strong><span>Active subscriptions</span></div>
+            <div class="admin-stat-card"><strong>2</strong><span>Blocked</span></div>
+          </div>
+          <article class="admin-card">
+            <div class="admin-card__head">
+              <div>
+                <h3>Ericeira Surf Academy</h3>
+                <p class="admin-card__subtitle">Ana Costa · ana@ericeira.pt</p>
+                <p class="admin-card__summary">Coach Pro · monthly · €49 · Submitted 22 Nov</p>
+              </div>
+              <span class="admin-badge admin-badge--pending">Pending</span>
+            </div>
+            <div class="admin-card__actions">
+              <button class="btn btn--primary">Approve</button>
+              <button class="btn btn--danger-quiet">Reject</button>
+            </div>
+          </article>
+        </div>
+      </div>
+      <p class="option__note">Segmented tabs + faixa oceano à esquerda nos cards. Hierarquia mais forte, tipo sala de controlo em light mode.</p>
+    </section>
+  </div>
+</body>
+</html>

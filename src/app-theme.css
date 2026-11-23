@@ -3671,23 +3671,122 @@ input:focus, select:focus, textarea:focus,
 }
 
 
-/* —— Mist Daylight contrast polish —— */
+/* —— Admin Option A · Mist ops —— */
+.app-shell .admin-page {
+  color: #0c1520 !important;
+}
+
+.app-shell .admin-tabs__btn,
+.app-shell .admin-filter-pills__btn {
+  background: #f3f6f9 !important;
+  border-color: #d0dae4 !important;
+  color: #4b5c6b !important;
+}
+
+.app-shell .admin-tabs__btn--active,
+.app-shell .admin-filter-pills__btn--active {
+  background: #0a6a94 !important;
+  border-color: #0a6a94 !important;
+  color: #ffffff !important;
+}
+
+.app-shell .admin-tabs__badge,
+.app-shell .admin-filter-pills__count {
+  background: #085578 !important;
+  color: #ffffff !important;
+}
+
+.app-shell .admin-tabs__btn--active .admin-tabs__badge,
+.app-shell .admin-filter-pills__btn--active .admin-filter-pills__count {
+  background: #ffffff !important;
+  color: #0a6a94 !important;
+}
+
+.app-shell .admin-stat-card,
+.app-shell .admin-card,
+.app-shell .admin-attention-card,
+.app-shell .admin-workflow-card,
+.app-shell .admin-empty {
+  background: #ffffff !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
+}
+
+.app-shell .admin-stat-card--highlight {
+  background: rgba(10, 106, 148, 0.08) !important;
+  border-color: rgba(10, 106, 148, 0.28) !important;
+}
+
+.app-shell .admin-attention-card span,
+.app-shell .admin-stat-card span,
+.app-shell .admin-card__summary,
+.app-shell .admin-panel__intro,
+.app-shell .admin-empty {
+  color: #4b5c6b !important;
+}
+
+.app-shell .admin-attention-card--pending,
+.app-shell .admin-attention-card--due {
+  border-color: #f0c36a !important;
+}
+
+.app-shell .admin-attention-card--awaiting,
+.app-shell .admin-attention-card--contact {
+  border-color: #7db7d4 !important;
+}
+
+.app-shell .admin-attention-card--overdue {
+  border-color: #f0a0a0 !important;
+}
+
+.app-shell .admin-card--danger {
+  background: #fde8e8 !important;
+  border-color: #f0a0a0 !important;
+}
+
+.app-shell .admin-details {
+  background: #f8fafc !important;
+  border-color: #d0dae4 !important;
+}
+
 .app-shell .admin-badge--pending,
 .admin-badge--pending {
-  background: rgba(180, 83, 9, 0.12) !important;
+  background: #fff4e5 !important;
   color: #9a3412 !important;
 }
 .app-shell .admin-badge--approved,
 .admin-badge--approved {
-  background: rgba(4, 120, 87, 0.12) !important;
+  background: #ecfdf5 !important;
   color: #047857 !important;
 }
 .app-shell .admin-badge--rejected,
 .app-shell .admin-badge--blocked,
 .admin-badge--rejected,
 .admin-badge--blocked {
-  background: rgba(220, 38, 38, 0.1) !important;
+  background: #fde8e8 !important;
   color: #b91c1c !important;
+}
+.app-shell .admin-badge--awaiting {
+  background: #e8f4fa !important;
+  color: #085578 !important;
+}
+.app-shell .admin-badge--resolved,
+.app-shell .admin-badge--activated,
+.app-shell .admin-badge--plan-active {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+}
+.app-shell .admin-badge--read,
+.app-shell .admin-badge--plan-none {
+  background: #e8eef3 !important;
+  color: #4b5c6b !important;
+}
+.app-shell .admin-badge--new,
+.app-shell .admin-badge--admin,
+.app-shell .admin-badge--plan,
+.app-shell .admin-badge--plan-pending {
+  background: rgba(10, 106, 148, 0.12) !important;
+  color: #0a6a94 !important;
 }
 .app-shell .muted,
 .landing-page .muted,
