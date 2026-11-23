@@ -3,9 +3,11 @@ import {
   EvolutionChartStack,
   SideCompareFigure,
 } from './AthleteReportChartFigures'
+import type { AthletePsychologyAnalytics } from '../athletePsychologyStats'
 import type { AthleteGeneralStats } from '../athleteStats'
 import type { PdfEvolutionCharts, SideCompareChart } from '../athleteReportPdfEvolution'
 import type { TrainingMixRow } from '../buildAthleteReportPdf'
+import { formatSessionDate } from '../sessionHistoryUtils'
 import type { AnalyticsReportCopy } from '../i18n/types'
 
 type Props = {
@@ -25,6 +27,7 @@ type Props = {
   trainingMix: TrainingMixRow[]
   performanceLines: string[]
   sessionRows: { date: string; mode: string; spot: string; summary: string }[]
+  psychology?: AthletePsychologyAnalytics | null
   r: AnalyticsReportCopy
   formatAvgLevel: (value: number | null) => string
 }
@@ -64,6 +67,7 @@ export function AthleteReportPreview({
   trainingMix,
   performanceLines,
   sessionRows,
+  psychology,
   r,
   formatAvgLevel,
 }: Props) {
@@ -73,6 +77,18 @@ export function AthleteReportPreview({
     frontside: r.frontside,
     backside: r.backside,
   }
+
+  const psych =
+    psychology && psychology.checkIns > 0
+      ? (() => {
+          const ranked = [...psychology.byQuestion].sort((a, b) => b.average - a.average)
+          return {
+            highest: ranked[0],
+            lowest: ranked[ranked.length - 1],
+            notes: psychology.timeline.filter((row) => row.feedback.writtenNote?.trim()),
+          }
+        })()
+      : null
 
   return (
     <article className="athlete-report">
@@ -141,6 +157,86 @@ export function AthleteReportPreview({
         <section className="athlete-report__section athlete-report__section--comments">
           <h2>{r.coachComments}</h2>
           <p className="athlete-report__comment">{coachComment}</p>
+        </section>
+      ) : null}
+
+      {psych && psychology ? (
+        <section className="athlete-report__section">
+          <h2>{r.psychologyCheckins}</h2>
+
+          <div className="athlete-report__kpi-grid athlete-report__kpi-grid--psych">
+            <article>
+              <span>{r.psychologyCheckInsLabel}</span>
+              <strong>{psychology.checkIns}</strong>
+            </article>
+            <article>
+              <span>{r.psychologyAvgLabel}</span>
+              <strong>{psychology.averageOverall?.toFixed(1) ?? '—'}</strong>
+            </article>
+            <article>
+              <span>{r.psychologyResponseLabel}</span>
+              <strong>
+                {psychology.feedbackRate === null ? '—' : `${psychology.feedbackRate}%`}
+              </strong>
+            </article>
+          </div>
+
+          {psych.highest && psych.lowest ? (
+            <>
+              <h3 className="athlete-report__subsection-title">{r.psychologyStandouts}</h3>
+              <div className="athlete-report__psych-callouts">
+                <div className="athlete-report__psych-callout athlete-report__psych-callout--hi">
+                  <strong>{r.psychologyHighest}</strong>
+                  <small>
+                    {psych.highest.label} · {psych.highest.average.toFixed(1)}
+                  </small>
+                </div>
+                <div className="athlete-report__psych-callout athlete-report__psych-callout--lo">
+                  <strong>{r.psychologyNeedsAttention}</strong>
+                  <small>
+                    {psych.lowest.label} · {psych.lowest.average.toFixed(1)}
+                  </small>
+                </div>
+              </div>
+            </>
+          ) : null}
+
+          <h3 className="athlete-report__subsection-title">{r.questionAverages}</h3>
+          <div className="table-wrap athlete-report__table-wrap">
+            <table className="data-table athlete-report__table athlete-report__detail-table">
+              <thead>
+                <tr>
+                  <th>{r.question}</th>
+                  <th>{r.average}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {psychology.byQuestion.map((entry) => (
+                  <tr key={entry.key}>
+                    <td>{entry.label}</td>
+                    <td>{entry.average.toFixed(1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {psych.notes.length > 0 ? (
+            <>
+              <h3 className="athlete-report__subsection-title">{r.psychologyAthleteNotes}</h3>
+              <ul className="athlete-report__psych-notes">
+                {psych.notes.map(({ feedback, averageScore }) => (
+                  <li key={feedback.id}>
+                    <strong>
+                      {formatSessionDate(feedback.submittedAt)}
+                      {averageScore === null ? '' : ` · ${averageScore.toFixed(1)}/5`}
+                    </strong>
+                    <span>{feedback.writtenNote!.trim()}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
         </section>
       ) : null}
 

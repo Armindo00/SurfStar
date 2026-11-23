@@ -275,6 +275,7 @@ export function AthleteReportSheet({
             trainingMix={trainingMix}
             performanceLines={performanceLines}
             sessionRows={sessionRows}
+            psychology={localizedPsychology}
             r={r}
             formatAvgLevel={formatAverageLevelValue}
           />

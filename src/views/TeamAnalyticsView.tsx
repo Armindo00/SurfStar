@@ -274,7 +274,15 @@ export function TeamAnalyticsView() {
             <button
               type="button"
               className="btn btn--primary btn--small"
-              onClick={() => setShowReport(true)}
+              onClick={() => {
+                if (selectedAthleteId) {
+                  void refreshAthleteEquipment(selectedAthleteId).finally(() => {
+                    setShowReport(true)
+                  })
+                  return
+                }
+                setShowReport(true)
+              }}
             >
               {t('analytics.pdfReport')}
             </button>
