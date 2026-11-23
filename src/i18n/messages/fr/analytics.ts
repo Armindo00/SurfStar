@@ -144,6 +144,13 @@ export const analytics = {
     checkInsSummaryPlural:
       '{{count}} check-ins · moy. globale {{avg}}/5 · taux de feedback {{rate}}',
     questionAverages: 'Moyennes par question (0–5)',
+    psychologyStandouts: 'Points clés',
+    psychologyHighest: 'Plus haut',
+    psychologyNeedsAttention: 'À surveiller',
+    psychologyAthleteNotes: 'Notes de l\'athlète',
+    psychologyCheckInsLabel: 'Check-ins',
+    psychologyAvgLabel: 'Moy. /5',
+    psychologyResponseLabel: 'Réponse',
     question: 'Question',
     average: 'Moyenne',
     checkInTimeline: 'Chronologie des check-ins',

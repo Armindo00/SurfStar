@@ -159,6 +159,13 @@ export const analytics = {
     checkInsSummaryPlural:
       '{{count}} check-ins · avg overall {{avg}}/5 · feedback rate {{rate}}',
     questionAverages: 'Question averages (0–5)',
+    psychologyStandouts: 'Standouts',
+    psychologyHighest: 'Highest',
+    psychologyNeedsAttention: 'Needs attention',
+    psychologyAthleteNotes: 'Athlete notes',
+    psychologyCheckInsLabel: 'Check-ins',
+    psychologyAvgLabel: 'Avg /5',
+    psychologyResponseLabel: 'Response',
     question: 'Question',
     average: 'Average',
     checkInTimeline: 'Check-in timeline',

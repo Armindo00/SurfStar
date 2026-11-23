@@ -14,8 +14,10 @@ const CONTENT_W = PAGE_W - MARGIN * 2
 
 const COLOR_TEXT = [15, 23, 42] as const
 const COLOR_MUTED = [100, 116, 139] as const
-const COLOR_PRIMARY = [2, 132, 199] as const
+const COLOR_PRIMARY = [10, 106, 148] as const
 const COLOR_BAR_BG = [226, 232, 240] as const
+const COLOR_SUCCESS = [4, 120, 87] as const
+const COLOR_DANGER = [180, 35, 24] as const
 
 export type AthleteReportPdfLabels = {
   sheetEyebrow: string
@@ -45,6 +47,17 @@ export type AthleteReportPdfLabels = {
   comboTraining: string
   competition: string
   psychology: string
+  psychologyCheckins: string
+  psychologyStandouts: string
+  psychologyHighest: string
+  psychologyNeedsAttention: string
+  psychologyAthleteNotes: string
+  psychologyCheckInsLabel: string
+  psychologyAvgLabel: string
+  psychologyResponseLabel: string
+  questionAverages: string
+  question: string
+  average: string
   chartLegendSuccess: string
   chartLegendPotential: string
   pdfChartPotentialEvolution: string
@@ -259,6 +272,122 @@ function formatLevel(value: number | null): string {
   return value === null ? '—' : value.toFixed(2)
 }
 
+function drawPsychologyHighlightsSection(
+  pdf: PdfDoc,
+  psychology: AthletePsychologyAnalytics,
+  L: AthleteReportPdfLabels,
+) {
+  const { doc } = pdf
+  pdf.sectionTitle(L.psychologyCheckins)
+
+  pdf.kpiGrid([
+    { label: L.psychologyCheckInsLabel, value: String(psychology.checkIns) },
+    {
+      label: L.psychologyAvgLabel,
+      value: psychology.averageOverall?.toFixed(1) ?? '—',
+    },
+    {
+      label: L.psychologyResponseLabel,
+      value: psychology.feedbackRate === null ? '—' : `${psychology.feedbackRate}%`,
+    },
+  ])
+
+  const ranked = [...psychology.byQuestion].sort((a, b) => b.average - a.average)
+  const highest = ranked[0]
+  const lowest = ranked[ranked.length - 1]
+  if (highest && lowest) {
+    pdf.ensureSpace(28)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(...COLOR_TEXT)
+    doc.text(L.psychologyStandouts, MARGIN, pdf.y)
+    pdf.y += 4
+
+    const gap = 3
+    const boxW = (CONTENT_W - gap) / 2
+    const boxH = 16
+    const boxes = [
+      {
+        x: MARGIN,
+        title: L.psychologyHighest,
+        body: `${highest.label} · ${highest.average.toFixed(1)}`,
+        accent: COLOR_SUCCESS,
+      },
+      {
+        x: MARGIN + boxW + gap,
+        title: L.psychologyNeedsAttention,
+        body: `${lowest.label} · ${lowest.average.toFixed(1)}`,
+        accent: COLOR_DANGER,
+      },
+    ] as const
+
+    for (const box of boxes) {
+      doc.setDrawColor(...COLOR_BAR_BG)
+      doc.setFillColor(255, 255, 255)
+      doc.roundedRect(box.x, pdf.y, boxW, boxH, 2, 2, 'FD')
+      const [ar, ag, ab] = box.accent
+      doc.setFillColor(ar, ag, ab)
+      doc.rect(box.x, pdf.y, 1.2, boxH, 'F')
+      doc.setFontSize(7)
+      doc.setTextColor(...COLOR_MUTED)
+      doc.text(box.title, box.x + 4, pdf.y + 5)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.setTextColor(...COLOR_TEXT)
+      const lines = doc.splitTextToSize(box.body, boxW - 7)
+      doc.text(lines, box.x + 4, pdf.y + 10)
+      doc.setFont('helvetica', 'normal')
+    }
+    pdf.y += boxH + 5
+  }
+
+  if (psychology.byQuestion.length > 0) {
+    pdf.ensureSpace(20)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(...COLOR_TEXT)
+    doc.text(L.questionAverages, MARGIN, pdf.y)
+    pdf.y += 3
+
+    autoTable(doc, {
+      startY: pdf.y,
+      margin: { left: MARGIN, right: MARGIN },
+      head: [[L.question, L.average]],
+      body: psychology.byQuestion.map((entry) => [entry.label, entry.average.toFixed(1)]),
+      styles: { fontSize: 7.5, cellPadding: 2, overflow: 'linebreak' },
+      headStyles: { fillColor: [226, 232, 240], textColor: [51, 65, 85], fontStyle: 'bold' },
+      columnStyles: {
+        0: { cellWidth: CONTENT_W - 22 },
+        1: { cellWidth: 22, halign: 'right' },
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      tableWidth: CONTENT_W,
+      showHead: 'everyPage',
+      rowPageBreak: 'avoid',
+      didDrawPage: () => pdf.drawFooter(),
+    })
+    pdf.y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5
+  }
+
+  const notes = psychology.timeline.filter((row) => row.feedback.writtenNote?.trim())
+  if (notes.length > 0) {
+    pdf.ensureSpace(16)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(...COLOR_TEXT)
+    doc.text(L.psychologyAthleteNotes, MARGIN, pdf.y)
+    pdf.y += 4
+
+    for (const row of notes.slice(0, 8)) {
+      const dateLabel = row.feedback.submittedAt.slice(0, 10)
+      const note = row.feedback.writtenNote!.trim()
+      const score =
+        row.averageScore === null ? '' : ` · ${row.averageScore.toFixed(1)}/5`
+      pdf.bodyText(`${dateLabel}${score} — ${note}`)
+    }
+  }
+}
+
 export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): Promise<Blob> {
   const logo = await loadLogoDataUrl()
   const pdf = new PdfDoc(input.athleteName, input.labels)
@@ -367,16 +496,15 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
       `${L.competition}: ${g.heatParticipations} heats · ${g.heatWins} ${L.heatWins} · ${L.avgLevel} ${g.avgHeatScore?.toFixed(1) ?? '—'}`,
     )
   }
-  if (input.psychology && input.psychology.checkIns > 0) {
-    performanceLines.push(
-      `${L.psychology}: ${input.psychology.checkIns} check-ins · ${L.avgLevel} ${input.psychology.averageOverall?.toFixed(1) ?? '—'}/5`,
-    )
-  }
   if (performanceLines.length > 0) {
     pdf.sectionTitle(L.performanceOverview)
     for (const line of performanceLines) {
       pdf.bodyText(line)
     }
+  }
+
+  if (input.psychology && input.psychology.checkIns > 0) {
+    drawPsychologyHighlightsSection(pdf, input.psychology, L)
   }
 
   if (input.sessionRows.length > 0) {

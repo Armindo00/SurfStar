@@ -51,10 +51,9 @@ export function buildManeuverSummaries(analytics: AthletePeriodAnalytics): Maneu
 export function buildPerformanceLines(
   general: AthleteGeneralStats,
   analytics: AthletePeriodAnalytics,
-  psychology: AthletePsychologyAnalytics | null | undefined,
   labels: Pick<
     AthleteReportPdfLabels,
-    'technicalTraining' | 'comboTraining' | 'competition' | 'psychology' | 'successCol' | 'attempts' | 'avgLevel' | 'heatWins'
+    'technicalTraining' | 'comboTraining' | 'competition' | 'successCol' | 'attempts' | 'avgLevel' | 'heatWins'
   >,
 ): string[] {
   const lines: string[] = []
@@ -73,11 +72,6 @@ export function buildPerformanceLines(
   if (general.heatParticipations > 0) {
     lines.push(
       `${L.competition}: ${general.heatParticipations} heats · ${general.heatWins} ${L.heatWins} · ${L.avgLevel} ${general.avgHeatScore?.toFixed(1) ?? '—'}`,
-    )
-  }
-  if (psychology && psychology.checkIns > 0) {
-    lines.push(
-      `${L.psychology}: ${psychology.checkIns} check-ins · ${L.avgLevel} ${psychology.averageOverall?.toFixed(1) ?? '—'}/5`,
     )
   }
   return lines
