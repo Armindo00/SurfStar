@@ -229,12 +229,8 @@ export function AthleteReportPreview({
         </section>
       ) : null}
 
-      <div className="athlete-report__annex-break" role="presentation">
-        <span>{r.annexTitle}</span>
-      </div>
-
       {performanceLines.length > 0 ? (
-        <section className="athlete-report__section">
+        <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.performanceOverview}</h2>
           <ul className="athlete-report__highlights">
             {performanceLines.map((line) => (
@@ -245,7 +241,7 @@ export function AthleteReportPreview({
       ) : null}
 
       {technicalSideCharts.length > 0 ? (
-        <section className="athlete-report__section">
+        <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.pdfTechnicalSideCharts}</h2>
           <div className="athlete-report__side-chart-grid">
             {technicalSideCharts.map((chart) => (
@@ -256,7 +252,7 @@ export function AthleteReportPreview({
       ) : null}
 
       {comboSideCharts.length > 0 ? (
-        <section className="athlete-report__section">
+        <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.pdfComboSideCharts}</h2>
           <div className="athlete-report__side-chart-grid">
             {comboSideCharts.map((chart) => (
@@ -267,7 +263,7 @@ export function AthleteReportPreview({
       ) : null}
 
       {heatAnalytics && heatAnalytics.heatsTotal > 0 ? (
-        <section className="athlete-report__section">
+        <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.competitionHeatsRhythm}</h2>
           <div className="athlete-report__kpi-grid">
             <article>
@@ -352,7 +348,7 @@ export function AthleteReportPreview({
       ) : null}
 
       {psych && psychology ? (
-        <section className="athlete-report__section">
+        <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.psychologyCheckins}</h2>
 
           <div className="athlete-report__kpi-grid athlete-report__kpi-grid--psych">
@@ -432,14 +428,14 @@ export function AthleteReportPreview({
       ) : null}
 
       {trainingMix.length > 0 ? (
-        <section className="athlete-report__section">
+        <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.trainingMix}</h2>
           <MixBars rows={trainingMix} />
         </section>
       ) : null}
 
       {sessionRows.length > 0 ? (
-        <section className="athlete-report__section">
+        <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.sessionLog}</h2>
           <div className="table-wrap athlete-report__table-wrap">
             <table className="data-table athlete-report__table">
@@ -467,7 +463,7 @@ export function AthleteReportPreview({
       ) : null}
 
       {evolutionCharts.periodLabels.length > 0 ? (
-        <section className="athlete-report__section">
+        <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.evolution}</h2>
           <EvolutionChartStack
             charts={evolutionCharts}

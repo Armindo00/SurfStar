@@ -9779,6 +9779,14 @@ body.has-cookie-consent {
   color: #0a6a94;
 }
 
+.athlete-report__topic-page {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(15, 23, 42, 0.16);
+  break-before: page;
+  page-break-before: always;
+}
+
 .athlete-report__psych-callouts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

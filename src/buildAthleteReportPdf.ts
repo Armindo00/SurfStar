@@ -195,6 +195,32 @@ class PdfDoc {
     }
   }
 
+  /** Force a fresh page so a topic never starts mid-page. */
+  startTopicPage() {
+    this.drawFooter()
+    this.doc.addPage()
+    this.y = MARGIN
+  }
+
+  /**
+   * Start a major report topic on its own page (unless already at the top
+   * of an unused page, e.g. right after startTopicPage).
+   */
+  topicSection(title: string) {
+    if (this.y > MARGIN + 1) {
+      this.startTopicPage()
+    }
+    this.doc.setFont('helvetica', 'bold')
+    this.doc.setFontSize(11)
+    this.doc.setTextColor(...COLOR_TEXT)
+    this.doc.text(title, MARGIN, this.y)
+    this.y += 7
+    this.doc.setDrawColor(...COLOR_BAR_BG)
+    this.doc.setLineWidth(0.3)
+    this.doc.line(MARGIN, this.y, PAGE_W - MARGIN, this.y)
+    this.y += 5
+  }
+
   sectionTitle(title: string) {
     this.ensureSpace(14)
     this.doc.setFont('helvetica', 'bold')
@@ -326,7 +352,7 @@ function drawPsychologyHighlightsSection(
   L: AthleteReportPdfLabels,
 ) {
   const { doc } = pdf
-  pdf.sectionTitle(L.psychologyCheckins)
+  pdf.topicSection(L.psychologyCheckins)
 
   pdf.kpiGrid([
     { label: L.psychologyCheckInsLabel, value: String(psychology.checkIns) },
@@ -497,7 +523,7 @@ function drawHeatAnnexSection(
 ) {
   if (heat.heatsTotal <= 0) return
   const { doc } = pdf
-  pdf.sectionTitle(L.competitionHeatsRhythm)
+  pdf.topicSection(L.competitionHeatsRhythm)
   pdf.kpiGrid([
     { label: L.heatWins, value: String(heat.rows.filter((r) => r.won).length) },
     { label: L.avgLevel, value: heat.avgHeatScore?.toFixed(1) ?? '—' },
@@ -647,25 +673,16 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
     pdf.bodyText(input.coachComment.trim())
   }
 
-  // —— Annex page ——
-  pdf.drawFooter()
-  doc.addPage()
-  pdf.y = MARGIN
-  pdf.sectionTitle(L.annexTitle)
-
-  if (input.technical) {
-    pdf.bodyText(
-      `${L.technicalTraining}: ${input.technical.overallSuccessRate}% ${L.successCol} · ${input.technical.totalManeuvers} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.technical.averageLevel)}`,
-    )
-  }
-  if (input.combo) {
-    pdf.bodyText(
-      `${L.comboTraining}: ${input.combo.overallSuccessRate}% ${L.successCol} · ${input.combo.totalAttempts} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.combo.averageLevel)}`,
-    )
-  }
-
-  if (input.technicalSideCharts.length > 0) {
-    pdf.sectionTitle(L.pdfTechnicalSideCharts)
+  // —— Annex: one topic per page (no mid-page topic starts) ——
+  const hasTechnicalTopic = Boolean(input.technical) || input.technicalSideCharts.length > 0
+  if (hasTechnicalTopic) {
+    pdf.startTopicPage()
+    pdf.topicSection(L.pdfTechnicalSideCharts)
+    if (input.technical) {
+      pdf.bodyText(
+        `${L.technicalTraining}: ${input.technical.overallSuccessRate}% ${L.successCol} · ${input.technical.totalManeuvers} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.technical.averageLevel)}`,
+      )
+    }
     for (const chart of input.technicalSideCharts) {
       drawSideCompareChart(pdf.chartLayout(), chart, {
         success: L.successCol,
@@ -676,8 +693,15 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
     }
   }
 
-  if (input.comboSideCharts.length > 0) {
-    pdf.sectionTitle(L.pdfComboSideCharts)
+  const hasComboTopic = Boolean(input.combo) || input.comboSideCharts.length > 0
+  if (hasComboTopic) {
+    pdf.startTopicPage()
+    pdf.topicSection(L.pdfComboSideCharts)
+    if (input.combo) {
+      pdf.bodyText(
+        `${L.comboTraining}: ${input.combo.overallSuccessRate}% ${L.successCol} · ${input.combo.totalAttempts} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.combo.averageLevel)}`,
+      )
+    }
     for (const chart of input.comboSideCharts) {
       drawSideCompareChart(pdf.chartLayout(), chart, {
         success: L.successCol,
@@ -688,22 +712,25 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
     }
   }
 
-  if (input.heatAnalytics) {
+  if (input.heatAnalytics && input.heatAnalytics.heatsTotal > 0) {
+    pdf.startTopicPage()
     drawHeatAnnexSection(pdf, input.heatAnalytics, L)
   }
 
   if (input.psychology && input.psychology.checkIns > 0) {
+    pdf.startTopicPage()
     drawPsychologyHighlightsSection(pdf, input.psychology, L)
   }
 
   if (input.trainingMix.length > 0) {
-    pdf.sectionTitle(L.trainingMix)
+    pdf.startTopicPage()
+    pdf.topicSection(L.trainingMix)
     pdf.drawHorizontalBars(input.trainingMix)
   }
 
   if (input.sessionRows.length > 0) {
-    pdf.ensureSpace(24)
-    pdf.sectionTitle(L.sessionLog)
+    pdf.startTopicPage()
+    pdf.topicSection(L.sessionLog)
     autoTable(doc, {
       startY: pdf.y,
       margin: { left: MARGIN, right: MARGIN },
@@ -727,7 +754,8 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
   }
 
   if (input.evolutionCharts.periodLabels.length > 0) {
-    pdf.sectionTitle(L.evolution)
+    pdf.startTopicPage()
+    pdf.topicSection(L.evolution)
     drawEvolutionSection(pdf.chartLayout(), input.evolutionCharts, input.maneuverLabels, {
       potential: L.pdfChartPotentialEvolution,
       maneuverSuccess: L.pdfChartManeuverSuccessEvolution,
