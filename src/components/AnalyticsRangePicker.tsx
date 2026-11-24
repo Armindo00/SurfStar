@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useI18n } from '../i18n'
 import {
+  analyticsPresetLabel,
   customAnalyticsRange,
   defaultCustomAnalyticsRange,
   defaultCustomDateBounds,
@@ -156,7 +157,7 @@ export function AnalyticsRangePicker({
                         disabled={disabled}
                         onClick={() => selectPreset(option.id)}
                       >
-                        {option.label}
+                        {analyticsPresetLabel(option.id, 'long')}
                       </button>
                     </li>
                   )
@@ -201,7 +202,7 @@ export function AnalyticsRangePicker({
             disabled={disabled}
             onClick={() => selectPreset(option.id)}
           >
-            {option.shortLabel}
+            {analyticsPresetLabel(option.id, 'short')}
           </button>
         ))}
         <button

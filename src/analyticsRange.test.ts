@@ -23,10 +23,20 @@ describe('analyticsRange', () => {
 
   it('describes preset and custom ranges', () => {
     expect(describeAnalyticsRange(presetAnalyticsRange('1w'))).toBe('1 week')
+    expect(describeAnalyticsRangeLong(presetAnalyticsRange('6m'))).toBe('Last 6 months')
     expect(describeAnalyticsRange(customAnalyticsRange('2026-07-01', '2026-07-10'))).toContain('Jul')
     expect(
       describeAnalyticsRangeLong(customAnalyticsRange('2026-07-01', '2026-07-10', 'Maldives camp')),
     ).toBe('Maldives camp')
+  })
+
+  it('localizes preset range labels', () => {
+    setLocaleGlobal('pt')
+    expect(describeAnalyticsRange(presetAnalyticsRange('6m'))).toBe('6 meses')
+    expect(describeAnalyticsRangeLong(presetAnalyticsRange('6m'))).toBe('Últimos 6 meses')
+    expect(describeAnalyticsRange(presetAnalyticsRange('1m'))).toBe('1 mês')
+    expect(describeAnalyticsRangeLong(presetAnalyticsRange('1w'))).toBe('Última semana')
+    setLocaleGlobal('en')
   })
 
   it('picks evolution column labels from range length', () => {
