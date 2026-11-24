@@ -1,11 +1,6 @@
 import type { PdfEvolutionCharts } from '../athleteReportPdfEvolution'
 import type { SideCompareChart } from '../athleteReportPdfEvolution'
-
-const MANEUVER_COLORS: Record<string, string> = {
-  rail: '#0284c7',
-  'top-turn': '#059669',
-  progressive: '#d97706',
-}
+import { OpenVsCloseChart } from './OpenVsCloseChart'
 
 export type LineSeries = {
   label: string
@@ -112,13 +107,13 @@ export function LineChartFigure({
   )
 }
 
+/** Option C: one evolution series (potential) — matches PDF annex. */
 export function EvolutionChartStack({
   charts,
-  maneuverLabels,
   labels,
 }: {
   charts: PdfEvolutionCharts
-  maneuverLabels: Record<string, string>
+  maneuverLabels?: Record<string, string>
   labels: {
     potential: string
     maneuverSuccess: string
@@ -129,6 +124,7 @@ export function EvolutionChartStack({
 }) {
   const { periodLabels } = charts
   if (periodLabels.length === 0) return null
+  if (!charts.potentialRates.some((v) => v !== null)) return null
 
   return (
     <div className="athlete-report__chart-stack">
@@ -138,65 +134,40 @@ export function EvolutionChartStack({
         series={[
           {
             label: labels.potential,
-            color: '#0ea5e9',
+            color: '#0a6a94',
             values: charts.potentialRates,
             scale: 'percent',
           },
         ]}
       />
-      <LineChartFigure
-        title={labels.maneuverSuccess}
-        xLabels={periodLabels}
-        series={charts.maneuverSeries
-          .filter((s) => s.successRates.some((v) => v !== null))
-          .map((s) => ({
-            label: maneuverLabels[s.kind] ?? s.kind,
-            color: MANEUVER_COLORS[s.kind] ?? '#64748b',
-            values: s.successRates,
-            scale: 'percent' as const,
-          }))}
-      />
-      <LineChartFigure
-        title={labels.maneuverLevel}
-        xLabels={periodLabels}
-        series={charts.maneuverSeries
-          .filter((s) => s.avgLevels.some((v) => v !== null))
-          .map((s) => ({
-            label: maneuverLabels[s.kind] ?? s.kind,
-            color: MANEUVER_COLORS[s.kind] ?? '#64748b',
-            values: s.avgLevels,
-            scale: 'level' as const,
-          }))}
-      />
-      {charts.comboSuccessRates.some((v) => v !== null) ? (
-        <LineChartFigure
-          title={labels.comboSuccess}
-          xLabels={periodLabels}
-          series={[
-            {
-              label: labels.comboSuccess,
-              color: '#a855f7',
-              values: charts.comboSuccessRates,
-              scale: 'percent',
-            },
-          ]}
-        />
-      ) : null}
-      {charts.comboAvgLevels.some((v) => v !== null) ? (
-        <LineChartFigure
-          title={labels.comboLevel}
-          xLabels={periodLabels}
-          series={[
-            {
-              label: labels.comboLevel,
-              color: '#a855f7',
-              values: charts.comboAvgLevels,
-              scale: 'level',
-            },
-          ]}
-        />
-      ) : null}
     </div>
+  )
+}
+
+export function OpenVsCloseFigure({
+  title,
+  openLabel,
+  closeLabel,
+  openValue,
+  closeValue,
+  hint,
+}: {
+  title: string
+  openLabel: string
+  closeLabel: string
+  openValue: number | null
+  closeValue: number | null
+  hint?: string
+}) {
+  return (
+    <OpenVsCloseChart
+      title={title}
+      openLabel={openLabel}
+      closeLabel={closeLabel}
+      openValue={openValue}
+      closeValue={closeValue}
+      hint={hint}
+    />
   )
 }
 

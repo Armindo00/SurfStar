@@ -1,0 +1,202 @@
+<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"/><style>
+    :root {
+      --ink: #0d1b24;
+      --muted: #5a6b76;
+      --line: #d5dee5;
+      --ocean: #0a6a94;
+      --ocean-deep: #074d6c;
+      --mist: #eef4f7;
+      --paper: #f7fafb;
+      --ok: #0f6b4c;
+      --watch: #9b2c2c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+      background: linear-gradient(180deg, #d9e4ea 0%, #cfdce4 100%);
+      color: var(--ink);
+      padding: 1.4rem 1rem 2.5rem;
+    }
+    .intro { max-width: 1100px; margin: 0 auto 1.2rem; }
+    .intro h1 { margin: 0 0 0.3rem; font-size: 1.45rem; letter-spacing: -0.02em; }
+    .intro p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.45; max-width: 48rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      align-items: start;
+    }
+    @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: #fff;
+      border: 1px solid rgba(13,27,36,0.1);
+      border-radius: 14px;
+      padding: 0.75rem;
+      box-shadow: 0 12px 28px rgba(13,27,36,0.08);
+    }
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ocean);
+      margin-bottom: 0.2rem;
+    }
+    .card h2 { margin: 0 0 0.25rem; font-size: 1.02rem; }
+    .card .blurb { margin: 0 0 0.7rem; font-size: 0.78rem; color: var(--muted); line-height: 1.4; min-height: 2.6rem; }
+    .sheet {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.85rem 0.9rem 1rem;
+      min-height: 520px;
+    }
+    .pdf-head {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.65rem;
+    }
+    .brand { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ocean); }
+    .pdf-head small { color: var(--muted); font-size: 0.68rem; }
+    .athlete { margin: 0 0 0.15rem; font-size: 1.15rem; font-weight: 700; }
+    .meta { margin: 0 0 0.75rem; color: var(--muted); font-size: 0.72rem; }
+    .sec { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ocean); margin: 0.75rem 0 0.4rem; }
+    .readout {
+      margin: 0 0 0.65rem;
+      padding: 0.55rem 0.65rem;
+      border-left: 3px solid var(--ocean);
+      background: #fff;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.74rem;
+      line-height: 1.4;
+    }
+    .readout strong { color: var(--ocean-deep); }
+    .side {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.55rem 0.6rem;
+      margin-bottom: 0.45rem;
+    }
+    .side .name { font-size: 0.72rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .row {
+      display: grid;
+      grid-template-columns: 3.4rem 1fr 2rem;
+      gap: 0.3rem;
+      align-items: center;
+      font-size: 0.68rem;
+      margin-bottom: 0.22rem;
+    }
+    .bar { height: 0.42rem; border-radius: 999px; background: #e4ebf0; overflow: hidden; }
+    .bar > i { display: block; height: 100%; background: var(--ocean); border-radius: inherit; }
+    .bar--bs > i { background: #5f7f90; }
+    .pct { text-align: right; font-weight: 700; color: var(--ocean-deep); font-variant-numeric: tabular-nums; }
+    .kpi {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.35rem;
+      margin-bottom: 0.5rem;
+    }
+    .kpi div {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.4rem 0.45rem;
+    }
+    .kpi span { display: block; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+    .kpi strong { display: block; margin-top: 0.15rem; font-size: 0.95rem; color: var(--ocean-deep); }
+    .line-chart {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.5rem 0.55rem 0.4rem;
+      margin-bottom: 0.45rem;
+    }
+    .line-chart .t { font-size: 0.68rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .line-chart svg { width: 100%; height: 56px; display: block; }
+    .ghost {
+      opacity: 0.38;
+      filter: grayscale(0.4);
+      position: relative;
+    }
+    .ghost::after {
+      content: "removido";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--watch);
+      background: rgba(255,255,255,0.55);
+      border-radius: 10px;
+    }
+    .stack-mini { display: grid; gap: 0.3rem; }
+    .note {
+      margin: 0.65rem 0 0;
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.4;
+      border-top: 1px dashed var(--line);
+      padding-top: 0.5rem;
+    }
+    .pill {
+      display: inline-block;
+      margin-top: 0.35rem;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.22rem 0.4rem;
+      border-radius: 5px;
+      background: rgba(10,106,148,0.12);
+      color: var(--ocean-deep);
+    }
+    .pill--rec { background: rgba(15,107,76,0.14); color: var(--ok); }
+  </style>
+</head>
+<body style="padding:1rem;background:#cfdce4">
+<div style="max-width:380px;margin:0 auto"><article class="card" id="pdf-a">
+      <div class="tag">Opção A</div>
+      <h2>Magro — só o essencial</h2>
+      <p class="blurb">Side-compare técnico + combo. Sem evolução. Sem training mix. Heat só KPI + leitura.</p>
+      <div class="sheet">
+        <div class="pdf-head">
+          <div><span class="brand">SurfStar</span><strong class="athlete">Maria Santos</strong></div>
+          <small>Anexo · Técnico</small>
+        </div>
+        <p class="meta">Mar–Mai 2026 · 18 sessões</p>
+        <div class="sec">Técnico · FS vs BS</div>
+        <p class="readout"><strong>Leitura:</strong> O lado fraco é rail backside (55% vs 80% FS, gap 25 pts).</p>
+        <div class="side">
+          <div class="name">Rail</div>
+          <div class="row"><span>FS</span><div class="bar"><i style="width:80%"></i></div><span class="pct">80%</span></div>
+          <div class="row"><span>BS</span><div class="bar bar--bs"><i style="width:55%"></i></div><span class="pct">55%</span></div>
+        </div>
+        <div class="side">
+          <div class="name">Top turn</div>
+          <div class="row"><span>FS</span><div class="bar"><i style="width:72%"></i></div><span class="pct">72%</span></div>
+          <div class="row"><span>BS</span><div class="bar bar--bs"><i style="width:68%"></i></div><span class="pct">68%</span></div>
+        </div>
+        <div class="sec">Heat</div>
+        <div class="kpi">
+          <div><span>Heats</span><strong>8</strong></div>
+          <div><span>Clutch</span><strong>−1.4</strong></div>
+          <div><span>10 pts cedo</span><strong>40%</strong></div>
+        </div>
+        <p class="readout"><strong>Leitura:</strong> Abre bem, não converte no fecho.</p>
+        <div class="ghost line-chart">
+          <div class="t">Evolução · potencial</div>
+          <svg viewBox="0 0 200 56" aria-hidden="true"><polyline fill="none" stroke="#0a6a94" stroke-width="2" points="8,40 40,36 72,28 104,32 136,22 168,18 192,24"/></svg>
+        </div>
+      </div>
+      <p class="note">Relatório curto. Ideal se o PDF deve ser só interpretação + assimetria.</p>
+    </article></div>
+</body></html>

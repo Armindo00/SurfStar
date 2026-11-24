@@ -1,6 +1,7 @@
 import { AppLogo } from './AppLogo'
 import {
   EvolutionChartStack,
+  OpenVsCloseFigure,
   SideCompareFigure,
 } from './AthleteReportChartFigures'
 import type { AthletePsychologyAnalytics } from '../athletePsychologyStats'
@@ -307,6 +308,21 @@ export function AthleteReportPreview({
               </strong>
             </article>
           </div>
+
+          {heatAnalytics.heatsWithTiming > 0 ? (
+            <OpenVsCloseFigure
+              title={r.openVsCloseTitle}
+              openLabel={r.openShort}
+              closeLabel={r.closeShort}
+              openValue={heatAnalytics.avgBestWaveOpening}
+              closeValue={heatAnalytics.avgBestWaveClosing}
+              hint={
+                heatAnalytics.clutchDelta === null
+                  ? undefined
+                  : `${r.clutchDelta} ${heatAnalytics.clutchDelta > 0 ? '+' : ''}${heatAnalytics.clutchDelta.toFixed(1)}`
+              }
+            />
+          ) : null}
 
           {heatAnalytics.rows.length > 0 ? (
             <>

@@ -9929,6 +9929,90 @@ body.has-cookie-consent {
   gap: 1.1rem;
 }
 
+.open-vs-close-chart {
+  margin: 0 0 0.85rem;
+  padding: 0.65rem 0.7rem 0.55rem;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+}
+
+.open-vs-close-chart__title {
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.open-vs-close-chart__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.open-vs-close-chart__baseline {
+  stroke: #d5dee5;
+  stroke-width: 1;
+}
+
+.open-vs-close-chart__value {
+  font-size: 11px;
+  font-weight: 700;
+  fill: #074d6c;
+}
+
+.open-vs-close-chart__label {
+  font-size: 10px;
+  fill: #5a6b76;
+}
+
+.open-vs-close-chart__hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.psych-sparkline {
+  margin: 0;
+}
+
+.psych-sparkline__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.psych-sparkline__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.psych-sparkline__grid {
+  stroke: #e8eef2;
+  stroke-width: 1;
+}
+
+.psych-sparkline__line {
+  stroke: #0a6a94;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.psych-sparkline__dot {
+  fill: #0a6a94;
+}
+
+.psych-sparkline__dot--watch {
+  fill: #9b2c2c;
+}
+
+.psych-sparkline__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+}
+
 .athlete-report__chart {
   margin: 0;
   padding: 0.65rem 0.75rem;

@@ -7,12 +7,6 @@ const COLOR_TEXT = [15, 23, 42] as const
 const COLOR_FS = [2, 132, 199] as const
 const COLOR_BS = [124, 58, 237] as const
 
-const MANEUVER_LINE_COLORS: Record<string, [number, number, number]> = {
-  rail: [2, 132, 199],
-  'top-turn': [5, 150, 105],
-  progressive: [217, 119, 6],
-}
-
 export type ChartLayout = {
   doc: jsPDF
   margin: number
@@ -141,10 +135,11 @@ export function drawLineChart(
   layout.setY(legendY + 6)
 }
 
+/** Option C: single high-signal evolution series (wave potential). */
 export function drawEvolutionSection(
   layout: ChartLayout,
   charts: PdfEvolutionCharts,
-  maneuverLabels: Record<string, string>,
+  _maneuverLabels: Record<string, string>,
   labels: {
     potential: string
     maneuverSuccess: string
@@ -154,67 +149,84 @@ export function drawEvolutionSection(
   },
 ) {
   const { periodLabels } = charts
+  if (!charts.potentialRates.some((v) => v !== null)) {
+    layout.setY(layout.getY() + 2)
+    return
+  }
 
   drawLineChart(layout, labels.potential, periodLabels, [
     {
       label: labels.potential,
-      color: [14, 165, 233],
+      color: [10, 106, 148],
       values: charts.potentialRates,
       scale: 'percent',
     },
   ])
 
-  drawLineChart(
-    layout,
-    labels.maneuverSuccess,
-    periodLabels,
-    charts.maneuverSeries
-      .filter((s) => s.successRates.some((v) => v !== null))
-      .map((s) => ({
-        label: maneuverLabels[s.kind] ?? s.kind,
-        color: MANEUVER_LINE_COLORS[s.kind] ?? [100, 116, 139],
-        values: s.successRates,
-        scale: 'percent' as const,
-      })),
-  )
-
-  drawLineChart(
-    layout,
-    labels.maneuverLevel,
-    periodLabels,
-    charts.maneuverSeries
-      .filter((s) => s.avgLevels.some((v) => v !== null))
-      .map((s) => ({
-        label: maneuverLabels[s.kind] ?? s.kind,
-        color: MANEUVER_LINE_COLORS[s.kind] ?? [100, 116, 139],
-        values: s.avgLevels,
-        scale: 'level' as const,
-      })),
-  )
-
-  if (charts.comboSuccessRates.some((v) => v !== null)) {
-    drawLineChart(layout, labels.comboSuccess, periodLabels, [
-      {
-        label: labels.comboSuccess,
-        color: [168, 85, 247],
-        values: charts.comboSuccessRates,
-        scale: 'percent',
-      },
-    ])
-  }
-
-  if (charts.comboAvgLevels.some((v) => v !== null)) {
-    drawLineChart(layout, labels.comboLevel, periodLabels, [
-      {
-        label: labels.comboLevel,
-        color: [168, 85, 247],
-        values: charts.comboAvgLevels,
-        scale: 'level',
-      },
-    ])
-  }
-
   layout.setY(layout.getY() + 4)
+}
+
+const COLOR_OPEN = [10, 106, 148] as const
+const COLOR_CLOSE = [155, 44, 44] as const
+
+/** Dual vertical bars: average best-wave opening vs closing (heat score scale). */
+export function drawOpenVsCloseChart(
+  layout: ChartLayout,
+  title: string,
+  openLabel: string,
+  closeLabel: string,
+  openValue: number | null,
+  closeValue: number | null,
+  maxScore = 10,
+) {
+  if (openValue === null && closeValue === null) return
+
+  layout.ensureSpace(48)
+  const { doc, margin, contentW } = layout
+  let y = layout.getY()
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8.5)
+  doc.setTextColor(...COLOR_TEXT)
+  doc.text(title, margin, y)
+  y += 5
+
+  const barMaxH = 22
+  const barW = 14
+  const gap = 22
+  const pairWidth = barW * 2 + gap
+  const startX = margin + (contentW - pairWidth) / 2
+  const baseY = y + barMaxH
+
+  const drawBar = (
+    x: number,
+    value: number | null,
+    color: readonly [number, number, number],
+    label: string,
+  ) => {
+    const center = x + barW / 2
+    doc.setFillColor(...COLOR_BAR_BG)
+    doc.rect(x, baseY - barMaxH, barW, barMaxH, 'F')
+    const display = value === null ? '—' : value.toFixed(1)
+    if (value !== null && value > 0) {
+      const h = (Math.min(maxScore, Math.max(0, value)) / maxScore) * barMaxH
+      const [r, g, b] = color
+      doc.setFillColor(r, g, b)
+      doc.rect(x, baseY - h, barW, Math.max(h, 1.2), 'F')
+    }
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(7)
+    doc.setTextColor(...COLOR_TEXT)
+    doc.text(display, center, baseY - barMaxH - 1.5, { align: 'center' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(6.5)
+    doc.setTextColor(...COLOR_MUTED)
+    doc.text(label, center, baseY + 4, { align: 'center', maxWidth: barW + 10 })
+  }
+
+  drawBar(startX, openValue, COLOR_OPEN, openLabel)
+  drawBar(startX + barW + gap, closeValue, COLOR_CLOSE, closeLabel)
+  layout.setY(baseY + 8)
 }
 
 export function drawSideCompareChart(
