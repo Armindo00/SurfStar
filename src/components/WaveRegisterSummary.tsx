@@ -57,8 +57,17 @@ export function WaveRegisterSummary({ mode }: Props) {
         <div>
           <p className="wave-summary__eyebrow">{r.currentWave}</p>
           <h3 className="wave-summary__title">
-            {hasEntries ? t('session.register.loggedCount', { count: entries.length }) : r.recording}
+            {hasEntries
+              ? t('session.register.loggedCount', { count: entries.length })
+              : openWave.outcome === 'wasted'
+                ? r.wasted
+                : r.recording}
           </h3>
+          <p className="wave-summary__meta muted">
+            {openWave.hasPotential ? r.withPotential : r.noPotential}
+            {' · '}
+            {openWave.outcome === 'wasted' ? r.wasted : r.surfed}
+          </p>
         </div>
       </header>
 

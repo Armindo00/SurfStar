@@ -189,30 +189,45 @@ function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession 
     customTimerStartedAt: s.customTimerStartedAt ?? null,
     customTimerEndedAt: s.customTimerEndedAt ?? null,
     waves: (s.waves ?? []).map((raw) => {
-      const w = raw as WaveRecord & { kind?: 'wave' | 'no-potential' }
+      const w = raw as WaveRecord & { kind?: 'wave' | 'no-potential'; outcome?: WaveRecord['outcome'] }
+      const hasPotential = w.hasPotential ?? w.kind !== 'no-potential'
+      const maneuvers = (w.maneuvers ?? []).map((m) => ({
+        ...m,
+        level: normalizeLevel(m.level),
+        success: m.success ?? true,
+      }))
+      const comboAttempts = (w.comboAttempts ?? []).map((c) => ({
+        ...c,
+        level: normalizeLevel(c.level),
+        success: c.success ?? true,
+      }))
+      const customAttempts = (w.customAttempts ?? []).map((c) => ({
+        id: c.id,
+        buttonId: c.buttonId,
+        levelId: c.levelId ?? null,
+        success: c.success ?? null,
+        at: c.at,
+      }))
+      const hasAttempts =
+        maneuvers.length > 0 || comboAttempts.length > 0 || customAttempts.length > 0
+      const outcome =
+        w.outcome === 'surfed' || w.outcome === 'wasted'
+          ? w.outcome
+          : hasAttempts
+            ? 'surfed'
+            : hasPotential
+              ? 'surfed'
+              : 'wasted'
       return {
         id: w.id,
         athleteId: w.athleteId,
         startedAt: w.startedAt,
-        hasPotential: w.hasPotential ?? w.kind !== 'no-potential',
+        hasPotential,
+        outcome,
         multiManeuver: w.multiManeuver ?? false,
-        maneuvers: (w.maneuvers ?? []).map((m) => ({
-          ...m,
-          level: normalizeLevel(m.level),
-          success: m.success ?? true,
-        })),
-        comboAttempts: (w.comboAttempts ?? []).map((c) => ({
-          ...c,
-          level: normalizeLevel(c.level),
-          success: c.success ?? true,
-        })),
-        customAttempts: (w.customAttempts ?? []).map((c) => ({
-          id: c.id,
-          buttonId: c.buttonId,
-          levelId: c.levelId ?? null,
-          success: c.success ?? null,
-          at: c.at,
-        })),
+        maneuvers,
+        comboAttempts,
+        customAttempts,
       }
     }),
   }

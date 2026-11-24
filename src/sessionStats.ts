@@ -40,6 +40,8 @@ export type WaveStats = {
   totalWaves: number
   withPotential: number
   withoutPotential: number
+  surfed: number
+  wasted: number
 }
 
 export type SessionStatsSnapshot = {
@@ -204,6 +206,11 @@ export function waveHasLoggedAttempts(w: WaveRecord, mode: TrainingMode): boolea
   return w.maneuvers.length > 0
 }
 
+/** Onda deve ser guardada (não descartada ao fechar / trocar atleta). */
+export function waveIsCommitted(w: WaveRecord, mode: TrainingMode): boolean {
+  return w.outcome === 'wasted' || waveHasLoggedAttempts(w, mode)
+}
+
 export function computeWaveStats(
   session: TrainingSession,
   athleteId?: string | null,
@@ -215,6 +222,8 @@ export function computeWaveStats(
     totalWaves: waves.length,
     withPotential: waves.filter((w) => w.hasPotential).length,
     withoutPotential: waves.filter((w) => !w.hasPotential).length,
+    surfed: waves.filter((w) => w.outcome === 'surfed').length,
+    wasted: waves.filter((w) => w.outcome === 'wasted').length,
   }
 }
 

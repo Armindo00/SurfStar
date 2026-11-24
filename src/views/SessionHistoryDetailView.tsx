@@ -54,6 +54,10 @@ function TechnicalStatsBlock({
           <span className="kpi-card__label">{t('ui.stats.noPotential')}</span>
           <strong className="kpi-card__value">{stats.waveStats.withoutPotential}</strong>
         </article>
+        <article className="kpi-card">
+          <span className="kpi-card__label">{t('ui.stats.wasted')}</span>
+          <strong className="kpi-card__value">{stats.waveStats.wasted}</strong>
+        </article>
         <article className="kpi-card kpi-card--success">
           <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
           <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>

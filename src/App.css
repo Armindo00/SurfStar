@@ -974,6 +974,44 @@ input[type='checkbox']:indeterminate {
   font-weight: 700;
 }
 
+.wave-flags {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.wave-flags__group {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.wave-flags__label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.wave-flags__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.wave-flags__row .chip {
+  border-radius: 12px;
+  width: 100%;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.wave-flags__hint {
+  margin: 0 0 0.85rem;
+  font-size: 0.9rem;
+}
+
 .ss-keypad--tec {
   grid-template-columns: repeat(3, 1fr);
   margin-bottom: 0.75rem;
@@ -2335,6 +2373,11 @@ input[type='checkbox']:indeterminate {
   margin: 0.15rem 0 0;
   font-size: 1.05rem;
   font-weight: 700;
+}
+
+.wave-summary__meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
 }
 
 .wave-summary__empty {
