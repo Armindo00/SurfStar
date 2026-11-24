@@ -99,6 +99,34 @@ const labels: AthleteReportPdfInput['labels'] = {
   yes: 'Yes',
   no: 'No',
   winSuffix: ' · Win',
+  readingLabel: 'Reading',
+  technicalReadingSideGap:
+    'The weak point is not technique overall — it is {{maneuver}} {{weakSide}} ({{weakRate}}% vs {{strongRate}}% {{strongSide}}, gap {{gap}} pts).',
+  technicalReadingBalanced:
+    'Sides are relatively balanced. Overall technical success {{rate}}% · avg level {{level}}.',
+  technicalReadingThin: 'Not enough side-by-side technical data for a clear reading.',
+  technicalReadingOverall:
+    'Technical success {{rate}}% across {{attempts}} attempts · avg level {{level}}.',
+  comboReadingSideGap:
+    'Combo focus: {{level}} {{weakSide}} lags ({{weakRate}}% vs {{strongRate}}% {{strongSide}}, gap {{gap}} pts).',
+  comboReadingBalanced:
+    'Combo sides are relatively balanced. Success {{rate}}% · avg level {{level}}.',
+  comboReadingThin: 'Not enough combo side data for a clear reading.',
+  comboReadingOverall:
+    'Combo success {{rate}}% across {{attempts}} attempts · avg level {{level}}.',
+  heatReadingClutchNegative:
+    'Opens with enough quality, but does not convert in the close (clutch {{clutch}}: open {{open}} → close {{close}}). Train pressure scenarios in the last third of the heat.',
+  heatReadingClutchPositive:
+    'Closes heats with intent (clutch {{clutch}}, late best {{close}}). Keep finishing under pressure as a strength.',
+  heatReadingEarlyWeak:
+    'Early banking is soft ({{rate}}% of timed heats reach 10 pts in the first 10 minutes). Prioritize first-wave urgency.',
+  heatReadingEarlyStrong:
+    'Opens heats well ({{rate}}% reach 10 pts early). Protect that start and convert into the close.',
+  heatReadingThin: 'Heat results are logged, but timer data is too thin for rhythm reading.',
+  heatReadingBasic: '{{heats}} heats in the period · avg score {{score}}. Add timer data for deeper rhythm insights.',
+  psychologyReadingStandout:
+    'Highest: {{highLabel}} {{highAvg}}/5 · needs attention: {{lowLabel}} {{lowAvg}}/5 (overall {{overall}}/5).',
+  psychologyReadingThin: 'Psychology check-ins exist, but there is not enough detail for a standout reading.',
 }
 
 function session(id: string, endedAt: string): TrainingSession {
@@ -198,6 +226,13 @@ describe('buildAthleteReportPdfBlob psychology', () => {
         { domain: 'Waves', metric: 'Potential', value: '—', reading: 'Limited data' },
         { domain: 'Psychology', metric: 'Avg /5', value: '3.9', reading: 'OK' },
       ],
+      topicReadings: {
+        technical: null,
+        combo: null,
+        heat: null,
+        psychology:
+          'Reading: Highest: Mood 5.0/5 · needs attention: Focus during 2.0/5 (overall 3.9/5).',
+      },
       maneuverSummaries: [],
       sessionRows: [],
       labels,
@@ -215,6 +250,8 @@ describe('buildAthleteReportPdfBlob psychology', () => {
     expect(asLatin1).toContain('Question averages')
     expect(asLatin1).toContain('Athlete notes')
     expect(asLatin1).toContain('Felt focused after the session.')
+    expect(asLatin1).toContain('Highest: Mood')
+    expect(asLatin1).toContain('needs attention: Focus during')
     // Executive page + dedicated psychology topic page
     const pageCount = (asLatin1.match(/\/Type\s*\/Page\b/g) ?? []).length
     expect(pageCount).toBeGreaterThanOrEqual(2)
