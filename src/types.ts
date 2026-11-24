@@ -381,12 +381,22 @@ export type SessionComboEntry = ComboLog & {
   athleteId: string
 }
 
-/** Uma onda no treino técnico (NP ou onda com potencial + manobras) */
+/** Resultado da onda: surfada (com tentativas) ou desperdiçada (ex.: caiu no drop). */
+export type WaveOutcome = 'surfed' | 'wasted'
+
+/** Uma onda no treino (potencial e resultado são independentes). */
 export type WaveRecord = {
   id: string
   athleteId: string
-  /** false = botão NP (sem potencial) */
+  /** Qualidade / oportunidade de score — independente do resultado */
   hasPotential: boolean
+  /** Surfada vs desperdiçada — independente do potencial */
+  outcome: WaveOutcome
+  /**
+   * false = fase 1 (escolher tipo); true = tipo confirmado (manobras se surfada).
+   * Ondas antigas migram como true.
+   */
+  classified: boolean
   /** true = várias manobras R/T/P na mesma onda (botão +) */
   multiManeuver: boolean
   startedAt: string

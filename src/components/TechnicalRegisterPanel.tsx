@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import type { ManeuverKind } from '../types'
 import { ManeuverModal } from './ManeuverModal'
+import { WaveFlagsControls } from './WaveFlagsControls'
 import { WaveRegisterSummary } from './WaveRegisterSummary'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
-import { waveHasLoggedAttempts } from '../sessionStats'
 
 type Props = {
   athleteName: string
@@ -23,7 +23,6 @@ export function TechnicalRegisterPanel({
     activeSession,
     activeWaveId,
     startOpenWave,
-    requestNoPotentialWave,
     logTechnicalManeuver,
     requestCloseActiveWave,
     setView,
@@ -38,11 +37,9 @@ export function TechnicalRegisterPanel({
     [activeSession?.waves, activeWaveId],
   )
 
-  const canMarkNoPotential =
-    waveOpen &&
-    openWave &&
-    activeSession &&
-    !waveHasLoggedAttempts(openWave, activeSession.mode)
+  const classified = Boolean(openWave?.classified)
+  const canLogManeuvers = classified && openWave?.outcome === 'surfed'
+  const showClose = classified
 
   return (
     <div className="register-panel">
@@ -62,36 +59,42 @@ export function TechnicalRegisterPanel({
         </button>
       ) : (
         <>
-          <WaveRegisterSummary mode="tecnico" />
+          {classified ? <WaveRegisterSummary mode="tecnico" /> : null}
+          <WaveFlagsControls />
 
-          <p className="muted keypad-legend">
-            {r.technicalKeypadLegend}{' '}
-            <strong>R</strong> {r.technicalKeypadRail.slice(2).trim()} · <strong>T</strong>{' '}
-            {r.technicalKeypadTop.slice(2).trim()} · <strong>P</strong>{' '}
-            {r.technicalKeypadProgressive.slice(2).trim()}
-          </p>
+          {canLogManeuvers ? (
+            <>
+              <p className="wave-flags__label">{r.maneuversStep}</p>
+              <p className="muted keypad-legend">
+                {r.technicalKeypadLegend}{' '}
+                <strong>R</strong> {r.technicalKeypadRail.slice(2).trim()} · <strong>T</strong>{' '}
+                {r.technicalKeypadTop.slice(2).trim()} · <strong>P</strong>{' '}
+                {r.technicalKeypadProgressive.slice(2).trim()}
+              </p>
 
-          <div className="ss-keypad ss-keypad--tec">
-            <button type="button" className="key key--r" onClick={() => setManeuver('rail')}>
-              R
-            </button>
-            <button type="button" className="key key--t" onClick={() => setManeuver('top-turn')}>
-              T
-            </button>
-            <button type="button" className="key key--p" onClick={() => setManeuver('progressive')}>
-              P
-            </button>
-          </div>
-
-          {canMarkNoPotential ? (
-            <button type="button" className="btn btn--block btn-np-wide" onClick={requestNoPotentialWave}>
-              {r.noPotential}
-            </button>
+              <div className="ss-keypad ss-keypad--tec">
+                <button type="button" className="key key--r" onClick={() => setManeuver('rail')}>
+                  R
+                </button>
+                <button type="button" className="key key--t" onClick={() => setManeuver('top-turn')}>
+                  T
+                </button>
+                <button type="button" className="key key--p" onClick={() => setManeuver('progressive')}>
+                  P
+                </button>
+              </div>
+            </>
           ) : null}
 
-          <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
-            {r.closeWave}
-          </button>
+          {classified && openWave?.outcome === 'wasted' ? (
+            <p className="muted wave-flags__hint">{r.wastedHint}</p>
+          ) : null}
+
+          {showClose ? (
+            <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
+              {r.closeWave}
+            </button>
+          ) : null}
         </>
       )}
 
@@ -104,7 +107,7 @@ export function TechnicalRegisterPanel({
         </button>
       </div>
 
-      {maneuver && (
+      {maneuver && canLogManeuvers && (
         <ManeuverModal
           kind={maneuver}
           onClose={() => setManeuver(null)}

@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import type { ComboLevel } from '../types'
 import { ComboOutcomeModal } from './ComboOutcomeModal'
+import { WaveFlagsControls } from './WaveFlagsControls'
 import { WaveRegisterSummary } from './WaveRegisterSummary'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
-import { waveHasLoggedAttempts } from '../sessionStats'
 
 type Props = {
   athleteName: string
@@ -23,7 +23,6 @@ export function ComboRegisterPanel({
     activeSession,
     activeWaveId,
     startOpenWave,
-    requestNoPotentialWave,
     logComboAttempt,
     requestCloseActiveWave,
     setView,
@@ -38,11 +37,9 @@ export function ComboRegisterPanel({
     [activeSession?.waves, activeWaveId],
   )
 
-  const canMarkNoPotential =
-    waveOpen &&
-    openWave &&
-    activeSession &&
-    !waveHasLoggedAttempts(openWave, activeSession.mode)
+  const classified = Boolean(openWave?.classified)
+  const canLogAttempts = classified && openWave?.outcome === 'surfed'
+  const showClose = classified
 
   return (
     <div className="register-panel">
@@ -62,34 +59,40 @@ export function ComboRegisterPanel({
         </button>
       ) : (
         <>
-          <WaveRegisterSummary mode="combos" />
+          {classified ? <WaveRegisterSummary mode="combos" /> : null}
+          <WaveFlagsControls />
 
-          <p className="muted keypad-legend">{r.comboKeypadLegend}</p>
+          {canLogAttempts ? (
+            <>
+              <p className="wave-flags__label">{r.maneuversStep}</p>
+              <p className="muted keypad-legend">{r.comboKeypadLegend}</p>
 
-          <div className="ss-keypad ss-keypad--combo">
-            <button type="button" className="key key--c1" onClick={() => setComboLevel(1)}>
-              1
-            </button>
-            <button type="button" className="key key--c2" onClick={() => setComboLevel(2)}>
-              2
-            </button>
-            <button type="button" className="key key--c3" onClick={() => setComboLevel(3)}>
-              3
-            </button>
-            <button type="button" className="key key--c-star" onClick={() => setComboLevel('estrela')}>
-              ★
-            </button>
-          </div>
-
-          {canMarkNoPotential ? (
-            <button type="button" className="btn btn--block btn-np-wide" onClick={requestNoPotentialWave}>
-              {r.noPotential}
-            </button>
+              <div className="ss-keypad ss-keypad--combo">
+                <button type="button" className="key key--c1" onClick={() => setComboLevel(1)}>
+                  1
+                </button>
+                <button type="button" className="key key--c2" onClick={() => setComboLevel(2)}>
+                  2
+                </button>
+                <button type="button" className="key key--c3" onClick={() => setComboLevel(3)}>
+                  3
+                </button>
+                <button type="button" className="key key--c-star" onClick={() => setComboLevel('estrela')}>
+                  ★
+                </button>
+              </div>
+            </>
           ) : null}
 
-          <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
-            {r.closeWave}
-          </button>
+          {classified && openWave?.outcome === 'wasted' ? (
+            <p className="muted wave-flags__hint">{r.wastedHint}</p>
+          ) : null}
+
+          {showClose ? (
+            <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
+              {r.closeWave}
+            </button>
+          ) : null}
         </>
       )}
 
@@ -102,7 +105,7 @@ export function ComboRegisterPanel({
         </button>
       </div>
 
-      {comboLevel !== null && (
+      {comboLevel !== null && canLogAttempts && (
         <ComboOutcomeModal
           level={comboLevel}
           onClose={() => setComboLevel(null)}

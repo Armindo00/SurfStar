@@ -33,7 +33,7 @@ export function CombosSessionView() {
 
   const waveStats = activeSession
     ? computeWaveStats(activeSession, null)
-    : { totalWaves: 0, withPotential: 0, withoutPotential: 0 }
+    : { totalWaves: 0, withPotential: 0, withoutPotential: 0, surfed: 0, wasted: 0 }
 
   const focusedAthlete = focusAthleteId ? getAthlete(focusAthleteId) : undefined
 

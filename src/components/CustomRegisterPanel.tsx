@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { CustomAttemptModal } from './CustomAttemptModal'
 import { CustomTimer } from './CustomTimer'
+import { WaveFlagsControls } from './WaveFlagsControls'
 import { WaveRegisterSummary } from './WaveRegisterSummary'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
@@ -9,7 +10,6 @@ import {
   countWaveCustomAttempts,
   sortCustomButtons,
 } from '../customTrainingUtils'
-import { waveHasLoggedAttempts } from '../sessionStats'
 import type { CustomButton } from '../types'
 
 type Props = {
@@ -28,7 +28,6 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
     activeSession,
     activeWaveId,
     startOpenWave,
-    requestNoPotentialWave,
     logCustomAttempt,
     requestCloseActiveWave,
     startCustomTimer,
@@ -60,12 +59,8 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
     (!rules?.requireWaveBeforeLog || !useWaves || waveOpen) &&
     (!timerEnabled || activeSession.customTimerStartedAt)
 
-  const canMarkNoPotential =
-    useWaves &&
-    waveOpen &&
-    openWave &&
-    activeSession &&
-    !waveHasLoggedAttempts(openWave, activeSession.mode)
+  const canLogAttempts =
+    !useWaves || (waveOpen && openWave?.classified && openWave.outcome === 'surfed')
 
   const maxAttempts = rules?.maxAttemptsPerWave ?? null
   const attemptsOnWave = openWave ? countWaveCustomAttempts(openWave) : 0
@@ -76,7 +71,7 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
   }, [endCustomTimer])
 
   const beginAttempt = (button: CustomButton) => {
-    if (!canLog || atMaxAttempts) return
+    if (!canLog || !canLogAttempts || atMaxAttempts) return
 
     const hasLevels = button.levels.length > 0
     if (hasLevels && button.trackSuccess) {
@@ -153,34 +148,40 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
         </button>
       ) : useWaves && waveOpen ? (
         <>
-          <WaveRegisterSummary mode="custom" />
+          {openWave?.classified ? <WaveRegisterSummary mode="custom" /> : null}
+          <WaveFlagsControls />
 
-          <p className="muted keypad-legend">{r.customTapToLogWave}</p>
+          {canLogAttempts && openWave?.classified ? (
+            <>
+              <p className="wave-flags__label">{r.maneuversStep}</p>
+              <p className="muted keypad-legend">{r.customTapToLogWave}</p>
 
-          <div className="custom-button-grid">
-            {buttons.map((button) => (
-              <button
-                key={button.id}
-                type="button"
-                className="custom-skill-btn"
-                style={{ backgroundColor: button.color }}
-                disabled={!canLog || atMaxAttempts}
-                onClick={() => beginAttempt(button)}
-              >
-                <span className="custom-skill-btn__label">{buttonDisplayLabel(button)}</span>
-              </button>
-            ))}
-          </div>
-
-          {canMarkNoPotential ? (
-            <button type="button" className="btn btn--block btn-np-wide" onClick={requestNoPotentialWave}>
-              {r.noPotential}
-            </button>
+              <div className="custom-button-grid">
+                {buttons.map((button) => (
+                  <button
+                    key={button.id}
+                    type="button"
+                    className="custom-skill-btn"
+                    style={{ backgroundColor: button.color }}
+                    disabled={!canLog || atMaxAttempts}
+                    onClick={() => beginAttempt(button)}
+                  >
+                    <span className="custom-skill-btn__label">{buttonDisplayLabel(button)}</span>
+                  </button>
+                ))}
+              </div>
+            </>
           ) : null}
 
-          <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
-            {r.closeWave}
-          </button>
+          {openWave?.classified && openWave.outcome === 'wasted' ? (
+            <p className="muted wave-flags__hint">{r.wastedHint}</p>
+          ) : null}
+
+          {openWave?.classified ? (
+            <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
+              {r.closeWave}
+            </button>
+          ) : null}
         </>
       ) : !useWaves ? (
         <>

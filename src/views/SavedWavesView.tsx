@@ -75,6 +75,8 @@ export function SavedWavesView() {
                           minute: '2-digit',
                         })}{' '}
                         · {w.hasPotential ? sw.withPotential : sw.noPotential}
+                        {' · '}
+                        {w.outcome === 'wasted' ? sw.wasted : sw.surfed}
                       </span>
                     </div>
                     <button
