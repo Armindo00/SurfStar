@@ -21,9 +21,9 @@ import {
   resolveSessionSpotName,
 } from '../../sessionHistoryUtils'
 import { LEVELS, type ComboSessionStatsSnapshot, type SessionStatsSnapshot } from '../../sessionStats'
+import { analyticsPresetLabel } from '../../analyticsRange'
 import {
   ANALYTICS_PERIOD_OPTIONS,
-  analyticsPeriodLabel,
   buildAthleteEvolution,
   type AnalyticsPeriod,
 } from '../../teamAnalyticsStats'
@@ -644,11 +644,14 @@ function EvolutionSheet({ onClose, mySessions, athleteId }: AthletePortalSheetPr
       <ScreenHeader title={t('nav.evolution')} onBack={onClose} />
       <div className="athlete-sheet__body">
         <EvolutionLineChart
-          title={`Your evolution · ${analyticsPeriodLabel(period)}`}
-          subtitle="Success rate, potential, and average level (technical + combos)"
+          title={`${t('nav.evolution')} · ${analyticsPresetLabel(period, 'short')}`}
           points={points}
           period={period}
-          periodOptions={ANALYTICS_PERIOD_OPTIONS}
+          periodOptions={ANALYTICS_PERIOD_OPTIONS.map((option) => ({
+            id: option.id,
+            label: analyticsPresetLabel(option.id, 'long'),
+            shortLabel: analyticsPresetLabel(option.id, 'short'),
+          }))}
           onPeriodChange={setPeriod}
           periodColumnLabel={period === '1w' ? 'Day' : period === '1m' ? 'Week' : 'Month'}
         />

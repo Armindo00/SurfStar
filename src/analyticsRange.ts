@@ -1,6 +1,9 @@
 import { formatDayMonth, formatMonthShort, formatShortDate, formatWeekdayShort } from './dateFormat'
+import { getLocale } from './i18n'
+import { getMessages } from './i18n/messages'
+import type { SupportedLocale } from './i18n/types'
 import type { AnalyticsPeriod } from './teamAnalyticsStats'
-import { ANALYTICS_PERIOD_OPTIONS, TEAM_ANALYTICS_MONTHS } from './teamAnalyticsStats'
+import { TEAM_ANALYTICS_MONTHS } from './teamAnalyticsStats'
 
 export type AnalyticsPresetPeriod = AnalyticsPeriod
 
@@ -87,20 +90,42 @@ export function isTimestampInAnalyticsRange(iso: string, range: AnalyticsRange):
   return when >= start.getTime() && when <= end.getTime()
 }
 
-export function describeAnalyticsRange(range: AnalyticsRange): string {
+function rangePickerCopy(locale: SupportedLocale = getLocale()) {
+  return getMessages(locale).analytics.rangePicker
+}
+
+export function analyticsPresetLabel(
+  period: AnalyticsPresetPeriod,
+  kind: 'long' | 'short' = 'long',
+  locale: SupportedLocale = getLocale(),
+): string {
+  const copy = rangePickerCopy(locale)
+  if (period === '6m') return kind === 'short' ? copy.preset6mShort : copy.preset6m
+  if (period === '1m') return kind === 'short' ? copy.preset1mShort : copy.preset1m
+  return kind === 'short' ? copy.preset1wShort : copy.preset1w
+}
+
+export function describeAnalyticsRange(
+  range: AnalyticsRange,
+  locale: SupportedLocale = getLocale(),
+): string {
   if (range.kind === 'preset') {
-    return ANALYTICS_PERIOD_OPTIONS.find((option) => option.id === range.period)?.shortLabel ?? range.period
+    return analyticsPresetLabel(range.period, 'short', locale)
   }
   const normalized = normalizeCustomDateRange(range.fromDate, range.toDate)
   return `${formatShortDate(normalized.fromDate)} – ${formatShortDate(normalized.toDate)}`
 }
 
-export function describeAnalyticsRangeLong(range: AnalyticsRange): string {
+export function describeAnalyticsRangeLong(
+  range: AnalyticsRange,
+  locale: SupportedLocale = getLocale(),
+): string {
+  const copy = rangePickerCopy(locale)
   if (range.kind === 'custom' && range.title) return range.title
   if (range.kind === 'preset') {
-    return ANALYTICS_PERIOD_OPTIONS.find((option) => option.id === range.period)?.label ?? 'Custom period'
+    return analyticsPresetLabel(range.period, 'long', locale)
   }
-  return `Custom range · ${describeAnalyticsRange(range)}`
+  return copy.customRange.replace('{{label}}', describeAnalyticsRange(range, locale))
 }
 
 export function evolutionColumnLabel(range: AnalyticsRange): string {
