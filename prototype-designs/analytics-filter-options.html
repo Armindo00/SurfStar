@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar — Opções de filtros do perfil</title>
+  <style>
+    :root {
+      --ink: #0d1b24;
+      --muted: #5a6b76;
+      --line: #d5dee5;
+      --ocean: #0a6a94;
+      --ocean-deep: #074d6c;
+      --mist: #eef4f7;
+      --paper: #f7fafb;
+      --ok: #0f6b4c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+      background: linear-gradient(180deg, #d9e4ea 0%, #cfdce4 100%);
+      color: var(--ink);
+      padding: 1.4rem 1rem 2.5rem;
+    }
+    .intro { max-width: 1120px; margin: 0 auto 1.15rem; }
+    .intro h1 { margin: 0 0 0.3rem; font-size: 1.4rem; letter-spacing: -0.02em; }
+    .intro p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.45; max-width: 46rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      max-width: 1120px;
+      margin: 0 auto;
+      align-items: start;
+    }
+    @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: #fff;
+      border: 1px solid rgba(13,27,36,0.1);
+      border-radius: 14px;
+      padding: 0.75rem;
+      box-shadow: 0 12px 28px rgba(13,27,36,0.08);
+    }
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ocean);
+      margin-bottom: 0.2rem;
+    }
+    .card h2 { margin: 0 0 0.25rem; font-size: 1.02rem; }
+    .blurb { margin: 0 0 0.75rem; font-size: 0.78rem; color: var(--muted); line-height: 1.4; min-height: 2.8rem; }
+    .phone {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 0.85rem 0.8rem 1rem;
+      min-height: 420px;
+    }
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.6rem;
+      align-items: flex-start;
+      margin-bottom: 0.85rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero h3 { margin: 0; font-size: 1.05rem; }
+    .hero small { display: block; color: var(--muted); font-size: 0.72rem; margin-top: 0.15rem; }
+    .btn-pdf {
+      border: 0;
+      background: var(--ocean);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.45rem 0.65rem;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .ghost-body {
+      margin-top: 0.85rem;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      background: #fff;
+      min-height: 150px;
+      padding: 0.7rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+    .kpi {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.4rem;
+      margin-bottom: 0.55rem;
+    }
+    .kpi div {
+      background: var(--mist);
+      border-radius: 8px;
+      padding: 0.45rem 0.5rem;
+    }
+    .kpi span { display: block; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+    .kpi strong { font-size: 0.95rem; color: var(--ocean-deep); }
+    .note {
+      margin: 0.7rem 0 0;
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.4;
+      border-top: 1px dashed var(--line);
+      padding-top: 0.5rem;
+    }
+    .pill-rec {
+      display: inline-block;
+      margin-left: 0.25rem;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.18rem 0.35rem;
+      border-radius: 4px;
+      background: rgba(15,107,76,0.14);
+      color: var(--ok);
+      vertical-align: middle;
+    }
+
+    /* —— Option A: segmented + underline tabs —— */
+    .a-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 0.35rem;
+    }
+    .a-segment {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      background: #e4ebf0;
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 0.85rem;
+    }
+    .a-segment button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 650;
+      padding: 0.48rem 0.2rem;
+      border-radius: 8px;
+    }
+    .a-segment .on {
+      background: #fff;
+      color: var(--ocean-deep);
+      box-shadow: 0 1px 2px rgba(13,27,36,0.08);
+    }
+    .a-tabs {
+      display: flex;
+      gap: 0.15rem;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 0.75rem;
+    }
+    .a-tabs button {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 650;
+      padding: 0.55rem 0.2rem 0.65rem;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .a-tabs .on {
+      color: var(--ocean-deep);
+      border-bottom-color: var(--ocean);
+    }
+
+    /* —— Option B: unified filter card —— */
+    .b-panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.7rem 0.7rem 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .b-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.55rem;
+    }
+    .b-row strong {
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 750;
+    }
+    .b-period {
+      display: inline-flex;
+      background: var(--mist);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 1px;
+    }
+    .b-period button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 650;
+      padding: 0.35rem 0.45rem;
+      border-radius: 6px;
+    }
+    .b-period .on {
+      background: var(--ocean);
+      color: #fff;
+    }
+    .b-sections {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.4rem;
+    }
+    .b-sections button {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 10px;
+      padding: 0.55rem 0.35rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 650;
+      line-height: 1.25;
+    }
+    .b-sections .on {
+      border-color: rgba(10,106,148,0.45);
+      background: rgba(10,106,148,0.08);
+      color: var(--ocean-deep);
+      box-shadow: inset 0 0 0 1px rgba(10,106,148,0.2);
+    }
+    .b-sections em {
+      display: block;
+      font-style: normal;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 0.12rem;
+    }
+
+    /* —— Option C: sections first, period secondary —— */
+    .c-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.35rem;
+      margin-bottom: 0.65rem;
+    }
+    .c-tabs button {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 10px;
+      padding: 0.65rem 0.4rem;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: left;
+      line-height: 1.25;
+    }
+    .c-tabs .on {
+      background: var(--ocean);
+      border-color: var(--ocean);
+      color: #fff;
+    }
+    .c-tabs small {
+      display: block;
+      font-size: 0.6rem;
+      font-weight: 600;
+      opacity: 0.72;
+      margin-top: 0.15rem;
+    }
+    .c-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      padding: 0.45rem 0.55rem;
+      background: var(--mist);
+      border-radius: 10px;
+    }
+    .c-toolbar span {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .c-select {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.35rem 0.55rem;
+      font-size: 0.78rem;
+      font-weight: 650;
+      color: var(--ocean-deep);
+    }
+    .c-select i {
+      font-style: normal;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="intro">
+    <h1>Perfil do atleta — período + secções</h1>
+    <p>Hoje são duas filas de chips parecidas. Estas 3 opções separam melhor “quando” vs “o quê”, sem parecer um dashboard de pills.</p>
+  </div>
+
+  <div class="grid">
+    <!-- A -->
+    <article class="card" id="opt-a">
+      <div class="tag">Opção A</div>
+      <h2>Segmento + tabs com underline</h2>
+      <p class="blurb">Período num único controlo segmentado. Secções em tabs com linha — hierarquia clara, menos “botões iguais”.</p>
+      <div class="phone">
+        <div class="hero">
+          <div>
+            <h3>Francisca Maldonado</h3>
+            <small>18 sessões · Mar–Mai</small>
+          </div>
+          <button class="btn-pdf" type="button">PDF</button>
+        </div>
+        <p class="a-label">Intervalo</p>
+        <div class="a-segment" role="tablist">
+          <button class="on" type="button">6m</button>
+          <button type="button">1m</button>
+          <button type="button">1s</button>
+          <button type="button">Custom</button>
+        </div>
+        <div class="a-tabs" role="tablist">
+          <button class="on" type="button">Treino</button>
+          <button type="button">Psicologia</button>
+          <button type="button">Equipamento</button>
+        </div>
+        <div class="ghost-body">
+          <div class="kpi">
+            <div><span>Nível méd.</span><strong>2.4</strong></div>
+            <div><span>Potencial</span><strong>62%</strong></div>
+          </div>
+          Conteúdo de estatísticas de treino…
+        </div>
+      </div>
+      <p class="note">Mais limpo e mobile-friendly. Custom abre o calendário por baixo.</p>
+    </article>
+
+    <!-- B -->
+    <article class="card" id="opt-b">
+      <div class="tag">Opção B <span class="pill-rec">recomendado</span></div>
+      <h2>Cartão único de filtros</h2>
+      <p class="blurb">Um painel agrupa período (compacto) e secções em 3 tiles iguais. Parece uma composição, não duas barras soltas.</p>
+      <div class="phone">
+        <div class="hero">
+          <div>
+            <h3>Francisca Maldonado</h3>
+            <small>18 sessões · Mar–Mai</small>
+          </div>
+          <button class="btn-pdf" type="button">PDF</button>
+        </div>
+        <div class="b-panel">
+          <div class="b-row">
+            <strong>Período</strong>
+            <div class="b-period">
+              <button class="on" type="button">6m</button>
+              <button type="button">1m</button>
+              <button type="button">1s</button>
+              <button type="button">Custom</button>
+            </div>
+          </div>
+          <div class="b-sections">
+            <button class="on" type="button"><em>Secção</em>Treino</button>
+            <button type="button"><em>Secção</em>Psicologia</button>
+            <button type="button"><em>Secção</em>Equipamento</button>
+          </div>
+        </div>
+        <div class="ghost-body">
+          <div class="kpi">
+            <div><span>Nível méd.</span><strong>2.4</strong></div>
+            <div><span>Potencial</span><strong>62%</strong></div>
+          </div>
+          Conteúdo de estatísticas de treino…
+        </div>
+      </div>
+      <p class="note">Melhor hierarquia visual. Em equipamento, o período pode sumir como hoje.</p>
+    </article>
+
+    <!-- C -->
+    <article class="card" id="opt-c">
+      <div class="tag">Opção C</div>
+      <h2>Secções primeiro · período secundário</h2>
+      <p class="blurb">O atleta escolhe primeiro o domínio (treino / psico / material). O período vira uma barra secundária — menos ruído.</p>
+      <div class="phone">
+        <div class="hero">
+          <div>
+            <h3>Francisca Maldonado</h3>
+            <small>18 sessões · Mar–Mai</small>
+          </div>
+          <button class="btn-pdf" type="button">PDF</button>
+        </div>
+        <div class="c-tabs">
+          <button class="on" type="button">Treino<small>Stats & evolução</small></button>
+          <button type="button">Psicologia<small>Check-ins</small></button>
+          <button type="button">Equipamento<small>Material</small></button>
+        </div>
+        <div class="c-toolbar">
+          <span>Período</span>
+          <div class="c-select">Últimos 6 meses <i>▾</i></div>
+        </div>
+        <div class="ghost-body">
+          <div class="kpi">
+            <div><span>Nível méd.</span><strong>2.4</strong></div>
+            <div><span>Potencial</span><strong>62%</strong></div>
+          </div>
+          Conteúdo de estatísticas de treino…
+        </div>
+      </div>
+      <p class="note">Hierarquia invertida: o “quê” manda. O período abre um menu (presets + custom).</p>
+    </article>
+  </div>
+</body>
+</html>

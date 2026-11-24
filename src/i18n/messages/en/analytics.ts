@@ -23,6 +23,19 @@ export const analytics = {
     psychology: 'Psychology',
     equipment: 'Equipment',
   },
+  profileTabHints: {
+    training: 'Stats & evolution',
+    psychology: 'Check-ins',
+    equipment: 'Boards & gear',
+  },
+  rangePicker: {
+    custom: 'Custom',
+    from: 'From',
+    to: 'To',
+    reportTitle: 'Report title (optional)',
+    reportTitlePlaceholder: 'e.g. Maldives training camp',
+    selected: 'Selected: {{label}}',
+  },
   psychologyCheckins: 'Psychology check-ins',
   noDataInPeriod: 'No data in this period',
   noDataInPeriodBody:
