@@ -224,6 +224,7 @@ function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession 
         startedAt: w.startedAt,
         hasPotential,
         outcome,
+        classified: w.classified ?? true,
         multiManeuver: w.multiManeuver ?? false,
         maneuvers,
         comboAttempts,

@@ -66,6 +66,7 @@ describe('computeCustomSessionStats', () => {
           athleteId: 'athlete-1',
           hasPotential: true,
           outcome: 'surfed',
+          classified: true,
           multiManeuver: false,
           startedAt: '2026-08-07T10:00:00.000Z',
           maneuvers: [],

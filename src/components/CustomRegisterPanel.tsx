@@ -59,7 +59,8 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
     (!rules?.requireWaveBeforeLog || !useWaves || waveOpen) &&
     (!timerEnabled || activeSession.customTimerStartedAt)
 
-  const canLogAttempts = !useWaves || (waveOpen && openWave?.outcome === 'surfed')
+  const canLogAttempts =
+    !useWaves || (waveOpen && openWave?.classified && openWave.outcome === 'surfed')
 
   const maxAttempts = rules?.maxAttemptsPerWave ?? null
   const attemptsOnWave = openWave ? countWaveCustomAttempts(openWave) : 0
@@ -147,11 +148,12 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
         </button>
       ) : useWaves && waveOpen ? (
         <>
-          <WaveRegisterSummary mode="custom" />
+          {openWave?.classified ? <WaveRegisterSummary mode="custom" /> : null}
           <WaveFlagsControls />
 
-          {canLogAttempts ? (
+          {canLogAttempts && openWave?.classified ? (
             <>
+              <p className="wave-flags__label">{r.maneuversStep}</p>
               <p className="muted keypad-legend">{r.customTapToLogWave}</p>
 
               <div className="custom-button-grid">
@@ -169,13 +171,17 @@ export function CustomRegisterPanel({ athleteName, onBack }: Props) {
                 ))}
               </div>
             </>
-          ) : (
-            <p className="muted wave-flags__hint">{r.wastedHint}</p>
-          )}
+          ) : null}
 
-          <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
-            {r.closeWave}
-          </button>
+          {openWave?.classified && openWave.outcome === 'wasted' ? (
+            <p className="muted wave-flags__hint">{r.wastedHint}</p>
+          ) : null}
+
+          {openWave?.classified ? (
+            <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
+              {r.closeWave}
+            </button>
+          ) : null}
         </>
       ) : !useWaves ? (
         <>

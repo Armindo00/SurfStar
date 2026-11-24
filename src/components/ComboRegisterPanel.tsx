@@ -37,7 +37,9 @@ export function ComboRegisterPanel({
     [activeSession?.waves, activeWaveId],
   )
 
-  const canLogAttempts = waveOpen && openWave?.outcome === 'surfed'
+  const classified = Boolean(openWave?.classified)
+  const canLogAttempts = classified && openWave?.outcome === 'surfed'
+  const showClose = classified
 
   return (
     <div className="register-panel">
@@ -57,11 +59,12 @@ export function ComboRegisterPanel({
         </button>
       ) : (
         <>
-          <WaveRegisterSummary mode="combos" />
+          {classified ? <WaveRegisterSummary mode="combos" /> : null}
           <WaveFlagsControls />
 
           {canLogAttempts ? (
             <>
+              <p className="wave-flags__label">{r.maneuversStep}</p>
               <p className="muted keypad-legend">{r.comboKeypadLegend}</p>
 
               <div className="ss-keypad ss-keypad--combo">
@@ -79,13 +82,17 @@ export function ComboRegisterPanel({
                 </button>
               </div>
             </>
-          ) : (
-            <p className="muted wave-flags__hint">{r.wastedHint}</p>
-          )}
+          ) : null}
 
-          <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
-            {r.closeWave}
-          </button>
+          {classified && openWave?.outcome === 'wasted' ? (
+            <p className="muted wave-flags__hint">{r.wastedHint}</p>
+          ) : null}
+
+          {showClose ? (
+            <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
+              {r.closeWave}
+            </button>
+          ) : null}
         </>
       )}
 

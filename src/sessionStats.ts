@@ -208,6 +208,7 @@ export function waveHasLoggedAttempts(w: WaveRecord, mode: TrainingMode): boolea
 
 /** Onda deve ser guardada (não descartada ao fechar / trocar atleta). */
 export function waveIsCommitted(w: WaveRecord, mode: TrainingMode): boolean {
+  if (!w.classified) return waveHasLoggedAttempts(w, mode)
   return w.outcome === 'wasted' || waveHasLoggedAttempts(w, mode)
 }
 
@@ -215,9 +216,10 @@ export function computeWaveStats(
   session: TrainingSession,
   athleteId?: string | null,
 ): WaveStats {
-  const waves = athleteId
+  const waves = (athleteId
     ? session.waves.filter((w) => w.athleteId === athleteId)
     : session.waves
+  ).filter((w) => w.classified)
   return {
     totalWaves: waves.length,
     withPotential: waves.filter((w) => w.hasPotential).length,

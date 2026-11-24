@@ -37,7 +37,9 @@ export function TechnicalRegisterPanel({
     [activeSession?.waves, activeWaveId],
   )
 
-  const canLogManeuvers = waveOpen && openWave?.outcome === 'surfed'
+  const classified = Boolean(openWave?.classified)
+  const canLogManeuvers = classified && openWave?.outcome === 'surfed'
+  const showClose = classified
 
   return (
     <div className="register-panel">
@@ -57,11 +59,12 @@ export function TechnicalRegisterPanel({
         </button>
       ) : (
         <>
-          <WaveRegisterSummary mode="tecnico" />
+          {classified ? <WaveRegisterSummary mode="tecnico" /> : null}
           <WaveFlagsControls />
 
           {canLogManeuvers ? (
             <>
+              <p className="wave-flags__label">{r.maneuversStep}</p>
               <p className="muted keypad-legend">
                 {r.technicalKeypadLegend}{' '}
                 <strong>R</strong> {r.technicalKeypadRail.slice(2).trim()} · <strong>T</strong>{' '}
@@ -81,13 +84,17 @@ export function TechnicalRegisterPanel({
                 </button>
               </div>
             </>
-          ) : (
-            <p className="muted wave-flags__hint">{r.wastedHint}</p>
-          )}
+          ) : null}
 
-          <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
-            {r.closeWave}
-          </button>
+          {classified && openWave?.outcome === 'wasted' ? (
+            <p className="muted wave-flags__hint">{r.wastedHint}</p>
+          ) : null}
+
+          {showClose ? (
+            <button type="button" className="btn btn--primary btn--block" onClick={requestCloseActiveWave}>
+              {r.closeWave}
+            </button>
+          ) : null}
         </>
       )}
 

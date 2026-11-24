@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { computeWaveStats, waveIsCommitted } from './sessionStats'
 import type { TrainingSession, WaveRecord } from './types'
 
-function wave(partial: Partial<WaveRecord> & Pick<WaveRecord, 'id' | 'hasPotential' | 'outcome'>): WaveRecord {
+function wave(
+  partial: Partial<WaveRecord> & Pick<WaveRecord, 'id' | 'hasPotential' | 'outcome'>,
+): WaveRecord {
   return {
     athleteId: 'a1',
+    classified: true,
     multiManeuver: true,
     startedAt: '2026-11-24T10:00:00.000Z',
     maneuvers: [],
@@ -37,13 +40,37 @@ function session(waves: WaveRecord[]): TrainingSession {
 describe('wave outcome stats', () => {
   it('counts potential and outcome independently', () => {
     const waves = [
-      wave({ id: '1', hasPotential: true, outcome: 'surfed', maneuvers: [
-        { id: 'm1', kind: 'rail', side: 'frontside', level: 1, success: true, at: '2026-11-24T10:01:00.000Z' },
-      ] }),
+      wave({
+        id: '1',
+        hasPotential: true,
+        outcome: 'surfed',
+        maneuvers: [
+          {
+            id: 'm1',
+            kind: 'rail',
+            side: 'frontside',
+            level: 1,
+            success: true,
+            at: '2026-11-24T10:01:00.000Z',
+          },
+        ],
+      }),
       wave({ id: '2', hasPotential: true, outcome: 'wasted' }),
-      wave({ id: '3', hasPotential: false, outcome: 'surfed', maneuvers: [
-        { id: 'm2', kind: 'rail', side: 'frontside', level: 1, success: false, at: '2026-11-24T10:02:00.000Z' },
-      ] }),
+      wave({
+        id: '3',
+        hasPotential: false,
+        outcome: 'surfed',
+        maneuvers: [
+          {
+            id: 'm2',
+            kind: 'rail',
+            side: 'frontside',
+            level: 1,
+            success: false,
+            at: '2026-11-24T10:02:00.000Z',
+          },
+        ],
+      }),
       wave({ id: '4', hasPotential: false, outcome: 'wasted' }),
     ]
 
@@ -56,9 +83,24 @@ describe('wave outcome stats', () => {
     })
   })
 
-  it('treats wasted waves as committed even without attempts', () => {
+  it('ignores unclassified waves in stats and discard rules', () => {
+    const unclassified = wave({
+      id: 'u',
+      hasPotential: true,
+      outcome: 'surfed',
+      classified: false,
+    })
     const wasted = wave({ id: 'w', hasPotential: true, outcome: 'wasted' })
     const emptySurfed = wave({ id: 's', hasPotential: true, outcome: 'surfed' })
+
+    expect(computeWaveStats(session([unclassified, wasted]))).toEqual({
+      totalWaves: 1,
+      withPotential: 1,
+      withoutPotential: 0,
+      surfed: 0,
+      wasted: 1,
+    })
+    expect(waveIsCommitted(unclassified, 'tecnico')).toBe(false)
     expect(waveIsCommitted(wasted, 'tecnico')).toBe(true)
     expect(waveIsCommitted(emptySurfed, 'tecnico')).toBe(false)
   })

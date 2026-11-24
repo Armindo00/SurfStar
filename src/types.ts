@@ -392,6 +392,11 @@ export type WaveRecord = {
   hasPotential: boolean
   /** Surfada vs desperdiçada — independente do potencial */
   outcome: WaveOutcome
+  /**
+   * false = fase 1 (escolher tipo); true = tipo confirmado (manobras se surfada).
+   * Ondas antigas migram como true.
+   */
+  classified: boolean
   /** true = várias manobras R/T/P na mesma onda (botão +) */
   multiManeuver: boolean
   startedAt: string

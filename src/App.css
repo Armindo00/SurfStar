@@ -980,6 +980,14 @@ input[type='checkbox']:indeterminate {
   margin: 0.75rem 0 1rem;
 }
 
+.wave-flags--summary {
+  gap: 0.35rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
 .wave-flags__group {
   display: grid;
   gap: 0.35rem;
@@ -1010,6 +1018,20 @@ input[type='checkbox']:indeterminate {
 .wave-flags__hint {
   margin: 0 0 0.85rem;
   font-size: 0.9rem;
+}
+
+.wave-flags__summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.wave-flags__summary-text {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .ss-keypad--tec {

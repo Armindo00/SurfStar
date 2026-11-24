@@ -372,8 +372,8 @@ type AppContextValue = {
   activeWaveId: string | null
   selectAthlete: (athleteId: string) => void
   startOpenWave: () => void
-  setActiveWaveHasPotential: (hasPotential: boolean) => void
-  setActiveWaveOutcome: (outcome: WaveOutcome) => void
+  classifyActiveWave: (hasPotential: boolean, outcome: WaveOutcome) => void
+  reopenActiveWaveClassification: () => void
   logTechnicalManeuver: (
     kind: ManeuverKind,
     side: WaveSide,
@@ -556,13 +556,18 @@ function buildHeatRecord(
   }
 }
 
-function createPotentialWave(athleteId: string): WaveRecord {
+function createPotentialWave(
+  athleteId: string,
+  opts?: { classified?: boolean; hasPotential?: boolean; outcome?: WaveOutcome },
+): WaveRecord {
+  const outcome = opts?.outcome ?? 'surfed'
   return {
     id: crypto.randomUUID(),
     athleteId,
-    hasPotential: true,
-    outcome: 'surfed',
-    multiManeuver: true,
+    hasPotential: opts?.hasPotential ?? true,
+    outcome,
+    classified: opts?.classified ?? false,
+    multiManeuver: outcome === 'surfed',
     startedAt: new Date().toISOString(),
     maneuvers: [],
     comboAttempts: [],
@@ -2883,19 +2888,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveWaveId(wave.id)
   }, [activeAthleteId, activeSessionId, activeWaveId, updateSession])
 
-  const setActiveWaveHasPotential = useCallback(
-    (hasPotential: boolean) => {
-      if (!activeSessionId || !activeWaveId) return
-      updateSession(activeSessionId, (s) => ({
-        ...s,
-        waves: s.waves.map((w) => (w.id === activeWaveId ? { ...w, hasPotential } : w)),
-      }))
-    },
-    [activeSessionId, activeWaveId, updateSession],
-  )
-
-  const setActiveWaveOutcome = useCallback(
-    (outcome: WaveOutcome) => {
+  const classifyActiveWave = useCallback(
+    (hasPotential: boolean, outcome: WaveOutcome) => {
       if (!activeSessionId || !activeWaveId) return
       updateSession(activeSessionId, (s) => ({
         ...s,
@@ -2904,19 +2898,46 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (outcome === 'wasted') {
             return {
               ...w,
+              hasPotential,
               outcome,
+              classified: true,
               multiManeuver: false,
               maneuvers: [],
               comboAttempts: [],
               customAttempts: [],
             }
           }
-          return { ...w, outcome, multiManeuver: true }
+          return {
+            ...w,
+            hasPotential,
+            outcome,
+            classified: true,
+            multiManeuver: true,
+          }
         }),
       }))
     },
     [activeSessionId, activeWaveId, updateSession],
   )
+
+  const reopenActiveWaveClassification = useCallback(() => {
+    if (!activeSessionId || !activeWaveId) return
+    updateSession(activeSessionId, (s) => ({
+      ...s,
+      waves: s.waves.map((w) =>
+        w.id === activeWaveId
+          ? {
+              ...w,
+              classified: false,
+              multiManeuver: false,
+              maneuvers: [],
+              comboAttempts: [],
+              customAttempts: [],
+            }
+          : w,
+      ),
+    }))
+  }, [activeSessionId, activeWaveId, updateSession])
 
   const logTechnicalManeuver = useCallback(
     (kind: ManeuverKind, side: WaveSide, level: ManeuverLevel, success: boolean) => {
@@ -2935,7 +2956,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...s,
         waves: s.waves.map((w) =>
           w.id === activeWaveId
-            ? { ...w, outcome: 'surfed' as const, maneuvers: [...w.maneuvers, entry] }
+            ? {
+                ...w,
+                classified: true,
+                outcome: 'surfed' as const,
+                maneuvers: [...w.maneuvers, entry],
+              }
             : w,
         ),
       }))
@@ -2961,6 +2987,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           w.id === activeWaveId
             ? {
                 ...w,
+                classified: true,
                 outcome: 'surfed' as const,
                 comboAttempts: [...(w.comboAttempts ?? []), entry],
               }
@@ -2995,7 +3022,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (existing) {
             waveId = existing.id
           } else {
-            newWave = createPotentialWave(activeAthleteId)
+            newWave = createPotentialWave(activeAthleteId, { classified: true })
             waveId = newWave.id
           }
         }
@@ -3018,11 +3045,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
 
         const nextWaves = newWave
-          ? [{ ...newWave, outcome: 'surfed' as const, customAttempts: [entry] }, ...s.waves]
+          ? [
+              {
+                ...newWave,
+                classified: true,
+                outcome: 'surfed' as const,
+                customAttempts: [entry],
+              },
+              ...s.waves,
+            ]
           : s.waves.map((w) =>
               w.id === waveId
                 ? {
                     ...w,
+                    classified: true,
                     outcome: 'surfed' as const,
                     customAttempts: [...(w.customAttempts ?? []), entry],
                   }
@@ -3946,8 +3982,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeWaveId,
       selectAthlete,
       startOpenWave,
-      setActiveWaveHasPotential,
-      setActiveWaveOutcome,
+      classifyActiveWave,
+      reopenActiveWaveClassification,
       logTechnicalManeuver,
       closeActiveWave,
       requestCloseActiveWave,
@@ -4121,8 +4157,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeWaveId,
       selectAthlete,
       startOpenWave,
-      setActiveWaveHasPotential,
-      setActiveWaveOutcome,
+      classifyActiveWave,
+      reopenActiveWaveClassification,
       logTechnicalManeuver,
       closeActiveWave,
       requestCloseActiveWave,
