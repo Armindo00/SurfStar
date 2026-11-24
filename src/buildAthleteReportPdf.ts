@@ -591,25 +591,38 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
   const L = input.labels
   const g = input.general
 
+  const headerTop = pdf.y
+  const logoSize = 12
+  const textX = MARGIN + (logo ? logoSize + 3.5 : 0)
+  const textMaxW = PAGE_W - MARGIN - textX
+
   if (logo) {
-    doc.addImage(logo, 'PNG', MARGIN, pdf.y, 10, 10)
+    doc.addImage(logo, 'PNG', MARGIN, headerTop, logoSize, logoSize)
   }
 
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(16)
+  doc.setFontSize(15)
   doc.setTextColor(...COLOR_TEXT)
-  doc.text(input.athleteName, MARGIN + (logo ? 12 : 0), pdf.y + 7)
-  pdf.y += 12
+  const nameLines = doc.splitTextToSize(input.athleteName, textMaxW)
+  const nameLineH = 5.8
+  doc.text(nameLines, textX, headerTop + 5.2)
 
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(9)
+  doc.setFontSize(8.5)
   doc.setTextColor(...COLOR_MUTED)
-  doc.text(`${L.sheetEyebrow} · ${L.executiveLabel}`, MARGIN, pdf.y)
-  pdf.y += 5
+  const eyebrowY = headerTop + 5.2 + nameLines.length * nameLineH + 0.8
+  const eyebrow = `${L.sheetEyebrow} · ${L.executiveLabel}`
+  doc.text(doc.splitTextToSize(eyebrow, textMaxW), textX, eyebrowY)
+
   doc.setFontSize(10)
   doc.setTextColor(...COLOR_TEXT)
-  doc.text(input.reportTitle, MARGIN, pdf.y)
-  pdf.y += 8
+  const titleY = eyebrowY + 5.2
+  const titleLines = doc.splitTextToSize(input.reportTitle, textMaxW)
+  doc.text(titleLines, textX, titleY)
+
+  const textBottom = titleY + Math.max(titleLines.length - 1, 0) * 4.2 + 6
+  const logoBottom = logo ? headerTop + logoSize + 5 : headerTop
+  pdf.y = Math.max(textBottom, logoBottom)
 
   const meta: { label: string; value: string }[] = [
     { label: L.period, value: input.rangeLabel },
