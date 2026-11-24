@@ -1,5 +1,6 @@
 import { EvolutionLineChart } from './EvolutionLineChart'
 import { ManeuverLevelSuccessChart } from './ManeuverLevelSuccessChart'
+import { OpenVsCloseChart } from './OpenVsCloseChart'
 import { SideCompareChart } from './SideCompareChart'
 import type { AthleteSessionSummary } from '../athleteStats'
 import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
@@ -409,6 +410,23 @@ export function AthleteAnalyticsTopicSheet({
                       },
                     )}
                   </p>
+
+                  <div className="analytics-topic-sheet__section">
+                    <OpenVsCloseChart
+                      title={messages.analytics.analyticsReport.openVsCloseTitle}
+                      openLabel={messages.analytics.analyticsReport.openShort}
+                      closeLabel={messages.analytics.analyticsReport.closeShort}
+                      openValue={heatAnalytics.avgBestWaveOpening}
+                      closeValue={heatAnalytics.avgBestWaveClosing}
+                      hint={
+                        heatAnalytics.clutchDelta === null
+                          ? undefined
+                          : `${s.clutchDelta} ${
+                              heatAnalytics.clutchDelta >= 0 ? '+' : ''
+                            }${heatAnalytics.clutchDelta.toFixed(2)} · ${s.clutchDeltaHint}`
+                      }
+                    />
+                  </div>
 
                   <div className="analytics-topic-sheet__section">
                     <h3 className="analytics-topic-sheet__section-title">{s.openingEarlyRhythm}</h3>

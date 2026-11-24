@@ -10,6 +10,7 @@ import { formatShortDate } from '../dateFormat'
 import { describeAnalyticsRange, type AnalyticsRange } from '../analyticsRange'
 import { trainingModeLabel } from '../i18n/labels'
 import type { TrainingSession } from '../types'
+import { PsychologyAverageSparkline } from './PsychologyAverageSparkline'
 
 type Props = {
   athleteId: string
@@ -129,6 +130,19 @@ export function AthletePsychologyPanel({ athleteId, coachId, range, sessions }: 
               <strong>{psychology.notesCount}</strong>
             </article>
           </div>
+
+          {psychology.timeline.filter((row) => row.averageScore !== null).length >= 2 ? (
+            <div className="ss-card stats-panel">
+              <PsychologyAverageSparkline
+                title={t('ui.psychology.avgOverTimeTitle')}
+                hint={t('ui.psychology.avgOverTimeHint')}
+                points={psychology.timeline.map((row) => ({
+                  id: row.feedback.id,
+                  averageScore: row.averageScore,
+                }))}
+              />
+            </div>
+          ) : null}
 
           <div className="ss-card stats-panel">
             <h2 className="stats-panel__title">{t('ui.psychology.questionAverages')}</h2>

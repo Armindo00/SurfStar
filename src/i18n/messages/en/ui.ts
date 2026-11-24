@@ -260,6 +260,8 @@ export const ui = {
       'Enable Psychology check-ins in this athlete\'s sharing settings to collect post-session questionnaires.',
     avgOverall6m: 'Avg overall (6m)',
     avgOverall: 'Avg overall',
+    avgOverTimeTitle: 'Overall average /5 over time',
+    avgOverTimeHint: 'From post-session check-ins in this period.',
     checkIns: 'Check-ins',
     feedbackRate: 'Feedback rate',
     withNotes: 'With notes',

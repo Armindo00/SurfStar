@@ -260,6 +260,8 @@ export const ui = {
       'Activa los check-ins psicológicos en la configuración de compartición de este atleta para recoger cuestionarios post-sesión.',
     avgOverall6m: 'Media global (6m)',
     avgOverall: 'Media global',
+    avgOverTimeTitle: 'Media general /5 a lo largo del tiempo',
+    avgOverTimeHint: 'A partir de los check-ins post-sesión en este periodo.',
     checkIns: 'Check-ins',
     feedbackRate: 'Tasa de feedback',
     withNotes: 'Con notas',

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useI18n } from '../i18n'
 import type { AnalyticsPeriod } from '../teamAnalyticsStats'
 import type { EvolutionPoint } from '../teamAnalyticsStats'
 
@@ -27,37 +28,12 @@ type Props = {
   period?: AnalyticsPeriod
   periodOptions?: PeriodOption[]
   onPeriodChange?: (period: AnalyticsPeriod) => void
+  /** Prefer potential to align with the PDF Option C single series. */
+  defaultMetric?: EvolutionMetric
 }
 
 const LEVEL_MIN = 1
 const LEVEL_MAX = 4
-
-const METRICS: MetricConfig[] = [
-  {
-    id: 'success',
-    label: 'Success rate',
-    shortLabel: 'Success',
-    description: 'Maneuver and combo success rate over time.',
-    kind: 'percent',
-    emptyHint: 'Log technical or combo attempts to track success rate.',
-  },
-  {
-    id: 'potential',
-    label: 'Waves with potential',
-    shortLabel: 'Potential',
-    description: 'Share of waves marked with potential.',
-    kind: 'percent',
-    emptyHint: 'Log waves in technical sessions to track potential rate.',
-  },
-  {
-    id: 'level',
-    label: 'Average level',
-    shortLabel: 'Avg level',
-    description: 'Average maneuver level across technical and combo attempts.',
-    kind: 'level',
-    emptyHint: 'Log maneuver levels in technical or combo sessions to track progress.',
-  },
-]
 
 function percentToY(value: number | null, plotTop: number, plotHeight: number): number | null {
   if (value === null) return null
@@ -124,28 +100,64 @@ export function EvolutionLineChart({
   title,
   subtitle,
   points,
-  periodColumnLabel = 'Period',
+  periodColumnLabel,
   period,
   periodOptions,
   onPeriodChange,
+  defaultMetric = 'potential',
 }: Props) {
-  const [metric, setMetric] = useState<EvolutionMetric>('success')
+  const { messages } = useI18n()
+  const copy = messages.analytics.evolutionChart
+
+  const metrics: MetricConfig[] = useMemo(
+    () => [
+      {
+        id: 'success',
+        label: copy.metricSuccess,
+        shortLabel: copy.metricSuccessShort,
+        description: copy.metricSuccessHint,
+        kind: 'percent',
+        emptyHint: copy.metricSuccessEmpty,
+      },
+      {
+        id: 'potential',
+        label: copy.metricPotential,
+        shortLabel: copy.metricPotentialShort,
+        description: copy.metricPotentialHint,
+        kind: 'percent',
+        emptyHint: copy.metricPotentialEmpty,
+      },
+      {
+        id: 'level',
+        label: copy.metricLevel,
+        shortLabel: copy.metricLevelShort,
+        description: copy.metricLevelHint,
+        kind: 'level',
+        emptyHint: copy.metricLevelEmpty,
+      },
+    ],
+    [copy],
+  )
+
+  const [metric, setMetric] = useState<EvolutionMetric>(defaultMetric)
 
   const availableMetrics = useMemo(
-    () => METRICS.filter((entry) => metricHasData(entry.id, points)),
-    [points],
+    () => metrics.filter((entry) => metricHasData(entry.id, points)),
+    [metrics, points],
   )
 
   const hasAnyData = availableMetrics.length > 0
 
   useEffect(() => {
     if (!availableMetrics.some((entry) => entry.id === metric)) {
-      setMetric(availableMetrics[0]?.id ?? 'success')
+      const preferred = availableMetrics.find((entry) => entry.id === defaultMetric)
+      setMetric(preferred?.id ?? availableMetrics[0]?.id ?? 'potential')
     }
-  }, [availableMetrics, metric])
+  }, [availableMetrics, metric, defaultMetric])
 
-  const activeMetric = METRICS.find((entry) => entry.id === metric) ?? METRICS[0]
+  const activeMetric = metrics.find((entry) => entry.id === metric) ?? metrics[0]
   const activeHasData = metricHasData(metric, points)
+  const periodCol = periodColumnLabel ?? copy.periodColumn
 
   const width = 360
   const height = 210
@@ -178,7 +190,7 @@ export function EvolutionLineChart({
           {subtitle ? <p className="muted evolution-chart__sub">{subtitle}</p> : null}
         </div>
         {period && periodOptions && onPeriodChange ? (
-          <div className="evolution-chart__periods" role="tablist" aria-label="Chart period">
+          <div className="evolution-chart__periods" role="tablist" aria-label={copy.periodTabsAria}>
             {periodOptions.map((option) => (
               <button
                 key={option.id}
@@ -200,15 +212,15 @@ export function EvolutionLineChart({
       </header>
 
       {!hasAnyData ? (
-        <p className="muted evolution-chart__empty">No training data in this period yet.</p>
+        <p className="muted evolution-chart__empty">{copy.noData}</p>
       ) : (
         <>
           <div
             className="evolution-chart__metrics"
             role="tablist"
-            aria-label="Chart metric"
+            aria-label={copy.metricTabsAria}
           >
-            {METRICS.map((entry) => {
+            {metrics.map((entry) => {
               const enabled = metricHasData(entry.id, points)
               return (
                 <button
@@ -263,11 +275,7 @@ export function EvolutionLineChart({
                           y2={y}
                           className="evolution-chart__grid"
                         />
-                        <text
-                          x={4}
-                          y={y + 4}
-                          className="evolution-chart__tick"
-                        >
+                        <text x={4} y={y + 4} className="evolution-chart__tick">
                           {activeMetric.kind === 'percent' ? `${tick}%` : tick}
                         </text>
                         {activeMetric.kind === 'level' ? (
@@ -330,19 +338,19 @@ export function EvolutionLineChart({
             <table className="data-table evolution-chart__table">
               <thead>
                 <tr>
-                  <th>{periodColumnLabel}</th>
-                  <th>Sessions</th>
-                  <th>Waves</th>
+                  <th>{periodCol}</th>
+                  <th>{copy.sessionsCol}</th>
+                  <th>{copy.wavesCol}</th>
                   <th className={metric === 'success' ? 'evolution-chart__col--active' : undefined}>
-                    Success
+                    {copy.metricSuccessShort}
                   </th>
                   <th className={metric === 'level' ? 'evolution-chart__col--active' : undefined}>
-                    Avg level
+                    {copy.metricLevelShort}
                   </th>
                   <th
                     className={metric === 'potential' ? 'evolution-chart__col--active' : undefined}
                   >
-                    Potential
+                    {copy.metricPotentialShort}
                   </th>
                 </tr>
               </thead>

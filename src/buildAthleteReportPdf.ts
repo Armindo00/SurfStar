@@ -6,7 +6,12 @@ import type { AthleteHeatAnalyticsSummary } from './heatAnalyticsStats'
 import type { ComboSessionStatsSnapshot, SessionStatsSnapshot } from './sessionStats'
 import type { EvolutionPoint } from './teamAnalyticsStats'
 import type { PdfEvolutionCharts, SideCompareChart } from './athleteReportPdfEvolution'
-import { drawEvolutionSection, drawSideCompareChart, type ChartLayout } from './athleteReportPdfDraw'
+import {
+  drawEvolutionSection,
+  drawOpenVsCloseChart,
+  drawSideCompareChart,
+  type ChartLayout,
+} from './athleteReportPdfDraw'
 
 const PAGE_W = 210
 const PAGE_H = 297
@@ -107,6 +112,9 @@ export type AthleteReportPdfLabels = {
   bestWaveLast5Avg: string
   timeToFirstWaveAvg: string
   timeToTwoMajorAvg: string
+  openVsCloseTitle: string
+  openShort: string
+  closeShort: string
   heatLog: string
   heat: string
   total: string
@@ -534,8 +542,13 @@ function drawHeatAnnexSection(
   ])
 
   if (heat.heatsWithTiming > 0) {
-    pdf.bodyText(
-      `${L.openingEarlyRhythm}: ${L.bestWaveFirst5Avg} ${heat.avgBestWaveOpening?.toFixed(1) ?? '—'} · ${L.closingUnderPressure}: ${L.bestWaveLast5Avg} ${heat.avgBestWaveClosing?.toFixed(1) ?? '—'}`,
+    drawOpenVsCloseChart(
+      pdf.chartLayout(),
+      L.openVsCloseTitle,
+      L.openShort,
+      L.closeShort,
+      heat.avgBestWaveOpening,
+      heat.avgBestWaveClosing,
     )
   }
 
