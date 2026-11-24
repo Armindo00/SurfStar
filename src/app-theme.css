@@ -1841,6 +1841,36 @@ body {
   color: #ffffff !important;
 }
 
+.app-shell .team-analytics-page .athlete-profile-sections__btn {
+  background: #ffffff !important;
+  border-color: #d0dae4 !important;
+  color: #0c1520 !important;
+}
+
+.app-shell .team-analytics-page .athlete-profile-sections__btn small {
+  color: #4b5c6b !important;
+}
+
+.app-shell .team-analytics-page .athlete-profile-sections__btn--active {
+  background: #0a6a94 !important;
+  border-color: #0a6a94 !important;
+  color: #ffffff !important;
+}
+
+.app-shell .team-analytics-page .athlete-profile-sections__btn--active small {
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.app-shell .team-analytics-page .analytics-range-toolbar {
+  background: #e8eef3 !important;
+}
+
+.app-shell .team-analytics-page .analytics-range-toolbar__trigger {
+  background: #ffffff !important;
+  border-color: #d0dae4 !important;
+  color: #074d6c !important;
+}
+
 .app-shell .team-analytics-page .analytics-topic-sheet__breakdown {
   background: rgba(15, 28, 36, 0.06) !important;
   border-color: #d0dae4 !important;

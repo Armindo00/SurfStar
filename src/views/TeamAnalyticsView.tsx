@@ -289,67 +289,72 @@ export function TeamAnalyticsView() {
           </div>
         </div>
 
-        <div className="analytics-period-bar analytics-period-bar--flush">
-          <div className="analytics-period-bar__copy">
-            <span className="analytics-period-bar__label">{t('analytics.timeRange')}</span>
-          </div>
-          {profileSection !== 'material' ? (
-            <AnalyticsRangePicker
-              range={range}
-              onChange={(nextRange) => {
-                setRange(nextRange)
-                setActiveTopic(null)
-              }}
-            />
-          ) : null}
-        </div>
-
-        <nav className="admin-tabs athlete-profile-tabs" aria-label={t('analytics.profileTabsAria')}>
+        <nav className="athlete-profile-sections" aria-label={t('analytics.profileTabsAria')}>
           <button
             type="button"
             className={
               profileSection === 'training'
-                ? 'admin-tabs__btn admin-tabs__btn--active'
-                : 'admin-tabs__btn'
+                ? 'athlete-profile-sections__btn athlete-profile-sections__btn--active'
+                : 'athlete-profile-sections__btn'
             }
             onClick={() => {
               setProfileSection('training')
               setActiveTopic(null)
             }}
           >
-            {t('analytics.profileTabs.trainingStats')}
+            <span>{t('analytics.profileTabs.trainingStats')}</span>
+            <small>{t('analytics.profileTabHints.training')}</small>
           </button>
           {psychologyAvailable ? (
             <button
               type="button"
               className={
                 profileSection === 'psychology'
-                  ? 'admin-tabs__btn admin-tabs__btn--active'
-                  : 'admin-tabs__btn'
+                  ? 'athlete-profile-sections__btn athlete-profile-sections__btn--active'
+                  : 'athlete-profile-sections__btn'
               }
               onClick={() => {
                 setProfileSection('psychology')
                 setActiveTopic(null)
               }}
             >
-              {t('analytics.profileTabs.psychology')}
+              <span>{t('analytics.profileTabs.psychology')}</span>
+              <small>{t('analytics.profileTabHints.psychology')}</small>
             </button>
           ) : null}
           <button
             type="button"
             className={
               profileSection === 'material'
-                ? 'admin-tabs__btn admin-tabs__btn--active'
-                : 'admin-tabs__btn'
+                ? 'athlete-profile-sections__btn athlete-profile-sections__btn--active'
+                : 'athlete-profile-sections__btn'
             }
             onClick={() => {
               setProfileSection('material')
               setActiveTopic(null)
             }}
           >
-            {t('analytics.profileTabs.equipment')}
+            <span>{t('analytics.profileTabs.equipment')}</span>
+            <small>{t('analytics.profileTabHints.equipment')}</small>
           </button>
         </nav>
+
+        {profileSection !== 'material' ? (
+          <div className="analytics-period-bar analytics-period-bar--secondary">
+            <AnalyticsRangePicker
+              variant="toolbar"
+              range={range}
+              onChange={(nextRange) => {
+                setRange(nextRange)
+                setActiveTopic(null)
+              }}
+            />
+          </div>
+        ) : (
+          <p className="muted analytics-period-bar__material-hint">
+            {t('analytics.timeRangeMaterialHint')}
+          </p>
+        )}
 
         {profileSection === 'material' ? (
           <AthleteMaterialPanel athleteId={selectedAthlete.id} />
