@@ -5207,6 +5207,14 @@ input[type='checkbox']:indeterminate {
   background: #8b5cf6;
 }
 
+.evolution-chart__key--aproveitamento {
+  color: #0f766e;
+}
+
+.evolution-chart__key--aproveitamento::before {
+  background: #0d9488;
+}
+
 .evolution-chart__svg {
   width: 100%;
   max-width: 100%;
@@ -5238,9 +5246,16 @@ input[type='checkbox']:indeterminate {
 
 .evolution-chart__line {
   fill: none;
+  stroke: #0ea5e9;
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.evolution-chart__dot {
+  fill: #0ea5e9;
+  stroke: white;
+  stroke-width: 1.5;
 }
 
 .evolution-chart__line--success {
@@ -5259,18 +5274,34 @@ input[type='checkbox']:indeterminate {
   stroke-width: 2.75;
 }
 
+.evolution-chart__line--aproveitamento {
+  stroke: #0d9488;
+  stroke-width: 2.5;
+}
+
+/* Base area fill prevents SVG default black when a metric variant is missing. */
+.evolution-chart__area {
+  fill: rgba(14, 165, 233, 0.12);
+  stroke: none;
+}
+
 .evolution-chart__area--success {
   fill: rgba(14, 165, 233, 0.12);
   stroke: none;
 }
 
 .evolution-chart__area--potential {
-  fill: rgba(245, 158, 11, 0.12);
+  fill: rgba(10, 106, 148, 0.12);
   stroke: none;
 }
 
 .evolution-chart__area--level {
   fill: rgba(139, 92, 246, 0.12);
+  stroke: none;
+}
+
+.evolution-chart__area--aproveitamento {
+  fill: rgba(13, 148, 136, 0.14);
   stroke: none;
 }
 
@@ -5288,6 +5319,12 @@ input[type='checkbox']:indeterminate {
 
 .evolution-chart__dot--level {
   fill: #8b5cf6;
+  stroke: white;
+  stroke-width: 1.5;
+}
+
+.evolution-chart__dot--aproveitamento {
+  fill: #0d9488;
   stroke: white;
   stroke-width: 1.5;
 }
@@ -5359,6 +5396,10 @@ input[type='checkbox']:indeterminate {
 
 .evolution-chart__cell--level {
   color: #6d28d9;
+}
+
+.evolution-chart__cell--aproveitamento {
+  color: #0f766e;
 }
 
 .evolution-chart__col--active {
