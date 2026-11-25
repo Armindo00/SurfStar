@@ -59,7 +59,6 @@ export function ResultComparisonNotes({
       <h2 className="stats-panel__title">
         {title ?? t('analytics.comparison.title')}
       </h2>
-      <p className="muted stats-panel__sub">{t('analytics.comparison.subtitle')}</p>
       <ul className="result-comparison-notes__list">
         {notes.map((note) => (
           <li key={note}>{note}</li>
