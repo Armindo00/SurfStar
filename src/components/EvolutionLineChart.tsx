@@ -367,6 +367,13 @@ export function EvolutionLineChart({
                   <th className={metric === 'success' ? 'evolution-chart__col--active' : undefined}>
                     {copy.metricSuccessShort}
                   </th>
+                  <th
+                    className={
+                      metric === 'aproveitamento' ? 'evolution-chart__col--active' : undefined
+                    }
+                  >
+                    {copy.metricAproveitamentoShort}
+                  </th>
                   <th className={metric === 'level' ? 'evolution-chart__col--active' : undefined}>
                     {copy.metricLevelShort}
                   </th>
@@ -391,6 +398,19 @@ export function EvolutionLineChart({
                       ) : (
                         <span className="evolution-chart__cell evolution-chart__cell--success">
                           {formatMetricValue('success', point.successRate)}
+                        </span>
+                      )}
+                    </td>
+                    <td
+                      className={
+                        metric === 'aproveitamento' ? 'evolution-chart__col--active' : undefined
+                      }
+                    >
+                      {point.aproveitamentoRate === null ? (
+                        '—'
+                      ) : (
+                        <span className="evolution-chart__cell evolution-chart__cell--aproveitamento">
+                          {formatMetricValue('aproveitamento', point.aproveitamentoRate)}
                         </span>
                       )}
                     </td>
