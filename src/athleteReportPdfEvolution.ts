@@ -13,10 +13,18 @@ type PeriodBucket = {
     ManeuverKind,
     { attempts: number; successes: number; levelSum: number; levelCount: number }
   >
+  maneuverAttempts: number
+  maneuverSuccesses: number
+  maneuverLevelSum: number
+  maneuverLevelCount: number
+  maneuverSuccessLevelSum: number
+  maneuverSuccessLevelCount: number
   comboAttempts: number
   comboSuccesses: number
   comboLevelSum: number
   comboLevelCount: number
+  comboSuccessLevelSum: number
+  comboSuccessLevelCount: number
 }
 
 function emptyKindBucket(): PeriodBucket['byKind'][ManeuverKind] {
@@ -32,10 +40,18 @@ function emptyBucket(): PeriodBucket {
       'top-turn': emptyKindBucket(),
       progressive: emptyKindBucket(),
     },
+    maneuverAttempts: 0,
+    maneuverSuccesses: 0,
+    maneuverLevelSum: 0,
+    maneuverLevelCount: 0,
+    maneuverSuccessLevelSum: 0,
+    maneuverSuccessLevelCount: 0,
     comboAttempts: 0,
     comboSuccesses: 0,
     comboLevelSum: 0,
     comboLevelCount: 0,
+    comboSuccessLevelSum: 0,
+    comboSuccessLevelCount: 0,
   }
 }
 
@@ -47,16 +63,30 @@ function fillBucketFromSession(bucket: PeriodBucket, session: TrainingSession, a
 
     for (const maneuver of wave.maneuvers) {
       const row = bucket.byKind[maneuver.kind]
+      const level = levelToNumeric(maneuver.level)
       row.attempts += 1
-      if (maneuver.success) row.successes += 1
-      row.levelSum += levelToNumeric(maneuver.level)
+      bucket.maneuverAttempts += 1
+      if (maneuver.success) {
+        row.successes += 1
+        bucket.maneuverSuccesses += 1
+        bucket.maneuverSuccessLevelSum += level
+        bucket.maneuverSuccessLevelCount += 1
+      }
+      row.levelSum += level
       row.levelCount += 1
+      bucket.maneuverLevelSum += level
+      bucket.maneuverLevelCount += 1
     }
 
     for (const attempt of wave.comboAttempts ?? []) {
+      const level = levelToNumeric(attempt.level)
       bucket.comboAttempts += 1
-      if (attempt.success) bucket.comboSuccesses += 1
-      bucket.comboLevelSum += levelToNumeric(attempt.level)
+      if (attempt.success) {
+        bucket.comboSuccesses += 1
+        bucket.comboSuccessLevelSum += level
+        bucket.comboSuccessLevelCount += 1
+      }
+      bucket.comboLevelSum += level
       bucket.comboLevelCount += 1
     }
   }
@@ -72,8 +102,14 @@ export type PdfEvolutionCharts = {
   periodLabels: string[]
   potentialRates: (number | null)[]
   maneuverSeries: ManeuverEvolutionSeries[]
+  /** Overall technical maneuver success % per period. */
+  maneuverSuccessRates: (number | null)[]
   comboSuccessRates: (number | null)[]
   comboAvgLevels: (number | null)[]
+  /** Avg level of successful maneuvers + successful combos. */
+  successAvgLevels: (number | null)[]
+  /** Avg level of all maneuvers (success + miss). */
+  overallManeuverAvgLevels: (number | null)[]
 }
 
 export function buildPdfEvolutionCharts(
@@ -113,6 +149,13 @@ export function buildPdfEvolutionCharts(
     }),
   }))
 
+  const maneuverSuccessRates = slots.map((slot) => {
+    const b = buckets.get(slot.periodKey)!
+    return b.maneuverAttempts
+      ? Math.round((b.maneuverSuccesses / b.maneuverAttempts) * 100)
+      : null
+  })
+
   const comboSuccessRates = slots.map((slot) => {
     const b = buckets.get(slot.periodKey)!
     return b.comboAttempts ? Math.round((b.comboSuccesses / b.comboAttempts) * 100) : null
@@ -123,7 +166,31 @@ export function buildPdfEvolutionCharts(
     return b.comboLevelCount ? Math.round((b.comboLevelSum / b.comboLevelCount) * 100) / 100 : null
   })
 
-  return { periodLabels, potentialRates, maneuverSeries, comboSuccessRates, comboAvgLevels }
+  const successAvgLevels = slots.map((slot) => {
+    const b = buckets.get(slot.periodKey)!
+    const count = b.maneuverSuccessLevelCount + b.comboSuccessLevelCount
+    if (!count) return null
+    const sum = b.maneuverSuccessLevelSum + b.comboSuccessLevelSum
+    return Math.round((sum / count) * 100) / 100
+  })
+
+  const overallManeuverAvgLevels = slots.map((slot) => {
+    const b = buckets.get(slot.periodKey)!
+    return b.maneuverLevelCount
+      ? Math.round((b.maneuverLevelSum / b.maneuverLevelCount) * 100) / 100
+      : null
+  })
+
+  return {
+    periodLabels,
+    potentialRates,
+    maneuverSeries,
+    maneuverSuccessRates,
+    comboSuccessRates,
+    comboAvgLevels,
+    successAvgLevels,
+    overallManeuverAvgLevels,
+  }
 }
 
 export type SideCompareChart = {

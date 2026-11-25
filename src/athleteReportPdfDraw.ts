@@ -155,7 +155,7 @@ export function drawLineChart(
   layout.setY(legendY + 6)
 }
 
-/** Option C: single high-signal evolution series (wave potential). */
+/** Key evolution themes: potential, success rates, success level vs overall maneuver level. */
 export function drawEvolutionSection(
   layout: ChartLayout,
   charts: PdfEvolutionCharts,
@@ -166,22 +166,70 @@ export function drawEvolutionSection(
     maneuverLevel: string
     comboSuccess: string
     comboLevel: string
+    successVsOverallLevel: string
+    successAvgLevel: string
+    overallManeuverLevel: string
+    successRatesTitle: string
   },
 ) {
   const { periodLabels } = charts
-  if (!charts.potentialRates.some((v) => v !== null)) {
+  const hasPotential = charts.potentialRates.some((v) => v !== null)
+  const hasSuccessRates =
+    charts.maneuverSuccessRates.some((v) => v !== null) ||
+    charts.comboSuccessRates.some((v) => v !== null)
+  const hasLevels =
+    charts.successAvgLevels.some((v) => v !== null) ||
+    charts.overallManeuverAvgLevels.some((v) => v !== null)
+
+  if (!hasPotential && !hasSuccessRates && !hasLevels) {
     layout.setY(layout.getY() + 2)
     return
   }
 
-  drawLineChart(layout, labels.potential, periodLabels, [
-    {
-      label: labels.potential,
-      color: [10, 106, 148],
-      values: charts.potentialRates,
-      scale: 'percent',
-    },
-  ])
+  if (hasPotential) {
+    drawLineChart(layout, labels.potential, periodLabels, [
+      {
+        label: labels.potential,
+        color: [10, 106, 148],
+        values: charts.potentialRates,
+        scale: 'percent',
+      },
+    ])
+  }
+
+  if (hasSuccessRates) {
+    drawLineChart(layout, labels.successRatesTitle, periodLabels, [
+      {
+        label: labels.maneuverSuccess,
+        color: [2, 132, 199],
+        values: charts.maneuverSuccessRates,
+        scale: 'percent',
+      },
+      {
+        label: labels.comboSuccess,
+        color: [15, 118, 110],
+        values: charts.comboSuccessRates,
+        scale: 'percent',
+      },
+    ])
+  }
+
+  if (hasLevels) {
+    drawLineChart(layout, labels.successVsOverallLevel, periodLabels, [
+      {
+        label: labels.successAvgLevel,
+        color: [10, 106, 148],
+        values: charts.successAvgLevels,
+        scale: 'level',
+      },
+      {
+        label: labels.overallManeuverLevel,
+        color: [100, 116, 139],
+        values: charts.overallManeuverAvgLevels,
+        scale: 'level',
+      },
+    ])
+  }
 
   layout.setY(layout.getY() + 4)
 }

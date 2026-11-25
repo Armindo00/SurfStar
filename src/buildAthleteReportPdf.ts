@@ -74,6 +74,10 @@ export type AthleteReportPdfLabels = {
   pdfChartManeuverLevelEvolution: string
   pdfChartComboSuccessEvolution: string
   pdfChartComboLevelEvolution: string
+  pdfChartSuccessVsOverallLevel: string
+  pdfChartSuccessAvgLevel: string
+  pdfChartOverallManeuverLevel: string
+  pdfChartSuccessRatesTitle: string
   pdfTechnicalSideCharts: string
   pdfComboSideCharts: string
   frontside: string
@@ -814,6 +818,10 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
       maneuverLevel: L.pdfChartManeuverLevelEvolution,
       comboSuccess: L.pdfChartComboSuccessEvolution,
       comboLevel: L.pdfChartComboLevelEvolution,
+      successVsOverallLevel: L.pdfChartSuccessVsOverallLevel,
+      successAvgLevel: L.pdfChartSuccessAvgLevel,
+      overallManeuverLevel: L.pdfChartOverallManeuverLevel,
+      successRatesTitle: L.pdfChartSuccessRatesTitle,
     })
   }
 

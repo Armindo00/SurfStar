@@ -511,6 +511,10 @@ export function AthleteReportPreview({
               maneuverLevel: r.pdfChartManeuverLevelEvolution,
               comboSuccess: r.pdfChartComboSuccessEvolution,
               comboLevel: r.pdfChartComboLevelEvolution,
+              successVsOverallLevel: r.pdfChartSuccessVsOverallLevel,
+              successAvgLevel: r.pdfChartSuccessAvgLevel,
+              overallManeuverLevel: r.pdfChartOverallManeuverLevel,
+              successRatesTitle: r.pdfChartSuccessRatesTitle,
             }}
           />
         </section>
