@@ -64,7 +64,7 @@ export function ComboRegisterPanel({
 
           {canLogAttempts ? (
             <>
-              <p className="wave-flags__label">{r.maneuversStep}</p>
+              <p className="wave-flags__label">{r.combinationsStep}</p>
               <p className="muted keypad-legend">{r.comboKeypadLegend}</p>
 
               <div className="ss-keypad ss-keypad--combo">
@@ -85,7 +85,7 @@ export function ComboRegisterPanel({
           ) : null}
 
           {classified && openWave?.outcome === 'wasted' ? (
-            <p className="muted wave-flags__hint">{r.wastedHint}</p>
+            <p className="muted wave-flags__hint">{r.wastedHintCombos}</p>
           ) : null}
 
           {showClose ? (
