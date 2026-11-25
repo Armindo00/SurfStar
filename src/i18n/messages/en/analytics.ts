@@ -56,7 +56,6 @@ export const analytics = {
   },
   comparison: {
     title: 'Result comparison',
-    subtitle: 'Factual readings to aid interpretation — no coaching recommendations.',
     mostFrequentQuadrant: 'Most frequent quadrant: {{quadrant}} ({{pct}}%, {{count}} waves).',
     quadrantShare: 'That quadrant is {{pct}}% of {{total}} waves total.',
     potentialShare:

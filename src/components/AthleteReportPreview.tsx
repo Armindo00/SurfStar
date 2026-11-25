@@ -175,7 +175,6 @@ export function AthleteReportPreview({
       {comparisonNotes.length > 0 ? (
         <section className="athlete-report__section">
           <h2>{comparisonTitle ?? t('analytics.comparison.title')}</h2>
-          <p className="muted">{t('analytics.comparison.subtitle')}</p>
           <ul className="result-comparison-notes__list">
             {comparisonNotes.map((note) => (
               <li key={note}>{note}</li>

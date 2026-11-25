@@ -23,7 +23,6 @@ export const analytics = {
   overview: { avgLevel: 'Nível médio', sessions: 'Sessões', potential: 'Potencial', stars: 'Estrelas' },
   comparison: {
     title: 'Comparação de resultados',
-    subtitle: 'Leituras factuais para facilitar a interpretação — sem recomendações de treino.',
     mostFrequentQuadrant: 'Quadrante mais frequente: {{quadrant}} ({{pct}}%, {{count}} ondas).',
     quadrantShare: 'Esse quadrante representa {{pct}}% do total de {{total}} ondas.',
     potentialShare:
