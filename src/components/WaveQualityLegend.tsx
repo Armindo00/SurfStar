@@ -1,6 +1,8 @@
 import { useI18n } from '../i18n'
 
 type Props = {
+  /** Técnico (default) vs combos — muda o texto das fórmulas. */
+  variant?: 'tecnico' | 'combos'
   aproveitamentoMade?: number
   aproveitamentoTotal?: number
   valorizacaoMade?: number
@@ -8,12 +10,14 @@ type Props = {
 }
 
 export function WaveQualityLegend({
+  variant = 'tecnico',
   aproveitamentoMade,
   aproveitamentoTotal,
   valorizacaoMade,
   valorizacaoTotal,
 }: Props) {
   const { t } = useI18n()
+  const isCombos = variant === 'combos'
 
   const aproveitamentoExample =
     aproveitamentoMade != null && aproveitamentoTotal != null && aproveitamentoTotal > 0
@@ -38,13 +42,21 @@ export function WaveQualityLegend({
       <p>
         <strong>{t('analytics.topicSheet.aproveitamentoRate')}</strong>
         {' — '}
-        {t('analytics.topicSheet.aproveitamentoLegend')}
+        {t(
+          isCombos
+            ? 'analytics.topicSheet.aproveitamentoLegendCombos'
+            : 'analytics.topicSheet.aproveitamentoLegend',
+        )}
         {aproveitamentoExample ? ` ${aproveitamentoExample}` : ''}
       </p>
       <p>
         <strong>{t('analytics.topicSheet.valorizacaoRate')}</strong>
         {' — '}
-        {t('analytics.topicSheet.valorizacaoLegend')}
+        {t(
+          isCombos
+            ? 'analytics.topicSheet.valorizacaoLegendCombos'
+            : 'analytics.topicSheet.valorizacaoLegend',
+        )}
         {valorizacaoExample ? ` ${valorizacaoExample}` : ''}
       </p>
     </div>

@@ -124,12 +124,41 @@ function ComboStatsBlock({
           <span className="kpi-card__label">{t('ui.stats.waves')}</span>
           <strong className="kpi-card__value">{stats.waveStats.totalWaves}</strong>
         </article>
+        <article className="kpi-card kpi-card--accent">
+          <span className="kpi-card__label">{t('analytics.topicSheet.aproveitamentoRate')}</span>
+          <strong className="kpi-card__value">
+            {stats.waveStats.aproveitamentoRate === null
+              ? '—'
+              : `${stats.waveStats.aproveitamentoRate}%`}
+          </strong>
+          {stats.waveStats.aproveitamentoRate !== null ? (
+            <RateBar value={stats.waveStats.aproveitamentoRate} />
+          ) : null}
+        </article>
+        <article className="kpi-card">
+          <span className="kpi-card__label">{t('analytics.topicSheet.valorizacaoRate')}</span>
+          <strong className="kpi-card__value">
+            {stats.waveStats.valorizacaoRate === null ? '—' : `${stats.waveStats.valorizacaoRate}%`}
+          </strong>
+          {stats.waveStats.valorizacaoRate !== null ? (
+            <RateBar value={stats.waveStats.valorizacaoRate} />
+          ) : null}
+        </article>
         <article className="kpi-card kpi-card--success">
           <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
           <strong className="kpi-card__value">{stats.overallSuccessRate}%</strong>
           <RateBar value={stats.overallSuccessRate} />
         </article>
       </div>
+
+      <WaveMatrixPanel matrix={stats.waveStats.matrix} totalWaves={stats.waveStats.totalWaves} />
+      <WaveQualityLegend
+        variant="combos"
+        aproveitamentoMade={stats.waveStats.wellExecutedPotential}
+        aproveitamentoTotal={stats.waveStats.withPotential}
+        valorizacaoMade={stats.waveStats.valuedNoPotential}
+        valorizacaoTotal={stats.waveStats.matrix.noPotentialSurfed}
+      />
 
       <div className="ss-card stats-panel">
         <SideCompareChart

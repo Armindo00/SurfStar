@@ -135,6 +135,7 @@ export function SessionStatsView() {
 
         <WaveMatrixPanel matrix={stats.waveStats.matrix} totalWaves={stats.waveStats.totalWaves} />
         <WaveQualityLegend
+          variant="combos"
           aproveitamentoMade={stats.waveStats.wellExecutedPotential}
           aproveitamentoTotal={stats.waveStats.withPotential}
           valorizacaoMade={stats.waveStats.valuedNoPotential}

@@ -136,6 +136,10 @@ export const analytics = {
       'olas con potencial bien ejecutadas (solo maniobras completas ✓) ÷ total de olas con potencial.',
     valorizacaoLegend:
       'olas sin potencial con maniobras de nivel > 2 ÷ olas sin potencial surfadas.',
+    aproveitamentoLegendCombos:
+      'olas con potencial bien ejecutadas (solo combinaciones completas ✓) ÷ total de olas con potencial.',
+    valorizacaoLegendCombos:
+      'olas sin potencial con al menos un Comb2 ÷ olas sin potencial surfadas.',
     aproveitamentoExample: 'Ej.: {{made}} ÷ {{total}} = {{rate}}%.',
     valorizacaoExample: 'Ej.: {{made}} ÷ {{total}} = {{rate}}%.',
     avgTechnicalLevel: 'Nivel técnico medio',

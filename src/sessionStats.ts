@@ -233,6 +233,11 @@ function levelAboveTwo(level: ManeuverLevel | ComboLevel): boolean {
   return level === 3 || level === 'estrela'
 }
 
+/** Comb2 ou superior (Comb2 / Comb3 / estrela). */
+function levelAtLeastComb2(level: ManeuverLevel | ComboLevel): boolean {
+  return level === 2 || level === 3 || level === 'estrela'
+}
+
 /** Tem pelo menos uma manobra/combo/custom com sucesso (completa ✓). */
 export function waveHasCompleteManeuver(w: WaveRecord): boolean {
   if (w.maneuvers.some((m) => m.success)) return true
@@ -241,11 +246,26 @@ export function waveHasCompleteManeuver(w: WaveRecord): boolean {
   return false
 }
 
+/** Completa ✓ conforme o modo da sessão. */
+export function waveHasCompleteAttemptForMode(w: WaveRecord, mode: TrainingMode): boolean {
+  if (mode === 'combos') return (w.comboAttempts ?? []).some((c) => c.success)
+  if (mode === 'custom') return (w.customAttempts ?? []).some((c) => c.success === true)
+  return w.maneuvers.some((m) => m.success)
+}
+
 /** Tem manobra/combo de nível 3 ou estrela. */
 export function waveHasLevelAboveTwo(w: WaveRecord): boolean {
   if (w.maneuvers.some((m) => levelAboveTwo(m.level))) return true
   if ((w.comboAttempts ?? []).some((c) => levelAboveTwo(c.level))) return true
   return false
+}
+
+/** Valorização: técnico = nível > 2; combos = pelo menos um Comb2. */
+export function waveMeetsValorizacao(w: WaveRecord, mode: TrainingMode): boolean {
+  if (mode === 'combos') {
+    return (w.comboAttempts ?? []).some((c) => levelAtLeastComb2(c.level))
+  }
+  return waveHasLevelAboveTwo(w)
 }
 
 export function emptyWaveStats(): WaveStats {
@@ -289,12 +309,15 @@ export function computeWaveStats(
     noPotentialWasted: waves.filter((w) => !w.hasPotential && w.outcome === 'wasted').length,
   }
 
+  const mode = session.mode
+
   const wellExecutedPotential = waves.filter(
-    (w) => w.hasPotential && w.outcome === 'surfed' && waveHasCompleteManeuver(w),
+    (w) =>
+      w.hasPotential && w.outcome === 'surfed' && waveHasCompleteAttemptForMode(w, mode),
   ).length
 
   const valuedNoPotential = waves.filter(
-    (w) => !w.hasPotential && w.outcome === 'surfed' && waveHasLevelAboveTwo(w),
+    (w) => !w.hasPotential && w.outcome === 'surfed' && waveMeetsValorizacao(w, mode),
   ).length
 
   return {

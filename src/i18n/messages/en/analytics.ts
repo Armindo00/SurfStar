@@ -151,6 +151,10 @@ export const analytics = {
       'potential waves well executed (complete maneuvers ✓ only) ÷ total potential waves.',
     valorizacaoLegend:
       'no-potential waves with maneuvers level > 2 ÷ surfed no-potential waves.',
+    aproveitamentoLegendCombos:
+      'potential waves well executed (complete combinations ✓ only) ÷ total potential waves.',
+    valorizacaoLegendCombos:
+      'no-potential waves with at least one Comb2 ÷ surfed no-potential waves.',
     aproveitamentoExample: 'E.g. {{made}} ÷ {{total}} = {{rate}}%.',
     valorizacaoExample: 'E.g. {{made}} ÷ {{total}} = {{rate}}%.',
     avgTechnicalLevel: 'Avg technical level',

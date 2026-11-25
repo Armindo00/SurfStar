@@ -136,6 +136,10 @@ export const analytics = {
       'vagues à potentiel bien exécutées (manœuvres complètes ✓ uniquement) ÷ total des vagues à potentiel.',
     valorizacaoLegend:
       'vagues sans potentiel avec manœuvres niveau > 2 ÷ vagues sans potentiel surfées.',
+    aproveitamentoLegendCombos:
+      'vagues à potentiel bien exécutées (combinaisons complètes ✓ uniquement) ÷ total des vagues à potentiel.',
+    valorizacaoLegendCombos:
+      'vagues sans potentiel avec au moins un Comb2 ÷ vagues sans potentiel surfées.',
     aproveitamentoExample: 'Ex. : {{made}} ÷ {{total}} = {{rate}} %.',
     valorizacaoExample: 'Ex. : {{made}} ÷ {{total}} = {{rate}} %.',
     avgTechnicalLevel: 'Niveau technique moy.',

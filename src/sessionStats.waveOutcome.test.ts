@@ -17,12 +17,15 @@ function wave(
   }
 }
 
-function session(waves: WaveRecord[]): TrainingSession {
+function session(
+  waves: WaveRecord[],
+  mode: TrainingSession['mode'] = 'tecnico',
+): TrainingSession {
   return {
     id: 's1',
     coachId: 'c1',
     organizationId: 'o1',
-    mode: 'tecnico',
+    mode,
     athleteIds: ['a1'],
     spotId: 'sp1',
     spotName: 'Test spot',
@@ -155,5 +158,94 @@ describe('wave outcome stats', () => {
     expect(waveIsCommitted(draft, 'tecnico')).toBe(false)
     expect(waveIsCommitted(wasted, 'tecnico')).toBe(true)
     expect(waveIsCommitted(emptySurfed, 'tecnico')).toBe(false)
+  })
+
+  it('combo mode: aproveitamento with complete combos and valorizacao with Comb2+', () => {
+    const waves = [
+      wave({
+        id: 'c1',
+        hasPotential: true,
+        outcome: 'surfed',
+        comboAttempts: [
+          {
+            id: 'x1',
+            side: 'frontside',
+            level: 1,
+            success: true,
+            at: '2026-11-24T10:01:00.000Z',
+          },
+        ],
+      }),
+      wave({
+        id: 'c1b',
+        hasPotential: true,
+        outcome: 'surfed',
+        comboAttempts: [
+          {
+            id: 'x1b',
+            side: 'frontside',
+            level: 2,
+            success: false,
+            at: '2026-11-24T10:01:30.000Z',
+          },
+        ],
+      }),
+      wave({ id: 'c2', hasPotential: true, outcome: 'wasted' }),
+      wave({
+        id: 'c3',
+        hasPotential: false,
+        outcome: 'surfed',
+        comboAttempts: [
+          {
+            id: 'x2',
+            side: 'frontside',
+            level: 2,
+            success: true,
+            at: '2026-11-24T10:02:00.000Z',
+          },
+        ],
+      }),
+      wave({
+        id: 'c3b',
+        hasPotential: false,
+        outcome: 'surfed',
+        comboAttempts: [
+          {
+            id: 'x2b',
+            side: 'frontside',
+            level: 1,
+            success: true,
+            at: '2026-11-24T10:02:30.000Z',
+          },
+        ],
+      }),
+      wave({
+        id: 'c3c',
+        hasPotential: false,
+        outcome: 'surfed',
+        // Técnico would value level 3 maneuvers; combo mode ignores maneuvers.
+        maneuvers: [
+          {
+            id: 'm3',
+            kind: 'rail',
+            side: 'frontside',
+            level: 3,
+            success: true,
+            at: '2026-11-24T10:02:45.000Z',
+          },
+        ],
+      }),
+    ]
+
+    expect(computeWaveStats(session(waves, 'combos'))).toMatchObject({
+      withPotential: 3,
+      wellExecutedPotential: 1,
+      aproveitamentoRate: 33,
+      valuedNoPotential: 1,
+      valorizacaoRate: 33,
+      matrix: {
+        noPotentialSurfed: 3,
+      },
+    })
   })
 })
