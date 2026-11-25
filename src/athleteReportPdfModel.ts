@@ -17,9 +17,14 @@ import {
 import type { AthleteHeatAnalyticsSummary } from './heatAnalyticsStats'
 import { formatSessionDate, resolveSessionSpotName } from './sessionHistoryUtils'
 import { comboLevelLabel, trainingModeLabel, maneuverLabel } from './i18n/labels'
+import {
+  buildResultComparisonNotes,
+  type ComparisonNoteLabels,
+} from './resultComparisonNotes'
 import type { AthletePeriodAnalytics } from './teamAnalyticsStats'
 import type { SurfSpot } from './types'
 import type { ManeuverKind } from './types'
+import type { PdfWaveMatrixLabels } from './athleteReportPdfDraw'
 
 const TECHNICAL_KINDS: ManeuverKind[] = ['rail', 'top-turn', 'progressive']
 
@@ -271,6 +276,9 @@ export function buildAthleteReportPdfInput(args: {
   getSpot: (id: string) => SurfSpot | undefined
   evolutionColumnLabel: string
   labels: AthleteReportPdfLabels
+  comparisonLabels: ComparisonNoteLabels
+  comparisonTitle: string
+  waveMatrixLabels: PdfWaveMatrixLabels
 }): AthleteReportPdfInput {
   const trainingMix = buildTrainingMixRows(args.analytics)
   const maneuverSummaries = buildManeuverSummaries(args.analytics)
@@ -298,6 +306,23 @@ export function buildAthleteReportPdfInput(args: {
     labels: args.labels,
   })
 
+  const comparisonNotes = buildResultComparisonNotes({
+    labels: args.comparisonLabels,
+    general: args.analytics.general,
+    technicalSuccessRate: args.analytics.technical?.overallSuccessRate ?? null,
+    comboSuccessRate: args.analytics.combo?.overallSuccessRate ?? null,
+  })
+
+  const general = args.analytics.general
+  const waveMatrix =
+    general.totalWaves > 0
+      ? {
+          counts: general.matrix,
+          totalWaves: general.totalWaves,
+          labels: args.waveMatrixLabels,
+        }
+      : null
+
   return {
     athleteName: args.athleteName,
     coachName: args.coachName,
@@ -319,8 +344,11 @@ export function buildAthleteReportPdfInput(args: {
     combo: args.analytics.combo,
     psychology: args.psychology,
     heatAnalytics: args.heatAnalytics ?? null,
-    strengths: executive.strengths,
-    attention: executive.attention,
+    strengths: [],
+    attention: [],
+    comparisonNotes,
+    comparisonTitle: args.comparisonTitle,
+    waveMatrix,
     domainRows: executive.domainRows,
     maneuverSummaries,
     sessionRows: buildSessionRows(args.sessionSummaries, args.getSpot),

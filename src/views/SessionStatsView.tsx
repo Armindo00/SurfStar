@@ -6,6 +6,7 @@ import { HeatLiveStatsPanel } from '../components/HeatLiveStatsPanel'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessChart'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { ResultComparisonNotes } from '../components/ResultComparisonNotes'
 import { WaveMatrixPanel } from '../components/WaveMatrixPanel'
 import { WaveQualityLegend } from '../components/WaveQualityLegend'
 import { useApp } from '../AppContext'
@@ -134,6 +135,10 @@ export function SessionStatsView() {
         </div>
 
         <WaveMatrixPanel matrix={stats.waveStats.matrix} totalWaves={stats.waveStats.totalWaves} />
+        <ResultComparisonNotes
+          waveStats={stats.waveStats}
+          comboSuccessRate={stats.overallSuccessRate}
+        />
         <WaveQualityLegend
           variant="combos"
           aproveitamentoMade={stats.waveStats.wellExecutedPotential}
@@ -250,6 +255,10 @@ export function SessionStatsView() {
       </div>
 
       <WaveMatrixPanel matrix={stats.waveStats.matrix} totalWaves={stats.waveStats.totalWaves} />
+      <ResultComparisonNotes
+        waveStats={stats.waveStats}
+        technicalSuccessRate={stats.overallSuccessRate}
+      />
       <WaveQualityLegend
         aproveitamentoMade={stats.waveStats.wellExecutedPotential}
         aproveitamentoTotal={stats.waveStats.withPotential}

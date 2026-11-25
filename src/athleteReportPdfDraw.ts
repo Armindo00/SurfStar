@@ -1,11 +1,31 @@
 import type { jsPDF } from 'jspdf'
 import type { SideCompareChart, PdfEvolutionCharts } from './athleteReportPdfEvolution'
+import type { WaveMatrixCounts } from './sessionStats'
 
 const COLOR_BAR_BG = [226, 232, 240] as const
 const COLOR_MUTED = [100, 116, 139] as const
 const COLOR_TEXT = [15, 23, 42] as const
 const COLOR_FS = [2, 132, 199] as const
 const COLOR_BS = [124, 58, 237] as const
+const COLOR_TEAL_CELL = [217, 238, 245] as const
+const COLOR_MINT_CELL = [228, 243, 234] as const
+const COLOR_PRIMARY = [10, 106, 148] as const
+
+export type PdfWaveMatrixLabels = {
+  title: string
+  subtitle: string
+  axisPotential: string
+  axisResult: string
+  highHighTitle: string
+  highHighBlurb: string
+  highLowTitle: string
+  highLowBlurb: string
+  lowHighTitle: string
+  lowHighBlurb: string
+  lowLowTitle: string
+  lowLowBlurb: string
+  countLabel: (count: number) => string
+}
 
 export type ChartLayout = {
   doc: jsPDF
@@ -135,7 +155,7 @@ export function drawLineChart(
   layout.setY(legendY + 6)
 }
 
-/** Option C: single high-signal evolution series (wave potential). */
+/** Key evolution themes: potential, success rates, success level vs overall maneuver level. */
 export function drawEvolutionSection(
   layout: ChartLayout,
   charts: PdfEvolutionCharts,
@@ -146,22 +166,70 @@ export function drawEvolutionSection(
     maneuverLevel: string
     comboSuccess: string
     comboLevel: string
+    successVsOverallLevel: string
+    successAvgLevel: string
+    overallManeuverLevel: string
+    successRatesTitle: string
   },
 ) {
   const { periodLabels } = charts
-  if (!charts.potentialRates.some((v) => v !== null)) {
+  const hasPotential = charts.potentialRates.some((v) => v !== null)
+  const hasSuccessRates =
+    charts.maneuverSuccessRates.some((v) => v !== null) ||
+    charts.comboSuccessRates.some((v) => v !== null)
+  const hasLevels =
+    charts.successAvgLevels.some((v) => v !== null) ||
+    charts.overallManeuverAvgLevels.some((v) => v !== null)
+
+  if (!hasPotential && !hasSuccessRates && !hasLevels) {
     layout.setY(layout.getY() + 2)
     return
   }
 
-  drawLineChart(layout, labels.potential, periodLabels, [
-    {
-      label: labels.potential,
-      color: [10, 106, 148],
-      values: charts.potentialRates,
-      scale: 'percent',
-    },
-  ])
+  if (hasPotential) {
+    drawLineChart(layout, labels.potential, periodLabels, [
+      {
+        label: labels.potential,
+        color: [10, 106, 148],
+        values: charts.potentialRates,
+        scale: 'percent',
+      },
+    ])
+  }
+
+  if (hasSuccessRates) {
+    drawLineChart(layout, labels.successRatesTitle, periodLabels, [
+      {
+        label: labels.maneuverSuccess,
+        color: [2, 132, 199],
+        values: charts.maneuverSuccessRates,
+        scale: 'percent',
+      },
+      {
+        label: labels.comboSuccess,
+        color: [15, 118, 110],
+        values: charts.comboSuccessRates,
+        scale: 'percent',
+      },
+    ])
+  }
+
+  if (hasLevels) {
+    drawLineChart(layout, labels.successVsOverallLevel, periodLabels, [
+      {
+        label: labels.successAvgLevel,
+        color: [10, 106, 148],
+        values: charts.successAvgLevels,
+        scale: 'level',
+      },
+      {
+        label: labels.overallManeuverLevel,
+        color: [100, 116, 139],
+        values: charts.overallManeuverAvgLevels,
+        scale: 'level',
+      },
+    ])
+  }
 
   layout.setY(layout.getY() + 4)
 }
@@ -301,4 +369,123 @@ export function drawSideCompareChart(
   drawPair(labels.success, chart.frontsideSuccess, chart.backsideSuccess, 'percent')
   drawPair(labels.level, chart.frontsideLevel, chart.backsideLevel, 'level')
   layout.setY(y + 2)
+}
+
+export function drawWaveMatrix(
+  layout: ChartLayout,
+  matrix: WaveMatrixCounts,
+  totalWaves: number,
+  labels: PdfWaveMatrixLabels,
+) {
+  layout.ensureSpace(92)
+  const { doc, margin, contentW } = layout
+  let y = layout.getY()
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(10)
+  doc.setTextColor(...COLOR_TEXT)
+  doc.text(labels.title, margin, y)
+  y += 5
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7.5)
+  doc.setTextColor(...COLOR_MUTED)
+  doc.text(labels.subtitle, margin, y)
+  y += 6
+
+  const axisW = 8
+  const gridX = margin + axisW
+  const gridW = contentW - axisW
+  const cellW = gridW / 2
+  const cellH = 32
+  const gap = 1.2
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(6)
+  doc.setTextColor(...COLOR_PRIMARY)
+  const potLines = doc.splitTextToSize(labels.axisPotential, cellH * 2)
+  doc.text(potLines, margin + 2, y + cellH, { angle: 90, align: 'center' })
+
+  const pct = (count: number) =>
+    totalWaves ? `${Math.round((count / totalWaves) * 100)}%` : '—'
+
+  type Cell = {
+    title: string
+    blurb: string
+    count: number
+    fill: readonly [number, number, number] | null
+  }
+
+  const rows: Cell[][] = [
+    [
+      {
+        title: labels.highHighTitle,
+        blurb: labels.highHighBlurb,
+        count: matrix.potentialSurfed,
+        fill: COLOR_TEAL_CELL,
+      },
+      {
+        title: labels.highLowTitle,
+        blurb: labels.highLowBlurb,
+        count: matrix.potentialWasted,
+        fill: null,
+      },
+    ],
+    [
+      {
+        title: labels.lowHighTitle,
+        blurb: labels.lowHighBlurb,
+        count: matrix.noPotentialSurfed,
+        fill: null,
+      },
+      {
+        title: labels.lowLowTitle,
+        blurb: labels.lowLowBlurb,
+        count: matrix.noPotentialWasted,
+        fill: COLOR_MINT_CELL,
+      },
+    ],
+  ]
+
+  rows.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      const x = gridX + colIndex * (cellW + gap / 2)
+      const cy = y + rowIndex * (cellH + gap)
+      if (cell.fill) {
+        doc.setFillColor(...cell.fill)
+        doc.rect(x, cy, cellW - gap / 2, cellH, 'F')
+      }
+      doc.setDrawColor(215, 226, 234)
+      doc.rect(x, cy, cellW - gap / 2, cellH, 'S')
+
+      const cx = x + (cellW - gap / 2) / 2
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(6)
+      doc.setTextColor(...COLOR_TEXT)
+      const titleLines = doc.splitTextToSize(cell.title.toUpperCase(), cellW - 6)
+      doc.text(titleLines, cx, cy + 5, { align: 'center' })
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(5.5)
+      doc.setTextColor(...COLOR_MUTED)
+      const blurbLines = doc.splitTextToSize(cell.blurb, cellW - 8)
+      doc.text(blurbLines.slice(0, 3), cx, cy + 11, { align: 'center' })
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(12)
+      doc.setTextColor(...COLOR_PRIMARY)
+      doc.text(pct(cell.count), cx, cy + 24, { align: 'center' })
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(5.5)
+      doc.setTextColor(...COLOR_MUTED)
+      doc.text(labels.countLabel(cell.count), cx, cy + 28.5, { align: 'center' })
+    })
+  })
+
+  y += cellH * 2 + gap + 5
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(6)
+  doc.setTextColor(...COLOR_PRIMARY)
+  doc.text(`${labels.axisResult}  →`, gridX + gridW / 2, y, { align: 'center' })
+  layout.setY(y + 4)
 }

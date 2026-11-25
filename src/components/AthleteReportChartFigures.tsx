@@ -107,7 +107,7 @@ export function LineChartFigure({
   )
 }
 
-/** Option C: one evolution series (potential) — matches PDF annex. */
+/** Key evolution themes — matches PDF annex. */
 export function EvolutionChartStack({
   charts,
   labels,
@@ -120,26 +120,81 @@ export function EvolutionChartStack({
     maneuverLevel: string
     comboSuccess: string
     comboLevel: string
+    successVsOverallLevel: string
+    successAvgLevel: string
+    overallManeuverLevel: string
+    successRatesTitle: string
   }
 }) {
   const { periodLabels } = charts
   if (periodLabels.length === 0) return null
-  if (!charts.potentialRates.some((v) => v !== null)) return null
+
+  const hasPotential = charts.potentialRates.some((v) => v !== null)
+  const hasSuccessRates =
+    charts.maneuverSuccessRates.some((v) => v !== null) ||
+    charts.comboSuccessRates.some((v) => v !== null)
+  const hasLevels =
+    charts.successAvgLevels.some((v) => v !== null) ||
+    charts.overallManeuverAvgLevels.some((v) => v !== null)
+
+  if (!hasPotential && !hasSuccessRates && !hasLevels) return null
 
   return (
     <div className="athlete-report__chart-stack">
-      <LineChartFigure
-        title={labels.potential}
-        xLabels={periodLabels}
-        series={[
-          {
-            label: labels.potential,
-            color: '#0a6a94',
-            values: charts.potentialRates,
-            scale: 'percent',
-          },
-        ]}
-      />
+      {hasPotential ? (
+        <LineChartFigure
+          title={labels.potential}
+          xLabels={periodLabels}
+          series={[
+            {
+              label: labels.potential,
+              color: '#0a6a94',
+              values: charts.potentialRates,
+              scale: 'percent',
+            },
+          ]}
+        />
+      ) : null}
+      {hasSuccessRates ? (
+        <LineChartFigure
+          title={labels.successRatesTitle}
+          xLabels={periodLabels}
+          series={[
+            {
+              label: labels.maneuverSuccess,
+              color: '#0284c7',
+              values: charts.maneuverSuccessRates,
+              scale: 'percent',
+            },
+            {
+              label: labels.comboSuccess,
+              color: '#0f766e',
+              values: charts.comboSuccessRates,
+              scale: 'percent',
+            },
+          ]}
+        />
+      ) : null}
+      {hasLevels ? (
+        <LineChartFigure
+          title={labels.successVsOverallLevel}
+          xLabels={periodLabels}
+          series={[
+            {
+              label: labels.successAvgLevel,
+              color: '#0a6a94',
+              values: charts.successAvgLevels,
+              scale: 'level',
+            },
+            {
+              label: labels.overallManeuverLevel,
+              color: '#64748b',
+              values: charts.overallManeuverAvgLevels,
+              scale: 'level',
+            },
+          ]}
+        />
+      ) : null}
     </div>
   )
 }

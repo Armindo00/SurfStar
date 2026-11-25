@@ -5,6 +5,7 @@ import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessCha
 import { ScreenHeader } from '../components/ScreenHeader'
 import { SeaAnalysisStatsPanel } from '../components/SeaAnalysisStatsPanel'
 import { SideCompareChart } from '../components/SideCompareChart'
+import { ResultComparisonNotes } from '../components/ResultComparisonNotes'
 import { WaveMatrixPanel } from '../components/WaveMatrixPanel'
 import { WaveQualityLegend } from '../components/WaveQualityLegend'
 import { useApp } from '../AppContext'
@@ -76,6 +77,10 @@ function TechnicalStatsBlock({
       </div>
 
       <WaveMatrixPanel matrix={stats.waveStats.matrix} totalWaves={stats.waveStats.totalWaves} />
+      <ResultComparisonNotes
+        waveStats={stats.waveStats}
+        technicalSuccessRate={stats.overallSuccessRate}
+      />
       <WaveQualityLegend
         aproveitamentoMade={stats.waveStats.wellExecutedPotential}
         aproveitamentoTotal={stats.waveStats.withPotential}
@@ -152,6 +157,10 @@ function ComboStatsBlock({
       </div>
 
       <WaveMatrixPanel matrix={stats.waveStats.matrix} totalWaves={stats.waveStats.totalWaves} />
+      <ResultComparisonNotes
+        waveStats={stats.waveStats}
+        comboSuccessRate={stats.overallSuccessRate}
+      />
       <WaveQualityLegend
         variant="combos"
         aproveitamentoMade={stats.waveStats.wellExecutedPotential}
