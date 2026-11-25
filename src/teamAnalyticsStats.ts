@@ -46,6 +46,8 @@ export type EvolutionPoint = {
   waves: number
   successRate: number | null
   potentialRate: number | null
+  /** Bem executadas com potencial ÷ ondas com potencial */
+  aproveitamentoRate: number | null
   avgManeuverLevel: number | null
 }
 
@@ -71,6 +73,7 @@ type EvolutionBucket = {
   successes: number
   attempts: number
   withPotential: number
+  wellExecutedPotential: number
   levelSum: number
   levelCount: number
 }
@@ -88,6 +91,7 @@ function emptyBucket(): EvolutionBucket {
     successes: 0,
     attempts: 0,
     withPotential: 0,
+    wellExecutedPotential: 0,
     levelSum: 0,
     levelCount: 0,
   }
@@ -234,7 +238,13 @@ export function filterAthleteSessionsByPeriod(
 function accumulateSessionPerformance(
   session: TrainingSession,
   athleteId: string,
-): { successes: number; attempts: number; waves: number; withPotential: number } {
+): {
+  successes: number
+  attempts: number
+  waves: number
+  withPotential: number
+  wellExecutedPotential: number
+} {
   let successes = 0
   let attempts = 0
 
@@ -264,6 +274,7 @@ function accumulateSessionPerformance(
     attempts,
     waves: waveStats.totalWaves,
     withPotential: waveStats.withPotential,
+    wellExecutedPotential: waveStats.wellExecutedPotential,
   }
 }
 
@@ -315,6 +326,7 @@ function bucketEvolutionPoints(
     row.successes += perf.successes
     row.attempts += perf.attempts
     row.withPotential += perf.withPotential
+    row.wellExecutedPotential += perf.wellExecutedPotential
     row.levelSum += levels.levelSum
     row.levelCount += levels.levelCount
   }
@@ -328,6 +340,9 @@ function bucketEvolutionPoints(
       waves: row.waves,
       successRate: row.attempts ? Math.round((row.successes / row.attempts) * 100) : null,
       potentialRate: row.waves ? Math.round((row.withPotential / row.waves) * 100) : null,
+      aproveitamentoRate: row.withPotential
+        ? Math.round((row.wellExecutedPotential / row.withPotential) * 100)
+        : null,
       avgManeuverLevel: row.levelCount
         ? Math.round((row.levelSum / row.levelCount) * 100) / 100
         : null,

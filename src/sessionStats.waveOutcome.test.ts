@@ -38,7 +38,7 @@ function session(waves: WaveRecord[]): TrainingSession {
 }
 
 describe('wave outcome stats', () => {
-  it('counts potential and outcome independently', () => {
+  it('counts matrix, aproveitamento and valorizacao', () => {
     const waves = [
       wave({
         id: '1',
@@ -55,6 +55,21 @@ describe('wave outcome stats', () => {
           },
         ],
       }),
+      wave({
+        id: '1b',
+        hasPotential: true,
+        outcome: 'surfed',
+        maneuvers: [
+          {
+            id: 'm1b',
+            kind: 'rail',
+            side: 'frontside',
+            level: 1,
+            success: false,
+            at: '2026-11-24T10:01:30.000Z',
+          },
+        ],
+      }),
       wave({ id: '2', hasPotential: true, outcome: 'wasted' }),
       wave({
         id: '3',
@@ -65,9 +80,24 @@ describe('wave outcome stats', () => {
             id: 'm2',
             kind: 'rail',
             side: 'frontside',
-            level: 1,
-            success: false,
+            level: 3,
+            success: true,
             at: '2026-11-24T10:02:00.000Z',
+          },
+        ],
+      }),
+      wave({
+        id: '3b',
+        hasPotential: false,
+        outcome: 'surfed',
+        maneuvers: [
+          {
+            id: 'm2b',
+            kind: 'rail',
+            side: 'frontside',
+            level: 1,
+            success: true,
+            at: '2026-11-24T10:02:30.000Z',
           },
         ],
       }),
@@ -75,11 +105,21 @@ describe('wave outcome stats', () => {
     ]
 
     expect(computeWaveStats(session(waves))).toEqual({
-      totalWaves: 4,
-      withPotential: 2,
-      withoutPotential: 2,
-      surfed: 2,
+      totalWaves: 6,
+      withPotential: 3,
+      withoutPotential: 3,
+      surfed: 4,
       wasted: 2,
+      matrix: {
+        potentialSurfed: 2,
+        potentialWasted: 1,
+        noPotentialSurfed: 2,
+        noPotentialWasted: 1,
+      },
+      wellExecutedPotential: 1,
+      valuedNoPotential: 1,
+      aproveitamentoRate: 33,
+      valorizacaoRate: 50,
     })
   })
 
@@ -93,12 +133,14 @@ describe('wave outcome stats', () => {
     const wasted = wave({ id: 'w', hasPotential: true, outcome: 'wasted' })
     const emptySurfed = wave({ id: 's', hasPotential: true, outcome: 'surfed' })
 
-    expect(computeWaveStats(session([unclassified, wasted]))).toEqual({
+    expect(computeWaveStats(session([unclassified, wasted]))).toMatchObject({
       totalWaves: 1,
       withPotential: 1,
       withoutPotential: 0,
       surfed: 0,
       wasted: 1,
+      aproveitamentoRate: 0,
+      valorizacaoRate: null,
     })
     expect(waveIsCommitted(unclassified, 'tecnico')).toBe(false)
     expect(waveIsCommitted(wasted, 'tecnico')).toBe(true)

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useI18n } from '../i18n'
 import type { AnalyticsPeriod } from '../teamAnalyticsStats'
 import type { EvolutionPoint } from '../teamAnalyticsStats'
@@ -9,7 +9,7 @@ type PeriodOption = {
   shortLabel: string
 }
 
-type EvolutionMetric = 'success' | 'potential' | 'level'
+type EvolutionMetric = 'success' | 'potential' | 'aproveitamento' | 'level'
 
 type MetricConfig = {
   id: EvolutionMetric
@@ -30,6 +30,9 @@ type Props = {
   onPeriodChange?: (period: AnalyticsPeriod) => void
   /** Prefer potential to align with the PDF Option C single series. */
   defaultMetric?: EvolutionMetric
+  /** When set, only this metric is offered (e.g. wave-quality aproveitamento chart). */
+  lockedMetric?: EvolutionMetric
+  legend?: ReactNode
 }
 
 const LEVEL_MIN = 1
@@ -81,12 +84,14 @@ function buildAreaPath(ys: (number | null)[], xs: number[], baseY: number): stri
 function metricHasData(metric: EvolutionMetric, points: EvolutionPoint[]): boolean {
   if (metric === 'success') return points.some((point) => point.successRate !== null)
   if (metric === 'potential') return points.some((point) => point.potentialRate !== null)
+  if (metric === 'aproveitamento') return points.some((point) => point.aproveitamentoRate !== null)
   return points.some((point) => point.avgManeuverLevel !== null)
 }
 
 function metricValues(metric: EvolutionMetric, points: EvolutionPoint[]): (number | null)[] {
   if (metric === 'success') return points.map((point) => point.successRate)
   if (metric === 'potential') return points.map((point) => point.potentialRate)
+  if (metric === 'aproveitamento') return points.map((point) => point.aproveitamentoRate)
   return points.map((point) => point.avgManeuverLevel)
 }
 
@@ -105,6 +110,8 @@ export function EvolutionLineChart({
   periodOptions,
   onPeriodChange,
   defaultMetric = 'potential',
+  lockedMetric,
+  legend,
 }: Props) {
   const { messages } = useI18n()
   const copy = messages.analytics.evolutionChart
@@ -128,6 +135,14 @@ export function EvolutionLineChart({
         emptyHint: copy.metricPotentialEmpty,
       },
       {
+        id: 'aproveitamento',
+        label: copy.metricAproveitamento,
+        shortLabel: copy.metricAproveitamentoShort,
+        description: copy.metricAproveitamentoHint,
+        kind: 'percent',
+        emptyHint: copy.metricAproveitamentoEmpty,
+      },
+      {
         id: 'level',
         label: copy.metricLevel,
         shortLabel: copy.metricLevelShort,
@@ -139,12 +154,16 @@ export function EvolutionLineChart({
     [copy],
   )
 
-  const [metric, setMetric] = useState<EvolutionMetric>(defaultMetric)
+  const [metric, setMetric] = useState<EvolutionMetric>(lockedMetric ?? defaultMetric)
 
-  const availableMetrics = useMemo(
-    () => metrics.filter((entry) => metricHasData(entry.id, points)),
-    [metrics, points],
-  )
+  const availableMetrics = useMemo(() => {
+    const filtered = metrics.filter((entry) => metricHasData(entry.id, points))
+    if (lockedMetric) {
+      const locked = metrics.find((entry) => entry.id === lockedMetric)
+      return locked ? [locked] : filtered
+    }
+    return filtered
+  }, [metrics, points, lockedMetric])
 
   const hasAnyData = availableMetrics.length > 0
 
@@ -215,40 +234,44 @@ export function EvolutionLineChart({
         <p className="muted evolution-chart__empty">{copy.noData}</p>
       ) : (
         <>
-          <div
-            className="evolution-chart__metrics"
-            role="tablist"
-            aria-label={copy.metricTabsAria}
-          >
-            {metrics.map((entry) => {
-              const enabled = metricHasData(entry.id, points)
-              return (
-                <button
-                  key={entry.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={metric === entry.id}
-                  aria-disabled={!enabled}
-                  disabled={!enabled}
-                  className={
-                    metric === entry.id
-                      ? `chip chip--active evolution-chart__metric evolution-chart__metric--${entry.id}`
-                      : `chip evolution-chart__metric evolution-chart__metric--${entry.id}`
-                  }
-                  onClick={() => setMetric(entry.id)}
-                >
-                  {entry.shortLabel}
-                </button>
-              )
-            })}
-          </div>
+          {!lockedMetric ? (
+            <div
+              className="evolution-chart__metrics"
+              role="tablist"
+              aria-label={copy.metricTabsAria}
+            >
+              {metrics.map((entry) => {
+                const enabled = metricHasData(entry.id, points)
+                return (
+                  <button
+                    key={entry.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={metric === entry.id}
+                    aria-disabled={!enabled}
+                    disabled={!enabled}
+                    className={
+                      metric === entry.id
+                        ? `chip chip--active evolution-chart__metric evolution-chart__metric--${entry.id}`
+                        : `chip evolution-chart__metric evolution-chart__metric--${entry.id}`
+                    }
+                    onClick={() => setMetric(entry.id)}
+                  >
+                    {entry.shortLabel}
+                  </button>
+                )
+              })}
+            </div>
+          ) : null}
 
-          <div className="evolution-chart__metric-head">
-            <span className={`evolution-chart__key evolution-chart__key--${metric}`}>
-              {activeMetric.label}
-            </span>
-            <p className="muted evolution-chart__metric-copy">{activeMetric.description}</p>
-          </div>
+          {!lockedMetric ? (
+            <div className="evolution-chart__metric-head">
+              <span className={`evolution-chart__key evolution-chart__key--${metric}`}>
+                {activeMetric.label}
+              </span>
+              <p className="muted evolution-chart__metric-copy">{activeMetric.description}</p>
+            </div>
+          ) : null}
 
           {!activeHasData ? (
             <p className="muted evolution-chart__hint">{activeMetric.emptyHint}</p>
@@ -398,6 +421,7 @@ export function EvolutionLineChart({
           </div>
         </>
       )}
+      {legend ? <div className="evolution-chart__legend">{legend}</div> : null}
     </article>
   )
 }

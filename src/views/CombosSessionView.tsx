@@ -3,7 +3,7 @@ import { useI18n } from '../i18n'
 import { ComboRegisterPanel } from '../components/ComboRegisterPanel'
 import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
-import { computeWaveStats } from '../sessionStats'
+import { computeWaveStats, emptyWaveStats } from '../sessionStats'
 import { useApp } from '../AppContext'
 import type { ComboLevel } from '../types'
 
@@ -33,7 +33,7 @@ export function CombosSessionView() {
 
   const waveStats = activeSession
     ? computeWaveStats(activeSession, null)
-    : { totalWaves: 0, withPotential: 0, withoutPotential: 0, surfed: 0, wasted: 0 }
+    : emptyWaveStats()
 
   const focusedAthlete = focusAthleteId ? getAthlete(focusAthleteId) : undefined
 

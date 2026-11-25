@@ -162,8 +162,14 @@ export function TeamAnalyticsView() {
       {
         id: 'wave-quality',
         label: t('analytics.topics.waveQuality'),
-        value: general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`,
-        hint: t('analytics.topics.withPotential', { count: general.withPotential }),
+        value: general.aproveitamentoRate === null ? '—' : `${general.aproveitamentoRate}%`,
+        hint:
+          general.valorizacaoRate === null
+            ? t('analytics.topics.withPotential', { count: general.withPotential })
+            : t('analytics.topics.waveQualityHint', {
+                aproveitamento: general.aproveitamentoRate ?? 0,
+                valorizacao: general.valorizacaoRate,
+              }),
         accent: true,
       },
       {
@@ -396,7 +402,7 @@ export function TeamAnalyticsView() {
               <article className="analytics-overview-strip__item">
                 <span>{t('analytics.overview.potential')}</span>
                 <strong>
-                  {general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`}
+                  {general.aproveitamentoRate === null ? '—' : `${general.aproveitamentoRate}%`}
                 </strong>
               </article>
               <article className="analytics-overview-strip__item">
@@ -423,8 +429,8 @@ export function TeamAnalyticsView() {
                   <span className="analytics-topic-tile__label">{tile.label}</span>
                   <strong className="analytics-topic-tile__value">{tile.value}</strong>
                   <small className="analytics-topic-tile__hint">{tile.hint}</small>
-                  {tile.id === 'wave-quality' && general.withPotentialRate !== null ? (
-                    <RateBar value={general.withPotentialRate} />
+                  {tile.id === 'wave-quality' && general.aproveitamentoRate !== null ? (
+                    <RateBar value={general.aproveitamentoRate} />
                   ) : null}
                   <span className="analytics-topic-tile__chev" aria-hidden="true">
                     ›

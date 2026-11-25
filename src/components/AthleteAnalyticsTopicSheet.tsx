@@ -2,6 +2,8 @@ import { EvolutionLineChart } from './EvolutionLineChart'
 import { ManeuverLevelSuccessChart } from './ManeuverLevelSuccessChart'
 import { OpenVsCloseChart } from './OpenVsCloseChart'
 import { SideCompareChart } from './SideCompareChart'
+import { WaveMatrixPanel } from './WaveMatrixPanel'
+import { WaveQualityLegend } from './WaveQualityLegend'
 import type { AthleteSessionSummary } from '../athleteStats'
 import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
 import {
@@ -212,48 +214,58 @@ export function AthleteAnalyticsTopicSheet({
             <>
               <div className="kpi-grid analytics-topic-sheet__kpis">
                 <article className="kpi-card kpi-card--accent">
-                  <span className="kpi-card__label">{s.withPotential}</span>
+                  <span className="kpi-card__label">{s.aproveitamentoRate}</span>
                   <strong className="kpi-card__value">
-                    {general.withPotentialRate === null ? '—' : `${general.withPotentialRate}%`}
+                    {general.aproveitamentoRate === null ? '—' : `${general.aproveitamentoRate}%`}
                   </strong>
-                  {general.withPotentialRate !== null ? (
-                    <RateBar value={general.withPotentialRate} />
+                  {general.aproveitamentoRate !== null ? (
+                    <RateBar value={general.aproveitamentoRate} />
                   ) : null}
+                  <small className="kpi-card__hint">
+                    {general.withPotential
+                      ? t('analytics.topicSheet.rateHint', {
+                          made: general.wellExecutedPotential,
+                          total: general.withPotential,
+                        })
+                      : t('analytics.topicSheet.noPotentialWaves')}
+                  </small>
                 </article>
                 <article className="kpi-card">
-                  <span className="kpi-card__label">{s.withoutPotential}</span>
+                  <span className="kpi-card__label">{s.valorizacaoRate}</span>
                   <strong className="kpi-card__value">
-                    {general.withoutPotentialRate === null ? '—' : `${general.withoutPotentialRate}%`}
+                    {general.valorizacaoRate === null ? '—' : `${general.valorizacaoRate}%`}
                   </strong>
-                  {general.withoutPotentialRate !== null ? (
-                    <RateBar value={general.withoutPotentialRate} />
+                  {general.valorizacaoRate !== null ? (
+                    <RateBar value={general.valorizacaoRate} />
                   ) : null}
+                  <small className="kpi-card__hint">
+                    {general.matrix.noPotentialSurfed
+                      ? t('analytics.topicSheet.rateHint', {
+                          made: general.valuedNoPotential,
+                          total: general.matrix.noPotentialSurfed,
+                        })
+                      : t('analytics.topicSheet.noNoPotentialSurfed')}
+                  </small>
                 </article>
               </div>
 
-              <div className="analytics-topic-sheet__breakdown">
-                <h3 className="analytics-topic-sheet__section-title">{s.waveCounts}</h3>
-                <ul className="analytics-topic-sheet__breakdown-list">
-                  <li>
-                    <span>{s.totalWaves}</span>
-                    <strong>{general.totalWaves}</strong>
-                  </li>
-                  <li>
-                    <span>{s.withPotential}</span>
-                    <strong>{general.withPotential}</strong>
-                  </li>
-                  <li>
-                    <span>{s.withoutPotential}</span>
-                    <strong>{general.withoutPotential}</strong>
-                  </li>
-                </ul>
-              </div>
+              <WaveMatrixPanel matrix={general.matrix} totalWaves={general.totalWaves} />
 
               <EvolutionLineChart
-                title={t('analytics.potentialRateOverTime')}
-                subtitle={t('analytics.potentialRateSubtitle')}
+                title={t('analytics.aproveitamentoOverTime')}
+                subtitle={t('analytics.aproveitamentoSubtitle')}
                 points={analytics.evolution}
                 periodColumnLabel={evolutionColumnLabel(analytics.range)}
+                lockedMetric="aproveitamento"
+                defaultMetric="aproveitamento"
+                legend={
+                  <WaveQualityLegend
+                    aproveitamentoMade={general.wellExecutedPotential}
+                    aproveitamentoTotal={general.withPotential}
+                    valorizacaoMade={general.valuedNoPotential}
+                    valorizacaoTotal={general.matrix.noPotentialSurfed}
+                  />
+                }
               />
             </>
           ) : null}

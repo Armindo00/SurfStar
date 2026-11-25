@@ -6,6 +6,8 @@ import { HeatLiveStatsPanel } from '../components/HeatLiveStatsPanel'
 import { SideCompareChart } from '../components/SideCompareChart'
 import { ManeuverLevelSuccessChart } from '../components/ManeuverLevelSuccessChart'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { WaveMatrixPanel } from '../components/WaveMatrixPanel'
+import { WaveQualityLegend } from '../components/WaveQualityLegend'
 import { useApp } from '../AppContext'
 import {
   isHeatLikeSession,
@@ -105,16 +107,24 @@ export function SessionStatsView() {
             <strong className="kpi-card__value">{stats.waveStats.totalWaves}</strong>
           </article>
           <article className="kpi-card kpi-card--accent">
-            <span className="kpi-card__label">{t('ui.stats.withPotential')}</span>
-            <strong className="kpi-card__value">{stats.waveStats.withPotential}</strong>
+            <span className="kpi-card__label">{t('analytics.topicSheet.aproveitamentoRate')}</span>
+            <strong className="kpi-card__value">
+              {stats.waveStats.aproveitamentoRate === null
+                ? '—'
+                : `${stats.waveStats.aproveitamentoRate}%`}
+            </strong>
+            {stats.waveStats.aproveitamentoRate !== null ? (
+              <RateBar value={stats.waveStats.aproveitamentoRate} />
+            ) : null}
           </article>
           <article className="kpi-card">
-            <span className="kpi-card__label">{t('ui.stats.noPotential')}</span>
-            <strong className="kpi-card__value">{stats.waveStats.withoutPotential}</strong>
-          </article>
-          <article className="kpi-card">
-            <span className="kpi-card__label">{t('ui.stats.wasted')}</span>
-            <strong className="kpi-card__value">{stats.waveStats.wasted}</strong>
+            <span className="kpi-card__label">{t('analytics.topicSheet.valorizacaoRate')}</span>
+            <strong className="kpi-card__value">
+              {stats.waveStats.valorizacaoRate === null ? '—' : `${stats.waveStats.valorizacaoRate}%`}
+            </strong>
+            {stats.waveStats.valorizacaoRate !== null ? (
+              <RateBar value={stats.waveStats.valorizacaoRate} />
+            ) : null}
           </article>
           <article className="kpi-card kpi-card--success">
             <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
@@ -122,6 +132,14 @@ export function SessionStatsView() {
             <RateBar value={stats.overallSuccessRate} />
           </article>
         </div>
+
+        <WaveMatrixPanel matrix={stats.waveStats.matrix} totalWaves={stats.waveStats.totalWaves} />
+        <WaveQualityLegend
+          aproveitamentoMade={stats.waveStats.wellExecutedPotential}
+          aproveitamentoTotal={stats.waveStats.withPotential}
+          valorizacaoMade={stats.waveStats.valuedNoPotential}
+          valorizacaoTotal={stats.waveStats.matrix.noPotentialSurfed}
+        />
 
         <div className="ss-card stats-panel">
           <h2 className="stats-panel__title">{t('ui.stats.combosOverview')}</h2>
@@ -204,16 +222,24 @@ export function SessionStatsView() {
           <strong className="kpi-card__value">{stats.waveStats.totalWaves}</strong>
         </article>
         <article className="kpi-card kpi-card--accent">
-          <span className="kpi-card__label">{t('ui.stats.withPotential')}</span>
-          <strong className="kpi-card__value">{stats.waveStats.withPotential}</strong>
+          <span className="kpi-card__label">{t('analytics.topicSheet.aproveitamentoRate')}</span>
+          <strong className="kpi-card__value">
+            {stats.waveStats.aproveitamentoRate === null
+              ? '—'
+              : `${stats.waveStats.aproveitamentoRate}%`}
+          </strong>
+          {stats.waveStats.aproveitamentoRate !== null ? (
+            <RateBar value={stats.waveStats.aproveitamentoRate} />
+          ) : null}
         </article>
         <article className="kpi-card">
-          <span className="kpi-card__label">{t('ui.stats.noPotential')}</span>
-          <strong className="kpi-card__value">{stats.waveStats.withoutPotential}</strong>
-        </article>
-        <article className="kpi-card">
-          <span className="kpi-card__label">{t('ui.stats.wasted')}</span>
-          <strong className="kpi-card__value">{stats.waveStats.wasted}</strong>
+          <span className="kpi-card__label">{t('analytics.topicSheet.valorizacaoRate')}</span>
+          <strong className="kpi-card__value">
+            {stats.waveStats.valorizacaoRate === null ? '—' : `${stats.waveStats.valorizacaoRate}%`}
+          </strong>
+          {stats.waveStats.valorizacaoRate !== null ? (
+            <RateBar value={stats.waveStats.valorizacaoRate} />
+          ) : null}
         </article>
         <article className="kpi-card kpi-card--success">
           <span className="kpi-card__label">{t('ui.stats.overallSuccess')}</span>
@@ -221,6 +247,14 @@ export function SessionStatsView() {
           <RateBar value={stats.overallSuccessRate} />
         </article>
       </div>
+
+      <WaveMatrixPanel matrix={stats.waveStats.matrix} totalWaves={stats.waveStats.totalWaves} />
+      <WaveQualityLegend
+        aproveitamentoMade={stats.waveStats.wellExecutedPotential}
+        aproveitamentoTotal={stats.waveStats.withPotential}
+        valorizacaoMade={stats.waveStats.valuedNoPotential}
+        valorizacaoTotal={stats.waveStats.matrix.noPotentialSurfed}
+      />
 
       <div className="ss-card stats-panel">
         <h2 className="stats-panel__title">{t('ui.stats.maneuversOverview')}</h2>
