@@ -28,8 +28,8 @@ export const analytics = {
     potentialShare:
       'Vagues à potentiel {{withPct}} % ({{withCount}}) · sans potentiel {{withoutPct}} % ({{withoutCount}}).',
     aproveitamentoVsValorizacao:
-      'Exploitation {{aproveitamento}} % · valorisation {{valorizacao}} % (écart {{delta}} pp).',
-    aproveitamentoOnly: 'Exploitation {{aproveitamento}} % sur cette période.',
+      'Succès {{aproveitamento}} % · valorisation {{valorizacao}} % (écart {{delta}} pp).',
+    aproveitamentoOnly: 'Succès {{aproveitamento}} % sur cette période.',
     valorizacaoOnly: 'Valorisation {{valorizacao}} % sur cette période.',
     technicalVsCombo:
       'Réussite technique {{technical}} % · combos {{combo}} % (écart {{delta}} pp).',
@@ -47,7 +47,7 @@ export const analytics = {
     competition: 'Compétition',
     wavesLogged: '{{count}} vagues enregistrées',
     withPotential: '{{count}} avec potentiel',
-    waveQualityHint: 'Exploitation {{aproveitamento}}% · Valorisation {{valorizacao}}%',
+    waveQualityHint: 'Succès {{aproveitamento}}% · Valorisation {{valorizacao}}%',
     noSessionsInPeriod: 'Aucune session sur la période',
     noHeatsInPeriod: 'Aucun heat sur la période',
     championshipWins: '{{count}} victoire en championnat',
@@ -88,8 +88,8 @@ export const analytics = {
     metricPotentialShort: 'Potentiel',
     metricPotentialHint: 'Part des vagues marquées avec potentiel.',
     metricPotentialEmpty: 'Enregistre des vagues en sessions techniques pour suivre le potentiel.',
-    metricAproveitamento: "Taux d'exploitation",
-    metricAproveitamentoShort: 'Exploit.',
+    metricAproveitamento: 'Taux de succès',
+    metricAproveitamentoShort: 'Succès',
     metricAproveitamentoHint:
       'Vagues à potentiel bien exécutées (manœuvres complètes) ÷ vagues à potentiel.',
     metricAproveitamentoEmpty: 'Enregistre des vagues à potentiel avec manœuvres complètes.',
@@ -106,7 +106,7 @@ export const analytics = {
   },
   potentialRateOverTime: 'Taux de potentiel dans le temps',
   potentialRateSubtitle: 'Part des vagues marquées avec potentiel de score',
-  aproveitamentoOverTime: "Exploitation dans le temps",
+  aproveitamentoOverTime: 'Succès dans le temps',
   aproveitamentoSubtitle: 'Vagues à potentiel bien exécutées ÷ vagues à potentiel',
   allManeuvers: 'Toutes les manœuvres',
   allComboLevels: 'Tous les niveaux de combo',
@@ -115,7 +115,7 @@ export const analytics = {
   topicEyebrows: {
     performance: 'Niveaux et étoiles',
     volume: 'Sessions et vagues',
-    waveQuality: 'Exploitation et valorisation',
+    waveQuality: 'Succès et valorisation',
     technical: 'Détail par manœuvre',
     combos: 'Détail par niveau',
     competition: 'Heats et scores',
@@ -155,7 +155,7 @@ export const analytics = {
     matrixCellLowLowTitle: 'Bas potentiel / bas résultat',
     matrixCellLowLowBlurb: 'Vagues sans potentiel et résultat inférieur. Moins de différenciation dans cet ensemble.',
     matrixCellCount: '{{count}} vagues',
-    aproveitamentoRate: "Taux d'exploitation",
+    aproveitamentoRate: 'Taux de succès',
     valorizacaoRate: 'Valorisation de la vague',
     rateHint: '{{made}}/{{total}}',
     noPotentialWaves: 'Aucune vague à potentiel sur la période.',

@@ -61,8 +61,8 @@ export const analytics = {
     potentialShare:
       'Waves with potential {{withPct}}% ({{withCount}}) · without potential {{withoutPct}}% ({{withoutCount}}).',
     aproveitamentoVsValorizacao:
-      'Execution {{aproveitamento}}% · upgrade {{valorizacao}}% (gap {{delta}} pp).',
-    aproveitamentoOnly: 'Execution rate {{aproveitamento}}% in this period.',
+      'Success {{aproveitamento}}% · upgrade {{valorizacao}}% (gap {{delta}} pp).',
+    aproveitamentoOnly: 'Success rate {{aproveitamento}}% in this period.',
     valorizacaoOnly: 'Upgrade rate {{valorizacao}}% in this period.',
     technicalVsCombo:
       'Technical success {{technical}}% · combos {{combo}}% (gap {{delta}} pp).',
@@ -80,7 +80,7 @@ export const analytics = {
     competition: 'Competition',
     wavesLogged: '{{count}} waves logged',
     withPotential: '{{count}} with potential',
-    waveQualityHint: 'Execution {{aproveitamento}}% · Upgrade {{valorizacao}}%',
+    waveQualityHint: 'Success {{aproveitamento}}% · Upgrade {{valorizacao}}%',
     noSessionsInPeriod: 'No sessions in period',
     noHeatsInPeriod: 'No heats in period',
     championshipWins: '{{count}} championship win',
@@ -100,8 +100,8 @@ export const analytics = {
     metricPotentialShort: 'Potential',
     metricPotentialHint: 'Share of waves marked with potential.',
     metricPotentialEmpty: 'Log waves in technical sessions to track potential rate.',
-    metricAproveitamento: 'Execution rate',
-    metricAproveitamentoShort: 'Execution',
+    metricAproveitamento: 'Success rate',
+    metricAproveitamentoShort: 'Success',
     metricAproveitamentoHint:
       'Potential waves well executed (complete maneuvers) ÷ potential waves.',
     metricAproveitamentoEmpty: 'Log potential waves with complete maneuvers to track this rate.',
@@ -118,7 +118,7 @@ export const analytics = {
   },
   potentialRateOverTime: 'Potential rate over time',
   potentialRateSubtitle: 'Share of waves marked with scoring potential',
-  aproveitamentoOverTime: 'Execution rate over time',
+  aproveitamentoOverTime: 'Success over time',
   aproveitamentoSubtitle: 'Potential waves well executed ÷ potential waves',
   allManeuvers: 'All maneuvers',
   allComboLevels: 'All combo levels',
@@ -127,7 +127,7 @@ export const analytics = {
   topicEyebrows: {
     performance: 'Levels & stars',
     volume: 'Sessions & waves',
-    waveQuality: 'Execution & upgrade',
+    waveQuality: 'Success & upgrade',
     technical: 'Maneuver breakdown',
     combos: 'Level-by-level detail',
     competition: 'Heats & scores',
@@ -170,7 +170,7 @@ export const analytics = {
     matrixCellLowLowTitle: 'Low potential / low result',
     matrixCellLowLowBlurb: 'No-potential waves with a lower result. Less differentiation in this set.',
     matrixCellCount: '{{count}} waves',
-    aproveitamentoRate: 'Execution rate',
+    aproveitamentoRate: 'Success rate',
     valorizacaoRate: 'Wave upgrade',
     rateHint: '{{made}}/{{total}}',
     noPotentialWaves: 'No potential waves in this period.',

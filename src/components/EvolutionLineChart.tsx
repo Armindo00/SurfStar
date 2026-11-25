@@ -157,7 +157,10 @@ export function EvolutionLineChart({
   const [metric, setMetric] = useState<EvolutionMetric>(lockedMetric ?? defaultMetric)
 
   const availableMetrics = useMemo(() => {
-    const filtered = metrics.filter((entry) => metricHasData(entry.id, points))
+    const filtered = metrics.filter((entry) => {
+      if (entry.id === 'aproveitamento' && lockedMetric !== 'aproveitamento') return false
+      return metricHasData(entry.id, points)
+    })
     if (lockedMetric) {
       const locked = metrics.find((entry) => entry.id === lockedMetric)
       return locked ? [locked] : filtered
@@ -364,16 +367,17 @@ export function EvolutionLineChart({
                   <th>{periodCol}</th>
                   <th>{copy.sessionsCol}</th>
                   <th>{copy.wavesCol}</th>
-                  <th className={metric === 'success' ? 'evolution-chart__col--active' : undefined}>
-                    {copy.metricSuccessShort}
-                  </th>
-                  <th
-                    className={
-                      metric === 'aproveitamento' ? 'evolution-chart__col--active' : undefined
-                    }
-                  >
-                    {copy.metricAproveitamentoShort}
-                  </th>
+                  {metric === 'aproveitamento' ? (
+                    <th className="evolution-chart__col--active">
+                      {copy.metricAproveitamentoShort}
+                    </th>
+                  ) : (
+                    <th
+                      className={metric === 'success' ? 'evolution-chart__col--active' : undefined}
+                    >
+                      {copy.metricSuccessShort}
+                    </th>
+                  )}
                   <th className={metric === 'level' ? 'evolution-chart__col--active' : undefined}>
                     {copy.metricLevelShort}
                   </th>
@@ -392,28 +396,29 @@ export function EvolutionLineChart({
                     </td>
                     <td>{point.sessions}</td>
                     <td>{point.waves}</td>
-                    <td className={metric === 'success' ? 'evolution-chart__col--active' : undefined}>
-                      {point.successRate === null ? (
-                        '—'
-                      ) : (
-                        <span className="evolution-chart__cell evolution-chart__cell--success">
-                          {formatMetricValue('success', point.successRate)}
-                        </span>
-                      )}
-                    </td>
-                    <td
-                      className={
-                        metric === 'aproveitamento' ? 'evolution-chart__col--active' : undefined
-                      }
-                    >
-                      {point.aproveitamentoRate === null ? (
-                        '—'
-                      ) : (
-                        <span className="evolution-chart__cell evolution-chart__cell--aproveitamento">
-                          {formatMetricValue('aproveitamento', point.aproveitamentoRate)}
-                        </span>
-                      )}
-                    </td>
+                    {metric === 'aproveitamento' ? (
+                      <td className="evolution-chart__col--active">
+                        {point.aproveitamentoRate === null ? (
+                          '—'
+                        ) : (
+                          <span className="evolution-chart__cell evolution-chart__cell--aproveitamento">
+                            {formatMetricValue('aproveitamento', point.aproveitamentoRate)}
+                          </span>
+                        )}
+                      </td>
+                    ) : (
+                      <td
+                        className={metric === 'success' ? 'evolution-chart__col--active' : undefined}
+                      >
+                        {point.successRate === null ? (
+                          '—'
+                        ) : (
+                          <span className="evolution-chart__cell evolution-chart__cell--success">
+                            {formatMetricValue('success', point.successRate)}
+                          </span>
+                        )}
+                      </td>
+                    )}
                     <td className={metric === 'level' ? 'evolution-chart__col--active' : undefined}>
                       {point.avgManeuverLevel === null ? (
                         '—'

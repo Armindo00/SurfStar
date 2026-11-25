@@ -28,8 +28,8 @@ export const analytics = {
     potentialShare:
       'Olas con potencial {{withPct}}% ({{withCount}}) · sin potencial {{withoutPct}}% ({{withoutCount}}).',
     aproveitamentoVsValorizacao:
-      'Aprovechamiento {{aproveitamento}}% · valorización {{valorizacao}}% (diferencia {{delta}} pp).',
-    aproveitamentoOnly: 'Aprovechamiento {{aproveitamento}}% en este periodo.',
+      'Éxito {{aproveitamento}}% · valorización {{valorizacao}}% (diferencia {{delta}} pp).',
+    aproveitamentoOnly: 'Éxito {{aproveitamento}}% en este periodo.',
     valorizacaoOnly: 'Valorización {{valorizacao}}% en este periodo.',
     technicalVsCombo:
       'Éxito técnico {{technical}}% · combos {{combo}}% (diferencia {{delta}} pp).',
@@ -47,7 +47,7 @@ export const analytics = {
     competition: 'Competición',
     wavesLogged: '{{count}} olas registradas',
     withPotential: '{{count}} con potencial',
-    waveQualityHint: 'Aprovechamiento {{aproveitamento}}% · Valorización {{valorizacao}}%',
+    waveQualityHint: 'Éxito {{aproveitamento}}% · Valorización {{valorizacao}}%',
     noSessionsInPeriod: 'Sin sesiones en el periodo',
     noHeatsInPeriod: 'Sin heats en el periodo',
     championshipWins: '{{count}} victoria en campeonato',
@@ -88,8 +88,8 @@ export const analytics = {
     metricPotentialShort: 'Potencial',
     metricPotentialHint: 'Porcentaje de olas marcadas con potencial.',
     metricPotentialEmpty: 'Registra olas en sesiones técnicas para seguir el potencial.',
-    metricAproveitamento: 'Tasa de aprovechamiento',
-    metricAproveitamentoShort: 'Aprovech.',
+    metricAproveitamento: 'Tasa de éxito',
+    metricAproveitamentoShort: 'Éxito',
     metricAproveitamentoHint:
       'Olas con potencial bien ejecutadas (maniobras completas) ÷ olas con potencial.',
     metricAproveitamentoEmpty: 'Registra olas con potencial y maniobras completas para seguirlo.',
@@ -106,7 +106,7 @@ export const analytics = {
   },
   potentialRateOverTime: 'Tasa de potencial a lo largo del tiempo',
   potentialRateSubtitle: 'Proporción de olas marcadas con potencial de puntuación',
-  aproveitamentoOverTime: 'Aprovechamiento a lo largo del tiempo',
+  aproveitamentoOverTime: 'Éxito a lo largo del tiempo',
   aproveitamentoSubtitle: 'Olas con potencial bien ejecutadas ÷ olas con potencial',
   allManeuvers: 'Todas las maniobras',
   allComboLevels: 'Todos los niveles de combo',
@@ -115,7 +115,7 @@ export const analytics = {
   topicEyebrows: {
     performance: 'Niveles y estrellas',
     volume: 'Sesiones y olas',
-    waveQuality: 'Aprovechamiento y valorización',
+    waveQuality: 'Éxito y valorización',
     technical: 'Desglose por maniobra',
     combos: 'Detalle por nivel',
     competition: 'Heats y puntuaciones',
@@ -155,7 +155,7 @@ export const analytics = {
     matrixCellLowLowTitle: 'Bajo potencial / bajo resultado',
     matrixCellLowLowBlurb: 'Olas sin potencial y resultado inferior. Menor diferenciación en este conjunto.',
     matrixCellCount: '{{count}} olas',
-    aproveitamentoRate: 'Tasa de aprovechamiento',
+    aproveitamentoRate: 'Tasa de éxito',
     valorizacaoRate: 'Valorización de la ola',
     rateHint: '{{made}}/{{total}}',
     noPotentialWaves: 'Sin olas con potencial en el periodo.',
