@@ -224,7 +224,8 @@ export function waveHasLoggedAttempts(w: WaveRecord, mode: TrainingMode): boolea
 
 /** Onda deve ser guardada (não descartada ao fechar / trocar atleta). */
 export function waveIsCommitted(w: WaveRecord, mode: TrainingMode): boolean {
-  if (!w.classified) return waveHasLoggedAttempts(w, mode)
+  // Missing classified (legacy) counts as classified; only explicit false is a draft.
+  if (w.classified === false) return waveHasLoggedAttempts(w, mode)
   return w.outcome === 'wasted' || waveHasLoggedAttempts(w, mode)
 }
 
@@ -274,7 +275,7 @@ export function computeWaveStats(
   const waves = (athleteId
     ? session.waves.filter((w) => w.athleteId === athleteId)
     : session.waves
-  ).filter((w) => w.classified)
+  ).filter((w) => w.classified !== false)
 
   const withPotential = waves.filter((w) => w.hasPotential).length
   const withoutPotential = waves.filter((w) => !w.hasPotential).length

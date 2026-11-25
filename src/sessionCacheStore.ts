@@ -1,3 +1,4 @@
+import { normalizeTrainingSessions } from './sessionNormalize'
 import type { TrainingSession } from './types'
 
 const KEY_PREFIX = 'surfstar-session-cache'
@@ -11,7 +12,8 @@ export function loadSessionCache(orgId: string): TrainingSession[] {
   try {
     const raw = localStorage.getItem(cacheKey(orgId))
     if (!raw) return []
-    return JSON.parse(raw) as TrainingSession[]
+    const parsed = JSON.parse(raw) as TrainingSession[]
+    return normalizeTrainingSessions(Array.isArray(parsed) ? parsed : [])
   } catch {
     return []
   }
@@ -28,15 +30,15 @@ export function saveSessionCache(orgId: string, sessions: TrainingSession[]) {
 
 export function sessionActivityScore(session: TrainingSession): number {
   let score = 0
-  for (const wave of session.waves) {
+  for (const wave of session.waves ?? []) {
     score += 10
-    score += wave.maneuvers.length
-    score += wave.comboAttempts.length
+    score += wave.maneuvers?.length ?? 0
+    score += wave.comboAttempts?.length ?? 0
     score += wave.customAttempts?.length ?? 0
   }
-  score += session.comboEntries.length
-  score += session.heats.length * 5
-  for (const heat of session.heats) {
+  score += session.comboEntries?.length ?? 0
+  score += (session.heats?.length ?? 0) * 5
+  for (const heat of session.heats ?? []) {
     score += heat.waveScores?.length ?? 0
   }
   score += session.seaAnalysis?.logs?.length ?? 0

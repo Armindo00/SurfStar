@@ -123,17 +123,23 @@ describe('wave outcome stats', () => {
     })
   })
 
-  it('ignores unclassified waves in stats and discard rules', () => {
-    const unclassified = wave({
+  it('ignores draft unclassified waves but keeps legacy missing classified', () => {
+    const draft = wave({
       id: 'u',
       hasPotential: true,
       outcome: 'surfed',
       classified: false,
     })
+    const legacy = wave({
+      id: 'legacy',
+      hasPotential: true,
+      outcome: 'wasted',
+      classified: undefined as unknown as boolean,
+    })
     const wasted = wave({ id: 'w', hasPotential: true, outcome: 'wasted' })
     const emptySurfed = wave({ id: 's', hasPotential: true, outcome: 'surfed' })
 
-    expect(computeWaveStats(session([unclassified, wasted]))).toMatchObject({
+    expect(computeWaveStats(session([draft, wasted]))).toMatchObject({
       totalWaves: 1,
       withPotential: 1,
       withoutPotential: 0,
@@ -142,7 +148,11 @@ describe('wave outcome stats', () => {
       aproveitamentoRate: 0,
       valorizacaoRate: null,
     })
-    expect(waveIsCommitted(unclassified, 'tecnico')).toBe(false)
+    expect(computeWaveStats(session([legacy]))).toMatchObject({
+      totalWaves: 1,
+      wasted: 1,
+    })
+    expect(waveIsCommitted(draft, 'tecnico')).toBe(false)
     expect(waveIsCommitted(wasted, 'tecnico')).toBe(true)
     expect(waveIsCommitted(emptySurfed, 'tecnico')).toBe(false)
   })

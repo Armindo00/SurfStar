@@ -1,5 +1,5 @@
 import { createDefaultConditions, createDefaultSpots } from './defaults'
-import { resolveSessionMode } from './sessionModeUtils'
+import { normalizeTrainingSession } from './sessionNormalize'
 import type {
   Athlete,
   CoachAccount,
@@ -10,7 +10,6 @@ import type {
   StudentAccount,
   SurfSpot,
   TrainingSession,
-  WaveRecord,
 } from './types'
 
 const KEY = 'surfstar-v2'
@@ -150,93 +149,7 @@ function load(): Persisted {
 }
 
 function migrateSession(s: TrainingSession, spots: SurfSpot[]): TrainingSession {
-  const spotName =
-    s.spotName?.trim() ||
-    spots.find((spot) => spot.id === s.spotId)?.name?.trim() ||
-    ''
-
-  return {
-    ...s,
-    coachId: s.coachId ?? '',
-    organizationId: s.organizationId,
-    mode: resolveSessionMode(s),
-    spotName,
-    comboEntries: s.comboEntries ?? [],
-    heats: (s.heats ?? []).map((h) => ({
-      ...h,
-      label: h.label ?? 'Heat',
-      waveScores: (h.waveScores ?? []).map((w) => ({
-        ...w,
-        score: typeof w.score === 'number' ? Math.round(w.score * 100) / 100 : 0,
-      })),
-      interferences: h.interferences ?? [],
-      round: h.round,
-      advancesCount: h.advancesCount,
-      isFinal: h.isFinal ?? false,
-    })),
-    seaAnalysis: s.seaAnalysis
-      ? {
-          timerStartedAt: s.seaAnalysis.timerStartedAt ?? null,
-          endedAt: s.seaAnalysis.endedAt ?? null,
-          logs: s.seaAnalysis.logs ?? [],
-        }
-      : null,
-    championship: s.championship ?? null,
-    coachNotes: s.coachNotes ?? null,
-    customTemplateId: s.customTemplateId ?? null,
-    customTemplateName: s.customTemplateName ?? null,
-    customTemplateSnapshot: s.customTemplateSnapshot ?? null,
-    customTimerStartedAt: s.customTimerStartedAt ?? null,
-    customTimerEndedAt: s.customTimerEndedAt ?? null,
-    waves: (s.waves ?? []).map((raw) => {
-      const w = raw as WaveRecord & { kind?: 'wave' | 'no-potential'; outcome?: WaveRecord['outcome'] }
-      const hasPotential = w.hasPotential ?? w.kind !== 'no-potential'
-      const maneuvers = (w.maneuvers ?? []).map((m) => ({
-        ...m,
-        level: normalizeLevel(m.level),
-        success: m.success ?? true,
-      }))
-      const comboAttempts = (w.comboAttempts ?? []).map((c) => ({
-        ...c,
-        level: normalizeLevel(c.level),
-        success: c.success ?? true,
-      }))
-      const customAttempts = (w.customAttempts ?? []).map((c) => ({
-        id: c.id,
-        buttonId: c.buttonId,
-        levelId: c.levelId ?? null,
-        success: c.success ?? null,
-        at: c.at,
-      }))
-      const hasAttempts =
-        maneuvers.length > 0 || comboAttempts.length > 0 || customAttempts.length > 0
-      const outcome =
-        w.outcome === 'surfed' || w.outcome === 'wasted'
-          ? w.outcome
-          : hasAttempts
-            ? 'surfed'
-            : hasPotential
-              ? 'surfed'
-              : 'wasted'
-      return {
-        id: w.id,
-        athleteId: w.athleteId,
-        startedAt: w.startedAt,
-        hasPotential,
-        outcome,
-        classified: w.classified ?? true,
-        multiManeuver: w.multiManeuver ?? false,
-        maneuvers,
-        comboAttempts,
-        customAttempts,
-      }
-    }),
-  }
-}
-
-function normalizeLevel(level: unknown): TrainingSession['waves'][0]['maneuvers'][0]['level'] {
-  if (level === 1 || level === 2 || level === 3 || level === 'estrela') return level
-  return 1
+  return normalizeTrainingSession(s, spots)
 }
 
 function seed(): Persisted {

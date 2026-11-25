@@ -10,6 +10,7 @@ import {
 import { isValidEmail, normalizeEmail, validatePasswordStrength } from './passwordUtils'
 import { normalizePasswordResetCode, PASSWORD_RESET_OTP_LENGTH } from './passwordRecoveryUtils'
 import { normalizeTaxId, normalizeBillingAddress, billingAddressFromRow, formatBillingAddress, type BillingAddress } from './billingUtils'
+import { normalizeTrainingSession } from './sessionNormalize'
 import type {
   AuthSession,
   CustomTrainingTemplate,
@@ -657,11 +658,13 @@ export async function cloudFetchTrainingSessions(organizationId: string): Promis
     .order('updated_at', { ascending: false })
 
   if (error || !data) return []
-  return data.map((r: { payload: TrainingSession }) => ({
-    ...r.payload,
-    organizationId,
-    spotName: r.payload.spotName?.trim() ?? '',
-  }))
+  return data.map((r: { payload: TrainingSession }) =>
+    normalizeTrainingSession({
+      ...r.payload,
+      organizationId,
+      spotName: r.payload.spotName?.trim() ?? '',
+    }),
+  )
 }
 
 export type CloudSaveResult = { ok: true } | { ok: false; error: string }

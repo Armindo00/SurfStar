@@ -2737,37 +2737,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (coachNotes: string) => {
       if (!activeSessionId) return
       const sessionId = activeSessionId
-      const trimmedNotes = coachNotes.trim()
-      const endedAt = new Date().toISOString()
-      let endedSession: TrainingSession | null = null
+      const liveSession =
+        trainingSessionsRef.current.find((s) => s.id === sessionId) ??
+        trainingSessions.find((s) => s.id === sessionId)
 
-      persistSessions((prev) =>
-        prev.map((s) => {
-          if (s.id !== sessionId) return s
-
-          const seaAnalysis =
-            s.mode === 'sea-analysis' && s.seaAnalysis && !s.seaAnalysis.endedAt
-              ? { ...s.seaAnalysis, endedAt }
-              : s.seaAnalysis
-
-          endedSession = {
-            ...s,
-            endedAt,
-            coachNotes: trimmedNotes || null,
-            spotName:
-              s.spotName?.trim() ||
-              spots.find((spot) => spot.id === s.spotId)?.name?.trim() ||
-              '',
-            seaAnalysis,
-          }
-          return endedSession
-        }),
-      )
-
-      if (!endedSession) {
+      if (!liveSession) {
         showToast(t('errors.finishSessionFailed'), 'error')
         return
       }
+
+      const trimmedNotes = coachNotes.trim()
+      const endedAt = new Date().toISOString()
+      const seaAnalysis =
+        liveSession.mode === 'sea-analysis' && liveSession.seaAnalysis && !liveSession.seaAnalysis.endedAt
+          ? { ...liveSession.seaAnalysis, endedAt }
+          : liveSession.seaAnalysis
+
+      // Drop draft waves that were never confirmed (unclassified + empty).
+      const waves = liveSession.waves.filter((wave) => waveIsCommitted(wave, liveSession.mode))
+
+      const endedSession: TrainingSession = {
+        ...liveSession,
+        endedAt,
+        coachNotes: trimmedNotes || null,
+        spotName:
+          liveSession.spotName?.trim() ||
+          spots.find((spot) => spot.id === liveSession.spotId)?.name?.trim() ||
+          '',
+        seaAnalysis,
+        waves,
+      }
+
+      persistSessions((prev) => {
+        if (!prev.some((s) => s.id === sessionId)) return [...prev, endedSession]
+        return prev.map((s) => (s.id === sessionId ? endedSession : s))
+      })
 
       setEndSessionSheetOpen(false)
       setActiveWaveId(null)
@@ -2779,7 +2783,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setHistorySessionId(sessionId)
       setView('session-history-detail')
     },
-    [activeSessionId, persistSessions, resetDraft, showToast, spots, t],
+    [activeSessionId, persistSessions, resetDraft, showToast, spots, t, trainingSessions],
   )
 
   const openHistorySession = useCallback((sessionId: string) => {
