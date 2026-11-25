@@ -33,6 +33,8 @@ export function WaveFlagsControls() {
 
   if (!openWave) return null
 
+  const isCombos = activeSession?.mode === 'combos'
+
   if (openWave.classified) {
     return (
       <div className="wave-flags wave-flags--summary">
@@ -61,7 +63,9 @@ export function WaveFlagsControls() {
     <div className="wave-flags">
       <div className="wave-flags__group">
         <p className="wave-flags__label">{r.waveTypeStep}</p>
-        <p className="muted wave-flags__hint">{r.chooseWaveTypeHint}</p>
+        <p className="muted wave-flags__hint">
+          {isCombos ? r.chooseWaveTypeHintCombos : r.chooseWaveTypeHint}
+        </p>
       </div>
 
       <div className="wave-flags__group">
@@ -117,7 +121,11 @@ export function WaveFlagsControls() {
           classifyActiveWave(draftPotential, draftOutcome)
         }}
       >
-        {draftOutcome === 'wasted' ? r.confirmWastedWave : r.continueToManeuvers}
+        {draftOutcome === 'wasted'
+          ? r.confirmWastedWave
+          : isCombos
+            ? r.continueToCombinations
+            : r.continueToManeuvers}
       </button>
     </div>
   )
