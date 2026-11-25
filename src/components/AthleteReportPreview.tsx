@@ -7,6 +7,7 @@ import {
 import type { AthletePsychologyAnalytics } from '../athletePsychologyStats'
 import type { AthleteGeneralStats } from '../athleteStats'
 import type { PdfEvolutionCharts, SideCompareChart } from '../athleteReportPdfEvolution'
+import type { TopicReadings } from '../athleteInsights'
 import type {
   DomainSummaryRow,
   ReportCallout,
@@ -38,6 +39,7 @@ type Props = {
   strengths: ReportCallout[]
   attention: ReportCallout[]
   domainRows: DomainSummaryRow[]
+  topicReadings: TopicReadings
   r: AnalyticsReportCopy
   formatAvgLevel: (value: number | null) => string
 }
@@ -86,6 +88,7 @@ export function AthleteReportPreview({
   strengths,
   attention,
   domainRows,
+  topicReadings,
   r,
   formatAvgLevel,
 }: Props) {
@@ -244,6 +247,9 @@ export function AthleteReportPreview({
       {technicalSideCharts.length > 0 ? (
         <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.pdfTechnicalSideCharts}</h2>
+          {topicReadings.technical ? (
+            <p className="athlete-report__readout">{topicReadings.technical}</p>
+          ) : null}
           <div className="athlete-report__side-chart-grid">
             {technicalSideCharts.map((chart) => (
               <SideCompareFigure key={chart.title} chart={chart} labels={sideLabels} />
@@ -255,6 +261,9 @@ export function AthleteReportPreview({
       {comboSideCharts.length > 0 ? (
         <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.pdfComboSideCharts}</h2>
+          {topicReadings.combo ? (
+            <p className="athlete-report__readout">{topicReadings.combo}</p>
+          ) : null}
           <div className="athlete-report__side-chart-grid">
             {comboSideCharts.map((chart) => (
               <SideCompareFigure key={chart.title} chart={chart} labels={sideLabels} />
@@ -266,6 +275,9 @@ export function AthleteReportPreview({
       {heatAnalytics && heatAnalytics.heatsTotal > 0 ? (
         <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.competitionHeatsRhythm}</h2>
+          {topicReadings.heat ? (
+            <p className="athlete-report__readout">{topicReadings.heat}</p>
+          ) : null}
           <div className="athlete-report__kpi-grid">
             <article>
               <span>{r.heatWins}</span>
@@ -366,6 +378,9 @@ export function AthleteReportPreview({
       {psych && psychology ? (
         <section className="athlete-report__section athlete-report__topic-page">
           <h2>{r.psychologyCheckins}</h2>
+          {topicReadings.psychology ? (
+            <p className="athlete-report__readout">{topicReadings.psychology}</p>
+          ) : null}
 
           <div className="athlete-report__kpi-grid athlete-report__kpi-grid--psych">
             <article>

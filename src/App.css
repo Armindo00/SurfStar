@@ -9852,6 +9852,17 @@ body.has-cookie-consent {
   page-break-before: always;
 }
 
+.athlete-report__readout {
+  margin: 0 0 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border-left: 3px solid #0a6a94;
+  background: #f7fbfd;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #0f172a;
+}
+
 .athlete-report__psych-callouts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

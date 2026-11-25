@@ -1,3 +1,4 @@
+import { buildTopicReadings } from './athleteInsights'
 import type { AthletePsychologyAnalytics } from './athletePsychologyStats'
 import type { AthleteGeneralStats, AthleteSessionSummary } from './athleteStats'
 import type {
@@ -298,6 +299,16 @@ export function buildAthleteReportPdfInput(args: {
     labels: args.labels,
   })
 
+  const topicReadings = buildTopicReadings({
+    technical: args.analytics.technical,
+    combo: args.analytics.combo,
+    technicalSideCharts,
+    comboSideCharts,
+    heatAnalytics: args.heatAnalytics,
+    psychology: args.psychology,
+    labels: args.labels,
+  })
+
   return {
     athleteName: args.athleteName,
     coachName: args.coachName,
@@ -322,6 +333,7 @@ export function buildAthleteReportPdfInput(args: {
     strengths: executive.strengths,
     attention: executive.attention,
     domainRows: executive.domainRows,
+    topicReadings,
     maneuverSummaries,
     sessionRows: buildSessionRows(args.sessionSummaries, args.getSpot),
     labels: args.labels,

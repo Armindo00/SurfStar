@@ -337,6 +337,34 @@ export const analytics = {
     clutchHeat: 'Clutch heat',
     earlyTenPoints: '10 pts temprano',
     technicalSubtitle: 'técnico {{level}} · combo {{combo}} · {{sessions}} sesiones',
+    readingLabel: 'Lectura',
+    technicalReadingSideGap:
+      'El punto débil no es la técnica en general — es {{maneuver}} {{weakSide}} ({{weakRate}}% vs {{strongRate}}% {{strongSide}}, gap {{gap}} pts).',
+    technicalReadingBalanced:
+      'Los lados están relativamente equilibrados. Éxito técnico general {{rate}}% · nivel medio {{level}}.',
+    technicalReadingThin: 'Pocos datos lado a lado para una lectura técnica clara.',
+    technicalReadingOverall:
+      'Éxito técnico {{rate}}% en {{attempts}} intentos · nivel medio {{level}}.',
+    comboReadingSideGap:
+      'Foco en combo: {{level}} {{weakSide}} va atrás ({{weakRate}}% vs {{strongRate}}% {{strongSide}}, gap {{gap}} pts).',
+    comboReadingBalanced:
+      'Combos relativamente equilibrados entre lados. Éxito {{rate}}% · nivel medio {{level}}.',
+    comboReadingThin: 'Pocos datos lado a lado en combos para una lectura clara.',
+    comboReadingOverall:
+      'Éxito en combo {{rate}}% en {{attempts}} intentos · nivel medio {{level}}.',
+    heatReadingClutchNegative:
+      'Abre con calidad suficiente, pero no convierte en el cierre (clutch {{clutch}}: apertura {{open}} → cierre {{close}}). Entrenar escenarios de presión en el último tercio del heat.',
+    heatReadingClutchPositive:
+      'Cierra heats con intención (clutch {{clutch}}, mejor ola tardía {{close}}). Mantener el cierre bajo presión como fortaleza.',
+    heatReadingEarlyWeak:
+      'Apertura de puntos floja ({{rate}}% de heats con timer llegan a 10 pts en los primeros 10 minutos). Priorizar urgencia en la 1ª ola.',
+    heatReadingEarlyStrong:
+      'Abre heats bien ({{rate}}% llegan a 10 pts temprano). Proteger ese inicio y convertir en el cierre.',
+    heatReadingThin: 'Hay heats registrados, pero pocos datos de timer para leer el ritmo.',
+    heatReadingBasic: '{{heats}} heats en el periodo · media {{score}}. Con timer, la lectura de ritmo es más rica.',
+    psychologyReadingStandout:
+      'Más alto: {{highLabel}} {{highAvg}}/5 · atención: {{lowLabel}} {{lowAvg}}/5 (media general {{overall}}/5).',
+    psychologyReadingThin: 'Hay check-ins de psicología, pero pocos detalles para una lectura de destacados.',
     page: 'Página',
   },
 } as const

@@ -285,6 +285,7 @@ export function AthleteReportSheet({
             strengths={pdfPayload.strengths}
             attention={pdfPayload.attention}
             domainRows={pdfPayload.domainRows}
+            topicReadings={pdfPayload.topicReadings}
             r={r}
             formatAvgLevel={formatAverageLevelValue}
           />

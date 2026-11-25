@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import type { TopicReadings } from './athleteInsights'
 import type { AthleteGeneralStats } from './athleteStats'
 import type { AthletePsychologyAnalytics } from './athletePsychologyStats'
 import type { AthleteHeatAnalyticsSummary } from './heatAnalyticsStats'
@@ -122,6 +123,23 @@ export type AthleteReportPdfLabels = {
   yes: string
   no: string
   winSuffix: string
+  readingLabel: string
+  technicalReadingSideGap: string
+  technicalReadingBalanced: string
+  technicalReadingThin: string
+  technicalReadingOverall: string
+  comboReadingSideGap: string
+  comboReadingBalanced: string
+  comboReadingThin: string
+  comboReadingOverall: string
+  heatReadingClutchNegative: string
+  heatReadingClutchPositive: string
+  heatReadingEarlyWeak: string
+  heatReadingEarlyStrong: string
+  heatReadingThin: string
+  heatReadingBasic: string
+  psychologyReadingStandout: string
+  psychologyReadingThin: string
 }
 
 export type TrainingMixRow = { label: string; count: number }
@@ -153,6 +171,7 @@ export type AthleteReportPdfInput = {
   strengths: ReportCallout[]
   attention: ReportCallout[]
   domainRows: DomainSummaryRow[]
+  topicReadings: TopicReadings
   maneuverSummaries: ManeuverSummaryRow[]
   sessionRows: { date: string; mode: string; spot: string; summary: string }[]
   labels: AthleteReportPdfLabels
@@ -250,6 +269,26 @@ class PdfDoc {
     this.ensureSpace(lines.length * 4.2 + 2)
     this.doc.text(lines, MARGIN, this.y)
     this.y += lines.length * 4.2 + 2
+  }
+
+  /** Adaptive per-topic interpretation — left accent bar + soft fill. */
+  readingBlock(text: string) {
+    const padX = 3.5
+    const padY = 3
+    const maxW = CONTENT_W - padX * 2 - 2
+    this.doc.setFont('helvetica', 'normal')
+    this.doc.setFontSize(9)
+    const lines = this.doc.splitTextToSize(text, maxW)
+    const boxH = padY * 2 + lines.length * 4.2
+    this.ensureSpace(boxH + 3)
+    this.doc.setFillColor(247, 251, 254)
+    this.doc.setDrawColor(...COLOR_BAR_BG)
+    this.doc.roundedRect(MARGIN, this.y, CONTENT_W, boxH, 1.5, 1.5, 'FD')
+    this.doc.setFillColor(...COLOR_PRIMARY)
+    this.doc.rect(MARGIN, this.y, 1.4, boxH, 'F')
+    this.doc.setTextColor(...COLOR_TEXT)
+    this.doc.text(lines, MARGIN + padX + 2, this.y + padY + 3.2)
+    this.y += boxH + 4
   }
 
   metaRow(items: { label: string; value: string }[]) {
@@ -358,9 +397,11 @@ function drawPsychologyHighlightsSection(
   pdf: PdfDoc,
   psychology: AthletePsychologyAnalytics,
   L: AthleteReportPdfLabels,
+  reading: string | null,
 ) {
   const { doc } = pdf
   pdf.topicSection(L.psychologyCheckins)
+  if (reading) pdf.readingBlock(reading)
 
   pdf.kpiGrid([
     { label: L.psychologyCheckInsLabel, value: String(psychology.checkIns) },
@@ -528,10 +569,12 @@ function drawHeatAnnexSection(
   pdf: PdfDoc,
   heat: AthleteHeatAnalyticsSummary,
   L: AthleteReportPdfLabels,
+  reading: string | null,
 ) {
   if (heat.heatsTotal <= 0) return
   const { doc } = pdf
   pdf.topicSection(L.competitionHeatsRhythm)
+  if (reading) pdf.readingBlock(reading)
   pdf.kpiGrid([
     { label: L.heatWins, value: String(heat.rows.filter((r) => r.won).length) },
     { label: L.avgLevel, value: heat.avgHeatScore?.toFixed(1) ?? '—' },
@@ -700,10 +743,13 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
   }
 
   // —— Annex: one topic per page (no mid-page topic starts) ——
+  const readings = input.topicReadings
+
   const hasTechnicalTopic = Boolean(input.technical) || input.technicalSideCharts.length > 0
   if (hasTechnicalTopic) {
     pdf.startTopicPage()
     pdf.topicSection(L.pdfTechnicalSideCharts)
+    if (readings.technical) pdf.readingBlock(readings.technical)
     if (input.technical) {
       pdf.bodyText(
         `${L.technicalTraining}: ${input.technical.overallSuccessRate}% ${L.successCol} · ${input.technical.totalManeuvers} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.technical.averageLevel)}`,
@@ -723,6 +769,7 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
   if (hasComboTopic) {
     pdf.startTopicPage()
     pdf.topicSection(L.pdfComboSideCharts)
+    if (readings.combo) pdf.readingBlock(readings.combo)
     if (input.combo) {
       pdf.bodyText(
         `${L.comboTraining}: ${input.combo.overallSuccessRate}% ${L.successCol} · ${input.combo.totalAttempts} ${L.attempts} · ${L.avgLevel} ${formatLevel(input.combo.averageLevel)}`,
@@ -740,12 +787,12 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
 
   if (input.heatAnalytics && input.heatAnalytics.heatsTotal > 0) {
     pdf.startTopicPage()
-    drawHeatAnnexSection(pdf, input.heatAnalytics, L)
+    drawHeatAnnexSection(pdf, input.heatAnalytics, L, readings.heat)
   }
 
   if (input.psychology && input.psychology.checkIns > 0) {
     pdf.startTopicPage()
-    drawPsychologyHighlightsSection(pdf, input.psychology, L)
+    drawPsychologyHighlightsSection(pdf, input.psychology, L, readings.psychology)
   }
 
   if (input.trainingMix.length > 0) {

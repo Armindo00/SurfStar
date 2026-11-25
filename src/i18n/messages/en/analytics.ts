@@ -327,6 +327,34 @@ export const analytics = {
     pdfTechnicalSideCharts: 'Technical · frontside vs backside',
     pdfComboSideCharts: 'Combos · frontside vs backside',
     maneuvers: 'Maneuvers',
+    readingLabel: 'Reading',
+    technicalReadingSideGap:
+      'The weak point is not technique overall — it is {{maneuver}} {{weakSide}} ({{weakRate}}% vs {{strongRate}}% {{strongSide}}, gap {{gap}} pts).',
+    technicalReadingBalanced:
+      'Sides are relatively balanced. Overall technical success {{rate}}% · avg level {{level}}.',
+    technicalReadingThin: 'Not enough side-by-side technical data for a clear reading.',
+    technicalReadingOverall:
+      'Technical success {{rate}}% across {{attempts}} attempts · avg level {{level}}.',
+    comboReadingSideGap:
+      'Combo focus: {{level}} {{weakSide}} lags ({{weakRate}}% vs {{strongRate}}% {{strongSide}}, gap {{gap}} pts).',
+    comboReadingBalanced:
+      'Combo sides are relatively balanced. Success {{rate}}% · avg level {{level}}.',
+    comboReadingThin: 'Not enough combo side data for a clear reading.',
+    comboReadingOverall:
+      'Combo success {{rate}}% across {{attempts}} attempts · avg level {{level}}.',
+    heatReadingClutchNegative:
+      'Opens with enough quality, but does not convert in the close (clutch {{clutch}}: open {{open}} → close {{close}}). Train pressure scenarios in the last third of the heat.',
+    heatReadingClutchPositive:
+      'Closes heats with intent (clutch {{clutch}}, late best {{close}}). Keep finishing under pressure as a strength.',
+    heatReadingEarlyWeak:
+      'Early banking is soft ({{rate}}% of timed heats reach 10 pts in the first 10 minutes). Prioritize first-wave urgency.',
+    heatReadingEarlyStrong:
+      'Opens heats well ({{rate}}% reach 10 pts early). Protect that start and convert into the close.',
+    heatReadingThin: 'Heat results are logged, but timer data is too thin for rhythm reading.',
+    heatReadingBasic: '{{heats}} heats in the period · avg score {{score}}. Add timer data for deeper rhythm insights.',
+    psychologyReadingStandout:
+      'Highest: {{highLabel}} {{highAvg}}/5 · needs attention: {{lowLabel}} {{lowAvg}}/5 (overall {{overall}}/5).',
+    psychologyReadingThin: 'Psychology check-ins exist, but there is not enough detail for a standout reading.',
     page: 'Page',
     executiveLabel: 'Executive',
     annexLabel: 'Annex',
