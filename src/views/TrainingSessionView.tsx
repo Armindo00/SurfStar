@@ -3,7 +3,7 @@ import { useI18n } from '../i18n'
 import { TechnicalRegisterPanel } from '../components/TechnicalRegisterPanel'
 import { SessionStickyBar } from '../components/SessionStickyBar'
 import { ScreenHeader } from '../components/ScreenHeader'
-import { computeWaveStats } from '../sessionStats'
+import { computeWaveStats, emptyWaveStats } from '../sessionStats'
 import { resolveSessionMode, sessionFlowViewForMode } from '../sessionModeUtils'
 import { useApp } from '../AppContext'
 import type { ManeuverKind } from '../types'
@@ -36,7 +36,7 @@ export function TrainingSessionView() {
 
   const waveStats = activeSession
     ? computeWaveStats(activeSession, null)
-    : { totalWaves: 0, withPotential: 0, withoutPotential: 0, surfed: 0, wasted: 0 }
+    : emptyWaveStats()
 
   const focusedAthlete = focusAthleteId ? getAthlete(focusAthleteId) : undefined
 

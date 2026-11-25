@@ -199,7 +199,11 @@ describe('session cache persistence', () => {
   it('round-trips sessions per organization', () => {
     const sessions = [makeSession('s1')]
     saveSessionCache('org-1', sessions)
-    expect(loadSessionCache('org-1')).toEqual(sessions)
+    const loaded = loadSessionCache('org-1')
+    expect(loaded).toHaveLength(1)
+    expect(loaded[0]?.id).toBe('s1')
+    expect(loaded[0]?.mode).toBe('tecnico')
+    expect(loaded[0]?.waves).toEqual([])
     expect(loadSessionCache('org-2')).toEqual([])
   })
 })

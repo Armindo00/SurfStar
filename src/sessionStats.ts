@@ -36,12 +36,28 @@ export type LevelWithSideStats = LevelSuccessStats & {
   bySide: SidePairStats
 }
 
+export type WaveMatrixCounts = {
+  potentialSurfed: number
+  potentialWasted: number
+  noPotentialSurfed: number
+  noPotentialWasted: number
+}
+
 export type WaveStats = {
   totalWaves: number
   withPotential: number
   withoutPotential: number
   surfed: number
   wasted: number
+  matrix: WaveMatrixCounts
+  /** Ondas com potencial bem executadas (manobra completa ✓) */
+  wellExecutedPotential: number
+  /** Ondas sem potencial surfadas com manobra nível > 2 */
+  valuedNoPotential: number
+  /** wellExecutedPotential ÷ withPotential */
+  aproveitamentoRate: number | null
+  /** valuedNoPotential ÷ noPotentialSurfed */
+  valorizacaoRate: number | null
 }
 
 export type SessionStatsSnapshot = {
@@ -208,8 +224,48 @@ export function waveHasLoggedAttempts(w: WaveRecord, mode: TrainingMode): boolea
 
 /** Onda deve ser guardada (não descartada ao fechar / trocar atleta). */
 export function waveIsCommitted(w: WaveRecord, mode: TrainingMode): boolean {
-  if (!w.classified) return waveHasLoggedAttempts(w, mode)
+  // Missing classified (legacy) counts as classified; only explicit false is a draft.
+  if (w.classified === false) return waveHasLoggedAttempts(w, mode)
   return w.outcome === 'wasted' || waveHasLoggedAttempts(w, mode)
+}
+
+function levelAboveTwo(level: ManeuverLevel | ComboLevel): boolean {
+  return level === 3 || level === 'estrela'
+}
+
+/** Tem pelo menos uma manobra/combo/custom com sucesso (completa ✓). */
+export function waveHasCompleteManeuver(w: WaveRecord): boolean {
+  if (w.maneuvers.some((m) => m.success)) return true
+  if ((w.comboAttempts ?? []).some((c) => c.success)) return true
+  if ((w.customAttempts ?? []).some((c) => c.success === true)) return true
+  return false
+}
+
+/** Tem manobra/combo de nível 3 ou estrela. */
+export function waveHasLevelAboveTwo(w: WaveRecord): boolean {
+  if (w.maneuvers.some((m) => levelAboveTwo(m.level))) return true
+  if ((w.comboAttempts ?? []).some((c) => levelAboveTwo(c.level))) return true
+  return false
+}
+
+export function emptyWaveStats(): WaveStats {
+  return {
+    totalWaves: 0,
+    withPotential: 0,
+    withoutPotential: 0,
+    surfed: 0,
+    wasted: 0,
+    matrix: {
+      potentialSurfed: 0,
+      potentialWasted: 0,
+      noPotentialSurfed: 0,
+      noPotentialWasted: 0,
+    },
+    wellExecutedPotential: 0,
+    valuedNoPotential: 0,
+    aproveitamentoRate: null,
+    valorizacaoRate: null,
+  }
 }
 
 export function computeWaveStats(
@@ -219,13 +275,43 @@ export function computeWaveStats(
   const waves = (athleteId
     ? session.waves.filter((w) => w.athleteId === athleteId)
     : session.waves
-  ).filter((w) => w.classified)
+  ).filter((w) => w.classified !== false)
+
+  const withPotential = waves.filter((w) => w.hasPotential).length
+  const withoutPotential = waves.filter((w) => !w.hasPotential).length
+  const surfed = waves.filter((w) => w.outcome === 'surfed').length
+  const wasted = waves.filter((w) => w.outcome === 'wasted').length
+
+  const matrix: WaveMatrixCounts = {
+    potentialSurfed: waves.filter((w) => w.hasPotential && w.outcome === 'surfed').length,
+    potentialWasted: waves.filter((w) => w.hasPotential && w.outcome === 'wasted').length,
+    noPotentialSurfed: waves.filter((w) => !w.hasPotential && w.outcome === 'surfed').length,
+    noPotentialWasted: waves.filter((w) => !w.hasPotential && w.outcome === 'wasted').length,
+  }
+
+  const wellExecutedPotential = waves.filter(
+    (w) => w.hasPotential && w.outcome === 'surfed' && waveHasCompleteManeuver(w),
+  ).length
+
+  const valuedNoPotential = waves.filter(
+    (w) => !w.hasPotential && w.outcome === 'surfed' && waveHasLevelAboveTwo(w),
+  ).length
+
   return {
     totalWaves: waves.length,
-    withPotential: waves.filter((w) => w.hasPotential).length,
-    withoutPotential: waves.filter((w) => !w.hasPotential).length,
-    surfed: waves.filter((w) => w.outcome === 'surfed').length,
-    wasted: waves.filter((w) => w.outcome === 'wasted').length,
+    withPotential,
+    withoutPotential,
+    surfed,
+    wasted,
+    matrix,
+    wellExecutedPotential,
+    valuedNoPotential,
+    aproveitamentoRate: withPotential
+      ? Math.round((wellExecutedPotential / withPotential) * 100)
+      : null,
+    valorizacaoRate: matrix.noPotentialSurfed
+      ? Math.round((valuedNoPotential / matrix.noPotentialSurfed) * 100)
+      : null,
   }
 }
 

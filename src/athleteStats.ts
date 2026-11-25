@@ -17,6 +17,20 @@ export type AthleteGeneralStats = {
   withoutPotential: number
   withPotentialRate: number | null
   withoutPotentialRate: number | null
+  surfed: number
+  wasted: number
+  matrix: {
+    potentialSurfed: number
+    potentialWasted: number
+    noPotentialSurfed: number
+    noPotentialWasted: number
+  }
+  wellExecutedPotential: number
+  valuedNoPotential: number
+  /** Ondas com potencial bem executadas ÷ ondas com potencial */
+  aproveitamentoRate: number | null
+  /** Ondas sem potencial nível > 2 ÷ ondas sem potencial surfadas */
+  valorizacaoRate: number | null
   heatWins: number
   heatParticipations: number
   /** Completed championships won (final winner). */
@@ -126,6 +140,16 @@ export function computeAthleteGeneralStats(
   let totalWaves = 0
   let withPotential = 0
   let withoutPotential = 0
+  let surfed = 0
+  let wasted = 0
+  let wellExecutedPotential = 0
+  let valuedNoPotential = 0
+  const matrix = {
+    potentialSurfed: 0,
+    potentialWasted: 0,
+    noPotentialSurfed: 0,
+    noPotentialWasted: 0,
+  }
   let heatWins = 0
   let heatParticipations = 0
   let championshipWins = 0
@@ -136,6 +160,14 @@ export function computeAthleteGeneralStats(
     totalWaves += waveStats.totalWaves
     withPotential += waveStats.withPotential
     withoutPotential += waveStats.withoutPotential
+    surfed += waveStats.surfed
+    wasted += waveStats.wasted
+    wellExecutedPotential += waveStats.wellExecutedPotential
+    valuedNoPotential += waveStats.valuedNoPotential
+    matrix.potentialSurfed += waveStats.matrix.potentialSurfed
+    matrix.potentialWasted += waveStats.matrix.potentialWasted
+    matrix.noPotentialSurfed += waveStats.matrix.noPotentialSurfed
+    matrix.noPotentialWasted += waveStats.matrix.noPotentialWasted
 
     if (
       session.championship?.status === 'complete' &&
@@ -168,6 +200,12 @@ export function computeAthleteGeneralStats(
   const withoutPotentialRate = totalWaves
     ? Math.round((withoutPotential / totalWaves) * 100)
     : null
+  const aproveitamentoRate = withPotential
+    ? Math.round((wellExecutedPotential / withPotential) * 100)
+    : null
+  const valorizacaoRate = matrix.noPotentialSurfed
+    ? Math.round((valuedNoPotential / matrix.noPotentialSurfed) * 100)
+    : null
 
   const { maneuvers, comboAttempts } = collectAthleteAttemptLogs(sessions, athleteId)
   const avgTechnicalManeuverLevel = averageLevelFromLogs(maneuvers)
@@ -182,6 +220,13 @@ export function computeAthleteGeneralStats(
     withoutPotential,
     withPotentialRate,
     withoutPotentialRate,
+    surfed,
+    wasted,
+    matrix,
+    wellExecutedPotential,
+    valuedNoPotential,
+    aproveitamentoRate,
+    valorizacaoRate,
     heatWins,
     heatParticipations,
     championshipWins,

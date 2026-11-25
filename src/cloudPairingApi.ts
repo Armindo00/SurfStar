@@ -1,4 +1,5 @@
 import { getSupabase } from './lib/supabase'
+import { normalizeTrainingSessions } from './sessionNormalize'
 import type { Athlete, AthleteShareSettings, CoachAthleteLink, TrainingSession } from './types'
 import { normalizeAthleteShareSettings } from './types'
 
@@ -119,7 +120,7 @@ export async function cloudFetchAthleteSessions(athleteId: string): Promise<Trai
   })
 
   if (error || !data) return []
-  return data as TrainingSession[]
+  return normalizeTrainingSessions(data as TrainingSession[])
 }
 
 export async function cloudRequestPairingByCode(
