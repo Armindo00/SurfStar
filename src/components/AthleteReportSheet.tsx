@@ -137,6 +137,46 @@ export function AthleteReportSheet({
     }
   }, [psychology, t])
 
+  const comparisonLabels = useMemo(
+    () => ({
+      mostFrequentQuadrant: t('analytics.comparison.mostFrequentQuadrant'),
+      quadrantShare: t('analytics.comparison.quadrantShare'),
+      potentialShare: t('analytics.comparison.potentialShare'),
+      aproveitamentoVsValorizacao: t('analytics.comparison.aproveitamentoVsValorizacao'),
+      aproveitamentoOnly: t('analytics.comparison.aproveitamentoOnly'),
+      valorizacaoOnly: t('analytics.comparison.valorizacaoOnly'),
+      technicalVsCombo: t('analytics.comparison.technicalVsCombo'),
+      technicalOnly: t('analytics.comparison.technicalOnly'),
+      comboOnly: t('analytics.comparison.comboOnly'),
+      heatWinShare: t('analytics.comparison.heatWinShare'),
+      noWaveData: t('analytics.comparison.noWaveData'),
+      matrixHighHigh: t('analytics.topicSheet.matrixCellHighHighTitle'),
+      matrixHighLow: t('analytics.topicSheet.matrixCellHighLowTitle'),
+      matrixLowHigh: t('analytics.topicSheet.matrixCellLowHighTitle'),
+      matrixLowLow: t('analytics.topicSheet.matrixCellLowLowTitle'),
+    }),
+    [t],
+  )
+
+  const waveMatrixLabels = useMemo(
+    () => ({
+      title: t('analytics.topicSheet.waveMatrix'),
+      subtitle: t('analytics.topicSheet.waveMatrixSubtitle'),
+      axisPotential: t('analytics.topicSheet.matrixAxisPotential'),
+      axisResult: t('analytics.topicSheet.matrixAxisResult'),
+      highHighTitle: t('analytics.topicSheet.matrixCellHighHighTitle'),
+      highHighBlurb: t('analytics.topicSheet.matrixCellHighHighBlurb'),
+      highLowTitle: t('analytics.topicSheet.matrixCellHighLowTitle'),
+      highLowBlurb: t('analytics.topicSheet.matrixCellHighLowBlurb'),
+      lowHighTitle: t('analytics.topicSheet.matrixCellLowHighTitle'),
+      lowHighBlurb: t('analytics.topicSheet.matrixCellLowHighBlurb'),
+      lowLowTitle: t('analytics.topicSheet.matrixCellLowLowTitle'),
+      lowLowBlurb: t('analytics.topicSheet.matrixCellLowLowBlurb'),
+      countLabel: (count: number) => t('analytics.topicSheet.matrixCellCount', { count }),
+    }),
+    [t],
+  )
+
   const pdfPayload = useMemo(
     () =>
       buildAthleteReportPdfInput({
@@ -156,6 +196,9 @@ export function AthleteReportSheet({
         getSpot,
         evolutionColumnLabel: evolutionColumn,
         labels: r,
+        comparisonLabels,
+        comparisonTitle: t('analytics.comparison.title'),
+        waveMatrixLabels,
       }),
     [
       athleteName,
@@ -174,6 +217,9 @@ export function AthleteReportSheet({
       getSpot,
       evolutionColumn,
       r,
+      comparisonLabels,
+      waveMatrixLabels,
+      t,
     ],
   )
 
@@ -284,6 +330,8 @@ export function AthleteReportSheet({
             heatAnalytics={heatAnalytics}
             strengths={pdfPayload.strengths}
             attention={pdfPayload.attention}
+            comparisonNotes={pdfPayload.comparisonNotes}
+            comparisonTitle={pdfPayload.comparisonTitle}
             domainRows={pdfPayload.domainRows}
             r={r}
             formatAvgLevel={formatAverageLevelValue}

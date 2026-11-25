@@ -3,6 +3,7 @@ import { ManeuverLevelSuccessChart } from './ManeuverLevelSuccessChart'
 import { OpenVsCloseChart } from './OpenVsCloseChart'
 import { SideCompareChart } from './SideCompareChart'
 import { WaveMatrixPanel } from './WaveMatrixPanel'
+import { ResultComparisonNotes } from './ResultComparisonNotes'
 import { WaveQualityLegend } from './WaveQualityLegend'
 import type { AthleteSessionSummary } from '../athleteStats'
 import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
@@ -250,6 +251,11 @@ export function AthleteAnalyticsTopicSheet({
               </div>
 
               <WaveMatrixPanel matrix={general.matrix} totalWaves={general.totalWaves} />
+              <ResultComparisonNotes
+                general={general}
+                technicalSuccessRate={analytics.technical?.overallSuccessRate ?? null}
+                comboSuccessRate={analytics.combo?.overallSuccessRate ?? null}
+              />
 
               <EvolutionLineChart
                 title={t('analytics.aproveitamentoOverTime')}

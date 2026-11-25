@@ -10,8 +10,11 @@ import {
   drawEvolutionSection,
   drawOpenVsCloseChart,
   drawSideCompareChart,
+  drawWaveMatrix,
   type ChartLayout,
+  type PdfWaveMatrixLabels,
 } from './athleteReportPdfDraw'
+import type { WaveMatrixCounts } from './sessionStats'
 
 const PAGE_W = 210
 const PAGE_H = 297
@@ -152,6 +155,13 @@ export type AthleteReportPdfInput = {
   heatAnalytics?: AthleteHeatAnalyticsSummary | null
   strengths: ReportCallout[]
   attention: ReportCallout[]
+  comparisonNotes: string[]
+  comparisonTitle: string
+  waveMatrix: {
+    counts: WaveMatrixCounts
+    totalWaves: number
+    labels: PdfWaveMatrixLabels
+  } | null
   domainRows: DomainSummaryRow[]
   maneuverSummaries: ManeuverSummaryRow[]
   sessionRows: { date: string; mode: string; spot: string; summary: string }[]
@@ -671,19 +681,24 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
   doc.setFont('helvetica', 'normal')
   pdf.y += heroH + 6
 
-  // —— Strengths / attention ——
-  if (input.strengths.length > 0 || input.attention.length > 0) {
+  // —— Factual comparison notes (no coaching advice) ——
+  if (input.comparisonNotes.length > 0) {
+    pdf.sectionTitle(input.comparisonTitle || L.strengthsAttentionTitle)
+    for (const note of input.comparisonNotes) {
+      pdf.bodyText(`• ${note}`)
+    }
+  } else if (input.strengths.length > 0 || input.attention.length > 0) {
     pdf.sectionTitle(L.strengthsAttentionTitle)
     drawCalloutColumns(pdf, L.strengths, input.strengths, L.attention, input.attention)
   }
 
-  // —— Domain summary ——
+  // —— Domain summary (metrics only — coach interprets) ——
   pdf.sectionTitle(L.domainSummaryTitle)
   autoTable(doc, {
     startY: pdf.y,
     margin: { left: MARGIN, right: MARGIN },
-    head: [[L.domainCol, L.keyMetricCol, L.valueCol, L.readingCol]],
-    body: input.domainRows.map((row) => [row.domain, row.metric, row.value, row.reading]),
+    head: [[L.domainCol, L.keyMetricCol, L.valueCol]],
+    body: input.domainRows.map((row) => [row.domain, row.metric, row.value]),
     styles: { fontSize: 8, cellPadding: 2.2, overflow: 'linebreak' },
     headStyles: { fillColor: [226, 232, 240], textColor: [51, 65, 85], fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [248, 250, 252] },
@@ -697,6 +712,17 @@ export async function buildAthleteReportPdfBlob(input: AthleteReportPdfInput): P
   if (input.coachComment?.trim()) {
     pdf.sectionTitle(L.coachComments)
     pdf.bodyText(input.coachComment.trim())
+  }
+
+  // —— Annex: wave matrix ——
+  if (input.waveMatrix && input.waveMatrix.totalWaves > 0) {
+    pdf.startTopicPage()
+    drawWaveMatrix(
+      pdf.chartLayout(),
+      input.waveMatrix.counts,
+      input.waveMatrix.totalWaves,
+      input.waveMatrix.labels,
+    )
   }
 
   // —— Annex: one topic per page (no mid-page topic starts) ——

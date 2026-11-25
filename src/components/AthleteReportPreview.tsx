@@ -4,6 +4,7 @@ import {
   OpenVsCloseFigure,
   SideCompareFigure,
 } from './AthleteReportChartFigures'
+import { WaveMatrixPanel } from './WaveMatrixPanel'
 import type { AthletePsychologyAnalytics } from '../athletePsychologyStats'
 import type { AthleteGeneralStats } from '../athleteStats'
 import type { PdfEvolutionCharts, SideCompareChart } from '../athleteReportPdfEvolution'
@@ -15,6 +16,7 @@ import type {
 import type { AthleteHeatAnalyticsSummary } from '../heatAnalyticsStats'
 import { formatSessionDate } from '../sessionHistoryUtils'
 import type { AnalyticsReportCopy } from '../i18n/types'
+import { useI18n } from '../i18n'
 
 type Props = {
   athleteName: string
@@ -37,6 +39,8 @@ type Props = {
   heatAnalytics?: AthleteHeatAnalyticsSummary | null
   strengths: ReportCallout[]
   attention: ReportCallout[]
+  comparisonNotes?: string[]
+  comparisonTitle?: string
   domainRows: DomainSummaryRow[]
   r: AnalyticsReportCopy
   formatAvgLevel: (value: number | null) => string
@@ -85,10 +89,13 @@ export function AthleteReportPreview({
   heatAnalytics,
   strengths,
   attention,
+  comparisonNotes = [],
+  comparisonTitle,
   domainRows,
   r,
   formatAvgLevel,
 }: Props) {
+  const { t } = useI18n()
   const sideLabels = {
     success: r.successCol,
     avgLevel: r.avgLevel,
@@ -165,7 +172,17 @@ export function AthleteReportPreview({
         </div>
       </section>
 
-      {strengths.length > 0 || attention.length > 0 ? (
+      {comparisonNotes.length > 0 ? (
+        <section className="athlete-report__section">
+          <h2>{comparisonTitle ?? t('analytics.comparison.title')}</h2>
+          <p className="muted">{t('analytics.comparison.subtitle')}</p>
+          <ul className="result-comparison-notes__list">
+            {comparisonNotes.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </section>
+      ) : strengths.length > 0 || attention.length > 0 ? (
         <section className="athlete-report__section">
           <h2>{r.strengthsAttentionTitle}</h2>
           <div className="athlete-report__psych-callouts">
@@ -197,6 +214,12 @@ export function AthleteReportPreview({
         </section>
       ) : null}
 
+      {general.totalWaves > 0 ? (
+        <section className="athlete-report__section athlete-report__topic-page">
+          <WaveMatrixPanel matrix={general.matrix} totalWaves={general.totalWaves} />
+        </section>
+      ) : null}
+
       <section className="athlete-report__section">
         <h2>{r.domainSummaryTitle}</h2>
         <div className="table-wrap athlete-report__table-wrap">
@@ -206,7 +229,6 @@ export function AthleteReportPreview({
                 <th>{r.domainCol}</th>
                 <th>{r.keyMetricCol}</th>
                 <th>{r.valueCol}</th>
-                <th>{r.readingCol}</th>
               </tr>
             </thead>
             <tbody>
@@ -215,7 +237,6 @@ export function AthleteReportPreview({
                   <td>{row.domain}</td>
                   <td>{row.metric}</td>
                   <td>{row.value}</td>
-                  <td>{row.reading}</td>
                 </tr>
               ))}
             </tbody>
