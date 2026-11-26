@@ -6315,6 +6315,43 @@ input[type='checkbox']:indeterminate {
   font-size: 0.85rem;
 }
 
+.landing-spotlight__preview-athlete {
+  margin: 0.35rem 0 0.9rem;
+  font-size: 0.88rem;
+}
+
+.landing-showcase__kpis--custom {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.landing-spotlight__levels {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+}
+
+.landing-spotlight__levels li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid #e8eef3;
+  font-size: 0.88rem;
+  color: #4b5c6b;
+}
+
+.landing-spotlight__levels li:first-child {
+  border-top: 0;
+  padding-top: 0.15rem;
+}
+
+.landing-spotlight__levels strong {
+  color: #0a6a94;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .landing-features__tabs {
   display: flex;
   gap: 0.45rem;

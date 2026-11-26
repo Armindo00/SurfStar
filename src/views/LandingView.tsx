@@ -54,19 +54,15 @@ function PremiumPreview({ spotlight }: { spotlight: PremiumSpotlight }) {
     )
   }
 
-  if ('kpis' in preview) {
+  if ('levels' in preview) {
     return (
       <div className="landing-showcase__card landing-spotlight__preview-card">
         <header className="landing-showcase__head">
           <span className="landing-showcase__pill">{preview.pill}</span>
           <strong>{preview.spot}</strong>
         </header>
-        <div className="landing-sea__types">
-          {preview.chips.map((chip) => (
-            <span key={chip}>{chip}</span>
-          ))}
-        </div>
-        <div className="landing-showcase__kpis">
+        <p className="landing-spotlight__preview-athlete muted">{preview.athlete}</p>
+        <div className="landing-showcase__kpis landing-showcase__kpis--custom">
           {preview.kpis.map((kpi) => (
             <div key={kpi.label}>
               <span>{kpi.value}</span>
@@ -74,7 +70,14 @@ function PremiumPreview({ spotlight }: { spotlight: PremiumSpotlight }) {
             </div>
           ))}
         </div>
-        <p className="landing-spotlight__preview-foot muted">{preview.foot}</p>
+        <ul className="landing-spotlight__levels">
+          {preview.levels.map((level) => (
+            <li key={level.name}>
+              <span>{level.name}</span>
+              <strong>{level.rate}</strong>
+            </li>
+          ))}
+        </ul>
       </div>
     )
   }
