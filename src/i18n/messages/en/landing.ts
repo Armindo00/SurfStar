@@ -106,15 +106,21 @@ export const landing = {
           'Built-in timer with auto-start for timed drills',
         ],
         preview: {
-          pill: 'Custom training · Live register',
-          spot: 'Cutback focus · Carcavelos',
-          chips: ['Cutback', 'Re-entry', 'Tube', 'Layback'],
+          pill: 'Live stats · Custom',
+          spot: 'Cutback focus',
+          athlete: 'Athlete João Silva · Carcavelos',
           kpis: [
+            { value: '18', label: 'Attempts' },
             { value: '76%', label: 'Success' },
-            { value: '12:40', label: 'Timer left' },
-            { value: '18', label: 'Logs' },
+            { value: '9', label: 'Waves' },
+            { value: '12:40', label: 'Timer' },
           ],
-          foot: 'Level 3 cutback · Success · Frontside',
+          levels: [
+            { name: 'Cutback level 1', rate: '90% · 9/10' },
+            { name: 'Cutback level 2', rate: '75% · 6/8' },
+            { name: 'Cutback level 3', rate: '50% · 2/4' },
+            { name: 'Cutback ★', rate: '100% · 1/1' },
+          ],
         },
       },
       {

@@ -45,9 +45,9 @@ export type LandingPremiumSpotlightCustom = {
   preview: {
     pill: string
     spot: string
-    chips: readonly string[]
+    athlete: string
     kpis: readonly { value: string; label: string }[]
-    foot: string
+    levels: readonly { name: string; rate: string }[]
   }
 }
 

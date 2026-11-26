@@ -57,11 +57,21 @@ export const landing = {
         lead: 'SurfStar passe des exercices fixes à votre espace d\'entraînement — créez des sessions avec vos objectifs, règles, skills et niveaux, puis lancez-les en direct sur la plage.',
         bullets: ['Définissez objectifs et règles comme vous entraînez vraiment', 'Nommez vos boutons de skill, définissez niveaux et suivez réussite / échec', 'Minuteur intégré avec démarrage auto pour exercices chronométrés'],
         preview: {
-          pill: 'Entraînement personnalisé · Saisie en direct',
-          spot: 'Focus cutback · Carcavelos',
-          chips: ['Cutback', 'Re-entry', 'Tube', 'Layback'],
-          kpis: [{ value: '76%', label: 'Réussite' }, { value: '12:40', label: 'Minuteur' }, { value: '18', label: 'Saisies' }],
-          foot: 'Cutback niveau 3 · Réussite · Frontside',
+          pill: 'Stats en direct · Custom',
+          spot: 'Focus cutback',
+          athlete: 'Athlète João Silva · Carcavelos',
+          kpis: [
+            { value: '18', label: 'Tentatives' },
+            { value: '76%', label: 'Réussite' },
+            { value: '9', label: 'Vagues' },
+            { value: '12:40', label: 'Minuteur' },
+          ],
+          levels: [
+            { name: 'Cutback niveau 1', rate: '90% · 9/10' },
+            { name: 'Cutback niveau 2', rate: '75% · 6/8' },
+            { name: 'Cutback niveau 3', rate: '50% · 2/4' },
+            { name: 'Cutback ★', rate: '100% · 1/1' },
+          ],
         },
       },
       {
