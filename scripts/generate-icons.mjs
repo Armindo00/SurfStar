@@ -4,45 +4,20 @@ import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const sourcePath = join(root, 'public', 'logo-source.png')
+const logoSourcePath = join(root, 'public', 'logo-source.png')
+const iconSourcePath = join(root, 'public', 'icon-source.png')
 const logoPath = join(root, 'public', 'logo.png')
 
-/** Pad to square using the image edge color — no pixel edits inside the artwork */
-async function toSquarePng(inputPath) {
-  const image = sharp(inputPath)
-  const meta = await image.metadata()
-  if (!meta.width || !meta.height) throw new Error('Invalid logo source')
+/**
+ * In-app logo (wordmark) vs home-screen / PWA mark are different assets.
+ * - logo-source.png → logo.png (UI AppLogo)
+ * - icon-source.png → favicon + apple-touch + icon-* (installed / closed app)
+ */
+copyFileSync(logoSourcePath, logoPath)
+console.log('Copied public/logo-source.png → public/logo.png')
 
-  const sample = await sharp(inputPath).raw().toBuffer({ resolveWithObject: true })
-  const background = {
-    r: sample.data[0] ?? 8,
-    g: sample.data[1] ?? 24,
-    b: sample.data[2] ?? 50,
-  }
-
-  const side = Math.max(meta.width, meta.height)
-  const padLeft = Math.floor((side - meta.width) / 2)
-  const padRight = side - meta.width - padLeft
-  const padTop = Math.floor((side - meta.height) / 2)
-  const padBottom = side - meta.height - padTop
-
-  return sharp(inputPath)
-    .extend({
-      top: padTop,
-      bottom: padBottom,
-      left: padLeft,
-      right: padRight,
-      background,
-    })
-    .png()
-}
-
-// App UI uses the source file exactly as provided by the user
-copyFileSync(sourcePath, logoPath)
-console.log('Copied public/logo-source.png → public/logo.png (unchanged)')
-
-const squareLogo = await toSquarePng(sourcePath)
-const squareBuffer = await squareLogo.toBuffer()
+const iconMeta = await sharp(iconSourcePath).metadata()
+if (!iconMeta.width || !iconMeta.height) throw new Error('Invalid icon-source.png')
 
 const outputs = [
   { name: 'favicon.png', size: 32 },
@@ -54,9 +29,9 @@ const outputs = [
 ]
 
 for (const { name, size } of outputs) {
-  await sharp(squareBuffer)
-    .resize(size, size, { fit: 'fill' })
+  await sharp(iconSourcePath)
+    .resize(size, size, { fit: 'cover', position: 'centre' })
     .png()
     .toFile(join(root, 'public', name))
-  console.log(`Created public/${name} (${size}x${size})`)
+  console.log(`Created public/${name} (${size}x${size}) from icon-source.png`)
 }
