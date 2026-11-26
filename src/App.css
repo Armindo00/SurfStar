@@ -142,31 +142,38 @@ body {
   display: block;
   object-fit: contain;
   flex-shrink: 0;
+  width: auto;
 }
 
+/* Wordmark (icon + SURF STAR) — size by height so the mark stays readable */
 .app-logo--sm {
-  width: 2.25rem;
-  height: auto;
+  height: 1.85rem;
+  width: auto;
+  max-width: 7.5rem;
 }
 
 .app-logo--md {
-  width: 3rem;
-  height: auto;
+  height: 2.35rem;
+  width: auto;
+  max-width: 9.5rem;
 }
 
 .app-logo--lg {
-  width: 5.5rem;
-  height: auto;
+  height: 3.25rem;
+  width: auto;
+  max-width: 13rem;
 }
 
 .app-logo--xl {
-  width: min(9.5rem, 72vw);
-  height: auto;
+  height: min(4.25rem, 18vw);
+  width: auto;
+  max-width: min(17rem, 78vw);
 }
 
 .app-logo--2xl {
-  width: min(13.5rem, 78vw);
-  height: auto;
+  height: min(5.25rem, 22vw);
+  width: auto;
+  max-width: min(21rem, 86vw);
 }
 
 .role-switch {
