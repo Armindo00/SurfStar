@@ -20,14 +20,7 @@ export const landing = {
     leadMobile: 'Stats en direct sur la plage. Suivi du matériel, check-ins bien-être et analytique de saison pour toute l\'équipe.',
     checks: ['Stats en direct à chaque session', 'Quiver et check-ins bien-être', 'Athlètes inclus gratuitement', 'Annulez à tout moment'],
     showcase: {
-      pill: 'Stats en direct · Session active',
-      spot: 'Carcavelos · Entraînement technique',
-      success: 'Réussite',
-      waves: 'Vagues',
-      athletes: 'Athlètes',
-      rail: 'Rail',
-      topTurn: 'Top turn',
-      progressive: 'Progressive',
+      imageAlt: 'Écran SurfStar sur téléphone : statistiques en direct d’une session technique',
     },
   },
   whatsNew: {

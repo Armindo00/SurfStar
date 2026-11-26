@@ -240,49 +240,25 @@ export function LandingView() {
             </ul>
           </div>
 
-          <div className="landing-showcase landing-showcase--desktop" aria-hidden="true">
-            <div className="landing-showcase__glow" />
-            <div className="landing-showcase__card">
-              <header className="landing-showcase__head">
-                <span className="landing-showcase__pill">{showcase.pill}</span>
-                <strong>{showcase.spot}</strong>
-              </header>
-              <div className="landing-showcase__kpis">
-                <div>
-                  <span>87%</span>
-                  <small>{showcase.success}</small>
-                </div>
-                <div>
-                  <span>24</span>
-                  <small>{showcase.waves}</small>
-                </div>
-                <div>
-                  <span>3</span>
-                  <small>{showcase.athletes}</small>
-                </div>
-              </div>
-              <div className="landing-showcase__bars">
-                <div className="landing-showcase__bar">
-                  <span className="landing-showcase__bar-label">{showcase.rail}</span>
-                  <div className="landing-showcase__bar-track" aria-hidden="true">
-                    <span className="landing-showcase__bar-fill" style={{ width: '82%' }} />
-                  </div>
-                </div>
-                <div className="landing-showcase__bar">
-                  <span className="landing-showcase__bar-label">{showcase.topTurn}</span>
-                  <div className="landing-showcase__bar-track" aria-hidden="true">
-                    <span className="landing-showcase__bar-fill" style={{ width: '74%' }} />
-                  </div>
-                </div>
-                <div className="landing-showcase__bar">
-                  <span className="landing-showcase__bar-label">{showcase.progressive}</span>
-                  <div className="landing-showcase__bar-track" aria-hidden="true">
-                    <span className="landing-showcase__bar-fill" style={{ width: '91%' }} />
-                  </div>
-                </div>
-              </div>
+          <figure className="landing-phone">
+            <div className="landing-phone__glow" aria-hidden="true" />
+            <div className="landing-phone__device" aria-hidden="true">
+              <span className="landing-phone__btn landing-phone__btn--silent" />
+              <span className="landing-phone__btn landing-phone__btn--vol-up" />
+              <span className="landing-phone__btn landing-phone__btn--vol-down" />
+              <span className="landing-phone__btn landing-phone__btn--power" />
             </div>
-          </div>
+            <div className="landing-phone__frame">
+              <img
+                className="landing-phone__screen"
+                src="/landing/hero-live.png"
+                alt={showcase.imageAlt}
+                width={390}
+                height={860}
+                decoding="async"
+              />
+            </div>
+          </figure>
         </section>
 
         <section className="landing-section landing-whats-new" id="whats-new">
