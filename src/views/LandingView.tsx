@@ -254,7 +254,7 @@ export function LandingView() {
                 src="/landing/hero-live.png"
                 alt={showcase.imageAlt}
                 width={390}
-                height={842}
+                height={846}
                 decoding="async"
               />
             </div>
