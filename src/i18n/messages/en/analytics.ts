@@ -61,9 +61,9 @@ export const analytics = {
     potentialShare:
       'Waves with potential {{withPct}}% ({{withCount}}) · without potential {{withoutPct}}% ({{withoutCount}}).',
     aproveitamentoVsValorizacao:
-      'Success {{aproveitamento}}% · upgrade {{valorizacao}}% (gap {{delta}} pp).',
+      'Success {{aproveitamento}}% · valuing wave {{valorizacao}}% (gap {{delta}} pp).',
     aproveitamentoOnly: 'Success rate {{aproveitamento}}% in this period.',
-    valorizacaoOnly: 'Upgrade rate {{valorizacao}}% in this period.',
+    valorizacaoOnly: 'Valuing wave {{valorizacao}}% in this period.',
     technicalVsCombo:
       'Technical success {{technical}}% · combos {{combo}}% (gap {{delta}} pp).',
     technicalOnly: 'Technical success {{technical}}% in this period.',
@@ -80,7 +80,7 @@ export const analytics = {
     competition: 'Competition',
     wavesLogged: '{{count}} waves logged',
     withPotential: '{{count}} with potential',
-    waveQualityHint: 'Success {{aproveitamento}}% · Upgrade {{valorizacao}}%',
+    waveQualityHint: 'Success {{aproveitamento}}% · Valuing wave {{valorizacao}}%',
     noSessionsInPeriod: 'No sessions in period',
     noHeatsInPeriod: 'No heats in period',
     championshipWins: '{{count}} championship win',
@@ -127,7 +127,7 @@ export const analytics = {
   topicEyebrows: {
     performance: 'Levels & stars',
     volume: 'Sessions & waves',
-    waveQuality: 'Success & upgrade',
+    waveQuality: 'Success & valuing wave',
     technical: 'Maneuver breakdown',
     combos: 'Level-by-level detail',
     competition: 'Heats & scores',
@@ -171,7 +171,7 @@ export const analytics = {
     matrixCellLowLowBlurb: 'No-potential waves with a lower result. Less differentiation in this set.',
     matrixCellCount: '{{count}} waves',
     aproveitamentoRate: 'Success rate',
-    valorizacaoRate: 'Wave upgrade',
+    valorizacaoRate: 'Valuing wave',
     rateHint: '{{made}}/{{total}}',
     noPotentialWaves: 'No potential waves in this period.',
     noNoPotentialSurfed: 'No surfed no-potential waves.',
