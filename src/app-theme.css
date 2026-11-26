@@ -958,6 +958,28 @@ body {
   border-top-color: #d0dae4 !important;
 }
 
+.app-shell .history-agenda__list {
+  background: #ffffff !important;
+  border-color: #d0dae4 !important;
+}
+
+.app-shell .history-agenda__row {
+  background: #ffffff !important;
+  border-bottom-color: #e8eef2 !important;
+  color: #0c1520 !important;
+}
+
+.app-shell .history-agenda__title,
+.app-shell .history-agenda__day strong {
+  color: #0a3d5c !important;
+}
+
+.app-shell .history-agenda__mode,
+.app-shell .history-agenda__metric strong,
+.app-shell .history-agenda__month-label {
+  color: var(--ss-primary) !important;
+}
+
 .app-shell .history-detail-hero {
   background: linear-gradient(180deg, rgba(10, 106, 148, 0.1), rgba(15, 28, 36, 0.06) 72%) !important;
 }
