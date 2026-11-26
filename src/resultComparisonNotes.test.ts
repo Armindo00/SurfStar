@@ -44,7 +44,8 @@ describe('buildResultComparisonNotes', () => {
     })
 
     expect(notes.some((n) => n.includes('Low potential / low result'))).toBe(true)
-    expect(notes.some((n) => n.includes('Execution 50%'))).toBe(true)
+    expect(notes.some((n) => n.includes('Success 50%'))).toBe(true)
+    expect(notes.some((n) => n.includes('valuing wave 20%'))).toBe(true)
     expect(notes.some((n) => n.includes('Technical success 70%'))).toBe(true)
     expect(notes.join(' ').toLowerCase()).not.toMatch(/should|must|need|requer|necessita|suger/)
   })
