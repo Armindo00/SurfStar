@@ -7,9 +7,9 @@ const labels: ComparisonNoteLabels = {
   potentialShare:
     'Waves with potential {{withPct}}% ({{withCount}}) · without potential {{withoutPct}}% ({{withoutCount}}).',
   aproveitamentoVsValorizacao:
-    'Execution {{aproveitamento}}% · upgrade {{valorizacao}}% (gap {{delta}} pp).',
-  aproveitamentoOnly: 'Execution rate {{aproveitamento}}% in this period.',
-  valorizacaoOnly: 'Upgrade rate {{valorizacao}}% in this period.',
+    'Success {{aproveitamento}}% · valuing wave {{valorizacao}}% (gap {{delta}} pp).',
+  aproveitamentoOnly: 'Success rate {{aproveitamento}}% in this period.',
+  valorizacaoOnly: 'Valuing wave {{valorizacao}}% in this period.',
   technicalVsCombo:
     'Technical success {{technical}}% · combos {{combo}}% (gap {{delta}} pp).',
   technicalOnly: 'Technical success {{technical}}% in this period.',
