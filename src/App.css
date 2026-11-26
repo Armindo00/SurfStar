@@ -4612,6 +4612,170 @@ input[type='checkbox']:indeterminate {
   text-align: center;
 }
 
+.history-agenda {
+  padding: 0 1rem 1.5rem;
+}
+
+.history-agenda__intro {
+  margin-bottom: 1rem;
+}
+
+.history-agenda__title {
+  margin: 0 0 0.35rem;
+  font-family: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #0a3d5c;
+}
+
+.history-agenda__sub {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.history-agenda__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
+}
+
+.history-agenda__filter {
+  font-size: 0.78rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.history-agenda__month {
+  margin-bottom: 1.1rem;
+}
+
+.history-agenda__month-label {
+  margin: 0 0 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ss-primary);
+}
+
+.history-agenda__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid var(--ss-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.history-agenda__row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 3.25rem 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  text-align: left;
+  padding: 0.9rem 0.95rem;
+  border: 0;
+  border-bottom: 1px solid #e8eef2;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.history-agenda__row:last-child {
+  border-bottom: 0;
+}
+
+.history-agenda__row:hover,
+.history-agenda__row:focus-visible {
+  background: rgba(10, 106, 148, 0.04);
+  outline: none;
+}
+
+.history-agenda__day {
+  text-align: center;
+}
+
+.history-agenda__day strong {
+  display: block;
+  font-family: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: #0a3d5c;
+}
+
+.history-agenda__day span {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ss-muted);
+}
+
+.history-agenda__mid {
+  min-width: 0;
+}
+
+.history-agenda__mode {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ss-primary);
+  margin-bottom: 0.12rem;
+}
+
+.history-agenda__spot {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 0.15rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-agenda__meta {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ss-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-agenda__metric {
+  text-align: right;
+  min-width: 3.4rem;
+}
+
+.history-agenda__metric strong {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ss-primary);
+}
+
+.history-agenda__metric span {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ss-muted);
+}
+
+/* Legacy card styles kept for theme overrides / older screenshots */
 .history-list {
   list-style: none;
   margin: 0;

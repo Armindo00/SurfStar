@@ -6,7 +6,20 @@ import {
   computeSessionStats,
   computeWaveStats,
 } from './sessionStats'
-import type { SurfSpot, TrainingSession } from './types'
+import type { SurfSpot, TrainingMode, TrainingSession } from './types'
+
+export type HistoryModeFilter = 'all' | 'tecnico' | 'combos' | 'heats' | 'other'
+
+export type SessionAgendaMetric = {
+  value: string
+  kind: 'success' | 'heats' | 'attempts' | 'logs' | 'done'
+}
+
+export type SessionMonthGroup = {
+  key: string
+  label: string
+  sessions: TrainingSession[]
+}
 
 export function resolveSessionSpotName(
   session: Pick<TrainingSession, 'spotId' | 'spotName'>,
@@ -157,6 +170,103 @@ export function athleteNamesForSession(
   if (names.length === 0) return 'No athletes'
   if (names.length <= 2) return names.join(', ')
   return `${names.slice(0, 2).join(', ')} +${names.length - 2}`
+}
+
+export function sessionMatchesHistoryFilter(
+  mode: TrainingMode,
+  filter: HistoryModeFilter,
+): boolean {
+  if (filter === 'all') return true
+  if (filter === 'tecnico') return mode === 'tecnico'
+  if (filter === 'combos') return mode === 'combos'
+  if (filter === 'heats') return mode === 'heats' || mode === 'campeonato'
+  return mode === 'custom' || mode === 'sea-analysis'
+}
+
+function averageRate(rates: number[]): number | null {
+  if (rates.length === 0) return null
+  return Math.round(rates.reduce((sum, rate) => sum + rate, 0) / rates.length)
+}
+
+export function buildCoachSessionAgendaMetric(session: TrainingSession): SessionAgendaMetric {
+  if (session.mode === 'tecnico') {
+    const rates = session.athleteIds.map(
+      (athleteId) => computeSessionStats(session, athleteId).overallSuccessRate,
+    )
+    const avg = averageRate(rates)
+    return { value: avg === null ? '—' : `${avg}%`, kind: 'success' }
+  }
+
+  if (session.mode === 'combos') {
+    const rates = session.athleteIds.map(
+      (athleteId) => computeComboSessionStats(session, athleteId).overallSuccessRate,
+    )
+    const avg = averageRate(rates)
+    return { value: avg === null ? '—' : `${avg}%`, kind: 'success' }
+  }
+
+  if (session.mode === 'heats' || session.mode === 'campeonato') {
+    const finished = session.heats.filter(heatIsFinished).length
+    return { value: String(finished), kind: 'heats' }
+  }
+
+  if (session.mode === 'custom') {
+    if (session.athleteIds.length === 0) return { value: '—', kind: 'done' }
+    if (session.athleteIds.length === 1) {
+      const stats = computeCustomSessionStats(session, session.athleteIds[0]!)
+      return { value: `${stats.overallSuccessRate}%`, kind: 'success' }
+    }
+    const rates = session.athleteIds.map(
+      (athleteId) => computeCustomSessionStats(session, athleteId).overallSuccessRate,
+    )
+    const avg = averageRate(rates)
+    return { value: avg === null ? '—' : `${avg}%`, kind: 'success' }
+  }
+
+  if (session.mode === 'sea-analysis') {
+    const logs = session.seaAnalysis?.logs.length ?? 0
+    return logs > 0 ? { value: String(logs), kind: 'logs' } : { value: '—', kind: 'done' }
+  }
+
+  return { value: '—', kind: 'done' }
+}
+
+export function formatAgendaDayParts(iso: string): { day: string; weekday: string } {
+  const date = new Date(iso)
+  return {
+    day: formatAppDate(date, { day: 'numeric' }),
+    weekday: formatAppDate(date, { weekday: 'short' }).replace(/\.$/, ''),
+  }
+}
+
+export function sessionMonthKey(iso: string): string {
+  const date = new Date(iso)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}`
+}
+
+export function formatSessionMonthLabel(iso: string): string {
+  return formatAppDate(iso, { month: 'long', year: 'numeric' })
+}
+
+export function groupSessionsByMonth(sessions: TrainingSession[]): SessionMonthGroup[] {
+  const groups: SessionMonthGroup[] = []
+  const index = new Map<string, SessionMonthGroup>()
+
+  for (const session of sessions) {
+    const endedAt = session.endedAt ?? session.startedAt
+    const key = sessionMonthKey(endedAt)
+    let group = index.get(key)
+    if (!group) {
+      group = { key, label: formatSessionMonthLabel(endedAt), sessions: [] }
+      index.set(key, group)
+      groups.push(group)
+    }
+    group.sessions.push(session)
+  }
+
+  return groups
 }
 
 export function heatSessionSummary(session: TrainingSession): string[] {
