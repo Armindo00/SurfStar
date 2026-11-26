@@ -242,14 +242,19 @@ export function LandingView() {
 
           <figure className="landing-phone">
             <div className="landing-phone__glow" aria-hidden="true" />
+            <div className="landing-phone__device" aria-hidden="true">
+              <span className="landing-phone__btn landing-phone__btn--silent" />
+              <span className="landing-phone__btn landing-phone__btn--vol-up" />
+              <span className="landing-phone__btn landing-phone__btn--vol-down" />
+              <span className="landing-phone__btn landing-phone__btn--power" />
+            </div>
             <div className="landing-phone__frame">
-              <span className="landing-phone__island" aria-hidden="true" />
               <img
                 className="landing-phone__screen"
                 src="/landing/hero-live.png"
                 alt={showcase.imageAlt}
                 width={390}
-                height={740}
+                height={842}
                 decoding="async"
               />
             </div>
