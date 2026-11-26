@@ -27,14 +27,7 @@ export const landing = {
       'Cancel anytime',
     ],
     showcase: {
-      pill: 'Live stats · Active session',
-      spot: 'Carcavelos · Technical training',
-      success: 'Success',
-      waves: 'Waves',
-      athletes: 'Athletes',
-      rail: 'Rail',
-      topTurn: 'Top turn',
-      progressive: 'Progressive',
+      imageAlt: 'SurfStar phone screen: live statistics from a technical session',
     },
   },
   whatsNew: {

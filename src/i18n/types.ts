@@ -188,14 +188,7 @@ export type MessageCatalog = {
       leadMobile: string
       checks: readonly string[]
       showcase: {
-        pill: string
-        spot: string
-        success: string
-        waves: string
-        athletes: string
-        rail: string
-        topTurn: string
-        progressive: string
+        imageAlt: string
       }
     }
     whatsNew: {

@@ -20,14 +20,7 @@ export const landing = {
     leadMobile: 'Estadísticas en directo en la playa. Gestión de equipamiento, check-ins de bienestar y análisis de temporada para todo el equipo.',
     checks: ['Estadísticas en directo en cada sesión', 'Quiver y check-ins de bienestar', 'Atletas incluidos gratis', 'Cancela cuando quieras'],
     showcase: {
-      pill: 'Estadísticas en directo · Sesión activa',
-      spot: 'Carcavelos · Entrenamiento técnico',
-      success: 'Éxito',
-      waves: 'Olas',
-      athletes: 'Atletas',
-      rail: 'Rail',
-      topTurn: 'Top turn',
-      progressive: 'Progressive',
+      imageAlt: 'Pantalla SurfStar en el móvil: estadísticas en directo de una sesión técnica',
     },
   },
   whatsNew: {
