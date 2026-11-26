@@ -4622,7 +4622,6 @@ input[type='checkbox']:indeterminate {
 
 .history-agenda__title {
   margin: 0 0 0.35rem;
-  font-family: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
   font-size: 1.7rem;
   font-weight: 700;
   line-height: 1.15;
@@ -4702,8 +4701,8 @@ input[type='checkbox']:indeterminate {
 
 .history-agenda__day strong {
   display: block;
-  font-family: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
   font-size: 1.35rem;
+  font-weight: 700;
   line-height: 1;
   color: #0a3d5c;
 }
