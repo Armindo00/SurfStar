@@ -156,17 +156,23 @@ export function EvolutionLineChart({
 
   const [metric, setMetric] = useState<EvolutionMetric>(lockedMetric ?? defaultMetric)
 
+  /** Aproveitamento is only for the locked wave-quality chart — hide it from free tabs. */
+  const tabMetrics = useMemo(
+    () =>
+      metrics.filter(
+        (entry) => entry.id !== 'aproveitamento' || lockedMetric === 'aproveitamento',
+      ),
+    [metrics, lockedMetric],
+  )
+
   const availableMetrics = useMemo(() => {
-    const filtered = metrics.filter((entry) => {
-      if (entry.id === 'aproveitamento' && lockedMetric !== 'aproveitamento') return false
-      return metricHasData(entry.id, points)
-    })
+    const filtered = tabMetrics.filter((entry) => metricHasData(entry.id, points))
     if (lockedMetric) {
       const locked = metrics.find((entry) => entry.id === lockedMetric)
       return locked ? [locked] : filtered
     }
     return filtered
-  }, [metrics, points, lockedMetric])
+  }, [tabMetrics, metrics, points, lockedMetric])
 
   const hasAnyData = availableMetrics.length > 0
 
@@ -177,7 +183,7 @@ export function EvolutionLineChart({
     }
   }, [availableMetrics, metric, defaultMetric])
 
-  const activeMetric = metrics.find((entry) => entry.id === metric) ?? metrics[0]
+  const activeMetric = tabMetrics.find((entry) => entry.id === metric) ?? tabMetrics[0] ?? metrics[0]
   const activeHasData = metricHasData(metric, points)
   const periodCol = periodColumnLabel ?? copy.periodColumn
 
@@ -243,7 +249,7 @@ export function EvolutionLineChart({
               role="tablist"
               aria-label={copy.metricTabsAria}
             >
-              {metrics.map((entry) => {
+              {tabMetrics.map((entry) => {
                 const enabled = metricHasData(entry.id, points)
                 return (
                   <button
