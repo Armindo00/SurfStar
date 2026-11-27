@@ -8,6 +8,9 @@ type Props = {
   onBack?: () => void
   backLabel?: string
   showTagline?: boolean
+  /** Harbor Desk layout used for coach sign-up. */
+  variant?: 'split' | 'desk'
+  stepLabel?: string
 }
 
 export function AuthBrandMark({ showTagline = false }: { showTagline?: boolean }) {
@@ -27,8 +30,37 @@ export function AuthBrandMark({ showTagline = false }: { showTagline?: boolean }
   )
 }
 
-export function AuthShell({ children, onBack, backLabel, showTagline = false }: Props) {
+export function AuthShell({
+  children,
+  onBack,
+  backLabel,
+  showTagline = false,
+  variant = 'split',
+  stepLabel,
+}: Props) {
   const { t } = useI18n()
+
+  if (variant === 'desk') {
+    return (
+      <div className="auth-page auth-page--desk">
+        <header className="auth-desk-bar">
+          <div className="auth-desk-bar__brand">
+            <AppLogo size="md" />
+            {onBack ? (
+              <button type="button" className="auth-desk-bar__back" onClick={onBack}>
+                ← {backLabel ?? t('common.back')}
+              </button>
+            ) : null}
+          </div>
+          <div className="auth-desk-bar__meta">
+            {stepLabel ? <span className="auth-desk-bar__step">{stepLabel}</span> : null}
+            <LanguagePicker compact />
+          </div>
+        </header>
+        <main className="auth-desk-main">{children}</main>
+      </div>
+    )
+  }
 
   return (
     <div className="auth-page">

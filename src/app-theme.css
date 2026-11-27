@@ -3888,3 +3888,333 @@ input:focus, select:focus, textarea:focus,
   border-color: #b8c5d2 !important;
   color: #0c1520 !important;
 }
+
+/* —— Auth Harbor Desk (coach sign-up 1C) —— */
+.auth-page--desk {
+  display: flex !important;
+  flex-direction: column;
+  min-height: 100svh;
+  background: #f7f9fb !important;
+  grid-template-columns: none !important;
+}
+
+.auth-desk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem clamp(1rem, 3vw, 1.75rem);
+  background: #ffffff;
+  border-bottom: 1px solid #e5ebf0;
+}
+
+.auth-desk-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.auth-desk-bar__back {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #5b6b78;
+  cursor: pointer;
+}
+
+.auth-desk-bar__back:hover {
+  color: #0a6a94;
+}
+
+.auth-desk-bar__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.auth-desk-bar__step {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f1c24;
+  white-space: nowrap;
+}
+
+.auth-desk-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.auth-desk {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .auth-desk {
+    grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+    gap: 1.5rem;
+  }
+}
+
+.auth-desk__main,
+.auth-desk__side {
+  background: #ffffff;
+  border: 1px solid #e5ebf0;
+  border-radius: 14px;
+  padding: clamp(1.15rem, 2.5vw, 1.6rem);
+}
+
+.auth-desk__side {
+  position: sticky;
+  top: 1rem;
+}
+
+.auth-desk__title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.35rem, 2.5vw, 1.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0c1520;
+}
+
+.auth-desk__lead {
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.auth-form--desk {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.auth-field-row {
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 640px) {
+  .auth-field-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.auth-desk__side-title {
+  margin: 0 0 0.85rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5b6b78;
+  font-weight: 800;
+}
+
+.auth-desk__price {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.auth-desk__price strong {
+  font-size: 1.1rem;
+  color: #0c1520;
+}
+
+.auth-desk__price b {
+  font-size: 1.4rem;
+  color: #0a6a94;
+  font-variant-numeric: tabular-nums;
+}
+
+.auth-desk__side .billing-toggle {
+  margin-bottom: 1rem;
+}
+
+.auth-desk__features {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.auth-desk__features li {
+  position: relative;
+  padding-left: 0.95rem;
+  font-size: 0.86rem;
+  color: #334155;
+}
+
+.auth-desk__features li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0a6a94;
+}
+
+.auth-desk__secure {
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eef2f6;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.auth-page--desk .auth-billing-block__title {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0a6a94;
+  font-weight: 800;
+}
+
+/* —— Checkout Split Horizon (2A) —— */
+.checkout-split {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 1fr;
+  background: #ffffff;
+}
+
+@media (min-width: 960px) {
+  .checkout-split {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  }
+}
+
+.checkout-split__hero {
+  position: relative;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.75rem, 4vw, 2.5rem);
+  color: #ffffff;
+  overflow: hidden;
+  background:
+    linear-gradient(160deg, rgba(6, 40, 58, 0.55), rgba(10, 106, 148, 0.78)),
+    radial-gradient(ellipse at 30% 20%, rgba(125, 211, 252, 0.28), transparent 55%),
+    linear-gradient(180deg, #0b4f6c 0%, #083049 55%, #062536 100%);
+}
+
+@media (min-width: 960px) {
+  .checkout-split__hero {
+    display: flex;
+    min-height: 100svh;
+  }
+}
+
+.checkout-split__hero-glow {
+  position: absolute;
+  inset: auto -20% -30% -10%;
+  height: 55%;
+  background: radial-gradient(ellipse at center, rgba(14, 165, 233, 0.35), transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.checkout-split__hero-top,
+.checkout-split__hero-copy,
+.checkout-split__steps {
+  position: relative;
+  z-index: 1;
+}
+
+.checkout-split__hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.checkout-split__logo {
+  filter: brightness(0) invert(1);
+}
+
+.checkout-split__hero-copy h1 {
+  margin: 2.5rem 0 0.85rem;
+  font-family: 'Fraunces', 'Iowan Old Style', Palatino, serif;
+  font-size: clamp(1.85rem, 3.2vw, 2.35rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.checkout-split__hero-copy p {
+  margin: 0;
+  max-width: 32ch;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.checkout-split__steps {
+  display: flex;
+  gap: 0.85rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.checkout-split__steps span {
+  opacity: 0.45;
+}
+
+.checkout-split__steps-on {
+  opacity: 1 !important;
+  font-weight: 700;
+}
+
+.checkout-split__panel {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  background:
+    radial-gradient(ellipse 80% 50% at 100% 0%, rgba(10, 106, 148, 0.08), transparent 55%),
+    #ffffff;
+  min-height: 100svh;
+}
+
+.checkout-split__card {
+  width: 100%;
+  max-width: 480px;
+}
+
+.checkout-split__head h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0c1520;
+}
+
+.checkout-split__head p {
+  margin: 0 0 1.25rem;
+}
+
+.checkout-split .checkout-summary {
+  margin-top: 1rem;
+}
+
+.checkout-split .checkout-features {
+  margin: 1rem 0 1.15rem;
+}
+
+.checkout-split .language-picker__trigger {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
+}

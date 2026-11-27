@@ -344,6 +344,12 @@ export const ui = {
     leadManual:
       'a tua conta foi criada mas o acesso está bloqueado até um administrador aprovar o teu pedido de pagamento.',
     leadStripe: 'confirma o teu plano para entrares na app.',
+    splitHeroTitle: 'Activa o teu espaço de treino.',
+    splitHeroLead: 'confirma o plano e paga com Stripe em segurança.',
+    splitPanelLead: 'Pagamento recorrente. Sem fidelização obrigatória.',
+    progressLabel: 'Progresso do checkout',
+    stepAccount: '1 · Conta',
+    stepPayment: '2 · Pagamento',
     teamAcademyTitle: 'Team Academy requer aprovação',
     teamAcademyBody:
       'Este plano não está disponível para checkout imediato. Submete um pedido e ativamos a tua organização após revisão e pagamento.',
