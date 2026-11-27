@@ -224,7 +224,8 @@ export function CheckoutView() {
         auth?.role === 'treinador' ? auth.organizationId : undefined,
         selectedBillingInterval,
       )
-      window.open(url, '_blank', 'noopener,noreferrer')
+      // Same-tab redirect - window.open is often blocked on mobile browsers.
+      window.location.assign(url)
       setAwaitingPayment(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : t('ui.checkout.couldNotStartCheckout'))
