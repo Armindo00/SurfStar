@@ -1302,7 +1302,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             auth.organizationId,
             selectedBillingInterval,
           )
-          window.open(url, '_blank', 'noopener,noreferrer')
+          // Same-tab redirect — window.open is often blocked on mobile browsers.
+          window.location.assign(url)
           showToast(t('errors.completePaymentToActivate'), 'info')
           return { ok: true as const }
         }
