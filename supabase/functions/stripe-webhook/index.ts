@@ -41,6 +41,42 @@ function planFromMetadata(metadata: Stripe.Metadata | null | undefined): string 
   return null
 }
 
+/** Resolve plan from the pending row created at checkout start. */
+async function planFromPendingCoach(coachId: string): Promise<string | null> {
+  const { data: coachSub } = await supabase
+    .from('coach_subscriptions')
+    .select('plan_id')
+    .eq('coach_id', coachId)
+    .maybeSingle()
+
+  if (coachSub?.plan_id === 'team' || coachSub?.plan_id === 'club' || coachSub?.plan_id === 'organization') {
+    return coachSub.plan_id
+  }
+
+  const { data: membership } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('profile_id', coachId)
+    .eq('status', 'active')
+    .order('accepted_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (!membership?.organization_id) return null
+
+  const { data: orgSub } = await supabase
+    .from('organization_subscriptions')
+    .select('plan_id')
+    .eq('organization_id', membership.organization_id)
+    .maybeSingle()
+
+  if (orgSub?.plan_id === 'team' || orgSub?.plan_id === 'club' || orgSub?.plan_id === 'organization') {
+    return orgSub.plan_id
+  }
+
+  return null
+}
+
 async function upsertSubscription(params: {
   coachId: string
   planId: string
@@ -96,6 +132,33 @@ async function upsertSubscription(params: {
   }
 }
 
+async function ensureSubscriptionMetadata(
+  subscriptionId: string,
+  coachId: string,
+  planId: string,
+  organizationId?: string | null,
+) {
+  try {
+    const sub = await stripe.subscriptions.retrieve(subscriptionId)
+    const next = {
+      ...sub.metadata,
+      coach_id: coachId,
+      plan_id: planId,
+    } as Record<string, string>
+    if (organizationId) next.organization_id = organizationId
+    if (
+      sub.metadata?.coach_id === next.coach_id &&
+      sub.metadata?.plan_id === next.plan_id &&
+      (!organizationId || sub.metadata?.organization_id === organizationId)
+    ) {
+      return
+    }
+    await stripe.subscriptions.update(subscriptionId, { metadata: next })
+  } catch (err) {
+    console.error('Failed to backfill subscription metadata', subscriptionId, err)
+  }
+}
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const coachId = session.client_reference_id
   if (!coachId) {
@@ -105,12 +168,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   let planId =
     planFromMetadata(session.metadata) ??
-    planFromPaymentLinkId(typeof session.payment_link === 'string' ? session.payment_link : session.payment_link?.id)
+    planFromPaymentLinkId(
+      typeof session.payment_link === 'string' ? session.payment_link : session.payment_link?.id,
+    )
 
   if (!planId && session.subscription) {
     const subId = typeof session.subscription === 'string' ? session.subscription : session.subscription.id
     const sub = await stripe.subscriptions.retrieve(subId)
     planId = planFromMetadata(sub.metadata)
+  }
+
+  if (!planId) {
+    planId = await planFromPendingCoach(coachId)
   }
 
   if (!planId) {
@@ -121,6 +190,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   let stripeSubscriptionId: string | null = null
   let currentPeriodEnd: number | null = null
   let status = 'active'
+  let organizationId = session.metadata?.organization_id ?? null
 
   if (session.subscription) {
     const subId = typeof session.subscription === 'string' ? session.subscription : session.subscription.id
@@ -128,6 +198,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     stripeSubscriptionId = sub.id
     currentPeriodEnd = sub.current_period_end
     status = sub.status === 'trialing' ? 'trialing' : sub.status === 'active' ? 'active' : sub.status
+    if (!organizationId) organizationId = sub.metadata?.organization_id ?? null
   }
 
   await upsertSubscription({
@@ -138,6 +209,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     stripeSubscriptionId,
     currentPeriodEnd,
   })
+
+  if (stripeSubscriptionId) {
+    await ensureSubscriptionMetadata(stripeSubscriptionId, coachId, planId, organizationId)
+  }
 }
 
 async function handleSubscriptionUpdated(sub: Stripe.Subscription) {
@@ -160,6 +235,10 @@ async function handleSubscriptionUpdated(sub: Stripe.Subscription) {
   if (!coachId) {
     console.error('subscription update missing coach_id metadata', sub.id)
     return
+  }
+
+  if (!planId) {
+    planId = await planFromPendingCoach(coachId)
   }
 
   if (!planId) {

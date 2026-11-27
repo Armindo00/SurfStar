@@ -1,5 +1,5 @@
 import { getSupabase } from './lib/supabase'
-import type { PlanId } from './plans'
+import type { BillingInterval, PlanId } from './plans'
 import { cloudFetchOrganizationContext } from './organizationApi'
 
 export type SubscriptionStatus = 'active' | 'trialing' | 'pending' | 'canceled'
@@ -264,8 +264,18 @@ export function getStripeBillingPortalUrl(): string | null {
 }
 
 type ManageResult =
-  | { ok: true; url?: string; requires_checkout?: boolean; use_portal?: boolean; message?: string; cancel_at_period_end?: boolean; current_period_end?: string | null; plan_id?: PlanId; unchanged?: boolean }
-  | { ok: false; error: string }
+  | {
+      ok: true
+      url?: string
+      requires_checkout?: boolean
+      use_portal?: boolean
+      message?: string
+      cancel_at_period_end?: boolean
+      current_period_end?: string | null
+      plan_id?: PlanId
+      unchanged?: boolean
+    }
+  | { ok: false; error: string; use_payment_link?: boolean }
 
 function appReturnUrl(): string {
   return `${window.location.origin}${window.location.pathname}`
@@ -281,10 +291,38 @@ async function invokeSubscriptionManage(body: Record<string, unknown>): Promise<
   }
 
   if (!data?.ok) {
-    return { ok: false, error: data?.error ?? 'Request failed.' }
+    return {
+      ok: false,
+      error: data?.error ?? 'Request failed.',
+      use_payment_link: Boolean(data?.use_payment_link),
+    }
   }
 
   return data as ManageResult & { ok: true }
+}
+
+/** Hosted Checkout Session with success/cancel redirect back to the app. */
+export async function cloudCreateStripeCheckoutSession(params: {
+  planId: PlanId
+  billingInterval: BillingInterval
+  organizationId?: string
+}): Promise<{ ok: true; url: string } | { ok: false; error: string; usePaymentLink?: boolean }> {
+  const result = await invokeSubscriptionManage({
+    action: 'create_checkout',
+    plan_id: params.planId,
+    billing_interval: params.billingInterval,
+    organization_id: params.organizationId,
+  })
+
+  if (result.ok && result.url) {
+    return { ok: true, url: result.url }
+  }
+
+  return {
+    ok: false,
+    error: result.ok ? 'Checkout URL unavailable.' : result.error,
+    usePaymentLink: !result.ok ? result.use_payment_link : true,
+  }
 }
 
 export async function cloudOpenBillingPortal(): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
