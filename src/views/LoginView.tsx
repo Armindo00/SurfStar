@@ -16,7 +16,6 @@ import { resolveAuthErrorMessage } from '../authErrors'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import {
   ANNUAL_FREE_MONTHS,
-  formatPlanPrice,
   formatPlanPriceWithSuffix,
   formatPlanTotalPrice,
   getIncludedFeatureLabels,
