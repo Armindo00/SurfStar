@@ -3891,10 +3891,21 @@ input:focus, select:focus, textarea:focus,
 
 /* —— Auth Harbor Desk (coach sign-up 1C) —— */
 .auth-page--desk {
+  --desk-ink: #0c1520;
+  --desk-muted: #5a6b79;
+  --desk-line: #d5e3ec;
+  --desk-paper: #ffffff;
+  --desk-mist: #eaf4f9;
+  --desk-sea: #0a6a94;
+  --desk-sea-soft: rgba(10, 106, 148, 0.08);
   display: flex !important;
   flex-direction: column;
   min-height: 100svh;
-  background: #f7f9fb !important;
+  color: var(--desk-ink);
+  background:
+    radial-gradient(ellipse 90% 55% at 0% 0%, rgba(10, 106, 148, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 100%, rgba(10, 106, 148, 0.1), transparent 50%),
+    linear-gradient(180deg, #eef6fa 0%, #f5f9fc 42%, #eef4f8 100%) !important;
   grid-template-columns: none !important;
 }
 
@@ -3904,8 +3915,9 @@ input:focus, select:focus, textarea:focus,
   justify-content: space-between;
   gap: 1rem;
   padding: 0.85rem clamp(1rem, 3vw, 1.75rem);
-  background: #ffffff;
-  border-bottom: 1px solid #e5ebf0;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid rgba(10, 106, 148, 0.12);
+  backdrop-filter: blur(10px);
 }
 
 .auth-desk-bar__brand {
@@ -3922,12 +3934,12 @@ input:focus, select:focus, textarea:focus,
   font: inherit;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #5b6b78;
+  color: var(--desk-muted);
   cursor: pointer;
 }
 
 .auth-desk-bar__back:hover {
-  color: #0a6a94;
+  color: var(--desk-sea);
 }
 
 .auth-desk-bar__meta {
@@ -3939,7 +3951,7 @@ input:focus, select:focus, textarea:focus,
 .auth-desk-bar__step {
   font-size: 0.82rem;
   font-weight: 700;
-  color: #0f1c24;
+  color: var(--desk-sea);
   white-space: nowrap;
 }
 
@@ -3966,15 +3978,22 @@ input:focus, select:focus, textarea:focus,
 
 .auth-desk__main,
 .auth-desk__side {
-  background: #ffffff;
-  border: 1px solid #e5ebf0;
-  border-radius: 14px;
+  background: var(--desk-paper);
+  border: 1px solid rgba(10, 106, 148, 0.12);
+  border-radius: 16px;
   padding: clamp(1.15rem, 2.5vw, 1.6rem);
+  box-shadow: 0 12px 32px rgba(12, 52, 72, 0.06);
 }
 
 .auth-desk__side {
   position: sticky;
   top: 1rem;
+  background:
+    linear-gradient(180deg, #f7fbfe 0%, #ffffff 42%);
+  border-color: rgba(10, 106, 148, 0.16);
+  box-shadow:
+    inset 3px 0 0 var(--desk-sea),
+    0 12px 32px rgba(12, 52, 72, 0.06);
 }
 
 .auth-desk__title {
@@ -3982,13 +4001,14 @@ input:focus, select:focus, textarea:focus,
   font-size: clamp(1.35rem, 2.5vw, 1.5rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #0c1520;
+  color: var(--desk-ink);
 }
 
 .auth-desk__lead {
   margin: 0 0 1.25rem;
   font-size: 0.92rem;
   line-height: 1.45;
+  color: var(--desk-muted) !important;
 }
 
 .auth-form--desk {
@@ -4007,12 +4027,75 @@ input:focus, select:focus, textarea:focus,
   }
 }
 
+.auth-page--desk .auth-field span {
+  color: #3d5263;
+}
+
+.auth-page--desk .auth-field input,
+.auth-page--desk .auth-field select,
+.auth-page--desk .billing-fields select,
+.auth-page--desk .billing-fields input {
+  background: #ffffff !important;
+  border: 1px solid var(--desk-line) !important;
+  color: var(--desk-ink) !important;
+  box-shadow: none;
+}
+
+.auth-page--desk .auth-field input::placeholder,
+.auth-page--desk .billing-fields input::placeholder {
+  color: #889aab !important;
+}
+
+.auth-page--desk .auth-field input:focus,
+.auth-page--desk .auth-field select:focus,
+.auth-page--desk .billing-fields input:focus,
+.auth-page--desk .billing-fields select:focus {
+  border-color: rgba(10, 106, 148, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(10, 106, 148, 0.14) !important;
+  background: #ffffff !important;
+}
+
+.auth-page--desk .auth-billing-block {
+  background: linear-gradient(180deg, #f3f9fc 0%, #eaf4f9 100%);
+  border: 1px solid rgba(10, 106, 148, 0.14);
+  border-radius: 14px;
+}
+
+.auth-page--desk .auth-billing-block__title {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--desk-sea);
+  font-weight: 800;
+}
+
+.auth-page--desk .auth-billing-block__lead,
+.auth-page--desk .billing-fields__hint,
+.auth-page--desk .muted {
+  color: var(--desk-muted) !important;
+}
+
+.auth-page--desk .billing-fields__legend {
+  color: var(--desk-ink);
+}
+
+.auth-page--desk .auth-submit.btn--primary {
+  background: var(--desk-sea) !important;
+  border-color: var(--desk-sea) !important;
+  color: #ffffff !important;
+}
+
+.auth-page--desk .auth-submit.btn--primary:hover {
+  background: #085578 !important;
+  border-color: #085578 !important;
+}
+
 .auth-desk__side-title {
   margin: 0 0 0.85rem;
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #5b6b78;
+  color: var(--desk-sea);
   font-weight: 800;
 }
 
@@ -4026,17 +4109,19 @@ input:focus, select:focus, textarea:focus,
 
 .auth-desk__price strong {
   font-size: 1.1rem;
-  color: #0c1520;
+  color: var(--desk-ink);
 }
 
 .auth-desk__price b {
   font-size: 1.4rem;
-  color: #0a6a94;
+  color: var(--desk-sea);
   font-variant-numeric: tabular-nums;
 }
 
 .auth-desk__side .billing-toggle {
   margin-bottom: 1rem;
+  background: var(--desk-mist);
+  border-color: rgba(10, 106, 148, 0.14);
 }
 
 .auth-desk__features {
@@ -4062,23 +4147,16 @@ input:focus, select:focus, textarea:focus,
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #0a6a94;
+  background: var(--desk-sea);
 }
 
 .auth-desk__secure {
   margin: 0;
   padding-top: 0.75rem;
-  border-top: 1px solid #eef2f6;
+  border-top: 1px solid rgba(10, 106, 148, 0.12);
   font-size: 0.78rem;
   line-height: 1.4;
-}
-
-.auth-page--desk .auth-billing-block__title {
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #0a6a94;
-  font-weight: 800;
+  color: var(--desk-muted) !important;
 }
 
 /* —— Checkout Split Horizon (2A) —— */
