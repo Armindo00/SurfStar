@@ -36,14 +36,27 @@ Sim — **já faz sentido**. Assim abres no telemóvel com um link `https://...`
 
 ---
 
-## Passo 1b — Stripe (fase 2, opcional)
+## Passo 1b — Stripe (fase 2, self-serve)
 
-O lançamento atual usa **aprovação admin + confirmação de pagamento manual**. Stripe fica para quando quiseres self-serve.
+1. **Produtos em EUR** no Stripe (test e depois live):
+   - Coach mensal **€49**, anual **€490**
+   - Coach Premium mensal **€89**, anual **€890**
+   - Confirma a moeda **EUR** (não USD) em cada Price.
+2. Copia os **Price IDs** (`price_...`) para secrets Supabase:
+   - `STRIPE_PRICE_TEAM`, `STRIPE_PRICE_CLUB`
+   - `STRIPE_PRICE_TEAM_ANNUAL`, `STRIPE_PRICE_CLUB_ANNUAL`
+3. (Opcional fallback) Payment Links + IDs `plink_...` em `STRIPE_PAYMENT_LINK_ID_*`, e URLs `buy.stripe.com/...` em Vercel `VITE_STRIPE_LINK_*`.
+4. `VITE_MANUAL_PAYMENTS=false` na Vercel.
+5. Deploy Edge Functions:
+   - `supabase functions deploy stripe-webhook --no-verify-jwt`
+   - `supabase functions deploy subscription-manage`
+6. Webhook Stripe → `https://<project>.supabase.co/functions/v1/stripe-webhook`  
+   Eventos: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`.
+7. Secrets: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, `APP_URL=https://www.surfstar.app`.
 
-1. Cria Payment Links para Coach e Coach Premium (mensal + anual) no Stripe Dashboard.
-2. Cola os URLs em `.env` / Vercel (`VITE_STRIPE_LINK_*`) e define `VITE_MANUAL_PAYMENTS=false`.
-3. Deploy da Edge Function `supabase/functions/stripe-webhook` e configura webhook Stripe (deve atualizar `organization_subscriptions`).
-4. Ver detalhes em [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md).
+A app cria **Checkout Sessions** com redirect para `/checkout?success=1` (activa a conta via webhook). Payment Links ficam só como fallback.
+
+Se ainda usares só Payment Links: em cada link, **After payment → Redirect** para `https://www.surfstar.app/checkout?success=1`.
 
 Para **dev sem Stripe**: `VITE_DEMO_SUBSCRIPTION=true` + SQL `demo_subscriptions = true` (nunca em produção).
 

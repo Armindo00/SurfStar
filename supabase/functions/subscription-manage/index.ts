@@ -25,8 +25,9 @@ const corsHeaders = {
 }
 
 type PlanId = 'team' | 'club' | 'organization'
+type BillingInterval = 'monthly' | 'annual'
 
-type ManageAction = 'portal' | 'cancel' | 'change_plan'
+type ManageAction = 'portal' | 'cancel' | 'change_plan' | 'create_checkout'
 
 function json(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -35,14 +36,42 @@ function json(body: Record<string, unknown>, status = 200) {
   })
 }
 
-function priceIdForPlan(planId: PlanId): string | null {
-  const map: Record<PlanId, string | undefined> = {
-    team: Deno.env.get('STRIPE_PRICE_TEAM'),
-    club: Deno.env.get('STRIPE_PRICE_CLUB'),
-    organization: Deno.env.get('STRIPE_PRICE_ORGANIZATION'),
+function appBaseUrl(returnUrl?: string): string {
+  if (typeof returnUrl === 'string' && returnUrl.startsWith('http')) {
+    try {
+      return new URL(returnUrl).origin
+    } catch {
+      /* ignore */
+    }
   }
-  const value = map[planId]
+  const fromEnv = Deno.env.get('APP_URL')?.trim()
+  return fromEnv || 'https://www.surfstar.app'
+}
+
+function priceIdForPlan(planId: PlanId, interval: BillingInterval = 'monthly'): string | null {
+  const suffix = interval === 'annual' ? '_ANNUAL' : ''
+  const key = `STRIPE_PRICE_${planId.toUpperCase()}${suffix}`
+  const value = Deno.env.get(key)
   return value?.trim() ? value.trim() : null
+}
+
+function paymentLinkIdForPlan(planId: PlanId, interval: BillingInterval = 'monthly'): string | null {
+  const suffix = interval === 'annual' ? '_ANNUAL' : ''
+  const key = `STRIPE_PAYMENT_LINK_ID_${planId.toUpperCase()}${suffix}`
+  const value = Deno.env.get(key)
+  return value?.trim() ? value.trim() : null
+}
+
+async function resolvePriceId(planId: PlanId, interval: BillingInterval): Promise<string | null> {
+  const direct = priceIdForPlan(planId, interval)
+  if (direct) return direct
+
+  const paymentLinkId = paymentLinkIdForPlan(planId, interval)
+  if (!paymentLinkId) return null
+
+  const items = await stripe.paymentLinks.listLineItems(paymentLinkId, { limit: 1 })
+  const price = items.data[0]?.price
+  return typeof price === 'string' ? price : price?.id ?? null
 }
 
 async function getCoachSubscription(coachId: string) {
@@ -96,7 +125,9 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as {
       action?: ManageAction
       plan_id?: PlanId
+      billing_interval?: BillingInterval
       return_url?: string
+      organization_id?: string
     }
 
     const action = body.action
@@ -104,15 +135,73 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: 'Missing action.' }, 400)
     }
 
-    const row = await getCoachSubscription(coachId)
-    if (!row) {
-      return json({ ok: false, error: 'No subscription found.' }, 404)
-    }
-
     const returnUrl =
       typeof body.return_url === 'string' && body.return_url.startsWith('http')
         ? body.return_url
         : 'https://www.surfstar.app'
+
+    if (action === 'create_checkout') {
+      const planId = body.plan_id
+      if (planId !== 'team' && planId !== 'club') {
+        return json({ ok: false, error: 'Invalid plan for self-serve checkout.' }, 400)
+      }
+
+      const interval: BillingInterval = body.billing_interval === 'annual' ? 'annual' : 'monthly'
+      const priceId = await resolvePriceId(planId, interval)
+      if (!priceId) {
+        return json({
+          ok: false,
+          error:
+            'Stripe price is not configured. Set STRIPE_PRICE_* or STRIPE_PAYMENT_LINK_ID_* secrets.',
+          use_payment_link: true,
+        }, 400)
+      }
+
+      const { data: userData } = await createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
+      }).auth.getUser()
+
+      const email = userData.user?.email ?? undefined
+      const base = appBaseUrl(returnUrl)
+      const organizationId =
+        typeof body.organization_id === 'string' && body.organization_id.trim()
+          ? body.organization_id.trim()
+          : undefined
+
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: `${base}/checkout?success=1`,
+        cancel_url: `${base}/checkout?cancelled=1`,
+        client_reference_id: coachId,
+        customer_email: email,
+        metadata: {
+          plan_id: planId,
+          coach_id: coachId,
+          billing_interval: interval,
+          ...(organizationId ? { organization_id: organizationId } : {}),
+        },
+        subscription_data: {
+          metadata: {
+            plan_id: planId,
+            coach_id: coachId,
+            billing_interval: interval,
+            ...(organizationId ? { organization_id: organizationId } : {}),
+          },
+        },
+      })
+
+      if (!session.url) {
+        return json({ ok: false, error: 'Stripe did not return a checkout URL.' }, 500)
+      }
+
+      return json({ ok: true, url: session.url })
+    }
+
+    const row = await getCoachSubscription(coachId)
+    if (!row) {
+      return json({ ok: false, error: 'No subscription found.' }, 404)
+    }
 
     if (action === 'portal') {
       if (!row.stripe_customer_id) {
@@ -188,7 +277,7 @@ Deno.serve(async (req) => {
         return json({ ok: true, plan_id: planId, requires_checkout: true })
       }
 
-      const priceId = priceIdForPlan(planId)
+      const priceId = priceIdForPlan(planId, 'monthly')
       if (!priceId) {
         if (!row.stripe_customer_id) {
           return json({ ok: false, error: 'Billing is not configured for plan changes.' }, 400)

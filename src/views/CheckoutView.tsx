@@ -19,7 +19,12 @@ import { ManualBillingNotice } from '../components/ManualBillingNotice'
 import { LanguagePicker } from '../components/LanguagePicker'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
-import { buildStripeCheckoutUrl, isSubscriptionActive } from '../subscriptionApi'
+import {
+  buildStripeCheckoutUrl,
+  cloudCreateStripeCheckoutSession,
+  isSubscriptionActive,
+} from '../subscriptionApi'
+import { isCheckoutSuccess } from '../routing'
 import { hasCompleteBillingAddress, emptyBillingAddress } from '../billingUtils'
 import { isDemoSubscriptionEnabled } from '../config'
 import { fetchCoachPlanRequest, submitOrganizationPlanRequest, type CoachPlanRequest } from '../organizationPlanRequestApi'
@@ -54,9 +59,10 @@ export function CheckoutView() {
   } = useApp()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [awaitingPayment, setAwaitingPayment] = useState(false)
+  const [awaitingPayment, setAwaitingPayment] = useState(() => isCheckoutSuccess())
   const [openRequest, setOpenRequest] = useState<CoachPlanRequest | null>(null)
   const autoSubmitAttempted = useRef(false)
+  const successPollStarted = useRef(false)
 
   const rawPlanId = selectedPlanId ?? subscription?.planId ?? 'team'
   const planId = isApprovalRequiredPlan(rawPlanId) ? 'team' : rawPlanId
@@ -145,6 +151,16 @@ export function CheckoutView() {
   }, [awaitingPayment, isPending, isActive, refreshSubscription, manualFlow])
 
   useEffect(() => {
+    if (manualFlow || successPollStarted.current) return
+    if (!isCheckoutSuccess()) return
+    successPollStarted.current = true
+    setAwaitingPayment(true)
+    void refreshSubscription()
+    // Clean the success flag from the URL without leaving checkout.
+    window.history.replaceState({}, '', '/checkout')
+  }, [manualFlow, refreshSubscription])
+
+  useEffect(() => {
     if (manualFlow && openRequest?.activated_at) {
       void refreshSubscription()
     }
@@ -217,16 +233,37 @@ export function CheckoutView() {
         return
       }
 
-      const url = buildStripeCheckoutUrl(
-        stripeLink,
-        auth?.role === 'treinador' ? auth.coachId : '',
-        auth?.email ?? '',
-        planId,
-        auth?.role === 'treinador' ? auth.organizationId : undefined,
-        selectedBillingInterval,
-      )
+      // Prefer Checkout Session (success_url back to /checkout?success=1).
+      // Fall back to Payment Links when price/payment-link secrets are not set.
+      let checkoutUrl: string | null = null
+      if (cloudMode && auth?.role === 'treinador') {
+        const sessionResult = await cloudCreateStripeCheckoutSession({
+          planId,
+          billingInterval: selectedBillingInterval,
+          organizationId: auth.organizationId,
+        })
+        if (sessionResult.ok) {
+          checkoutUrl = sessionResult.url
+        }
+      }
+
+      if (!checkoutUrl) {
+        if (!stripeLink) {
+          setError(t('ui.checkout.paymentNotConfigured'))
+          return
+        }
+        checkoutUrl = buildStripeCheckoutUrl(
+          stripeLink,
+          auth?.role === 'treinador' ? auth.coachId : '',
+          auth?.email ?? '',
+          planId,
+          auth?.role === 'treinador' ? auth.organizationId : undefined,
+          selectedBillingInterval,
+        )
+      }
+
       // Same-tab redirect - window.open is often blocked on mobile browsers.
-      window.location.assign(url)
+      window.location.assign(checkoutUrl)
       setAwaitingPayment(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : t('ui.checkout.couldNotStartCheckout'))
