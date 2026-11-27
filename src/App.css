@@ -9625,10 +9625,14 @@ a.legal-footer-links__btn {
   background: none;
   padding: 0;
   font: inherit;
-  color: #f5e6bc;
+  color: var(--ss-primary);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.auth-terms__link:hover {
+  color: var(--ss-primary-dark);
 }
 
 .cookie-consent {
