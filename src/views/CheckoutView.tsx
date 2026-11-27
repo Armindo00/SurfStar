@@ -211,7 +211,7 @@ export function CheckoutView() {
       }
 
       const checkoutResult = await startCheckout()
-      if (!checkoutResult.ok) {
+      if (!checkoutResult.ok && !isPending && !awaitingPayment) {
         setError(checkoutResult.error)
         return
       }
@@ -372,6 +372,16 @@ export function CheckoutView() {
               <div className="checkout-pending">
                 <p className="checkout-pending__title">{t('ui.checkout.waitingPayment')}</p>
                 <p className="muted">{t('ui.checkout.stripePaymentMessage')}</p>
+                {stripeLink ? (
+                  <button
+                    type="button"
+                    className="btn btn--gold btn--block btn--lg"
+                    onClick={() => void handlePay()}
+                    disabled={busy}
+                  >
+                    {busy ? t('ui.checkout.processing') : t('ui.checkout.payWithStripe')}
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className="btn btn--secondary btn--block"
