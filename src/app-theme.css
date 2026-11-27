@@ -4113,9 +4113,26 @@ input:focus, select:focus, textarea:focus,
 }
 
 .auth-desk__price b {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
   font-size: 1.4rem;
   color: var(--desk-sea);
   font-variant-numeric: tabular-nums;
+}
+
+.auth-desk__price-suffix {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--desk-muted);
+  white-space: nowrap;
+}
+
+.auth-desk__equiv {
+  margin: -0.45rem 0 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
 }
 
 .auth-desk__side .billing-toggle {

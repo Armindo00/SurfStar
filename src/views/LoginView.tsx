@@ -16,8 +16,8 @@ import { resolveAuthErrorMessage } from '../authErrors'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
 import {
   ANNUAL_FREE_MONTHS,
-  formatPlanPrice,
   formatPlanPriceWithSuffix,
+  formatPlanTotalPrice,
   getIncludedFeatureLabels,
   getPlan,
 } from '../plans'
@@ -354,8 +354,20 @@ export function LoginView() {
               <>
                 <div className="auth-desk__price">
                   <strong>{selectedPlan.name}</strong>
-                  <b>{formatPlanPrice(selectedPlan, selectedBillingInterval)}</b>
+                  <b>
+                    {formatPlanTotalPrice(selectedPlan, selectedBillingInterval)}
+                    <span className="auth-desk__price-suffix">
+                      {selectedBillingInterval === 'annual'
+                        ? t('ui.checkout.perYear')
+                        : t('ui.checkout.perMonth')}
+                    </span>
+                  </b>
                 </div>
+                {selectedBillingInterval === 'annual' ? (
+                  <p className="auth-desk__equiv muted">
+                    {formatPlanPriceWithSuffix(selectedPlan, 'annual')}
+                  </p>
+                ) : null}
                 <BillingIntervalToggle value={selectedBillingInterval} onChange={setBillingInterval} />
                 <ul className="auth-desk__features">
                   {getIncludedFeatureLabels(selectedPlan.id).slice(0, 5).map((feature) => (
