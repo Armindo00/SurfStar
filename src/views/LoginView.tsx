@@ -11,9 +11,16 @@ import {
 } from '../billingUtils'
 import { BillingAddressFields } from '../components/BillingAddressFields'
 import { TaxIdField } from '../components/TaxIdField'
+import { BillingIntervalToggle } from '../components/BillingIntervalToggle'
 import { resolveAuthErrorMessage } from '../authErrors'
 import { MIN_PASSWORD_LENGTH } from '../passwordUtils'
-import { formatPlanPriceWithSuffix, getPlan } from '../plans'
+import {
+  ANNUAL_FREE_MONTHS,
+  formatPlanPrice,
+  formatPlanPriceWithSuffix,
+  getIncludedFeatureLabels,
+  getPlan,
+} from '../plans'
 import { useApp } from '../AppContext'
 import { useI18n } from '../i18n'
 import type { AuthPublicView } from '../types'
@@ -28,6 +35,7 @@ export function LoginView() {
     publicView,
     selectedPlanId,
     selectedBillingInterval,
+    setBillingInterval,
     openLanding,
     openForgotPassword,
     openCoachSignIn,
@@ -42,6 +50,7 @@ export function LoginView() {
   const screen = publicView as AuthPublicView
   const isCoach = screen.startsWith('coach')
   const isRegister = screen.endsWith('sign-up')
+  const useDeskLayout = screen === 'coach-sign-up'
 
   const copy = (() => {
     const base = messages.auth.screens[screen]
@@ -80,7 +89,7 @@ export function LoginView() {
 
   const selectedPlan = selectedPlanId && isCoach ? getPlan(selectedPlanId) : null
 
-  const goToAlternateScreen = () => {
+  const resetIdentityFields = () => {
     setError('')
     setName('')
     setTaxId('')
@@ -91,20 +100,15 @@ export function LoginView() {
     setBillingRegion('')
     setBillingCountryCode('')
     setPasswordConfirm('')
+  }
+
+  const goToAlternateScreen = () => {
+    resetIdentityFields()
     copy.switchAction()
   }
 
   const goToOtherRole = () => {
-    setError('')
-    setName('')
-    setTaxId('')
-    setBillingStreet('')
-    setBillingAddressLine2('')
-    setBillingPostalCode('')
-    setBillingCity('')
-    setBillingRegion('')
-    setBillingCountryCode('')
-    setPasswordConfirm('')
+    resetIdentityFields()
     copy.otherRoleAction()
   }
 
@@ -186,83 +190,65 @@ export function LoginView() {
     }
   }
 
-  return (
-    <AuthShell onBack={openLanding} backLabel={t('auth.home')} showTagline>
-      <div className="auth-badges">
-        <span className="auth-badge auth-badge--role">{copy.roleLabel}</span>
-        <span className="auth-badge auth-badge--mode">{copy.modeLabel}</span>
-      </div>
-
-      <header className="auth-card__head auth-card__head--compact">
-        <h2 className="auth-card__title">{copy.title}</h2>
-      </header>
-
-      {selectedPlan ? (
-        <div className="auth-plan-banner">
-          <span className="auth-plan-banner__label">{t('auth.selectedPlan')}</span>
-          <strong>
-            {selectedPlan.name} · {formatPlanPriceWithSuffix(selectedPlan, selectedBillingInterval)}
-          </strong>
-        </div>
-      ) : null}
-
-      <form className="auth-form" onSubmit={(e) => void submit(e)}>
-        {isRegister ? (
-          <label className="auth-field">
-            <span>{t('auth.fullName')}</span>
-            <input
-              type="text"
-              name="name"
-              autoComplete="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={isCoach ? t('auth.namePlaceholderCoach') : t('auth.namePlaceholderAthlete')}
-              required
-            />
-          </label>
-        ) : null}
-
-        {isRegister && isCoach && cloudMode ? (
-          <div className="auth-billing-block">
-            <p className="auth-billing-block__title">{t('auth.billingDetails')}</p>
-            <p className="auth-billing-block__lead muted">{t('auth.billingDetailsLead')}</p>
-            <TaxIdField
-              value={taxId}
-              countryCode={billingCountryCode}
-              onChange={setTaxId}
-              variant="auth"
-            />
-            <BillingAddressFields
-              street={billingStreet}
-              addressLine2={billingAddressLine2}
-              city={billingCity}
-              region={billingRegion}
-              postalCode={billingPostalCode}
-              countryCode={billingCountryCode}
-              onStreetChange={setBillingStreet}
-              onAddressLine2Change={setBillingAddressLine2}
-              onCityChange={setBillingCity}
-              onRegionChange={setBillingRegion}
-              onPostalCodeChange={setBillingPostalCode}
-              onCountryCodeChange={setBillingCountryCode}
-              variant="auth"
-            />
-          </div>
-        ) : null}
-
+  const accountFields = (
+    <>
+      {isRegister ? (
         <label className="auth-field">
-          <span>{t('auth.emailAddress')}</span>
+          <span>{t('auth.fullName')}</span>
           <input
-            type="email"
-            name="email"
-            autoComplete="username"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t('auth.emailPlaceholder')}
+            type="text"
+            name="name"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={isCoach ? t('auth.namePlaceholderCoach') : t('auth.namePlaceholderAthlete')}
             required
           />
         </label>
+      ) : null}
 
+      {isRegister && isCoach && cloudMode ? (
+        <div className="auth-billing-block">
+          <p className="auth-billing-block__title">{t('auth.billingDetails')}</p>
+          <p className="auth-billing-block__lead muted">{t('auth.billingDetailsLead')}</p>
+          <TaxIdField
+            value={taxId}
+            countryCode={billingCountryCode}
+            onChange={setTaxId}
+            variant="auth"
+          />
+          <BillingAddressFields
+            street={billingStreet}
+            addressLine2={billingAddressLine2}
+            city={billingCity}
+            region={billingRegion}
+            postalCode={billingPostalCode}
+            countryCode={billingCountryCode}
+            onStreetChange={setBillingStreet}
+            onAddressLine2Change={setBillingAddressLine2}
+            onCityChange={setBillingCity}
+            onRegionChange={setBillingRegion}
+            onPostalCodeChange={setBillingPostalCode}
+            onCountryCodeChange={setBillingCountryCode}
+            variant="auth"
+          />
+        </div>
+      ) : null}
+
+      <label className="auth-field">
+        <span>{useDeskLayout ? t('auth.professionalEmail') : t('auth.emailAddress')}</span>
+        <input
+          type="email"
+          name="email"
+          autoComplete="username"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t('auth.emailPlaceholder')}
+          required
+        />
+      </label>
+
+      <div className={useDeskLayout ? 'auth-field-row' : undefined}>
         <label className="auth-field">
           <span>{t('auth.password')}</span>
           <input
@@ -296,35 +282,121 @@ export function LoginView() {
             />
           </label>
         ) : null}
+      </div>
 
-        {isRegister ? (
-          <TermsAcceptanceField
-            checked={acceptedTerms}
-            onChange={setAcceptedTerms}
-            onPrivacy={openPrivacy}
-            onTerms={openTerms}
-          />
-        ) : null}
+      {isRegister ? (
+        <TermsAcceptanceField
+          checked={acceptedTerms}
+          onChange={setAcceptedTerms}
+          onPrivacy={openPrivacy}
+          onTerms={openTerms}
+        />
+      ) : null}
 
-        {error ? <p className="auth-alert auth-alert--error">{error}</p> : null}
+      {error ? <p className="auth-alert auth-alert--error">{error}</p> : null}
 
-        {!isRegister && cloudMode ? (
-          <button
-            type="button"
-            className="auth-forgot"
-            onClick={() => openForgotPassword(isCoach ? 'treinador' : 'atleta')}
-          >
-            {t('auth.forgotPassword')}
-          </button>
-        ) : null}
+      {!isRegister && cloudMode ? (
+        <button
+          type="button"
+          className="auth-forgot"
+          onClick={() => openForgotPassword(isCoach ? 'treinador' : 'atleta')}
+        >
+          {t('auth.forgotPassword')}
+        </button>
+      ) : null}
 
-        <button type="submit" className="btn btn--primary btn--block btn--lg auth-submit" disabled={busy}>
-          {busy
-            ? t('auth.pleaseWait')
+      <button type="submit" className="btn btn--primary btn--block btn--lg auth-submit" disabled={busy}>
+        {busy
+          ? t('auth.pleaseWait')
+          : useDeskLayout
+            ? t('auth.createAccountContinue')
             : isRegister && selectedPlan
               ? t('auth.createAccountWithPlan', { planName: selectedPlan.name })
               : copy.submit}
-        </button>
+      </button>
+    </>
+  )
+
+  if (useDeskLayout) {
+    return (
+      <AuthShell
+        variant="desk"
+        onBack={openLanding}
+        backLabel={t('auth.home')}
+        stepLabel={t('auth.deskStepAccount')}
+      >
+        <div className="auth-desk">
+          <section className="auth-desk__main">
+            <header className="auth-desk__head">
+              <h1 className="auth-desk__title">{copy.title}</h1>
+              <p className="auth-desk__lead muted">{t('auth.deskSignupLead')}</p>
+            </header>
+            <form className="auth-form auth-form--desk" onSubmit={(e) => void submit(e)}>
+              {accountFields}
+            </form>
+            <p className="auth-switch">
+              {copy.switchPrompt}{' '}
+              <button type="button" className="auth-switch__btn" onClick={goToAlternateScreen}>
+                {copy.switchActionLabel}
+              </button>
+            </p>
+            <LegalFooterLinks
+              className="auth-legal-footer"
+              onPrivacy={openPrivacy}
+              onTerms={openTerms}
+              layout="stack"
+            />
+          </section>
+
+          <aside className="auth-desk__side" aria-label={t('auth.summary')}>
+            <h2 className="auth-desk__side-title">{t('auth.summary')}</h2>
+            {selectedPlan ? (
+              <>
+                <div className="auth-desk__price">
+                  <strong>{selectedPlan.name}</strong>
+                  <b>{formatPlanPrice(selectedPlan, selectedBillingInterval)}</b>
+                </div>
+                <BillingIntervalToggle value={selectedBillingInterval} onChange={setBillingInterval} />
+                <ul className="auth-desk__features">
+                  {getIncludedFeatureLabels(selectedPlan.id).slice(0, 5).map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+                <p className="auth-desk__secure muted">
+                  {t('auth.securePaymentNext', { freeMonths: ANNUAL_FREE_MONTHS })}
+                </p>
+              </>
+            ) : (
+              <p className="muted">{t('auth.noPlanSelected')}</p>
+            )}
+          </aside>
+        </div>
+      </AuthShell>
+    )
+  }
+
+  return (
+    <AuthShell onBack={openLanding} backLabel={t('auth.home')} showTagline>
+      <div className="auth-badges">
+        <span className="auth-badge auth-badge--role">{copy.roleLabel}</span>
+        <span className="auth-badge auth-badge--mode">{copy.modeLabel}</span>
+      </div>
+
+      <header className="auth-card__head auth-card__head--compact">
+        <h2 className="auth-card__title">{copy.title}</h2>
+      </header>
+
+      {selectedPlan ? (
+        <div className="auth-plan-banner">
+          <span className="auth-plan-banner__label">{t('auth.selectedPlan')}</span>
+          <strong>
+            {selectedPlan.name} · {formatPlanPriceWithSuffix(selectedPlan, selectedBillingInterval)}
+          </strong>
+        </div>
+      ) : null}
+
+      <form className="auth-form" onSubmit={(e) => void submit(e)}>
+        {accountFields}
       </form>
 
       <p className="auth-switch">

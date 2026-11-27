@@ -344,6 +344,12 @@ export const ui = {
     leadManual:
       'your account is created but access is locked until an administrator approves your payment request.',
     leadStripe: 'confirm your plan to enter the app.',
+    splitHeroTitle: 'Activate your training space.',
+    splitHeroLead: 'confirm the plan and pay securely with Stripe.',
+    splitPanelLead: 'Recurring billing. No long-term lock-in.',
+    progressLabel: 'Checkout progress',
+    stepAccount: '1 · Account',
+    stepPayment: '2 · Payment',
     teamAcademyTitle: 'Team Academy requires approval',
     teamAcademyBody:
       'This plan is not available for instant checkout. Submit a request and we\'ll activate your organization after review and payment.',

@@ -344,6 +344,12 @@ export const ui = {
     leadManual:
       'votre compte est créé mais l\'accès est bloqué jusqu\'à ce qu\'un administrateur approuve votre demande de paiement.',
     leadStripe: 'confirmez votre plan pour entrer dans l\'app.',
+    splitHeroTitle: 'Activez votre espace d’entraînement.',
+    splitHeroLead: 'confirmez le forfait et payez en toute sécurité avec Stripe.',
+    splitPanelLead: 'Paiement récurrent. Sans engagement longue durée.',
+    progressLabel: 'Progression du paiement',
+    stepAccount: '1 · Compte',
+    stepPayment: '2 · Paiement',
     teamAcademyTitle: 'Team Academy nécessite une approbation',
     teamAcademyBody:
       'Ce plan n\'est pas disponible en checkout instantané. Soumettez une demande et nous activerons votre organisation après revue et paiement.',

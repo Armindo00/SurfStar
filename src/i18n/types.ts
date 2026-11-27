@@ -266,6 +266,13 @@ export type MessageCatalog = {
     forgotPassword: string
     pleaseWait: string
     createAccountWithPlan: string
+    createAccountContinue: string
+    deskStepAccount: string
+    deskSignupLead: string
+    professionalEmail: string
+    summary: string
+    securePaymentNext: string
+    noPlanSelected: string
     namePlaceholderCoach: string
     namePlaceholderAthlete: string
     emailPlaceholder: string
