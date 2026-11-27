@@ -1,7 +1,8 @@
 // Supabase Edge Function — Stripe webhook for SurfStar subscriptions
 // Deploy: supabase functions deploy stripe-webhook --no-verify-jwt
 // Secrets: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-// Optional: STRIPE_PAYMENT_LINK_ID_STARTER, STRIPE_PAYMENT_LINK_ID_TEAM, STRIPE_PAYMENT_LINK_ID_CLUB
+// Optional: STRIPE_PAYMENT_LINK_ID_TEAM, STRIPE_PAYMENT_LINK_ID_CLUB,
+//           STRIPE_PAYMENT_LINK_ID_TEAM_ANNUAL, STRIPE_PAYMENT_LINK_ID_CLUB_ANNUAL
 
 import Stripe from 'npm:stripe@17.7.0'
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1'
@@ -24,8 +25,12 @@ function planFromPaymentLinkId(paymentLinkId: string | null | undefined): string
   const organization = Deno.env.get('STRIPE_PAYMENT_LINK_ID_ORGANIZATION')
   const team = Deno.env.get('STRIPE_PAYMENT_LINK_ID_TEAM')
   const club = Deno.env.get('STRIPE_PAYMENT_LINK_ID_CLUB')
+  const teamAnnual = Deno.env.get('STRIPE_PAYMENT_LINK_ID_TEAM_ANNUAL')
+  const clubAnnual = Deno.env.get('STRIPE_PAYMENT_LINK_ID_CLUB_ANNUAL')
   if (team) map[team] = 'team'
+  if (teamAnnual) map[teamAnnual] = 'team'
   if (club) map[club] = 'club'
+  if (clubAnnual) map[clubAnnual] = 'club'
   if (organization) map[organization] = 'organization'
   return map[paymentLinkId] ?? null
 }
@@ -47,6 +52,7 @@ async function upsertSubscription(params: {
   const periodEnd = params.currentPeriodEnd
     ? new Date(params.currentPeriodEnd * 1000).toISOString()
     : null
+  const updatedAt = new Date().toISOString()
 
   const { error } = await supabase.from('coach_subscriptions').upsert(
     {
@@ -56,12 +62,38 @@ async function upsertSubscription(params: {
       stripe_customer_id: params.stripeCustomerId ?? null,
       stripe_subscription_id: params.stripeSubscriptionId ?? null,
       current_period_end: periodEnd,
-      updated_at: new Date().toISOString(),
+      updated_at: updatedAt,
     },
     { onConflict: 'coach_id' },
   )
 
   if (error) throw error
+
+  // Keep organization_subscriptions in sync (checkout creates pending rows here).
+  const { data: membership } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('profile_id', params.coachId)
+    .eq('status', 'active')
+    .order('accepted_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (membership?.organization_id) {
+    const { error: orgError } = await supabase.from('organization_subscriptions').upsert(
+      {
+        organization_id: membership.organization_id,
+        plan_id: params.planId,
+        status: params.status,
+        stripe_customer_id: params.stripeCustomerId ?? null,
+        stripe_subscription_id: params.stripeSubscriptionId ?? null,
+        current_period_end: periodEnd,
+        updated_at: updatedAt,
+      },
+      { onConflict: 'organization_id' },
+    )
+    if (orgError) throw orgError
+  }
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
