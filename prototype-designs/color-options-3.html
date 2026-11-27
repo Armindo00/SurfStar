@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar — 3 cores (ronda 3)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", sans-serif;
+      background: #e5e7eb;
+      color: #0f172a;
+      padding: 1.5rem 1rem 3rem;
+    }
+    .intro { max-width: 1100px; margin: 0 auto 1.5rem; }
+    .intro h1 { margin: 0 0 0.4rem; font-size: 1.55rem; letter-spacing: -0.02em; }
+    .intro p { margin: 0; color: #64748b; line-height: 1.5; max-width: 44rem; font-size: 0.98rem; }
+    .intro a { color: #0f172a; font-weight: 600; }
+
+    .grid {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; gap: 1.1rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 960px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .option { display: flex; flex-direction: column; gap: 0.65rem; }
+    .option h2 {
+      margin: 0;
+      font-size: 0.95rem;
+      display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem;
+    }
+    .option h2 span { color: #64748b; font-weight: 500; font-size: 0.8rem; }
+    .swatches { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .swatches i {
+      width: 1.35rem; height: 1.35rem; border-radius: 6px;
+      border: 1px solid rgba(0,0,0,.1);
+      display: block;
+    }
+
+    .phone {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--frame);
+      background: var(--shell);
+      color: var(--text);
+      min-height: 440px;
+      display: flex; flex-direction: column;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+    }
+    .bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 1rem;
+      background: var(--header);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { font-weight: 700; letter-spacing: -0.02em; }
+    .brand em { font-style: normal; color: var(--accent); }
+    .bar-link { color: var(--accent); font-size: 0.82rem; font-weight: 600; }
+
+    .body { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
+    .hello { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .muted { margin: 0; color: var(--muted); font-size: 0.88rem; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.9rem;
+    }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; margin-top: 0.65rem; }
+    .kpis div {
+      text-align: center;
+      padding: 0.55rem 0.3rem;
+      border-radius: 10px;
+      background: var(--chip);
+    }
+    .kpis strong { display: block; font-size: 1.1rem; }
+    .kpis small { color: var(--muted); font-size: 0.68rem; }
+
+    .btn {
+      min-height: 44px; border-radius: 12px; border: 0;
+      font-family: inherit; font-weight: 700; font-size: 0.9rem;
+      cursor: default;
+    }
+    .btn-primary { background: var(--accent); color: var(--accent-ink); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+    .actions { display: grid; gap: 0.5rem; margin-top: auto; }
+
+    .tokens {
+      font-size: 0.75rem; color: #64748b; line-height: 1.45;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 0.75rem 0.85rem;
+    }
+    .tokens code { color: #334155; }
+
+    /* G · Ivory Coast — warm light (paper/sand, ink accent — not terracotta) */
+    .g {
+      --frame: #ddd6cb;
+      --shell: #f4f0e8;
+      --header: #fffcf7;
+      --card: #fffcf7;
+      --chip: #ebe4d8;
+      --text: #1a2332;
+      --muted: #6b655c;
+      --line: #ddd6cb;
+      --accent: #1f4e5f;
+      --accent-ink: #f4f0e8;
+    }
+    .g .s1 { background: #f4f0e8; }
+    .g .s2 { background: #fffcf7; }
+    .g .s3 { background: #1f4e5f; }
+    .g .s4 { background: #3d7a8c; }
+    .g .s5 { background: #1a2332; }
+
+    /* H · Cobalt Depth — true deep blue (not black navy) */
+    .h {
+      --frame: #16325c;
+      --shell: #0b2250;
+      --header: #0e2a5c;
+      --card: #14356a;
+      --chip: #1a4178;
+      --text: #eaf2ff;
+      --muted: #9db4d4;
+      --line: #234a82;
+      --accent: #7dd3fc;
+      --accent-ink: #0b2250;
+    }
+    .h .s1 { background: #0b2250; }
+    .h .s2 { background: #14356a; }
+    .h .s3 { background: #7dd3fc; }
+    .h .s4 { background: #eaf2ff; }
+    .h .s5 { background: #9db4d4; }
+
+    /* I · Zinc Signal — neutral zinc + sport lime */
+    .i {
+      --frame: #27272a;
+      --shell: #18181b;
+      --header: #1f1f23;
+      --card: #27272a;
+      --chip: #3f3f46;
+      --text: #fafafa;
+      --muted: #a1a1aa;
+      --line: #3f3f46;
+      --accent: #a3e635;
+      --accent-ink: #14532d;
+    }
+    .i .s1 { background: #18181b; }
+    .i .s2 { background: #27272a; }
+    .i .s3 { background: #a3e635; }
+    .i .s4 { background: #fafafa; }
+    .i .s5 { background: #a1a1aa; }
+
+    .note {
+      max-width: 1100px; margin: 1.5rem auto 0;
+      color: #64748b; font-size: 0.88rem; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="intro">
+    <h1>SurfStar — cores ronda 3</h1>
+    <p>
+      Ainda mais contraste: papel quente claro, azul cobalto profundo, e zinc + lima.
+      Rondas anteriores: <a href="./color-options.html">A–C</a> · <a href="./color-options-2.html">D–F</a>.
+    </p>
+  </div>
+
+  <div class="grid">
+    <section class="option">
+      <h2>G · Ivory Coast <span>papel quente</span></h2>
+      <div class="swatches g"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <div class="phone g">
+        <div class="bar">
+          <div class="brand">Surf<em>Star</em></div>
+          <span class="bar-link">Ajuda</span>
+        </div>
+        <div class="body">
+          <p class="hello">Olá, Armindo</p>
+          <p class="muted">Coach Premium · Ericeira</p>
+          <div class="card">
+            <strong>Resumo da equipa</strong>
+            <div class="kpis">
+              <div><strong>12</strong><small>Atletas</small></div>
+              <div><strong>38</strong><small>Sessões</small></div>
+              <div><strong>7.2</strong><small>Média</small></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button">Nova sessão</button>
+            <button class="btn btn-secondary" type="button">Ver atletas</button>
+          </div>
+        </div>
+      </div>
+      <div class="tokens">
+        Fundo <code>#f4f0e8</code> · Accent tinta <code>#1f4e5f</code><br />
+        Claro quente (areia/papel) — sem dourado.
+      </div>
+    </section>
+
+    <section class="option">
+      <h2>H · Cobalt Depth <span>azul cobalto</span></h2>
+      <div class="swatches h"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <div class="phone h">
+        <div class="bar">
+          <div class="brand">Surf<em>Star</em></div>
+          <span class="bar-link">Ajuda</span>
+        </div>
+        <div class="body">
+          <p class="hello">Olá, Armindo</p>
+          <p class="muted">Coach Premium · Ericeira</p>
+          <div class="card">
+            <strong>Resumo da equipa</strong>
+            <div class="kpis">
+              <div><strong>12</strong><small>Atletas</small></div>
+              <div><strong>38</strong><small>Sessões</small></div>
+              <div><strong>7.2</strong><small>Média</small></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button">Nova sessão</button>
+            <button class="btn btn-secondary" type="button">Ver atletas</button>
+          </div>
+        </div>
+      </div>
+      <div class="tokens">
+        Fundo <code>#0b2250</code> · Accent céu <code>#7dd3fc</code><br />
+        Azul real (não preto/navy) — visual de mar profundo.
+      </div>
+    </section>
+
+    <section class="option">
+      <h2>I · Zinc Signal <span>zinc + lima</span></h2>
+      <div class="swatches i"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <div class="phone i">
+        <div class="bar">
+          <div class="brand">Surf<em>Star</em></div>
+          <span class="bar-link">Ajuda</span>
+        </div>
+        <div class="body">
+          <p class="hello">Olá, Armindo</p>
+          <p class="muted">Coach Premium · Ericeira</p>
+          <div class="card">
+            <strong>Resumo da equipa</strong>
+            <div class="kpis">
+              <div><strong>12</strong><small>Atletas</small></div>
+              <div><strong>38</strong><small>Sessões</small></div>
+              <div><strong>7.2</strong><small>Média</small></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button">Nova sessão</button>
+            <button class="btn btn-secondary" type="button">Ver atletas</button>
+          </div>
+        </div>
+      </div>
+      <div class="tokens">
+        Fundo <code>#18181b</code> · Accent <code>#a3e635</code><br />
+        Neutro contemporâneo + sinal desportivo.
+      </div>
+    </section>
+  </div>
+
+  <p class="note">
+    Responde com uma letra <strong>A–I</strong>. Aplico só as cores na app.
+  </p>
+</body>
+</html>
