@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SurfStar — Protótipo landing profissional</title>
+  <meta name="description" content="Protótipo interativo da landing SurfStar. Só assets da app." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="proto-banner" role="note">
+    <strong>Protótipo interativo</strong>
+    <span>Navega, abre planos, FAQ e CTAs · imagens = UI SurfStar + logo · sem fotos stock</span>
+  </div>
+
+  <header class="nav" id="nav">
+    <a class="brand" href="#top">
+      <img src="./assets/logo.png" alt="" width="30" height="30" />
+      <span>SurfStar</span>
+    </a>
+    <nav class="nav__links" aria-label="Secções">
+      <a href="#produto">Produto</a>
+      <a href="#epoca">Época</a>
+      <a href="#precos">Preços</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav__actions">
+      <button type="button" class="btn btn--ghost btn--sm" data-open="signin">Entrar</button>
+      <button type="button" class="btn btn--primary btn--sm" data-open="signup">Criar conta de treinador</button>
+      <button type="button" class="nav__burger" id="burger" aria-label="Abrir menu" aria-expanded="false">
+        <span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile-nav" id="mobileNav" hidden>
+    <a href="#produto">Produto</a>
+    <a href="#epoca">Época</a>
+    <a href="#precos">Preços</a>
+    <a href="#faq">FAQ</a>
+    <button type="button" class="btn btn--primary btn--block" data-open="signup">Criar conta de treinador</button>
+    <button type="button" class="btn btn--outline btn--block" data-open="signin">Entrar</button>
+  </div>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero__copy reveal">
+        <p class="eyebrow">Para treinadores de surf</p>
+        <h1>SurfStar — <em>dados na praia,</em> decisões na época.</h1>
+        <p class="lead">A plataforma de estatísticas que usas durante a sessão — e que a equipa revê ao longo da época.</p>
+        <div class="hero__cta">
+          <button type="button" class="btn btn--primary btn--lg" data-open="signup">Começar como treinador</button>
+          <button type="button" class="btn btn--outline btn--lg" data-open="athlete">Entrar como atleta</button>
+        </div>
+        <ul class="hero__meta">
+          <li><strong>Live</strong> na sessão</li>
+          <li><strong>Atletas</strong> incluídos</li>
+          <li><strong>Cancela</strong> quando quiseres</li>
+        </ul>
+      </div>
+      <figure class="device reveal delay-1">
+        <figcaption class="device__bar">
+          <span class="device__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>app.surfstar · sessão ativa</span>
+          <span>Carcavelos</span>
+        </figcaption>
+        <button type="button" class="device__shot" data-lightbox="./assets/shot-live.png" data-caption="Estatísticas em direto · Técnico">
+          <img src="./assets/shot-live.png" alt="Ecrã SurfStar: estatísticas em direto" width="390" height="740" />
+        </button>
+      </figure>
+    </section>
+
+    <section class="section product" id="produto">
+      <div class="section__head reveal">
+        <p class="eyebrow">Produto</p>
+        <h2>A tua app, sem ruído.</h2>
+        <p class="section__sub">Toca nos ecrãs para ampliar. São a interface real da SurfStar.</p>
+      </div>
+      <div class="product__grid">
+        <article class="product__card reveal">
+          <header>
+            <h3>Sessões anteriores</h3>
+            <p>Agenda por mês, filtros e métrica principal.</p>
+          </header>
+          <button type="button" class="product__shot" data-lightbox="./assets/shot-history.png" data-caption="Histórico de sessões">
+            <img src="./assets/shot-history.png" alt="Ecrã SurfStar: histórico de sessões" />
+          </button>
+        </article>
+        <article class="product__card reveal delay-1">
+          <header>
+            <h3>Qualidade das ondas</h3>
+            <p>Matriz potencial × resultado para leitura rápida.</p>
+          </header>
+          <button type="button" class="product__shot" data-lightbox="./assets/shot-matrix.png" data-caption="Matriz potencial × resultado">
+            <img src="./assets/shot-matrix.png" alt="Ecrã SurfStar: matriz de ondas" />
+          </button>
+        </article>
+      </div>
+    </section>
+
+    <section class="split" id="epoca">
+      <div class="split__copy reveal">
+        <p class="eyebrow eyebrow--light">Época</p>
+        <h2>Do treino de hoje ao relatório da época.</h2>
+        <p>Compara sucesso, potencial e valorização. Exporta PDFs claros para atletas e decisão técnica — com os dados que já registas na praia.</p>
+        <button type="button" class="text-link" data-open="signup">Ver análise de equipa →</button>
+      </div>
+      <div class="split__visual reveal delay-1">
+        <button type="button" class="split__shot" data-lightbox="./assets/shot-showcase-live.png" data-caption="Sessão em direto">
+          <img src="./assets/shot-showcase-live.png" alt="Card SurfStar de sessão em direto" />
+        </button>
+      </div>
+    </section>
+
+    <section class="section steps" id="como">
+      <div class="section__head reveal">
+        <p class="eyebrow">Como funciona</p>
+        <h2>Simples de usar na água.</h2>
+        <p class="section__sub">Três passos. Sem configuração infinita.</p>
+      </div>
+      <ol class="steps__grid">
+        <li class="reveal"><span>01</span><h3>Abre a sessão</h3><p>Spot, condição e atletas em segundos.</p></li>
+        <li class="reveal delay-1"><span>02</span><h3>Regista cada onda</h3><p>Manobras, combos, heats — stats em direto.</p></li>
+        <li class="reveal delay-2"><span>03</span><h3>Revê e decide</h3><p>Histórico, evolução e relatório PDF.</p></li>
+      </ol>
+    </section>
+
+    <section class="section pricing" id="precos">
+      <div class="section__head reveal">
+        <p class="eyebrow">Preços</p>
+        <h2>Planos claros para a tua equipa.</h2>
+        <p class="section__sub">Valores reais dos packs SurfStar. Alterna mensal / anual.</p>
+        <div class="billing" role="tablist" aria-label="Intervalo de faturação">
+          <button type="button" class="billing__btn is-active" data-interval="monthly" role="tab" aria-selected="true">Mensal</button>
+          <button type="button" class="billing__btn" data-interval="annual" role="tab" aria-selected="false">Anual <em>2 meses grátis</em></button>
+        </div>
+      </div>
+
+      <div class="plans">
+        <article class="plan reveal" data-plan="team">
+          <h3>Coach</h3>
+          <p class="plan__price"><strong data-price-monthly="49" data-price-annual="40.83">€49</strong> <span data-suffix>/ mês</span></p>
+          <ul>
+            <li>Até 20 atletas</li>
+            <li>Técnico, combos e heats</li>
+            <li>Histórico e evolução</li>
+            <li>Atletas incluídos</li>
+          </ul>
+          <button type="button" class="btn btn--outline btn--block" data-select-plan="Coach">Escolher Coach</button>
+        </article>
+
+        <article class="plan plan--featured reveal delay-1" data-plan="club">
+          <p class="plan__badge">Mais escolhido</p>
+          <h3>Coach Premium</h3>
+          <p class="plan__price"><strong data-price-monthly="89" data-price-annual="74.17">€89</strong> <span data-suffix>/ mês</span></p>
+          <ul>
+            <li>Atletas ilimitados</li>
+            <li>Treino personalizado</li>
+            <li>Análise de mar</li>
+            <li>Check-ins de bem-estar</li>
+          </ul>
+          <button type="button" class="btn btn--primary btn--block" data-select-plan="Coach Premium">Escolher Premium</button>
+        </article>
+
+        <article class="plan reveal delay-2" data-plan="organization">
+          <h3>Team Academy</h3>
+          <p class="plan__price"><strong data-price-monthly="179" data-price-annual="149.17">€179</strong> <span data-suffix>/ mês</span></p>
+          <ul>
+            <li>Até 5 treinadores</li>
+            <li>Base partilhada</li>
+            <li>Análise de equipa</li>
+            <li>Aprovação da equipa SurfStar</li>
+          </ul>
+          <button type="button" class="btn btn--outline btn--block" data-select-plan="Team Academy">Pedir acesso</button>
+        </article>
+      </div>
+      <p class="plans__note" id="planNote" aria-live="polite"></p>
+    </section>
+
+    <section class="section faq" id="faq">
+      <div class="section__head reveal">
+        <p class="eyebrow">FAQ</p>
+        <h2>Perguntas frequentes</h2>
+      </div>
+      <div class="faq__list">
+        <details class="faq__item reveal" open>
+          <summary>Os atletas pagam?</summary>
+          <p>Não. Os atletas entram gratuitamente na conta do treinador, conforme o plano.</p>
+        </details>
+        <details class="faq__item reveal">
+          <summary>Posso ver estatísticas durante o treino?</summary>
+          <p>Sim. Abre estatísticas em direto em sessões técnicas ou de combos — a taxa de sucesso atualiza onda a onda.</p>
+        </details>
+        <details class="faq__item reveal">
+          <summary>Posso cancelar quando quiser?</summary>
+          <p>Sim. Manténs o acesso até ao fim do período já pago.</p>
+        </details>
+        <details class="faq__item reveal">
+          <summary>O que inclui o Coach Premium?</summary>
+          <p>Treino personalizado, análise de mar, check-ins de bem-estar e atletas ilimitados.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="reveal">
+        <h2>Preparado para treinar com dados?</h2>
+        <p>Cria a conta de treinador. Os atletas entram gratuitamente.</p>
+        <button type="button" class="btn btn--light btn--lg" data-open="signup">Criar conta de treinador</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div><strong>SurfStar</strong> · Ride · Improve · Win</div>
+    <div>Protótipo · © 2026 SurfStar</div>
+  </footer>
+
+  <dialog class="modal" id="modal">
+    <form method="dialog" class="modal__card">
+      <button type="submit" class="modal__close" aria-label="Fechar">×</button>
+      <p class="eyebrow" id="modalEyebrow">Conta</p>
+      <h2 id="modalTitle">Criar conta de treinador</h2>
+      <p id="modalBody">Neste protótipo o fluxo de autenticação está simulado. Na app real, este botão abre o onboarding SurfStar.</p>
+      <div class="modal__actions">
+        <button type="submit" class="btn btn--primary" value="ok">Percebi</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="lightbox" id="lightbox">
+    <form method="dialog" class="lightbox__inner">
+      <button type="submit" class="lightbox__close" aria-label="Fechar">×</button>
+      <img id="lightboxImg" alt="" />
+      <p id="lightboxCaption"></p>
+    </form>
+  </dialog>
+
+  <script src="./app.js"></script>
+</body>
+</html>
